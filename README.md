@@ -6,21 +6,22 @@ Un solo objetivo: capturar leads con el mini-curso gratuito y vender el curso.
 > **El "180" es un giro de 180°, no 180 días.** El claim de la marca es
 > "Tu giro de 180° empieza aquí". Nunca escribir "en 180 días".
 
-**Estado:** las 11 secciones construidas y funcionando. Lo único pendiente son
-los assets de imagen (cajas "AQUÍ VA …" a escala real) y sustituir los `// SWAP`
-del config por contenido real.
+**Estado:** en producción y funcionando. Las 10 secciones están construidas; lo
+pendiente son los HECHOS marcados `[COMPLETAR: …]` (instructor, testimonios,
+cifras, URL de pago), que la propia página resalta en ámbar, y las fotos.
 
 ## En producción
 
 - **Web:** https://emprende180.vercel.app
 - **Repo:** https://github.com/pedroagentesocial/emprende180 (privado)
 
-Despliegue: . El repo está enlazado, así que también sirve
-conectar Git en el panel de Vercel para desplegar en cada push.
+Despliegue manual con `vercel --prod`. También puedes conectar el repo en el
+panel de Vercel para que despliegue solo en cada push a `main`.
 
-> **Las variables de entorno todavía no están puestas en Vercel.** El
-> formulario funciona y responde 200, pero el lead solo se registra en los logs:
-> no salen correos. Ver  y .
+> **Las variables de entorno todavía no están puestas en Vercel.** El formulario
+> funciona y responde `200`, pero el lead solo queda en los logs: no salen
+> correos. Se arregla con `vercel env add` para las cuatro claves de
+> `.env.example`, y un redespliegue.
 
 ## Bilingüe (es-US / en-US)
 
