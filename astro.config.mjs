@@ -12,7 +12,19 @@ export default defineConfig({
   site: SITE_URL,
   output: "server",
   adapter: vercel({
-    webAnalytics: { enabled: true },
+    /**
+     * Vercel Web Analytics, desactivado.
+     *
+     * Con `enabled: true` el adaptador inyecta `/_vercel/insights/script.js`,
+     * pero si la función no está activada en el proyecto ese script da 404 en
+     * cada visita: un error de consola en producción y un punto menos en
+     * Lighthouse, a cambio de nada.
+     *
+     * Para activarlo: enciéndelo primero en Vercel (Project → Analytics) y
+     * luego pon esto en `true`. Es cookieless, así que no necesita pasar por
+     * el banner de consentimiento como sí hace GA4.
+     */
+    webAnalytics: { enabled: false },
     imageService: true,
   }),
   integrations: [react()],
