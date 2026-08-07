@@ -1,0 +1,94 @@
+---
+import T from "@components/i18n/T.astro";
+import Section from "@components/ui/Section.astro";
+import Reveal from "@components/motion/Reveal.astro";
+import Button from "@components/ui/Button.astro";
+import { leadMagnet, copy, cta } from "@config/curso.config";
+
+/**
+ * 04 · PRIMERA CAPTURA DE LEAD — pronto, a propósito.
+ *
+ * Va aquí y no al final porque a estas alturas el lector ya se ha reconocido en
+ * el problema (sección 2) y ha visto qué se lleva (sección 3): está en el punto
+ * más caliente de la página. Esperar a la sección 11 significa perder a todo el
+ * que se va antes de llegar, que son la mayoría.
+ *
+ * El imán es un MINI-CURSO POR EMAIL, no un PDF. Un PDF se descarga y se olvida
+ * el mismo día; una secuencia de 7 correos crea el hábito de abrirte, y quien
+ * lleva 7 días leyéndote llega al precio ya convencido. Además el lead sale más
+ * barato y más caliente que comprar tráfico frío directo a la venta.
+ *
+ * Enseñar el desglose día a día convierte "dame tu email" en un intercambio con
+ * valor concreto y verificable.
+ */
+
+
+---
+
+<Section id="gratis" tono="inverse" ariaLabel={copy.captura.aria}>
+  <div class="grid items-start gap-10 lg:grid-cols-2 lg:gap-16">
+    <!-- Qué recibe, día a día -->
+    <div>
+      <Reveal>
+        <p
+          class="text-xs font-bold uppercase tracking-[0.16em] text-secondary-300"
+        >
+          <T v={copy.captura.kicker} />
+        </p>
+        <h2
+          class="mt-3 text-3xl font-bold text-balance text-ink-inverse sm:text-4xl"
+        >
+          <T v={leadMagnet.nombre} />
+        </h2>
+        <p class="mt-4 text-lg text-pretty text-secondary-200">
+          <T v={leadMagnet.promesa} />
+        </p>
+      </Reveal>
+
+      <ol class="mt-8 space-y-0">
+        {
+          leadMagnet.dias.map((d, i) => (
+            <Reveal as="li" delay={i * 0.05}>
+              <div class="flex gap-4 border-b border-primary-800 py-3.5 last:border-0">
+                <span
+                  aria-hidden="true"
+                  class="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-secondary-500/20 text-xs font-bold text-secondary-300"
+                >
+                  {d.dia}
+                </span>
+                <div>
+                  <p class="font-semibold text-ink-inverse"><T v={d.titulo} /></p>
+                  <p class="mt-0.5 text-sm text-secondary-200"><T v={d.entrega} /></p>
+                </div>
+              </div>
+            </Reveal>
+          ))
+        }
+      </ol>
+    </div>
+
+    {/* Aquí había un segundo formulario. Se quitó a propósito: con dos
+        formularios idénticos en la misma página, el visitante que ve el primero
+        y no lo rellena llega al segundo con la sensación de que ya se lo
+        pidieron, y los dos compiten por la misma conversión sin sumarla.
+        Queda uno solo, el del cierre, y esta sección manda hacia él. */}
+    <Reveal delay={0.1}>
+      <div
+        class="rounded-2xl border border-primary-700 bg-primary-950/40 p-6 text-center sm:p-8 lg:sticky lg:top-24"
+      >
+        <h3 class="text-2xl font-bold text-balance text-ink-inverse">
+          <T v={leadMagnet.titularFormulario} />
+        </h3>
+        <p class="mt-2 text-sm text-secondary-200"><T v={leadMagnet.formato} /></p>
+
+        <div class="mt-6">
+          <Button href={cta.secundario.href} variant="primary" size="lg" trackId="captura" block>
+            <T v={cta.secundario.texto} />
+          </Button>
+        </div>
+
+        <p class="mt-3 text-xs text-primary-300"><T v={leadMagnet.aviso} /></p>
+      </div>
+    </Reveal>
+  </div>
+</Section>

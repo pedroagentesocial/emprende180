@@ -1,0 +1,101 @@
+---
+import T from "@components/i18n/T.astro";
+import { sitio, cta, copy } from "@config/curso.config";
+import Button from "@components/ui/Button.astro";
+import LanguageSwitch from "@components/i18n/LanguageSwitch";
+import { resolverIdiomaServidor } from "@i18n/idioma";
+
+/**
+ * Header de la landing.
+ *
+ * Deliberadamente sin menú de navegación: en una página de conversión cada
+ * enlace es una salida. Solo el logo (que vuelve arriba) y UN CTA.
+ *
+ * Se usa el lockup horizontal porque el vertical de la guía, a la altura de un
+ * header de 64 px, deja el nombre en unos 20 px de ancho.
+ *
+ * El CTA del header se oculta en móvil: ya está el CTA fijo inferior, y dos
+ * botones idénticos a la vez compiten entre sí.
+ */
+const logo = sitio.logoHorizontal;
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+/* El alt del logo lleva el claim, así que también se traduce. Los data-alt-*
+   los usa el script del layout para actualizarlo al cambiar de idioma. */
+const logoAlt = {
+  es: `${sitio.nombre}: ${sitio.claim.es}`,
+  en: `${sitio.nombre}: ${sitio.claim.en}`,
+};
+---
+
+<header
+  class="sticky top-0 z-50 border-b border-line/70 bg-surface/85 backdrop-blur-md"
+>
+  <div class="container-page flex h-16 items-center justify-between gap-4">
+    {/* shrink-0: sin esto, en móvil el flex del header comprimía el enlace y
+        el logo salía deformado (115×32 sobre un arte de 573×120). */}
+    <a
+      href="#inicio"
+      class="flex min-h-11 shrink-0 items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+    >
+      <img
+        src={logo.src}
+        alt={logoAlt[lang]}
+        data-alt-es={logoAlt.es}
+        data-alt-en={logoAlt.en}
+        width={logo.w}
+        height={logo.h}
+        class="h-8 w-auto shrink-0 sm:h-9"
+        fetchpriority="high"
+        decoding="async"
+      />
+    </a>
+
+    {/* Menú. Solo de `md` para arriba: en móvil el CTA fijo ya cubre la acción
+        y meter tres enlaces más en 390 px vuelve a aplastar el logo.
+        Los tres llevan HACIA la compra: temario y preguntas son justo las dos
+        objeciones que hacen volver arriba a buscar. */}
+    <nav
+      aria-label={copy.ui.menuPrincipal[lang]}
+      data-aria-es={copy.ui.menuPrincipal.es}
+      data-aria-en={copy.ui.menuPrincipal.en}
+      class="hidden md:flex md:items-center md:gap-1"
+    >
+      {
+        cta.navegacion.map((item) => (
+          <a
+            href={item.href}
+            class="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold text-ink-muted transition-colors duration-200 hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          >
+            <T v={item.texto} />
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="flex shrink-0 items-center gap-3">
+      {/* El selector va SIEMPRE visible, también en móvil: si alguien llega
+          con ?lang= equivocado tiene que poder corregirlo sin buscar. */}
+      <LanguageSwitch client:load lang={lang} />
+
+      {/* `max-sm:hidden` y no `hidden sm:inline-flex`: la base del botón ya
+          trae `inline-flex`, y entre dos utilidades del mismo grupo gana la que
+          Tailwind ordena después, no la que escribes al final. El resultado era
+          un CTA que nunca se ocultaba y desbordaba el header en móvil. Con una
+          variante responsive no hay ambigüedad posible. */}
+      <Button
+        href={cta.primario.href}
+        variant="primary"
+        size="md"
+        trackId="header"
+        class="max-sm:hidden"
+      >
+        <T v={cta.primario.texto} />
+      </Button>
+    </div>
+  </div>
+</header>

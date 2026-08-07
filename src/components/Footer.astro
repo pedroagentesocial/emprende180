@@ -1,0 +1,105 @@
+---
+import { resolverIdiomaServidor } from "@i18n/idioma";
+import T from "@components/i18n/T.astro";
+import { sitio, contacto, legal, copy } from "@config/curso.config";
+import { construirTxt } from "@i18n/idioma";
+import { interpolar } from "@i18n/formato";
+import { privacidad, terminos } from "@config/legal.config";
+import CookiePreferences from "@components/legal/CookiePreferences";
+
+const anio = new Date().getFullYear();
+/* El mensaje prerrellenado de WhatsApp va en el idioma activo: abrir el chat
+   con un texto en otro idioma es de las cosas que más cantan. */
+const whatsappUrl = contacto.whatsapp
+  ? construirTxt(
+      (l) =>
+        `https://wa.me/${contacto.whatsapp}?text=${encodeURIComponent(contacto.whatsappMensaje[l])}`,
+    )
+  : null;
+
+const copyright = construirTxt((l) =>
+  interpolar(copy.ui.copyright[l], { anio, razonSocial: contacto.razonSocial }),
+);
+
+/* En el footer sí hay espacio vertical, así que va el lockup completo de la
+   guía: bombilla, wordmark y claim. Es la versión oficial, sin recomponer. */
+const logo = sitio.logo;
+
+/* Idioma de ESTA petición. Las islas de React lo necesitan como prop: en
+   el servidor no pueden leerlo del DOM, así que sin esto se renderizarían
+   siempre en español aunque la URL pida inglés. */
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+---
+
+<footer class="border-t border-line bg-surface-muted">
+  <div class="container-page py-12">
+    <div class="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
+      <div>
+        <img
+          src={logo.src}
+          alt={sitio.nombre}
+          width={logo.w}
+          height={logo.h}
+          class="h-24 w-auto"
+          loading="lazy"
+          decoding="async"
+        />
+        <p class="mt-4 max-w-xs text-sm text-ink-muted"><T v={sitio.descripcion} /></p>
+      </div>
+
+      <div class="flex flex-col gap-3 text-sm">
+        <a
+          href={`mailto:${contacto.email}`}
+          class="inline-flex min-h-11 items-center text-ink-muted hover:text-ink"
+        >
+          {contacto.email}
+        </a>
+        {
+          whatsappUrl && (
+            <a
+              href={whatsappUrl.es}
+              data-wa-es={whatsappUrl.es}
+              data-wa-en={whatsappUrl.en}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex min-h-11 items-center text-ink-muted hover:text-ink"
+            >
+              WhatsApp
+            </a>
+          )
+        }
+      </div>
+    </div>
+
+    <div
+      class="mt-10 flex flex-col gap-4 border-t border-line pt-6 text-sm text-ink-subtle sm:flex-row sm:items-center sm:justify-between"
+    >
+      <p><T v={copyright} /></p>
+      {/* `data-legal` hace que se abran en modal sin salir de la landing. Sin
+          JS siguen siendo enlaces normales a páginas reales e indexables. */}
+      <nav aria-label={copy.ui.enlacesLegales.es}
+        data-aria-es={copy.ui.enlacesLegales.es}
+        data-aria-en={copy.ui.enlacesLegales.en} class="flex flex-wrap items-center gap-x-6 gap-y-1">
+        <a
+          href={legal.privacidad}
+          data-legal="privacidad"
+          class="inline-flex min-h-11 items-center hover:text-ink"
+        >
+          <T v={privacidad.titulo} />
+        </a>
+        <a
+          href={legal.terminos}
+          data-legal="terminos"
+          class="inline-flex min-h-11 items-center hover:text-ink"
+        >
+          <T v={terminos.titulo} />
+        </a>
+        <CookiePreferences client:visible lang={lang} />
+      </nav>
+    </div>
+  </div>
+</footer>

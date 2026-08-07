@@ -1,0 +1,122 @@
+---
+import { MARCA_PENDIENTE, type DocumentoLegal } from "@config/legal.config";
+import { contienePendiente, resolverIdiomaServidor } from "@i18n/idioma";
+
+/**
+ * Cuerpo de un documento legal.
+ *
+ * Es la ÚNICA fuente del texto: lo usan tanto la página completa indexable
+ * (`/legal/[doc]`) como el fragmento que carga el modal. Así no puede pasar
+ * que el modal enseñe una versión y la página otra, que en un documento legal
+ * sería un problema de verdad.
+ *
+ * A diferencia del resto de la página, aquí NO se renderizan los dos idiomas a
+ * la vez: un documento legal duplicado en el DOM es mucho texto, y el modal ya
+ * lo pide con `?lang`. Se sirve el idioma resuelto y punto.
+ */
+interface Props {
+  doc: DocumentoLegal;
+  /** Dentro del modal el título lo pinta la cabecera del diálogo. */
+  ocultarTitulo?: boolean;
+}
+
+const { doc, ocultarTitulo = false } = Astro.props;
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+/**
+ * ¿Queda algún `[COMPLETAR: …]` sin rellenar, en CUALQUIERA de los dos idiomas?
+ * Se comprueban los dos aunque solo se muestre uno: tener el aviso en español
+ * terminado y el inglés a medias es exactamente lo que hay que detectar.
+ */
+const pendiente =
+  contienePendiente(doc.actualizado, MARCA_PENDIENTE) ||
+  doc.secciones.some(
+    (s) =>
+      (s.parrafos ?? []).some((p) => contienePendiente(p, MARCA_PENDIENTE)) ||
+      (s.lista ?? []).some((i) => contienePendiente(i, MARCA_PENDIENTE)),
+  );
+
+const AVISO = {
+  es: {
+    titulo: "Borrador sin revisar.",
+    texto:
+      "Quedan campos por completar (resaltados abajo) y el texto debe pasar por un abogado del país donde tributas antes de publicar. Se revisan LOS DOS idiomas. Editar en",
+  },
+  en: {
+    titulo: "Unreviewed draft.",
+    texto:
+      "There are fields left to fill in (highlighted below) and a lawyer in your tax jurisdiction has to review this before launch. BOTH languages count. Edit in",
+  },
+} as const;
+
+const ACTUALIZADO = { es: "Última actualización:", en: "Last updated:" } as const;
+
+/** Resalta los marcadores en vez de dejarlos pasar como texto normal. */
+const marcar = (texto: string) =>
+  texto.replace(
+    /\[COMPLETAR:[^\]]*\]/g,
+    (m) =>
+      `<mark class="rounded-xs bg-warning-50 px-1 font-semibold text-warning-700">${m}</mark>`,
+  );
+---
+
+<article class="text-ink">
+  {
+    !ocultarTitulo && (
+      <h1 class="text-3xl font-bold text-balance sm:text-4xl">{doc.titulo[lang]}</h1>
+    )
+  }
+
+  <p class="mt-3 text-base text-ink-muted">{doc.resumen[lang]}</p>
+  <p class="mt-1 text-sm text-ink-subtle">
+    {ACTUALIZADO[lang]} <Fragment set:html={marcar(doc.actualizado[lang])} />
+  </p>
+
+  {
+    pendiente && (
+      <p
+        role="note"
+        class="mt-6 rounded-lg border-2 border-dashed border-warning-500 bg-warning-50 px-4 py-3 text-sm font-medium text-ink"
+      >
+        ⚠ <strong>{AVISO[lang].titulo}</strong> {AVISO[lang].texto}{" "}
+        <code class="font-mono">src/config/legal.config.ts</code>.
+      </p>
+    )
+  }
+
+  <div class="mt-8 space-y-8">
+    {
+      doc.secciones.map((s, i) => (
+        <section>
+          <h2 class="text-xl font-bold text-balance">
+            {i + 1}. {s.titulo[lang]}
+          </h2>
+
+          {s.parrafos?.map((p) => (
+            <p class="mt-3 text-base text-pretty text-ink-muted">
+              <Fragment set:html={marcar(p[lang])} />
+            </p>
+          ))}
+
+          {s.lista && (
+            <ul class="mt-4 grid gap-2.5">
+              {s.lista.map((item) => (
+                <li class="flex gap-3 text-base text-ink-muted">
+                  <span
+                    aria-hidden="true"
+                    class="mt-2.5 size-1.5 shrink-0 rounded-full bg-secondary-600"
+                  />
+                  <span><Fragment set:html={marcar(item[lang])} /></span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      ))
+    }
+  </div>
+</article>

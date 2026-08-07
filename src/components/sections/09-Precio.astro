@@ -1,0 +1,280 @@
+---
+import T from "@components/i18n/T.astro";
+import Section from "@components/ui/Section.astro";
+import SectionHeading from "@components/ui/SectionHeading.astro";
+import Reveal from "@components/motion/Reveal.astro";
+import Button from "@components/ui/Button.astro";
+import { curso, cta, garantia, copy } from "@config/curso.config";
+import { construirTxt, LOCALES } from "@i18n/idioma";
+import { formatMoney } from "@i18n/formato";
+
+/**
+ * 09 · PRECIO — estrategia de ancla.
+ *
+ * CÓMO FUNCIONA EL ANCLA
+ * Se enseña una cifra alta (la referencia) para que la real se lea en relación
+ * a ella. La técnica funciona, pero solo si la cifra alta se sostiene: un ancla
+ * que no se justifica no ancla nada, levanta sospechas. Por eso el desglose no
+ * es decoración, es la mitad del argumento, y va a la izquierda del precio para
+ * que se lea ANTES.
+ *
+ * FRAMING (decisión legal, no estética)
+ *  · 'lanzamiento' — ACTIVO. La cifra alta es el precio FUTURO. Es verdad desde
+ *    el día uno y no hay que demostrar ningún histórico.
+ *  · 'descuento'   — la cifra alta es el precio anterior. PROFECO (México) y la
+ *    FTC (EE. UU.) exigen que ese precio haya sido real y vigente.
+ * Se cambia en `curso.precio.framing`.
+ *
+ * LO QUE NO HAY AQUÍ, A PROPÓSITO: ninguna cuenta atrás. Un contador que se
+ * reinicia al recargar es el truco que más rápido quema la confianza, y basta
+ * un F5 para descubrirlo. La urgencia sale de `precio.urgencia` y solo se pinta
+ * si el dato es real.
+ */
+
+const { precio } = curso;
+const checkoutPendiente = precio.urlCheckout === "#";
+const esLanzamiento = precio.framing === "lanzamiento";
+
+/** Dinero formateado por Intl en cada idioma. Ni un "$" escrito a mano. */
+const dinero = (n: number) => construirTxt((l) => formatMoney(n, l, precio.moneda));
+
+const precioActual = dinero(precio.actual);
+const precioReferencia = dinero(precio.referencia);
+
+const ahorro = precio.referencia - precio.actual;
+const porcentaje = Math.round((ahorro / precio.referencia) * 100);
+
+/**
+ * El desglose tiene que sumar la referencia. Si alguien toca un valor y deja de
+ * cuadrar, la sección lo dice en pantalla en vez de enseñar un ancla rota.
+ */
+const sumaDesglose = precio.desglose.reduce((t, i) => t + i.valor, 0);
+const desgloseCuadra = sumaDesglose === precio.referencia;
+
+const textoAhorro = construirTxt((l) =>
+  copy.precio.descuento.ahorras[l]
+    .replace("{importe}", formatMoney(ahorro, l, precio.moneda))
+    .replace("{porcentaje}", String(porcentaje)),
+);
+
+const textoSubira = construirTxt((l) =>
+  copy.precio.lanzamiento.subira[l].replace(
+    "{referencia}",
+    formatMoney(precio.referencia, l, precio.moneda),
+  ),
+);
+
+const textoCuotas = precio.cuotas
+  ? construirTxt((l) =>
+      copy.precio.cuotas[l]
+        .replace("{n}", String(precio.cuotas.numero))
+        .replace("{importe}", formatMoney(precio.cuotas.importe, l, precio.moneda)),
+    )
+  : null;
+
+/** Urgencia. Solo se pinta si el dato existe de verdad. */
+const urgencia = (() => {
+  const u = precio.urgencia;
+  if (u.tipo === "ninguna") return null;
+
+  if (u.tipo === "cupos" && u.cupos) {
+    const n = u.cupos;
+    return construirTxt((l) => copy.precio.urgencia.cupos[l].replace("{n}", String(n)));
+  }
+
+  if (u.tipo === "fecha" && u.fechaCierre) {
+    const f = new Date(u.fechaCierre);
+    return construirTxt((l) =>
+      copy.precio.urgencia.fecha[l].replace(
+        "{fecha}",
+        new Intl.DateTimeFormat(LOCALES[l], { day: "numeric", month: "long" }).format(f),
+      ),
+    );
+  }
+
+  // 'lanzamiento', o un tipo sin dato real: nota honesta, sin contador.
+  return esLanzamiento ? copy.precio.lanzamiento.nota : copy.precio.descuento.nota;
+})();
+---
+
+<Section id="precio" tono="sunken" ritmo="amplio" ariaLabel={copy.precio.aria}>
+  <SectionHeading
+    align="center"
+    class="mx-auto"
+    titulo={copy.precio.titulo}
+    entradilla={copy.precio.entradilla}
+  />
+
+  <div class="mx-auto mt-12 max-w-4xl">
+    <Reveal>
+      <div class="overflow-hidden rounded-3xl border border-line bg-surface shadow-lg">
+        <div class="grid md:grid-cols-[1.25fr_1fr]">
+          <!-- ── El desglose: lo que sostiene el ancla ────────────────────── -->
+          <div class="border-b border-line p-7 sm:p-9 md:border-b-0 md:border-r">
+            <h3 class="text-lg font-bold text-ink">
+              <T v={copy.precio.desgloseTitulo} />
+            </h3>
+
+            <ul class="mt-6 divide-y divide-line">
+              {
+                precio.desglose.map((item) => (
+                  <li class="flex items-start justify-between gap-4 py-4 first:pt-0">
+                    <div class="min-w-0">
+                      <p class="font-semibold text-balance text-ink">
+                        <T v={item.titulo} />
+                      </p>
+                      <p class="mt-1 text-sm text-pretty text-ink-muted">
+                        <T v={item.detalle} />
+                      </p>
+                    </div>
+                    <p class="shrink-0 pt-0.5 text-sm font-semibold tabular-nums text-ink-subtle">
+                      <T v={dinero(item.valor)} />
+                    </p>
+                  </li>
+                ))
+              }
+            </ul>
+
+            <!-- La suma, explícita: convierte la cifra ancla en un total que
+                 el visitante puede recorrer, no en un número puesto ahí. -->
+            <div
+              class="mt-5 flex items-center justify-between gap-4 border-t-2 border-line-strong pt-5"
+            >
+              <p class="font-bold text-ink"><T v={copy.precio.desgloseTotal} /></p>
+              <p class="text-lg font-extrabold tabular-nums text-ink">
+                <T v={precioReferencia} />
+              </p>
+            </div>
+
+            {
+              !desgloseCuadra && (
+                <p class="mt-4 rounded-lg border-2 border-dashed border-warning-500 bg-warning-50 px-4 py-3 text-sm font-medium text-ink">
+                  ⚠ <T v={copy.precio.avisoDesglose} />{" "}
+                  <code class="font-mono">{sumaDesglose} ≠ {precio.referencia}</code>
+                </p>
+              )
+            }
+          </div>
+
+          <!-- ── El precio y la acción ────────────────────────────────────── -->
+          <div class="flex flex-col justify-center bg-surface-muted p-7 text-center sm:p-9">
+            <p class="text-xs font-bold uppercase tracking-[0.14em] text-secondary-700">
+              <T
+                v={esLanzamiento
+                  ? copy.precio.lanzamiento.kicker
+                  : copy.precio.descuento.kicker}
+              />
+            </p>
+
+            {
+              esLanzamiento ? (
+                <Fragment>
+                  {/* El precio real manda y la referencia va DEBAJO, en futuro:
+                      "subirá a", no un tachón que insinúa un pasado que no fue. */}
+                  <p class="mt-3 text-6xl font-extrabold tracking-tight text-ink">
+                    <T v={precioActual} />
+                  </p>
+                  <p class="mt-1 text-sm font-medium text-ink-muted">
+                    <T v={copy.precio.lanzamiento.etiquetaPrecio} />
+                  </p>
+                  <p class="mt-4 text-base font-semibold text-balance text-ink">
+                    <T v={textoSubira} />
+                  </p>
+                </Fragment>
+              ) : (
+                <Fragment>
+                  <p class="mt-3 text-base text-ink-subtle">
+                    <span class="line-through"><T v={precioReferencia} /></span>
+                  </p>
+                  <p class="text-6xl font-extrabold tracking-tight text-ink">
+                    <T v={precioActual} />
+                  </p>
+                  <p class="mt-3 inline-flex self-center rounded-full bg-secondary-100 px-3 py-1 text-sm font-bold text-secondary-700">
+                    <T v={textoAhorro} />
+                  </p>
+                </Fragment>
+              )
+            }
+
+            {
+              textoCuotas && (
+                <p class="mt-3 text-base font-medium text-ink-muted">
+                  <T v={textoCuotas} />
+                </p>
+              )
+            }
+
+            <div class="mt-7">
+              {/* Sin URL de pasarela el botón se deshabilita: un href="#"
+                  saltaría al principio y parecería que está roto. */}
+              <Button
+                href={checkoutPendiente ? undefined : precio.urlCheckout}
+                disabled={checkoutPendiente}
+                variant="primary"
+                size="lg"
+                trackId="precio"
+                block
+              >
+                <T v={cta.primario.texto} />
+              </Button>
+            </div>
+
+            {
+              urgencia && (
+                <p class="mt-4 text-sm font-medium text-balance text-ink">
+                  <T v={urgencia} />
+                </p>
+              )
+            }
+
+            <p class="mt-3 text-xs text-pretty text-ink-subtle">
+              <T v={precio.nota} />
+            </p>
+
+            {/* La garantía era una sección entera para decir una frase. Ahora
+                vive aquí, pequeña y justo debajo del botón: es el punto exacto
+                donde aparece el miedo que neutraliza. */}
+            {
+              garantia.activa && (
+                <div class="mt-5 flex items-start gap-2.5 border-t border-line pt-4 text-left">
+                  <span
+                    aria-hidden="true"
+                    class="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-secondary-100 text-secondary-700"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" class="size-4" stroke-width="2">
+                      <path
+                        d="M12 3 4 6v6c0 4.4 3.4 8.2 8 9 4.6-.8 8-4.6 8-9V6l-8-3Z"
+                        stroke="currentColor"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <path d="m9 12 2 2 4-4" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </span>
+                  <span class="min-w-0">
+                    <span class="block text-sm font-bold text-ink">
+                      <T v={garantia.titulo} />
+                    </span>
+                    <span class="mt-0.5 block text-xs text-pretty text-ink-muted">
+                      <T v={garantia.resumen} />
+                    </span>
+                  </span>
+                </div>
+              )
+            }
+          </div>
+        </div>
+      </div>
+    </Reveal>
+
+    {
+      checkoutPendiente && (
+        <Reveal>
+          <p class="mt-6 rounded-lg border-2 border-dashed border-line-strong bg-surface px-4 py-3 text-center text-sm font-medium text-ink-muted">
+            ⚠ <T v={copy.precio.avisoPlaceholder} />
+          </p>
+        </Reveal>
+      )
+    }
+  </div>
+</Section>

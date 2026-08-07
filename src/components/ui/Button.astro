@@ -1,0 +1,83 @@
+---
+/**
+ * Botón / enlace de acción. Renderiza <a> si recibe `href`, si no <button>.
+ *
+ * El texto entra por slot, así que en una página bilingüe se le pasa un <T/>:
+ * el botón no necesita saber nada de idiomas.
+ *
+ * Regla de la landing: un solo objetivo. `primary` es SIEMPRE comprar.
+ * No usar `primary` para nada más, o el ojo deja de saber dónde ir.
+ */
+interface Props {
+  variant?: "primary" | "secondary" | "ghost";
+  size?: "md" | "lg";
+  href?: string;
+  type?: "button" | "submit";
+  /** Ocupa todo el ancho. En móvil casi siempre `true`. */
+  block?: boolean;
+  disabled?: boolean;
+  /** Se envía a GA4 como `cta_click` para saber qué botón convierte. */
+  trackId?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
+const {
+  variant = "primary",
+  size = "lg",
+  href,
+  type = "button",
+  block = false,
+  disabled = false,
+  trackId,
+  class: className = "",
+  ...rest
+} = Astro.props;
+
+const base =
+  "inline-flex items-center justify-center gap-2 rounded-full text-center font-semibold " +
+  // min-h-11 = 44 px: objetivo táctil mínimo, no bajar de aquí.
+  "min-h-11 transition-[transform,background-color,box-shadow] duration-200 ease-out-soft " +
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus " +
+  // El movimiento se apaga solo bajo prefers-reduced-motion (ver global.css),
+  // pero además se declara aquí para que ni siquiera se aplique la escala.
+  "motion-safe:active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50";
+
+const variants = {
+  // El teal es el color de acción de la marca y el ÚNICO color de CTA de la
+  // página: el mismo aquí y en el botón de envío de `LeadForm`. Si esto fuera
+  // navy, la misma acción tendría dos colores según el componente que la
+  // pinta, y el ojo dejaría de saber qué es pulsable.
+  primary: "bg-cta text-ink-inverse shadow-cta hover:bg-cta-hover hover:shadow-cta-hover",
+  secondary:
+    "bg-surface text-ink border border-line-strong hover:bg-surface-muted",
+  ghost: "bg-transparent text-ink-brand hover:bg-surface-muted",
+} as const;
+
+const sizes = {
+  md: "px-5 py-2.5 text-sm",
+  lg: "px-7 py-4 text-base sm:text-lg",
+} as const;
+
+const classes = [
+  base,
+  variants[variant],
+  sizes[size],
+  block ? "w-full" : "",
+  className,
+];
+
+const Tag = href ? "a" : "button";
+---
+
+<Tag
+  class:list={classes}
+  href={href}
+  type={href ? undefined : type}
+  disabled={href ? undefined : disabled}
+  aria-disabled={disabled ? "true" : undefined}
+  data-track={trackId}
+  {...rest}
+>
+  <slot />
+</Tag>

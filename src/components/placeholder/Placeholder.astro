@@ -1,0 +1,78 @@
+---
+import T from "@components/i18n/T.astro";
+import { resolverIdiomaServidor, type Txt } from "@i18n/idioma";
+import { copy } from "@config/curso.config";
+
+/**
+ * Caja "AQUÍ VA ..." — ocupa el hueco de un asset o de un bloque que todavía
+ * no existe, con el tamaño real que tendrá.
+ *
+ * Sirve para dos cosas: que el layout se vea a escala real desde el día 1, y
+ * que quede a la vista qué falta por entregar. En producción se marca en rojo
+ * para que ninguno se cuele al publicar.
+ */
+interface Props {
+  /** Qué va aquí. */
+  label: Txt;
+  /** Detalle: formato, tamaño, quién lo entrega. */
+  detalle?: Txt;
+  /** Proporción de la caja. Ej. "16/9", "4/5", "1/1". */
+  ratio?: string;
+  /** Altura mínima si no se usa `ratio`. */
+  minH?: string;
+  /** Ruta esperada del archivo en /public. */
+  ruta?: string;
+  class?: string;
+}
+
+const {
+  label,
+  detalle,
+  ratio,
+  minH = "12rem",
+  ruta,
+  class: className = "",
+} = Astro.props;
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+---
+
+<div
+  class:list={[
+    "relative grid place-items-center overflow-hidden rounded-lg",
+    "border-2 border-dashed border-line-strong bg-surface-muted",
+    "px-4 py-6 text-center",
+    className,
+  ]}
+  style={ratio ? `aspect-ratio:${ratio}` : `min-height:${minH}`}
+  data-placeholder
+  role="img"
+  aria-label={`${copy.ui.pendiente[lang]}: ${label[lang]}`}
+  data-aria-es={`${copy.ui.pendiente.es}: ${label.es}`}
+  data-aria-en={`${copy.ui.pendiente.en}: ${label.en}`}
+>
+  <div class="max-w-full">
+    <p class="text-xs font-bold uppercase tracking-[0.14em] text-ink-subtle">
+      <T v={copy.ui.placeholderAqui} />
+    </p>
+    <p class="mt-1 text-lg font-semibold text-balance text-ink-muted"><T v={label} /></p>
+    {detalle && <p class="mt-2 text-sm text-ink-subtle"><T v={detalle} /></p>}
+    {
+      ruta && (
+        <code class="mt-3 inline-block rounded-sm bg-surface-sunken px-2 py-1 font-mono text-xs break-all text-ink-subtle">
+          {ruta}
+        </code>
+      )
+    }
+    {
+      import.meta.env.PROD && (
+        <p class="mt-3 text-xs font-bold uppercase tracking-wider text-error-600">
+          ⚠ <T v={copy.ui.placeholderEnProduccion} />
+        </p>
+      )
+    }
+  </div>
+</div>

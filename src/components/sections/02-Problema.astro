@@ -1,0 +1,81 @@
+---
+import { resolverIdiomaServidor } from "@i18n/idioma";
+import T from "@components/i18n/T.astro";
+import Section from "@components/ui/Section.astro";
+import SectionHeading from "@components/ui/SectionHeading.astro";
+import Reveal from "@components/motion/Reveal.astro";
+import StaggerList from "@components/motion/StaggerList";
+import { curso, copy } from "@config/curso.config";
+
+/**
+ * 02 · EL PROBLEMA + PARA QUIÉN ES.
+ *
+ * Dos trabajos encadenados:
+ *
+ *  a) Describir la situación del lector mejor de lo que la describiría él.
+ *     Nadie compra una solución hasta que siente que le entienden el problema.
+ *  b) Auto-cualificar. Las dos columnas hacen cosas distintas: "para ti si…"
+ *     hace que el lector correcto se comprometa; "NO es para ti si…" hace que
+ *     el equivocado se vaya ANTES de comprar. Descalificar sube la conversión
+ *     de los buenos y baja los reembolsos.
+ *
+ * La columna del "no" tiene que ser sincera. Un "no es para ti si no quieres
+ * ganar dinero" es un elogio disfrazado y el lector lo detecta al instante.
+ */
+
+const dolores = curso.problema.dolores.map((texto) => ({ texto }));
+const paraSi = curso.paraQuien.map((texto) => ({ texto }));
+const paraNo = curso.paraQuienNo.map((texto) => ({ texto }));
+
+/* Idioma de ESTA petición. Las islas de React lo necesitan como prop: en
+   el servidor no pueden leerlo del DOM, así que sin esto se renderizarían
+   siempre en español aunque la URL pida inglés. */
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+---
+
+<Section id="problema" tono="muted" ritmo="amplio" ariaLabel={copy.problema.aria}>
+  <SectionHeading
+    align="center"
+    titulo={curso.problema.titular}
+    entradilla={curso.problema.entradilla}
+  />
+
+  <div class="mx-auto mt-12 max-w-read">
+    <StaggerList client:visible lang={lang} items={dolores} variante="bullet" />
+
+    <Reveal delay={0.1}>
+      <p
+        class="mt-10 border-l-2 border-secondary-500 pl-5 text-lg font-medium text-balance text-ink"
+      >
+        <T v={curso.problema.coste} />
+      </p>
+    </Reveal>
+  </div>
+
+  <!-- Auto-cualificación -->
+  <div class="mt-16 grid gap-6 md:grid-cols-2">
+    <Reveal>
+      <div class="h-full rounded-2xl border border-line bg-surface p-7 shadow-sm">
+        <h3 class="text-xl font-bold text-ink">
+          <T v={copy.problema.paraTiTitulo} />
+        </h3>
+        <div class="mt-6">
+          <StaggerList client:visible lang={lang} items={paraSi} variante="check" />
+        </div>
+      </div>
+    </Reveal>
+
+    <Reveal delay={0.12}>
+      <div class="h-full rounded-2xl border border-line bg-surface p-7 shadow-sm">
+        <h3 class="text-xl font-bold text-ink"><T v={copy.problema.noParaTiTitulo} /></h3>
+        <div class="mt-6">
+          <StaggerList client:visible lang={lang} items={paraNo} variante="cross" />
+        </div>
+      </div>
+    </Reveal>
+  </div>
+</Section>

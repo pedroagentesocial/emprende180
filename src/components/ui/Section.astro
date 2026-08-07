@@ -1,0 +1,65 @@
+---
+import { resolverIdiomaServidor, type Txt } from "@i18n/idioma";
+
+/**
+ * Envoltorio de sección. Todas las secciones de la página pasan por aquí para
+ * que el ritmo vertical y el ancho del contenedor sean idénticos.
+ */
+interface Props {
+  /** Ancla de navegación. Debe coincidir con los href de los CTA. */
+  id: string;
+  /** Fondo de la sección. Alternar crea la separación visual sin líneas. */
+  tono?: "surface" | "muted" | "sunken" | "inverse";
+  /**
+   * Peso vertical. `amplio` para las secciones que cargan el argumento,
+   * `compacto` para las de trámite. El ritmo es lo que separa una página de
+   * una lista de bloques.
+   */
+  ritmo?: "normal" | "amplio" | "compacto";
+  /**
+   * Etiqueta accesible. Bilingüe: un `aria-label` también lo lee alguien,
+   * solo que con un lector de pantalla. Se resuelve con el idioma del
+   * servidor y el switch la actualiza (ver el script de Section).
+   */
+  ariaLabel?: Txt;
+  class?: string;
+}
+
+const {
+  id,
+  tono = "surface",
+  ritmo = "normal",
+  ariaLabel,
+  class: className = "",
+} = Astro.props;
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+const tonos = {
+  surface: "bg-surface text-ink",
+  muted: "bg-surface-muted text-ink",
+  sunken: "bg-surface-sunken text-ink",
+  inverse: "bg-surface-inverse text-ink-inverse",
+} as const;
+
+const ritmos = {
+  normal: "section-y",
+  amplio: "section-y-lg",
+  compacto: "section-y-sm",
+} as const;
+---
+
+<section
+  id={id}
+  aria-label={ariaLabel?.[lang]}
+  data-aria-es={ariaLabel?.es}
+  data-aria-en={ariaLabel?.en}
+  class:list={[ritmos[ritmo], "scroll-mt-20", tonos[tono], className]}
+>
+  <div class="container-page">
+    <slot />
+  </div>
+</section>

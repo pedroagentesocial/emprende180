@@ -1,0 +1,52 @@
+---
+/**
+ * Entrada al hacer scroll — fundido + desplazamiento hacia arriba.
+ *
+ * POR QUÉ ESTO NO ES UNA ISLA DE REACT
+ * ────────────────────────────────────
+ * La primera versión era un componente Motion con `whileInView`. Funcionaba,
+ * pero cada uso era una raíz de hidratación independiente: la página acabó con
+ * 54. En una landing mobile-first eso es mucho JS ejecutándose en el hilo
+ * principal para, literalmente, mover cosas 24 px.
+ *
+ * Este componente hace exactamente lo mismo con un único IntersectionObserver
+ * compartido por toda la página (ver el script de BaseLayout) y transiciones
+ * CSS. Coste: ~600 bytes en total, cero por instancia.
+ *
+ * Motion se sigue usando donde de verdad aporta — orquestar: `StaggerList`
+ * (escalonado real entre hermanos), los acordeones (altura animada + salida) y
+ * el CTA fijo. Para un fundido de entrada, CSS ya es la herramienta correcta.
+ *
+ * SEGURIDAD: el estado oculto lo aplica una clase que pone el propio script
+ * (`.js-reveal` en <html>). Si el JS falla o está desactivado, el contenido se
+ * ve — nunca se queda una sección invisible esperando a un observador que no
+ * llegó. En una página de venta eso sería catastrófico.
+ *
+ * `prefers-reduced-motion: reduce` desactiva la animación en CSS y el script ni
+ * siquiera arranca.
+ */
+interface Props {
+  /** Retardo en segundos, para escalonar bloques hermanos. */
+  delay?: number;
+  /** Distancia del desplazamiento inicial, en px. */
+  y?: number;
+  /** Etiqueta a renderizar. */
+  as?: "div" | "li" | "section" | "article";
+  class?: string;
+}
+
+const {
+  delay = 0,
+  y = 24,
+  as: Tag = "div",
+  class: className,
+}: Props = Astro.props;
+---
+
+<Tag
+  data-reveal
+  class={className}
+  style={`--reveal-delay:${Math.round(delay * 1000)}ms;--reveal-y:${y}px`}
+>
+  <slot />
+</Tag>

@@ -1,0 +1,92 @@
+---
+import T from "@components/i18n/T.astro";
+import Reveal from "@components/motion/Reveal.astro";
+import type { Txt } from "@i18n/idioma";
+
+/**
+ * Cabecera de sección: título + entradilla.
+ *
+ * SIN antetítulo por defecto, y es deliberado. La etiqueta diminuta en
+ * mayúsculas encima de cada título es la firma más reconocible de una landing
+ * generada: cuando aparece seis veces seguidas deja de ser voz y pasa a ser
+ * andamiaje. Aquí solo queda `kicker`, para el único sitio donde carga
+ * información que el título no puede dar.
+ *
+ * La alineación tampoco tiene un único valor: alternar centrado e izquierda es
+ * parte del ritmo de la página. Centrar todo la aplana.
+ *
+ * La entrada al scroll va DENTRO del componente. Estaba fuera, y como ninguna
+ * sección lo envolvía, los seis titulares aparecían de golpe mientras el resto
+ * del bloque hacía fundido: se notaba, y mucho.
+ */
+interface Props {
+  titulo: Txt;
+  entradilla?: Txt;
+  /** Úsalo con cuentagotas. Si aparece en más de una sección, sobra. */
+  kicker?: Txt;
+  /** Sustituciones para los `{huecos}` del título. */
+  vars?: Record<string, string | number>;
+  align?: "center" | "start";
+  /** Nivel del heading. La página solo puede tener un <h1>. */
+  as?: "h2" | "h3";
+  /** Sobre fondo oscuro. */
+  inverso?: boolean;
+  class?: string;
+}
+
+const {
+  titulo,
+  entradilla,
+  kicker,
+  vars,
+  align = "start",
+  as: Tag = "h2",
+  inverso = false,
+  class: className = "",
+} = Astro.props;
+---
+
+<Reveal>
+  <div
+    class:list={[
+    "max-w-read",
+    align === "center" ? "mx-auto text-center" : "text-left",
+    className,
+  ]}
+>
+  {
+    kicker && (
+      <p
+        class:list={[
+          "mb-4 text-sm font-semibold",
+          inverso ? "text-secondary-300" : "text-ink-brand",
+        ]}
+      >
+        <T v={kicker} />
+      </p>
+    )
+  }
+
+  <Tag
+    class:list={[
+      "text-3xl font-bold tracking-tight text-balance sm:text-4xl",
+      inverso ? "text-ink-inverse" : "text-ink",
+    ]}
+  >
+    <T v={titulo} vars={vars} />
+  </Tag>
+
+  {
+    entradilla && (
+      <p
+        class:list={[
+          "mt-4 text-lg text-pretty sm:text-xl",
+          inverso ? "text-secondary-200" : "text-ink-muted",
+        ]}
+      >
+        <T v={entradilla} />
+      </p>
+    )
+  }
+</div>
+</Reveal>

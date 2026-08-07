@@ -1,0 +1,95 @@
+---
+import { resolverIdiomaServidor } from "@i18n/idioma";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import Header from "@components/Header.astro";
+import Footer from "@components/Footer.astro";
+import StickyCta from "@components/StickyCta";
+
+/* ───────────────────────────────────────────────────────────────────────────
+   ORDEN DE DECISIÓN
+   No es un orden estético: es la secuencia de preguntas que se hace quien
+   entra, en el orden en que se las hace. Cambiar el orden rompe el argumento.
+
+    01 Hero ............ ¿de qué va esto y es para mí?      → CTA: email gratis
+    02 Problema ........ ¿me entiende? ¿es para mí de verdad?
+    03 Qué vas a lograr  ¿qué me llevo?                     (resultado, no temario)
+    04 Captura ......... aún no compro → captúrame el email
+    05 Temario ......... ¿qué incluye exactamente?
+    06 Instructor ...... ¿quién eres tú? ¿qué NO cubres?
+    07 Prueba social ... ¿le funciona a gente como yo?
+    08 Precio .......... ¿cuánto?                           → CTA: comprar
+    09 FAQ ............. última objeción
+    10 Cierre .......... decido                             → comprar + email
+
+   La garantía YA NO es una sección propia: ocupaba una pantalla entera para
+   decir una frase. Ahora vive dentro de la tarjeta de precio, que es donde
+   aparece el miedo que neutraliza, y en una línea del cierre.
+   ─────────────────────────────────────────────────────────────────────────── */
+import Hero from "@components/sections/01-Hero.astro";
+import Problema from "@components/sections/02-Problema.astro";
+import QueVasALograr from "@components/sections/03-QueVasALograr.astro";
+import CapturaLead from "@components/sections/04-CapturaLead.astro";
+import Temario from "@components/sections/05-Temario.astro";
+import Instructor from "@components/sections/06-Instructor.astro";
+import PruebaSocial from "@components/sections/07-PruebaSocial.astro";
+import Precio from "@components/sections/09-Precio.astro";
+import Faq from "@components/sections/10-Faq.astro";
+import CtaFinal from "@components/sections/11-CtaFinal.astro";
+
+import { cta, curso } from "@config/curso.config";
+import { construirTxt } from "@i18n/idioma";
+import { formatMoney, interpolar } from "@i18n/formato";
+
+/**
+ * Nota del CTA fijo: el dato que más ayuda a decidir en ese momento.
+ * Se construye por idioma porque lleva dinero, y el dinero lo formatea Intl.
+ */
+const notaSticky = construirTxt((l) => {
+  const precio = formatMoney(curso.precio.actual, l, curso.precio.moneda);
+  if (!curso.precio.cuotas) return precio;
+  return `${precio} · ${interpolar(cta.notaCuotas[l], {
+    n: curso.precio.cuotas.numero,
+  })}`;
+});
+
+/* Idioma de ESTA petición. Las islas de React lo necesitan como prop: en
+   el servidor no pueden leerlo del DOM, así que sin esto se renderizarían
+   siempre en español aunque la URL pida inglés. */
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+---
+
+<BaseLayout>
+  <Header />
+
+  <main id="contenido">
+    <Hero />
+    <Problema />
+    <QueVasALograr />
+    <CapturaLead />
+    <Temario />
+    <Instructor />
+    <PruebaSocial />
+    <Precio />
+    <Faq />
+    <CtaFinal />
+  </main>
+
+  <Footer />
+
+  {/* Solo móvil. Aparece al dejar atrás el hero y se mantiene el resto de la
+      página, salvo mientras #precio está en pantalla: ahí ya hay un CTA grande
+      a la vista y dos botones idénticos a la vez compiten entre sí.
+      `client:idle`: no le disputa el hilo principal al LCP del hero. */}
+  <StickyCta
+    client:idle lang={lang}
+    texto={cta.primario.texto}
+    href={cta.primario.href}
+    nota={notaSticky}
+    observarDesde="inicio"
+    ocultarEn="precio"
+  />
+</BaseLayout>

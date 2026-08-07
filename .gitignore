@@ -1,0 +1,20 @@
+# build
+dist/
+.astro/
+.vercel/
+
+# deps
+node_modules/
+
+# leads capturados en desarrollo (ver src/lib/leads.ts)
+.leads.jsonl
+
+# env
+.env
+.env.production
+.env*.local
+
+# os / editor
+.DS_Store
+Thumbs.db
+*.log

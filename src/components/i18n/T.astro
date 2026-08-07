@@ -1,0 +1,74 @@
+---
+import type { Txt } from "@i18n/idioma";
+import { interpolar } from "@i18n/formato";
+import { resaltarPendientes } from "@lib/pendientes";
+
+/**
+ * Texto bilingüe renderizado en el servidor.
+ *
+ * Emite los DOS idiomas y deja que el CSS oculte el que no toca según el
+ * atributo `lang` de <html> (ver global.css). Así, cambiar de idioma es
+ * cambiar un atributo: instantáneo, sin recargar, sin perder el scroll y sin
+ * volver a montar ninguna isla.
+ *
+ * Se usa `<span>` por defecto porque casi todos los textos van dentro de un
+ * párrafo o un titular. Cuando el texto es el contenido completo de un bloque,
+ * `as="div"` evita meter un inline donde se espera bloque.
+ */
+interface Props {
+  /** El objeto {es, en} del config. */
+  v: Txt;
+  /**
+   * Sustituciones para los `{huecos}`.
+   *
+   * Un valor puede ser a su vez bilingüe: `{ garantia: garantia.titulo }`. Es
+   * importante que lo admita, porque interpolar el mismo valor en los dos
+   * idiomas metía texto en español dentro de la frase en inglés — justo el
+   * tipo de fuga que no se ve hasta que alguien lee la página traducida.
+   */
+  vars?: Record<string, string | number | Txt>;
+  /**
+   * Resalta los `[COMPLETAR: …]` en ámbar.
+   *
+   * Se activa en los textos que mezclan copy real con HECHOS pendientes (FAQ,
+   * bio del instructor, testimonios): así el hueco canta en la página en vez
+   * de colarse en producción disfrazado de texto normal.
+   */
+  resaltar?: boolean;
+  as?: "span" | "div" | "p";
+  class?: string;
+}
+
+const {
+  v,
+  vars,
+  resaltar = false,
+  as: Tag = "span",
+  class: className,
+} = Astro.props;
+
+/** Resuelve los `vars` para un idioma antes de interpolar. */
+const valor = (lang: "es" | "en") => {
+  if (!vars) return v[lang];
+  const resueltos: Record<string, string | number> = {};
+  for (const [k, val] of Object.entries(vars)) {
+    resueltos[k] =
+      typeof val === "object" && val !== null && "es" in val ? val[lang] : val;
+  }
+  return interpolar(v[lang], resueltos);
+};
+---
+
+{
+  resaltar ? (
+    <Fragment>
+      <Tag data-t="es" class={className} lang="es" set:html={resaltarPendientes(valor("es"))} />
+      <Tag data-t="en" class={className} lang="en" set:html={resaltarPendientes(valor("en"))} />
+    </Fragment>
+  ) : (
+    <Fragment>
+      <Tag data-t="es" class={className} lang="es">{valor("es")}</Tag>
+      <Tag data-t="en" class={className} lang="en">{valor("en")}</Tag>
+    </Fragment>
+  )
+}

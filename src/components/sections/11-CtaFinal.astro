@@ -1,0 +1,100 @@
+---
+import { resolverIdiomaServidor } from "@i18n/idioma";
+import T from "@components/i18n/T.astro";
+import Section from "@components/ui/Section.astro";
+import Reveal from "@components/motion/Reveal.astro";
+import Button from "@components/ui/Button.astro";
+import LeadForm from "@components/ui/LeadForm";
+import { curso, cta, leadMagnet, garantia, copy } from "@config/curso.config";
+
+/**
+ * 11 · CTA FINAL — cerrar sin obligar a subir.
+ *
+ * Quien llega hasta aquí ha leído la página entera. Se le dan las DOS salidas,
+ * en el orden correcto de compromiso:
+ *
+ *  1. Comprar — el CTA primario, otra vez, para que no tenga que buscar.
+ *  2. El email — segunda oportunidad para quien todavía no compra. Sin esto,
+ *     todo el que llega al final sin decidirse se pierde del todo.
+ *
+ * Se recupera la promesa del hero para cerrar el círculo: lo último que se lee
+ * es lo mismo que enganchó al principio.
+ *
+ * Nada de urgencia inventada. Si algún día hay fecha de cierre o plazas reales,
+ * este es el sitio donde tienen sentido — pero solo si son verdad. Un contador
+ * que se reinicia en cada visita destruye la confianza justo en el cierre.
+ */
+
+const checkoutPendiente = curso.precio.urlCheckout === "#";
+
+/* Idioma de ESTA petición. Las islas de React lo necesitan como prop: en
+   el servidor no pueden leerlo del DOM, así que sin esto se renderizarían
+   siempre en español aunque la URL pida inglés. */
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+---
+
+<Section id="empezar" tono="inverse" ariaLabel={copy.cierre.aria}>
+  <div class="mx-auto max-w-3xl text-center">
+    <Reveal>
+      <h2 class="text-4xl font-extrabold text-balance text-ink-inverse sm:text-5xl">
+        <T v={curso.promesa} />
+      </h2>
+      <p class="mx-auto mt-5 max-w-xl text-lg text-pretty text-secondary-200">
+        <T v={curso.promesaApoyo} />
+      </p>
+    </Reveal>
+
+    <!-- Salida 1: comprar -->
+    <Reveal delay={0.1}>
+      <div class="mt-9">
+        {/* Mientras no haya pasarela, el botón lleva a la sección de precio en
+            lugar de a un href="#" que saltaría al inicio de la página. */}
+        <Button
+          href={checkoutPendiente ? cta.primario.href : curso.precio.urlCheckout}
+          variant="primary"
+          size="lg"
+          trackId="cierre"
+          class="w-full sm:w-auto"
+        >
+          <T v={cta.primario.texto} />
+        </Button>
+
+        {
+          garantia.activa && (
+            <p class="mt-4 text-sm text-secondary-200">
+              <T v={copy.cierre.garantiaNota} vars={{ garantia: garantia.titulo }} />
+            </p>
+          )
+        }
+      </div>
+    </Reveal>
+  </div>
+
+  <!-- Salida 2: el email, para quien aún no compra -->
+  <Reveal delay={0.16}>
+    <div class="mx-auto mt-14 max-w-read border-t border-primary-800 pt-12">
+      <p class="text-center text-lg font-semibold text-ink-inverse">
+        <T v={copy.cierre.dudaTitulo} />
+      </p>
+      <p class="mx-auto mt-2 max-w-md text-center text-base text-secondary-200">
+        <T v={copy.cierre.dudaTexto} vars={{ formato: leadMagnet.formato }} />
+      </p>
+
+      <div class="mx-auto mt-7 max-w-md">
+        <LeadForm
+          client:visible lang={lang}
+          origen="cierre"
+          cta={leadMagnet.cta}
+          aviso={leadMagnet.aviso}
+          exitoTitulo={leadMagnet.exito.titulo}
+          exitoTexto={leadMagnet.exito.texto}
+          tono="inverso"
+        />
+      </div>
+    </div>
+  </Reveal>
+</Section>

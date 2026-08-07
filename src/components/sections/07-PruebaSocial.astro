@@ -1,0 +1,161 @@
+---
+import T from "@components/i18n/T.astro";
+import Section from "@components/ui/Section.astro";
+import SectionHeading from "@components/ui/SectionHeading.astro";
+import Reveal from "@components/motion/Reveal.astro";
+import { testimonios, cifras, copy } from "@config/curso.config";
+import { construirTxt } from "@i18n/idioma";
+import { faltaPorRellenar } from "@lib/pendientes";
+import { formatNumber } from "@i18n/formato";
+
+/**
+ * 07 · PRUEBA SOCIAL — «¿le funciona a gente como yo?»
+ *
+ * El instructor ya dijo que funciona; aquí lo dicen terceros, que es lo que
+ * pesa de verdad.
+ *
+ * Lo que convierte no son los elogios ("muy buen curso, lo recomiendo") sino
+ * los RESULTADOS con contexto: de dónde partía esa persona y a dónde llegó. El
+ * lector busca a alguien que empezaba donde empieza él.
+ *
+ * ⚠ CERO TESTIMONIOS INVENTADOS. Mientras el texto siga siendo PLACEHOLDER, la
+ * tarjeta se marca visiblemente como pendiente y las cifras agregadas no se
+ * muestran salvo que `cifras.sonReales` sea true. Un testimonio falso es
+ * publicidad engañosa, y además se nota.
+ */
+
+/* Basta con que UNO de los dos idiomas siga en placeholder para avisar:
+   publicar con el español real y el inglés sin traducir es justo el fallo
+   que este aviso existe para evitar. */
+const hayPendientes = testimonios.some((x) => faltaPorRellenar(x.cita));
+
+/* Los números también se localizan: el separador de miles lo decide el locale,
+   no un `toLocaleString("es")` fijo que dejaba la cifra en español aunque la
+   página estuviera en inglés. */
+const numAlumnos = construirTxt((l) => formatNumber(cifras.alumnos, l));
+const numValoraciones = construirTxt((l) =>
+  formatNumber(cifras.numeroValoraciones, l),
+);
+
+/** Iniciales para cuando no hay foto. Mejor eso que un avatar de stock. */
+const iniciales = (nombre: string) =>
+  nombre
+    .split(" ")
+    .slice(0, 2)
+    .map((p) => p[0] ?? "")
+    .join("")
+    .toUpperCase();
+---
+
+<Section id="testimonios" tono="muted" ariaLabel={copy.pruebaSocial.aria}>
+  <SectionHeading
+    align="center"
+    titulo={copy.pruebaSocial.titulo}
+  />
+
+  {
+    cifras.sonReales && (
+      <Reveal>
+        <dl class="mx-auto mt-10 grid max-w-2xl grid-cols-2 gap-6 sm:grid-cols-3">
+          <div class="text-center">
+            <dt class="text-sm text-ink-muted"><T v={copy.pruebaSocial.etiquetaAlumnos} /></dt>
+            <dd class="text-3xl font-extrabold text-ink">
+              <T v={numAlumnos} />
+            </dd>
+          </div>
+          <div class="text-center">
+            <dt class="text-sm text-ink-muted"><T v={copy.pruebaSocial.etiquetaValoracion} /></dt>
+            <dd class="text-3xl font-extrabold text-ink">
+              {cifras.valoracionMedia}
+              <span class="text-lg text-ink-subtle">/5</span>
+            </dd>
+          </div>
+          <div class="col-span-2 text-center sm:col-span-1">
+            <dt class="text-sm text-ink-muted"><T v={copy.pruebaSocial.etiquetaNumValoraciones} /></dt>
+            <dd class="text-3xl font-extrabold text-ink">
+              <T v={numValoraciones} />
+            </dd>
+          </div>
+        </dl>
+      </Reveal>
+    )
+  }
+
+  {/* `min-w-0` en cada <li>: un item de grid tiene `min-width: auto` y no
+      encoge por debajo de su contenido mínimo. Con textos largos (los
+      `[COMPLETAR:]` lo son), la tarjeta desbordaba el viewport a 390 px. */}
+  <ul class="mt-12 grid gap-6 md:grid-cols-3">
+    {
+      testimonios.map((t, i) => (
+        <Reveal as="li" delay={i * 0.12} y={32} class="min-w-0">
+          <figure
+            class:list={[
+              "relative flex h-full flex-col rounded-2xl border bg-surface p-6 shadow-sm",
+              /* Solo transform y opacity: no disparan layout ni paint caro.
+                 El hover va tras @media (hover:hover) por Tailwind, y en táctil
+                 lo que se nota es :active, no un hover que se queda pegado. */
+              "transition-[transform,box-shadow] duration-300 ease-out-soft",
+              "motion-safe:hover:-translate-y-1 motion-safe:hover:shadow-lg",
+              "motion-safe:active:scale-[0.99]",
+              faltaPorRellenar(t.cita)
+                ? "border-2 border-dashed border-line-strong"
+                : "border-line",
+            ]}
+          >
+            {/* Comilla de apertura: ancla visual de la tarjeta. Decorativa. */}
+            <span
+              aria-hidden="true"
+              class="pointer-events-none absolute right-5 top-3 select-none font-display text-6xl leading-none text-secondary-100"
+            >
+              &rdquo;
+            </span>
+            {t.resultado && (
+              <p class="mb-4 inline-flex max-w-full self-start rounded-full bg-secondary-100 px-3 py-1 text-xs font-bold break-words text-secondary-700">
+                <T v={t.resultado} resaltar />
+              </p>
+            )}
+
+            <blockquote class="flex-1 text-base text-pretty text-ink">
+              <p>«<T v={t.cita} resaltar />»</p>
+            </blockquote>
+
+            <figcaption class="mt-6 flex items-center gap-3 border-t border-line pt-5">
+              {t.foto ? (
+                <img
+                  src={t.foto}
+                  alt=""
+                  width="400"
+                  height="400"
+                  loading="lazy"
+                  decoding="async"
+                  class="size-11 shrink-0 rounded-full object-cover"
+                />
+              ) : (
+                <span
+                  aria-hidden="true"
+                  class="grid size-11 shrink-0 place-items-center rounded-full bg-primary-100 text-sm font-bold text-primary-900"
+                >
+                  {iniciales(t.nombre)}
+                </span>
+              )}
+              <span class="min-w-0">
+                <span class="block truncate font-semibold text-ink">{t.nombre}</span>
+                <span class="block text-sm text-ink-subtle"><T v={t.contexto} resaltar /></span>
+              </span>
+            </figcaption>
+          </figure>
+        </Reveal>
+      ))
+    }
+  </ul>
+
+  {
+    hayPendientes && (
+      <Reveal>
+        <p class="mx-auto mt-8 max-w-read rounded-lg border-2 border-dashed border-line-strong bg-surface px-4 py-3 text-center text-sm font-medium text-ink-muted">
+          ⚠ <T v={copy.pruebaSocial.avisoPlaceholder} />
+        </p>
+      </Reveal>
+    )
+  }
+</Section>

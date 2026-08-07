@@ -1,0 +1,70 @@
+---
+import { resolverIdiomaServidor } from "@i18n/idioma";
+import T from "@components/i18n/T.astro";
+import Section from "@components/ui/Section.astro";
+import SectionHeading from "@components/ui/SectionHeading.astro";
+import Reveal from "@components/motion/Reveal.astro";
+import TemarioAcordeon from "@components/motion/TemarioAcordeon";
+import { temario, curso, copy } from "@config/curso.config";
+
+/**
+ * 05 · TEMARIO — «¿qué incluye exactamente?»
+ *
+ * Después de la transformación (sección 3), aquí se demuestra que hay un plan
+ * detrás y no una promesa suelta. Su trabajo es reducir incertidumbre.
+ *
+ * Cada módulo muestra el título Y la línea de "qué logras al terminarlo", sin
+ * necesidad de desplegar: un temario que lista temas vende menos que uno que
+ * lista capacidades.
+ *
+ * Sin duraciones: ver la regla 2 de curso.config.ts. La página no anuncia
+ * cuánto dura el curso.
+ */
+
+/* Idioma de ESTA petición. Las islas de React lo necesitan como prop: en
+   el servidor no pueden leerlo del DOM, así que sin esto se renderizarían
+   siempre en español aunque la URL pida inglés. */
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+---
+
+<Section id="temario" tono="muted" ariaLabel={copy.temario.aria}>
+  <SectionHeading
+    align="start"
+    titulo={copy.temario.titulo}
+    vars={{ n: temario.length }}
+    entradilla={copy.temario.entradilla}
+  />
+
+  <TemarioAcordeon client:visible lang={lang} modulos={temario} badges={copy.temarioBadges} />
+
+  <Reveal delay={0.1}>
+    <div class="mx-auto mt-12 max-w-read rounded-2xl border border-line bg-surface p-7">
+      <h3 class="text-lg font-bold text-ink"><T v={copy.temario.extrasTitulo} /></h3>
+      <ul class="mt-5 grid gap-3 sm:grid-cols-2">
+        {
+          curso.formato.incluye.map((item) => (
+            <li class="flex gap-3 text-base text-ink-muted">
+              <span
+                aria-hidden="true"
+                class="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-secondary-100 text-secondary-700"
+              >
+                <svg viewBox="0 0 24 24" fill="none" class="size-3.5" stroke-width="3.5">
+                  <path
+                    d="M20 6 9 17l-5-5"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"></path>
+                </svg>
+              </span>
+              <T v={item} />
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </Reveal>
+</Section>

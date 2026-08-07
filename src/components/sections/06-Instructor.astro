@@ -1,0 +1,120 @@
+---
+import { resolverIdiomaServidor } from "@i18n/idioma";
+import T from "@components/i18n/T.astro";
+import Section from "@components/ui/Section.astro";
+import Reveal from "@components/motion/Reveal.astro";
+import StaggerList from "@components/motion/StaggerList";
+import PlaceholderImage from "@components/placeholder/PlaceholderImage.astro";
+import { instructor, copy } from "@config/curso.config";
+import { MARCA_COMPLETAR } from "@lib/pendientes";
+
+/**
+ * 06 · INSTRUCTOR — «¿y tú quién eres para enseñarme esto?»
+ *
+ * Llega después del temario a propósito: primero se ve que hay contenido, luego
+ * quién lo respalda.
+ *
+ * Dos decisiones de fondo:
+ *
+ *  · Credibilidad con EVIDENCIA, no autoridad genérica. Cada credencial es un
+ *    dato verificable (número, fecha, enlace). "Experto reconocido" resta.
+ *  · Se dice en voz alta QUÉ NO CUBRE el curso. Contraintuitivo pero funciona:
+ *    quien admite sus límites resulta creíble en todo lo demás. Y de paso evita
+ *    reembolsos de gente que esperaba otra cosa.
+ *
+ * Mientras el nombre siga siendo el placeholder, la sección avisa en vez de
+ * fingir que hay un instructor real.
+ */
+
+/* El nombre es un dato, no un texto traducible: si sigue siendo el de
+   ejemplo, la sección lo avisa en pantalla en vez de fingir un instructor. */
+const sinRellenar = instructor.nombre.includes(MARCA_COMPLETAR);
+const credenciales = instructor.credenciales.map((c) => ({ texto: c.dato }));
+const ensena = instructor.queEnsena.map((texto) => ({ texto }));
+const noCubre = instructor.queNoCubre.map((texto) => ({ texto }));
+
+/* Idioma de ESTA petición. Las islas de React lo necesitan como prop: en
+   el servidor no pueden leerlo del DOM, así que sin esto se renderizarían
+   siempre en español aunque la URL pida inglés. */
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+---
+
+<Section id="instructor" ariaLabel={copy.instructor.aria}>
+  <div class="grid items-start gap-10 md:grid-cols-[minmax(0,20rem)_1fr] md:gap-14">
+    <!-- Foto -->
+    <Reveal>
+      <div class="md:sticky md:top-24">
+        <PlaceholderImage
+          label={copy.placeholders.fotoInstructor}
+          medidas={copy.placeholders.fotoInstructorDetalle}
+          ruta="/imagenes/instructor/instructor.webp"
+          ratio="4/5"
+          class="rounded-2xl"
+        />
+      </div>
+    </Reveal>
+
+    <div>
+      <Reveal delay={0.08}>
+        <p class="text-xs font-bold uppercase tracking-[0.16em] text-ink-brand">
+          <T v={copy.instructor.kicker} />
+        </p>
+        <h2 class="mt-3 text-3xl font-bold text-balance text-ink sm:text-4xl">
+          {instructor.nombre}
+        </h2>
+        <p class="mt-2 text-lg font-medium text-ink-brand"><T v={instructor.rol} resaltar /></p>
+        <p class="mt-5 text-lg text-pretty text-ink-muted"><T v={instructor.bio} resaltar /></p>
+      </Reveal>
+
+      <!-- Credibilidad con evidencia -->
+      <Reveal delay={0.14}>
+        <div class="mt-8 rounded-2xl border border-line bg-surface-muted p-6">
+          <h3 class="text-sm font-bold uppercase tracking-wider text-ink-subtle">
+            <T v={copy.instructor.credencialesTitulo} />
+          </h3>
+          <div class="mt-4">
+            <StaggerList client:visible lang={lang} items={credenciales} variante="check" />
+          </div>
+        </div>
+      </Reveal>
+
+      <!-- Honestidad: qué enseña y qué no -->
+      <div class="mt-8 grid gap-6 sm:grid-cols-2">
+        <Reveal delay={0.18}>
+          <div>
+            <h3 class="text-base font-bold text-ink"><T v={copy.instructor.ensenaTitulo} /></h3>
+            <div class="mt-4">
+              <StaggerList client:visible lang={lang} items={ensena} variante="check" />
+            </div>
+          </div>
+        </Reveal>
+
+        <Reveal delay={0.24}>
+          <div>
+            <h3 class="text-base font-bold text-ink"><T v={copy.instructor.noCubreTitulo} /></h3>
+            <div class="mt-4">
+              <StaggerList client:visible lang={lang} items={noCubre} variante="cross" />
+            </div>
+            <p class="mt-4 text-sm text-ink-subtle">
+              <T v={copy.instructor.noCubreNota} />
+            </p>
+          </div>
+        </Reveal>
+      </div>
+
+      {
+        sinRellenar && (
+          <p class="mt-8 rounded-lg border-2 border-dashed border-line-strong bg-surface-muted px-4 py-3 text-sm font-medium text-ink-muted">
+            ⚠ Datos del instructor todavía sin rellenar. Buscar
+            <code class="font-mono">instructor</code> en
+            <code class="font-mono">src/config/curso.config.ts</code>.
+          </p>
+        )
+      }
+    </div>
+  </div>
+</Section>

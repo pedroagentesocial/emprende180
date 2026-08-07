@@ -1,0 +1,32 @@
+---
+import LegalArticle from "@components/legal/LegalArticle.astro";
+import { documentosPorSlug } from "@config/legal.config";
+
+/**
+ * Fragmento HTML del documento legal, sin la envoltura de la página.
+ *
+ * `partial: true` hace que Astro devuelva solo este marcado, sin <html>, <head>
+ * ni layout. Es lo que pide el modal por fetch.
+ *
+ * Se sirve desde aquí en vez de duplicar el texto dentro de la landing por dos
+ * motivos: el documento vive en un único sitio (`legal.config.ts` → un solo
+ * componente), y la landing no arrastra el peso de dos documentos legales que
+ * la mayoría de visitantes no va a abrir nunca.
+ *
+ * `noindex`: el contenido ya se indexa en `/legal/[doc]`. Si Google también
+ * indexara el fragmento tendríamos dos URLs compitiendo por el mismo texto.
+ */
+export const partial = true;
+export const prerender = false;
+
+const { doc: slug } = Astro.params;
+const doc = slug ? documentosPorSlug[slug] : undefined;
+
+if (!doc) {
+  return new Response(null, { status: 404 });
+}
+
+Astro.response.headers.set("X-Robots-Tag", "noindex");
+---
+
+<LegalArticle doc={doc} ocultarTitulo />

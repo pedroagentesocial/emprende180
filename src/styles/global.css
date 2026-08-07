@@ -1,0 +1,207 @@
+@import "tailwindcss";
+/* Montserrat, la tipografía de la guía de marca. Autoalojada: cero peticiones
+   a Google Fonts, cero bloqueo de render, cero fuga de IP de los visitantes. */
+@import "@fontsource-variable/montserrat";
+@import "./tokens.css";
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BASE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* Compensa el header sticky al saltar a un ancla (#oferta, #gratis…). */
+    scroll-padding-top: 5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* El CTA fijo de móvil es `position: fixed`, así que no ocupa espacio en el
+     flujo: sin esto tapaba el final del pie, enlaces legales incluidos.
+     `StickyCta` marca el documento mientras la barra está visible y el hueco
+     se reserva aquí. Solo por debajo de `md`, que es donde existe la barra. */
+  /* Hueco para el CTA fijo de móvil.
+     Se reserva SIEMPRE por debajo de `md`, no solo cuando la barra está
+     visible. Alternarlo con una clase parecía más limpio, pero cambiar el
+     `padding-bottom` del body a mitad de scroll ES un cambio de layout: valía
+     0,15 de CLS en Lighthouse. Ochenta píxeles de aire al final del pie cuestan
+     menos que eso. La barra es `position: fixed`, así que sin esta reserva
+     tapaba los enlaces legales. */
+  @media (width < 48rem) {
+    body {
+      padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+    }
+  }
+
+  body {
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: var(--text-base--line-height);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    /* El CTA fijo de móvil tapa el final de la página: se reserva su altura. */
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Feedback táctil.
+     El recuadro gris por defecto de iOS/Android sale con un retardo y encima
+     del elemento, así que se ve peor que el `:active` propio de cada botón,
+     que sí es inmediato. Se quita el recuadro, NO el feedback. */
+  a,
+  button,
+  [role="button"],
+  label,
+  summary,
+  input,
+  select,
+  textarea {
+    -webkit-tap-highlight-color: transparent;
+    /* Evita el retardo de 300 ms en navegadores que aún lo aplican. */
+    touch-action: manipulation;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: var(--font-weight-bold);
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Foco visible y consistente. Nunca quitar el outline sin sustituirlo. */
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-xs);
+  }
+
+  img, video, svg {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOVIMIENTO REDUCIDO — red de seguridad global
+   ═══════════════════════════════════════════════════════════════════════════
+   Cada animación se declara respetando la preferencia en su propio componente
+   (`useReducedMotion()` en las islas de React, media query en CSS). Esto es la
+   última línea de defensa por si algo se escapa: apaga TODO movimiento.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IDIOMA  (ver src/i18n/idioma.ts y src/components/i18n/T.astro)
+   ═══════════════════════════════════════════════════════════════════════════
+   Cada texto se renderiza en los dos idiomas y aquí se oculta el que no toca,
+   según el `lang` de <html>. Cambiar de idioma = cambiar un atributo:
+   instantáneo, sin recargar, sin perder el scroll y sin re-montar las islas.
+
+   `display: none` y no `visibility`/`clip`: el texto oculto debe salir también
+   del árbol de accesibilidad, o un lector de pantalla leería la página dos
+   veces, una en cada idioma.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html[lang="es"] [data-t="en"],
+html[lang="en"] [data-t="es"] {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ENTRADA AL SCROLL  (ver src/components/motion/Reveal.astro)
+   ═══════════════════════════════════════════════════════════════════════════
+   El estado oculto cuelga de `.js-reveal`, una clase que añade el propio
+   script. Sin JS —o si el script falla— nada se oculta y el contenido se ve.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.js-reveal [data-reveal] {
+  opacity: 0;
+  transform: translateY(var(--reveal-y, 24px));
+  transition:
+    opacity 550ms var(--ease-out-soft) var(--reveal-delay, 0ms),
+    transform 550ms var(--ease-out-soft) var(--reveal-delay, 0ms);
+  /* Aviso al navegador de qué va a cambiar, y solo mientras está pendiente. */
+  will-change: opacity, transform;
+}
+
+.js-reveal [data-reveal].reveal-visible {
+  opacity: 1;
+  transform: none;
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js-reveal [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UTILIDADES DE PROYECTO
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@utility container-page {
+  width: 100%;
+  max-width: var(--container-page);
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+
+  @media (width >= 40rem) {
+    padding-inline: 2rem;
+  }
+}
+
+/* Ritmo vertical. Tres pesos en vez de uno: si todas las secciones respiran
+   igual, la página se lee como una lista y no como un argumento. Las de
+   argumento (problema, resultados, precio) se abren; las de trámite
+   (garantía, FAQ) se aprietan. */
+@utility section-y {
+  padding-block: clamp(3.25rem, 2.2rem + 5vw, 6rem);
+}
+
+@utility section-y-lg {
+  padding-block: clamp(4.5rem, 2.8rem + 8vw, 8.5rem);
+}
+
+@utility section-y-sm {
+  padding-block: clamp(2.5rem, 1.9rem + 3vw, 4.25rem);
+}
+
+/* Solo para lectores de pantalla. */
+@utility sr-only-focusable {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+
+  &:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+  }
+}

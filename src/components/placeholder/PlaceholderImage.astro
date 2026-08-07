@@ -1,0 +1,30 @@
+---
+import Placeholder from "./Placeholder.astro";
+import type { Txt } from "@i18n/idioma";
+
+/**
+ * Hueco de una imagen que todavía no existe, con su proporción real para que
+ * el layout no se mueva cuando llegue el archivo definitivo.
+ */
+interface Props {
+  /** Qué imagen va aquí. */
+  label: Txt;
+  /** Proporción. "16/9", "4/5", "1/1"… */
+  ratio?: string;
+  /** Ruta esperada dentro de /public. */
+  ruta?: string;
+  /** Tamaño recomendado, p. ej. "1200×800 px". */
+  medidas?: Txt;
+  class?: string;
+}
+
+const { label, ratio = "16/10", ruta, medidas, class: className = "" } = Astro.props;
+---
+
+<Placeholder
+  label={label}
+  detalle={medidas}
+  ratio={ratio}
+  ruta={ruta}
+  class={className}
+/>

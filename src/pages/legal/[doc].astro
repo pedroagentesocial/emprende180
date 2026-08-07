@@ -1,0 +1,52 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import Header from "@components/Header.astro";
+import Footer from "@components/Footer.astro";
+import LegalArticle from "@components/legal/LegalArticle.astro";
+import { documentosPorSlug } from "@config/legal.config";
+import { sitio, copy } from "@config/curso.config";
+import { construirTxt } from "@i18n/idioma";
+import T from "@components/i18n/T.astro";
+
+/**
+ * Páginas legales completas — REALES e indexables.
+ *
+ * El modal de la landing es solo comodidad: sin JavaScript, con el enlace
+ * abierto en pestaña nueva o cuando alguien comparte la URL, esto es lo que se
+ * ve. Un documento legal que solo existe dentro de un modal no es citable ni
+ * archivable, y eso en un aviso de privacidad es un problema.
+ */
+export const prerender = false;
+
+const { doc: slug } = Astro.params;
+const doc = slug ? documentosPorSlug[slug] : undefined;
+
+if (!doc) {
+  return new Response(null, { status: 404, statusText: "Documento no encontrado" });
+}
+
+const tituloPagina = construirTxt((l) => `${doc.titulo[l]} · ${sitio.nombre}`);
+---
+
+<BaseLayout titulo={tituloPagina} descripcion={doc.resumen}>
+  <Header />
+
+  <main id="contenido" class="section-y">
+    <div class="container-page">
+      <div class="mx-auto max-w-read">
+        <a
+          href="/"
+          class="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-ink-brand hover:text-secondary-800"
+        >
+          <span aria-hidden="true">←</span> <T v={copy.ui.volverAInicio} />
+        </a>
+
+        <div class="mt-6">
+          <LegalArticle doc={doc} />
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>

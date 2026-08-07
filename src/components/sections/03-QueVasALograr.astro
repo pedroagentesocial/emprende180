@@ -1,0 +1,89 @@
+---
+import T from "@components/i18n/T.astro";
+import Section from "@components/ui/Section.astro";
+import SectionHeading from "@components/ui/SectionHeading.astro";
+import Reveal from "@components/motion/Reveal.astro";
+import Button from "@components/ui/Button.astro";
+import { curso, cta, copy } from "@config/curso.config";
+
+/**
+ * 03 · QUÉ VAS A LOGRAR — resultado, todavía NO temario.
+ *
+ * Aquí se vende la transformación, no el contenido. El lector no quiere ocho
+ * módulos, quiere saber vender. El temario viene después (sección 5) y su
+ * trabajo es otro: demostrar que la transformación tiene un plan detrás.
+ *
+ * SOBRE LA FORMA: esto era una rejilla de seis tarjetas iguales con un número
+ * en un círculo. Seis cajas idénticas se leen como una plantilla y, peor, se
+ * escanean mal: todo pesa igual, así que nada destaca. Ahora es una lista
+ * tipográfica de dos columnas donde el numeral es grande y el título hace el
+ * trabajo. Quien baja rápido se lleva el mensaje entero leyendo solo los seis
+ * titulares, que es exactamente lo que pide un bloque "skimmeable en 5
+ * segundos".
+ */
+---
+
+<Section id="resultados" ritmo="amplio" ariaLabel={copy.resultados.aria}>
+  <div class="grid gap-x-16 gap-y-12 lg:grid-cols-[minmax(0,26rem)_1fr]">
+    <!-- Cabecera fija mientras la lista pasa al lado. -->
+    <div class="lg:sticky lg:top-28 lg:self-start">
+      <SectionHeading
+        titulo={copy.resultados.titulo}
+        entradilla={copy.resultados.entradilla}
+      />
+
+      <Reveal delay={0.1}>
+        <div class="mt-8 hidden lg:block">
+          <Button
+            href={cta.secundario.href}
+            variant="primary"
+            size="lg"
+            trackId="resultados"
+          >
+            <T v={cta.secundario.texto} />
+          </Button>
+        </div>
+      </Reveal>
+    </div>
+
+    <ol class="grid gap-px overflow-hidden rounded-2xl bg-line sm:grid-cols-2">
+      {
+        curso.transformaciones.map((t, i) => (
+          <Reveal as="li" delay={i * 0.05} class="bg-surface">
+            <div class="h-full p-6 sm:p-7">
+              {/* Decorativo: el orden ya lo da el <ol>, por eso va oculto a
+                  lectores de pantalla. Aun así usa teal-600 y no el 200: a
+                  1.46:1 no se veía, y el 500 se quedaba en 2.98:1 cuando el
+                  texto grande necesita 3:1. Con el 600 pasa y sigue leyéndose
+                  como acento, no como titular. */}
+              <span
+                aria-hidden="true"
+                class="block text-4xl font-extrabold leading-none tracking-tight text-secondary-600"
+              >
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <h3 class="mt-4 text-lg font-bold text-balance text-ink">
+                <T v={t.titulo} />
+              </h3>
+              <p class="mt-2 text-base text-pretty text-ink-muted">
+                <T v={t.detalle} />
+              </p>
+            </div>
+          </Reveal>
+        ))
+      }
+    </ol>
+
+    <Reveal class="lg:hidden">
+      <Button
+        href={cta.secundario.href}
+        variant="primary"
+        size="lg"
+        trackId="resultados"
+        block
+      >
+        <T v={cta.secundario.texto} />
+      </Button>
+    </Reveal>
+  </div>
+</Section>

@@ -1,0 +1,270 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   EMPRENDE180 — TOKENS DE IDENTIDAD
+   ═══════════════════════════════════════════════════════════════════════════
+
+   PROCEDENCIA. Todo lo cromático de este archivo sale de dos fuentes reales
+   que están en `public/identidad/`:
+
+     · `identidad emprende.png` — la guía de marca. Declara la paleta con sus
+       HEX literales bajo "PALETA DE COLORES", y la tipografía (Montserrat).
+     · `empren de logo copia.png` / `favicon emprende.png` — el logo. Se
+       muestrearon sus píxeles dominantes para verificar que coinciden con los
+       HEX declarados. Coinciden: el navy del logo cae en #082D5D–#0A2A4C y el
+       teal en #0DA7A9–#04A39F, agrupándose alrededor de los valores de la guía
+       (la dispersión es compresión del PNG, no otro color).
+
+   Los 4 colores de marca, tal cual los declara la guía:
+
+     #0D2B4D  navy       → primary-900   oklch(0.287 0.0718 253.9)
+     #11A79D  teal       → secondary-500  oklch(0.657 0.1122 187.2)
+     #A7E1DA  teal claro → secondary-200  oklch(0.868 0.0599 186.9)
+     #F2F4F7  off-white  → neutral-100    oklch(0.966 0.0045 258.3)
+
+   Esos cuatro pasos son EXACTOS. El resto de cada rampa está interpolado en
+   OKLCH manteniendo el tono fijo y modulando luminosidad y croma, de modo que
+   los pasos intermedios son de la misma familia y no colores nuevos.
+
+   SOBRE EL "ACENTO". La guía define dos tonos (navy 254° y teal 187°) más dos
+   neutros. NO hay un tercer color de marca, así que no se ha inventado
+   ninguno: `--color-accent-*` apunta al teal, que es el color de acción de la
+   marca (el "180", la barra "ACTÚA CON PROPÓSITO", el degradado del cerebro).
+   Si algún día hace falta un color de urgencia propio para precio/escasez, se
+   añade aquí y solo aquí.
+
+   CONTRASTE. Cada par de uso real está verificado contra WCAG 2.1 AA. Dos
+   pasos se apartaron de la interpolación limpia justo por eso, y están
+   marcados abajo. No cambies esas luminosidades sin volver a medir.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@theme {
+  /* ─── PRIMARIO · NAVY ──────────────────────────────────────────────────────
+     De la guía: #0D2B4D. Es el color del logotipo y del texto de marca.
+     Al ser oscuro, ancla de forma natural en el paso 900, no en el 500.
+     Uso: texto, secciones oscuras, superficies invertidas. */
+  --color-primary-50: oklch(0.972 0.0069 253.9); /* #F3F6FA */
+  --color-primary-100: oklch(0.938 0.0069 253.9); /* #E7EBEF */
+  --color-primary-200: oklch(0.88 0.012 253.9); /* #D2D8DF */
+  --color-primary-300: oklch(0.805 0.05 253.9); /* #AAC2E0 */
+  --color-primary-400: oklch(0.69 0.077 253.9); /* #7A9ECB */
+  --color-primary-500: oklch(0.575 0.0979 253.9); /* #4E7BB1 */
+  --color-primary-600: oklch(0.47 0.115 253.9); /* #265C99 */
+  --color-primary-700: oklch(0.385 0.1006 253.9); /* #164478 */
+  --color-primary-800: oklch(0.33 0.088 253.9); /* #0E3661 */
+  --color-primary-900: oklch(0.287 0.0718 253.9); /* #0D2B4D ← guía de marca */
+  --color-primary-950: oklch(0.205 0.0719 253.9); /* #001637 */
+
+  /* ─── SECUNDARIO · TEAL ────────────────────────────────────────────────────
+     De la guía: #11A79D (paso 500) y #A7E1DA (paso 200).
+     Es el color de acción de la marca → es el color del CTA. */
+  --color-secondary-50: oklch(0.978 0.0081 187.2); /* #F2FAF9 */
+  --color-secondary-100: oklch(0.95 0.0081 187.2); /* #E9F0EF */
+  --color-secondary-200: oklch(0.868 0.0599 186.9); /* #A7E1DA ← guía de marca */
+  --color-secondary-300: oklch(0.8 0.0788 187.2); /* #80CFC6 */
+  --color-secondary-400: oklch(0.73 0.1104 187.2); /* #3FBEB3 */
+  --color-secondary-500: oklch(0.657 0.1122 187.2); /* #11A79D ← guía de marca */
+  /* 600: L bajada a 0.548 (de 0.575) para que el texto blanco encima llegue a
+     4.69:1. Con 0.575 se quedaba en 4.17:1 y no pasaba AA. Es el fondo del CTA
+     primario: este número no se toca sin volver a medir. */
+  --color-secondary-600: oklch(0.548 0.0949 187.2); /* #04827A */
+  --color-secondary-700: oklch(0.462 0.08 187.2); /* #026760 */
+  --color-secondary-800: oklch(0.39 0.0673 187.2); /* #02504B */
+  --color-secondary-900: oklch(0.325 0.0583 187.2); /* #003D39 */
+  --color-secondary-950: oklch(0.235 0.0444 187.2); /* #002522 */
+
+  /* ─── ACENTO ───────────────────────────────────────────────────────────────
+     La marca no tiene un tercer tono. El acento ES el teal — ver la nota de la
+     cabecera. Se mantiene el nombre para que el rol quede explícito en el
+     código: `bg-accent-600` se lee como "esto es la acción". */
+  --color-accent-50: var(--color-secondary-50);
+  --color-accent-100: var(--color-secondary-100);
+  --color-accent-200: var(--color-secondary-200);
+  --color-accent-300: var(--color-secondary-300);
+  --color-accent-400: var(--color-secondary-400);
+  --color-accent-500: var(--color-secondary-500);
+  --color-accent-600: var(--color-secondary-600);
+  --color-accent-700: var(--color-secondary-700);
+  --color-accent-800: var(--color-secondary-800);
+  --color-accent-900: var(--color-secondary-900);
+  --color-accent-950: var(--color-secondary-950);
+
+  /* ─── NEUTRALES ────────────────────────────────────────────────────────────
+     Anclados en el #F2F4F7 de la guía y tintados con el tono del navy (253.9°)
+     con croma muy bajo. Así los grises "pertenecen" a la marca en vez de ser
+     grises de fábrica. */
+  --color-neutral-0: oklch(1 0 0); /* #FFFFFF */
+  --color-neutral-50: oklch(0.985 0.0008 253.9); /* #FAFAFB */
+  --color-neutral-100: oklch(0.966 0.0045 258.3); /* #F2F4F7 ← guía de marca */
+  --color-neutral-200: oklch(0.925 0.0061 253.9); /* #E3E6EA */
+  --color-neutral-300: oklch(0.872 0.0107 253.9); /* #D0D5DC */
+  /* 400: L bajada a 0.638 (de 0.715) porque es el borde de los inputs y
+     WCAG 1.4.11 exige 3:1 contra el fondo en controles de interfaz.
+     Ahora da 3.39:1 sobre blanco y 3.08:1 sobre #F2F4F7. */
+  --color-neutral-400: oklch(0.638 0.014 253.9); /* #868C94 */
+  /* 500: L bajada a 0.51 (de 0.565). Es `--color-ink-subtle`, y a 0.565 solo
+     pasaba AA sobre blanco puro (4.58:1): sobre `surface-muted` caía a 4.15:1
+     y sobre `surface-sunken` a 3.65:1, que es donde de verdad se usa. Ahora da
+     5.71 / 5.18 / 4.56 respectivamente. Lo detectó Lighthouse, no la vista. */
+  --color-neutral-500: oklch(0.51 0.0115 253.9); /* #62676D */
+  --color-neutral-600: oklch(0.45 0.0094 253.9); /* #52565A */
+  --color-neutral-700: oklch(0.378 0.0076 253.9); /* #3F4246 */
+  --color-neutral-800: oklch(0.288 0.0061 253.9); /* #292B2E */
+  --color-neutral-900: oklch(0.222 0.0047 253.9); /* #1A1B1D */
+  --color-neutral-950: oklch(0.155 0.0041 253.9); /* #0B0C0E */
+
+  /* ─── ESTADOS ──────────────────────────────────────────────────────────────
+     No salen de la guía: verde/rojo son convención universal y cambiarlos por
+     colores de marca haría que un error no se leyera como un error. Sí están
+     desaturados y ajustados en luminosidad para convivir con navy y teal. */
+  --color-success-50: oklch(0.973 0.0132 159.9); /* #EFF9F3 */
+  --color-success-500: oklch(0.621 0.1567 152); /* #18A054 */
+  --color-success-600: oklch(0.557 0.1424 151.5); /* #128A46 */
+  --color-success-700: oklch(0.509 0.1304 151.5); /* #0F7A3D — 5.42:1 s/ blanco */
+
+  --color-error-50: oklch(0.97 0.0119 11); /* #FDF2F3 */
+  --color-error-500: oklch(0.608 0.2025 21.4); /* #E23B49 */
+  --color-error-600: oklch(0.537 0.2011 23.7); /* #C81E2E — 5.70:1 en ambos sentidos */
+  --color-error-700: oklch(0.461 0.173 23.5); /* #A31624 */
+
+  --color-warning-50: oklch(0.981 0.0171 84.6); /* #FEF8EC */
+  --color-warning-500: oklch(0.699 0.1501 69.1); /* #D98A0B */
+  --color-warning-600: oklch(0.614 0.133 67.4); /* #B87209 */
+  /* 700: es el color del texto de los avisos `[COMPLETAR: …]` sobre
+     `warning-50`. Con el 600 la combinación daba 3.64:1 y no pasaba AA; con
+     este da 4.94:1 sobre el ámbar y 5.23:1 sobre blanco. */
+  --color-warning-700: oklch(0.54 0.115 67.4); /* #9A5F0C */
+
+  /* ─── SEMÁNTICOS ───────────────────────────────────────────────────────────
+     Los componentes usan ESTOS, nunca las rampas de arriba y nunca un HEX.
+     Al vivir en @theme, Tailwind genera la utilidad sola:
+       --color-surface-muted  →  bg-surface-muted
+       --color-ink-muted      →  text-ink-muted
+       --color-line           →  border-line
+     Contraste medido de cada par de uso real, entre paréntesis. */
+
+  /* Fondos */
+  --color-surface: var(--color-neutral-0);
+  --color-surface-muted: var(--color-neutral-100); /* #F2F4F7 de la guía */
+  --color-surface-sunken: var(--color-neutral-200);
+  --color-surface-inverse: var(--color-primary-900); /* navy de marca */
+
+  /* Texto. "ink" y no "text" para que la utilidad sea `text-ink`. */
+  --color-ink: var(--color-primary-900); /* 14.29:1 sobre blanco */
+  --color-ink-muted: var(--color-neutral-600); /* 7.40:1 */
+  --color-ink-subtle: var(--color-neutral-500); /* 4.58:1 */
+  --color-ink-inverse: var(--color-neutral-0); /* 14.29:1 sobre navy */
+  --color-ink-brand: var(--color-secondary-700); /* 6.75:1 */
+  --color-ink-on-inverse-brand: var(--color-secondary-300); /* 7.93:1 sobre navy */
+
+  /* Bordes y foco */
+  --color-line: var(--color-neutral-200); /* divisorias decorativas */
+  --color-line-strong: var(--color-neutral-400); /* bordes de control, 3.39:1 */
+  --color-focus: var(--color-secondary-600); /* 4.69:1 sobre blanco */
+  --color-focus-inverse: var(--color-secondary-300); /* 7.93:1 sobre navy */
+
+  /* Acción. Un único color de CTA en toda la página. */
+  --color-cta: var(--color-secondary-600); /* blanco encima: 4.69:1 */
+  --color-cta-hover: var(--color-secondary-700); /* blanco encima: 6.75:1 */
+
+  /* ─── TIPOGRAFÍA ───────────────────────────────────────────────────────────
+     La guía especifica MONTSERRAT (Bold / SemiBold / Regular / Light).
+     Se sirve autoalojada con @fontsource-variable/montserrat: sin petición a
+     un tercero, sin bloqueo de render y sin fuga de IP de los visitantes. */
+  --font-sans: "Montserrat Variable", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji";
+  --font-display: var(--font-sans);
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Escala tipográfica — mobile-first. Los titulares usan clamp() para crecer
+     con el viewport sin media queries. */
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.4;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.5;
+  --text-base: 1rem;
+  --text-base--line-height: 1.65; /* generoso: se lee en pantalla pequeña */
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.6;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.5;
+  --text-2xl: clamp(1.5rem, 1.35rem + 0.75vw, 1.875rem);
+  --text-2xl--line-height: 1.3;
+  --text-3xl: clamp(1.75rem, 1.5rem + 1.25vw, 2.25rem);
+  --text-3xl--line-height: 1.2;
+  --text-4xl: clamp(2rem, 1.6rem + 2vw, 3rem);
+  --text-4xl--line-height: 1.15;
+  --text-5xl: clamp(2.5rem, 1.9rem + 3vw, 3.75rem);
+  --text-5xl--line-height: 1.05;
+  --text-hero: clamp(2.25rem, 1.5rem + 3.75vw, 4.5rem);
+  --text-hero--line-height: 1.02;
+  --text-hero--letter-spacing: -0.025em;
+
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+  /* ─── RADIOS ───────────────────────────────────────────────────────────────
+     El logotipo es de trazo redondeado (remates circulares en la bombilla y el
+     cerebro) y los patrones gráficos de la guía son arcos y puntos. La marca
+     pide curvas generosas, no esquinas duras. */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.75rem;
+  --radius-3xl: 2.25rem;
+  --radius-full: 9999px;
+
+  /* ─── SOMBRAS ──────────────────────────────────────────────────────────────
+     Tintadas con el tono del navy en vez de negro puro: la sombra "pertenece"
+     a la paleta y no ensucia. Cuesta lo mismo que una sombra gris. */
+  --shadow-xs: 0 1px 2px 0 oklch(0.287 0.0718 253.9 / 0.06);
+  --shadow-sm: 0 1px 3px 0 oklch(0.287 0.0718 253.9 / 0.1),
+    0 1px 2px -1px oklch(0.287 0.0718 253.9 / 0.08);
+  --shadow-md: 0 4px 6px -1px oklch(0.287 0.0718 253.9 / 0.1),
+    0 2px 4px -2px oklch(0.287 0.0718 253.9 / 0.08);
+  --shadow-lg: 0 10px 15px -3px oklch(0.287 0.0718 253.9 / 0.12),
+    0 4px 6px -4px oklch(0.287 0.0718 253.9 / 0.1);
+  --shadow-xl: 0 20px 25px -5px oklch(0.287 0.0718 253.9 / 0.14),
+    0 8px 10px -6px oklch(0.287 0.0718 253.9 / 0.1);
+  /* Sombra del CTA: tintada con el TEAL, no con el navy. El botón parece
+     emitir su propio color en vez de flotar sobre una mancha gris. */
+  --shadow-cta: 0 8px 24px -8px oklch(0.548 0.0949 187.2 / 0.55);
+  --shadow-cta-hover: 0 12px 28px -8px oklch(0.548 0.0949 187.2 / 0.65);
+  --shadow-sticky: 0 -4px 20px -6px oklch(0.287 0.0718 253.9 / 0.22);
+
+  /* ─── ESPACIADO Y LAYOUT ───────────────────────────────────────────────── */
+  --spacing: 0.25rem;
+
+  --container-read: 42rem; /* ~68 caracteres por línea */
+  --container-page: 72rem;
+
+  /* Objetivo táctil mínimo: 44 px (Apple HIG / WCAG 2.5.5) = `min-h-11`.
+     Ningún elemento pulsable debe quedar por debajo. */
+
+  /* ─── MOVIMIENTO ───────────────────────────────────────────────────────────
+     Todas las animaciones se apagan bajo `prefers-reduced-motion: reduce`
+     (ver global.css). Estos tokens definen el carácter del movimiento.
+
+     Solo curvas de SALIDA exponenciales: el movimiento arranca rápido y frena.
+     No hay rebote ni elástico en ninguna parte: se leen como plantilla de 2018
+     y, en una página de venta, distraen del texto justo cuando se está
+     leyendo. (Había un `--ease-spring` con sobreimpulso; eliminado.) */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1); /* quart, el de uso general */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1); /* frenada más larga */
+  --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 450ms;
+
+  /* ─── CAPAS ────────────────────────────────────────────────────────────── */
+  --z-sticky-cta: 40;
+  --z-header: 50;
+  --z-modal: 60;
+}

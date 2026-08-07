@@ -1,0 +1,84 @@
+---
+import T from "@components/i18n/T.astro";
+import Section from "@components/ui/Section.astro";
+import SectionHeading from "@components/ui/SectionHeading.astro";
+import Reveal from "@components/motion/Reveal.astro";
+import Accordion from "@components/ui/Accordion";
+import { faqs, contacto, copy } from "@config/curso.config";
+import { resolverIdiomaServidor } from "@i18n/idioma";
+import { faltaPorRellenar } from "@lib/pendientes";
+import { LOCALES } from "@i18n/idioma";
+
+/**
+ * 10 · FAQ — la última duda.
+ *
+ * No es documentación: cada pregunta tiene que corresponder a un motivo real
+ * por el que alguien NO compra (tiempo, dinero, nivel, país, acceso, soporte).
+ * Si una pregunta no desactiva una objeción, sobra.
+ *
+ * Va después del precio porque las objeciones que quedan vivas a estas alturas
+ * son justo las que nacen al ver la cifra.
+ *
+ * El JSON-LD de tipo FAQPage se emite solo cuando las respuestas son reales:
+ * marcar como FAQ un texto placeholder es pedirle a Google que indexe basura.
+ */
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+const hayPlaceholders = faqs.some((f) => faltaPorRellenar(f.respuesta));
+
+const schemaFaq = hayPlaceholders
+  ? null
+  : {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      // El JSON-LD se emite SOLO en el idioma servido: mezclar dos idiomas
+      // en el mismo bloque no es válido.
+      inLanguage: LOCALES[lang],
+      mainEntity: faqs.map((f) => ({
+        "@type": "Question",
+        name: f.pregunta[lang],
+        acceptedAnswer: { "@type": "Answer", text: f.respuesta[lang] },
+      })),
+    };
+---
+
+<Section id="faq" tono="muted" ritmo="compacto" ariaLabel={copy.faq.aria}>
+  <SectionHeading
+    align="start"
+    class="mx-auto"
+    titulo={copy.faq.titulo}
+  />
+
+  <div class="mx-auto mt-10 max-w-read">
+    <Reveal>
+      <Accordion client:visible lang={lang} items={faqs} />
+    </Reveal>
+
+    <Reveal delay={0.1}>
+      <p class="mt-8 text-center text-base text-ink-muted">
+        <T v={copy.faq.dudaAntes} />{" "}
+        <a
+          href={`mailto:${contacto.email}`}
+          class="font-semibold text-ink-brand underline underline-offset-4 hover:text-secondary-800"
+        >
+          {contacto.email}
+        </a>{" "}
+        <T v={copy.faq.dudaDespues} />
+      </p>
+    </Reveal>
+
+    {
+      hayPlaceholders && (
+        <p class="mt-6 rounded-lg border-2 border-dashed border-line-strong bg-surface px-4 py-3 text-center text-sm font-medium text-ink-muted">
+          ⚠ <T v={copy.faq.avisoPlaceholder} />
+        </p>
+      )
+    }
+  </div>
+
+  {schemaFaq && <script type="application/ld+json" set:html={JSON.stringify(schemaFaq)} is:inline />}
+</Section>
