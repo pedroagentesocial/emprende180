@@ -25,7 +25,7 @@ Cuatro cosas. Si falta la primera, no sirve de nada.
 
 ---
 
-## Las tres preguntas que hay que hacer
+## Las cuatro preguntas que hay que hacer
 
 No preguntes «¿qué te pareció el curso?». Esa pregunta produce elogios, y los
 elogios no venden. Pregunta esto, en este orden:
@@ -33,9 +33,22 @@ elogios no venden. Pregunta esto, en este orden:
 1. ¿Dónde estabas antes de empezar? ¿Qué llevabas intentando y qué no te salía?
 2. ¿Qué conseguiste, en concreto? ¿En cuánto tiempo?
 3. ¿Qué le dirías a alguien que está hoy donde estabas tú?
+4. **¿Hay algo más que quieras contar, que no te haya preguntado?**
 
 Si la respuesta a la 2 no tiene un número ni un plazo, vuelve a preguntar:
 «¿cuántos?», «¿cuándo?», «¿cuánto cobraste?».
+
+### Por qué la cuarta va siempre
+
+Las tres primeras son cerradas: sabes qué quieres sacar y las haces para
+sacarlo. El riesgo de eso es que solo recoges lo que ya se te había ocurrido
+preguntar.
+
+La cuarta no dirige a ningún sitio, y por eso es donde aparece lo que no sabías
+que estaba ahí: la objeción que no habías previsto, la parte del curso que
+funciona por un motivo distinto al que tú creías, la frase suelta que resulta
+ser mejor titular que cualquiera de los tuyos. Cuesta una línea y suele ser de
+donde sale el mejor material. **No la quites nunca**, aunque tengas prisa.
 
 ---
 
@@ -44,12 +57,13 @@ Si la respuesta a la 2 no tiene un número ni un plazo, vuelve a preguntar:
 > Hola [nombre]:
 >
 > Estoy armando la página de Fundamentos de Emprende180 y quiero poner casos
-> reales, no frases genéricas. ¿Me ayudas con tres respuestas cortas? Con dos o
-> tres líneas cada una me sobra.
+> reales, no frases genéricas. ¿Me ayudas con cuatro respuestas cortas? Con dos
+> o tres líneas cada una me sobra.
 >
 > 1. ¿Dónde estabas antes de empezar el curso?
 > 2. ¿Qué conseguiste en concreto, y en cuánto tiempo?
 > 3. ¿Qué le dirías a alguien que está hoy donde estabas tú?
+> 4. ¿Hay algo más que quieras contar, que no te haya preguntado?
 >
 > Si te parece bien, publicaría tu respuesta con tu nombre y apellido, a qué te
 > dedicas, tu ciudad y una foto tuya. Respóndeme «sí, pueden publicarlo con mi
@@ -63,12 +77,13 @@ Si la respuesta a la 2 no tiene un número ni un plazo, vuelve a preguntar:
 > Hi [name],
 >
 > I'm putting together the Fundamentos de Emprende180 page and I want real
-> cases on it, not generic praise. Could you answer three quick questions? Two
+> cases on it, not generic praise. Could you answer four quick questions? Two
 > or three lines each is plenty.
 >
 > 1. Where were you before you started the course?
 > 2. What did you actually achieve, and how long did it take?
 > 3. What would you say to someone who is where you were?
+> 4. Anything else you'd want to add that I didn't ask about?
 >
 > If you're happy with it, I'd publish your answer with your full name, what you
 > do, your city and a photo. Just reply "yes, you can publish this with my name
@@ -90,7 +105,12 @@ arrepiente, retíralo el mismo día.
 
 ## Cómo se ve uno bueno
 
-Estos dos son **inventados** y están aquí como molde, no para publicarlos:
+Hay seis escritos en `testimoniosMuestra` (`src/config/curso.config.ts`) que
+sirven de molde y que puedes ver moviéndose en el carrusel con `npm run dev`.
+**No son alumnos reales y no se publican nunca**: el código los descarta al
+compilar para producción.
+
+Dos de ellos, para tenerlos a mano:
 
 > **Daniela Restrepo** · Repostería por encargo · Medellín
 > *Primer cliente en la semana 6*

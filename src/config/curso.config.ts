@@ -1354,6 +1354,24 @@ export const copy = {
       es: "Testimonios pendientes. No se ha inventado ninguno a propósito: pídeselos a alumnos reales, con permiso por escrito. En el comentario de `testimonios` tienes qué preguntar y qué recolectar.",
       en: "Testimonials pending. None were invented, deliberately: ask real students, with written permission. The comment on `testimonios` tells you what to ask for.",
     },
+    avisoMuestra: {
+      es: "SOLO EN DESARROLLO. Estas seis tarjetas son una muestra de maquetación para poder ver el carrusel: no son alumnos reales y no se publican. Sustituye `testimonios` por citas reales y el carrusel pasa a usarlas.",
+      en: "DEV ONLY. These six cards are layout samples so the carousel can be seen: they are not real students and they never ship. Replace `testimonios` with real quotes and the carousel switches to them.",
+    },
+
+    /** Controles del carrusel. Los lee un lector de pantalla, así que van en el
+     *  idioma de la página como cualquier otro texto. */
+    carrusel: {
+      etiqueta: { es: "Testimonios de alumnos", en: "Student testimonials" },
+      rol: { es: "carrusel", en: "carousel" },
+      anterior: { es: "Testimonio anterior", en: "Previous testimonial" },
+      siguiente: { es: "Testimonio siguiente", en: "Next testimonial" },
+      /** `{n}` de `{total}`, para el aria-label de cada tarjeta. */
+      posicion: { es: "{n} de {total}", en: "{n} of {total}" },
+      irA: { es: "Ir al testimonio {n}", en: "Go to testimonial {n}" },
+      pausar: { es: "Pausar el avance automático", en: "Pause auto-advance" },
+      reanudar: { es: "Reanudar el avance automático", en: "Resume auto-advance" },
+    },
 
     /**
      * QUÉ SE ENSEÑA MIENTRAS NO HAY TESTIMONIOS REALES.

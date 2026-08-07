@@ -3,8 +3,15 @@ import T from "@components/i18n/T.astro";
 import Section from "@components/ui/Section.astro";
 import SectionHeading from "@components/ui/SectionHeading.astro";
 import Reveal from "@components/motion/Reveal.astro";
+import { TestimoniosCarrusel } from "@components/motion/TestimoniosCarrusel";
 import { testimonios, cifras, copy, curso, garantia } from "@config/curso.config";
-import { construirTxt } from "@i18n/idioma";
+/* En su propio módulo, y no dentro de `curso.config`, para que Rollup pueda
+   descartarlo entero del build de producción: allí `usandoMuestra` se pliega a
+   `false` al compilar, la referencia desaparece y con ella el import. Que las
+   seis citas de maquetación ni siquiera existan en el servidor publicado es más
+   garantía que cualquier comentario de aviso. */
+import { testimoniosMuestra } from "@config/testimonios.muestra";
+import { construirTxt, resolverIdiomaServidor } from "@i18n/idioma";
 import { faltaPorRellenar } from "@lib/pendientes";
 import { formatNumber, formatMoney, interpolar } from "@i18n/formato";
 
@@ -12,33 +19,55 @@ import { formatNumber, formatMoney, interpolar } from "@i18n/formato";
  * 07 · PRUEBA SOCIAL — «¿le funciona a gente como yo?»
  *
  * El instructor ya dijo que funciona; aquí lo dicen terceros, que es lo que
- * pesa de verdad.
+ * pesa de verdad. Y lo que convierte no son los elogios ("muy buen curso, lo
+ * recomiendo") sino los RESULTADOS con contexto: de dónde partía esa persona y
+ * a dónde llegó. El lector busca a alguien que empezaba donde empieza él.
  *
- * Lo que convierte no son los elogios ("muy buen curso, lo recomiendo") sino
- * los RESULTADOS con contexto: de dónde partía esa persona y a dónde llegó. El
- * lector busca a alguien que empezaba donde empieza él.
+ * ⚠ CERO TESTIMONIOS INVENTADOS EN PRODUCCIÓN.
  *
- * ⚠ CERO TESTIMONIOS INVENTADOS.
+ * LA SECCIÓN TIENE TRES ESTADOS Y ELIGE SOLA
+ * ──────────────────────────────────────────
+ *   1. `testimonios` con citas reales  → carrusel con esas citas. Publicado.
+ *   2. Sin citas reales, en desarrollo → carrusel con `testimoniosMuestra`,
+ *      seis tarjetas de maquetación, con un aviso encima. Sirve para ver y
+ *      ajustar el carrusel sin esperar a tener alumnos. NO se publica.
+ *   3. Sin citas reales, publicado     → el bloque "todavía no hay
+ *      testimonios", que dice la verdad y la convierte en el argumento del
+ *      precio de lanzamiento.
  *
- * LA SECCIÓN TIENE DOS ESTADOS, y elige sola:
+ * El estado 3 existe porque las dos alternativas son peores: dejar tarjetas
+ * vacías con `[COMPLETAR:]` a la vista deja la página a medio hacer justo donde
+ * el lector decide si se fía, e inventarse las citas es publicidad engañosa
+ * (FTC 16 CFR 465 en EE. UU., PROFECO en México) además de notarse.
  *
- *   · Con testimonios reales en el config → la rejilla de tarjetas de siempre.
- *   · Sin ellos → el bloque "todavía no hay testimonios", que dice la verdad y
- *     la convierte en argumento (ver `copy.pruebaSocial.fundador`).
- *
- * Antes, sin testimonios, salían tres tarjetas de borde punteado con el texto
- * `[COMPLETAR:]` a la vista de cualquier visitante. Eso resuelve el problema
- * interno (no se publica un dato falso sin darse cuenta) creando uno peor: la
- * página parece a medio hacer justo en la sección donde el lector decide si se
- * fía. El estado alternativo cubre los dos: nada inventado y nada sin acabar.
- *
- * En cuanto `testimonios` tenga citas reales esto vuelve solo a la rejilla.
+ * La frontera entre el 2 y el 3 es `import.meta.env.DEV`, que se evalúa al
+ * compilar: las tarjetas de muestra ni siquiera llegan al bundle de producción.
+ * No depende de que nadie se acuerde de quitar nada.
  */
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
 
 /* Basta con que UNO de los dos idiomas siga en placeholder para dar la sección
    por vacía: publicar con el español real y el inglés sin traducir es justo el
    fallo que esta comprobación existe para evitar. */
-const sinTestimonios = testimonios.some((x) => faltaPorRellenar(x.cita));
+const hayReales = !testimonios.some((x) => faltaPorRellenar(x.cita));
+
+/* `import.meta.env.DEV` va PRIMERO en las dos expresiones, y en la de `lista`
+   va literal en vez de a través de la variable. Vite lo sustituye por `false`
+   al compilar, así que en producción quedan `false && …` y `false ? … : []`,
+   que Rollup sí pliega. Escrito al revés (`!hayReales && import.meta.env.DEV`)
+   no los plegaba, y las seis citas de muestra acababan dentro de la función
+   del servidor: muertas y sin poder renderizarse, pero ahí. */
+const usandoMuestra = import.meta.env.DEV && !hayReales;
+
+const lista = hayReales
+  ? testimonios
+  : import.meta.env.DEV
+    ? testimoniosMuestra
+    : [];
 
 /* Los números también se localizan: el separador de miles lo decide el locale,
    no un `toLocaleString("es")` fijo que dejaba la cifra en español aunque la
@@ -47,15 +76,6 @@ const numAlumnos = construirTxt((l) => formatNumber(cifras.alumnos, l));
 const numValoraciones = construirTxt((l) =>
   formatNumber(cifras.numeroValoraciones, l),
 );
-
-/** Iniciales para cuando no hay foto. Mejor eso que un avatar de stock. */
-const iniciales = (nombre: string) =>
-  nombre
-    .split(" ")
-    .slice(0, 2)
-    .map((p) => p[0] ?? "")
-    .join("")
-    .toUpperCase();
 
 /* ── Estado "todavía no hay testimonios" ───────────────────────────────────
    Los tres puntos citan cifras que ya viven en el config (precio, garantía,
@@ -79,7 +99,61 @@ const puntos = fundador.puntos.map((p) => ({
 
 <Section id="testimonios" tono="muted" ariaLabel={copy.pruebaSocial.aria}>
   {
-    sinTestimonios ? (
+    lista.length > 0 ? (
+      <>
+        <SectionHeading align="center" titulo={copy.pruebaSocial.titulo} />
+
+        {cifras.sonReales && (
+          <Reveal>
+            <dl class="mx-auto mt-10 grid max-w-2xl grid-cols-2 gap-6 sm:grid-cols-3">
+              <div class="text-center">
+                <dt class="text-sm text-ink-muted">
+                  <T v={copy.pruebaSocial.etiquetaAlumnos} />
+                </dt>
+                <dd class="text-3xl font-extrabold text-ink">
+                  <T v={numAlumnos} />
+                </dd>
+              </div>
+              <div class="text-center">
+                <dt class="text-sm text-ink-muted">
+                  <T v={copy.pruebaSocial.etiquetaValoracion} />
+                </dt>
+                <dd class="text-3xl font-extrabold text-ink">
+                  {cifras.valoracionMedia}
+                  <span class="text-lg text-ink-subtle">/5</span>
+                </dd>
+              </div>
+              <div class="col-span-2 text-center sm:col-span-1">
+                <dt class="text-sm text-ink-muted">
+                  <T v={copy.pruebaSocial.etiquetaNumValoraciones} />
+                </dt>
+                <dd class="text-3xl font-extrabold text-ink">
+                  <T v={numValoraciones} />
+                </dd>
+              </div>
+            </dl>
+          </Reveal>
+        )}
+
+        {usandoMuestra && (
+          <p class="mx-auto mt-8 max-w-read rounded-lg border-2 border-dashed border-line-strong bg-surface px-4 py-3 text-center text-sm font-medium text-ink-muted">
+            ⚠ <T v={copy.pruebaSocial.avisoMuestra} />
+          </p>
+        )}
+
+        {/* `client:visible`: el carrusel está a media página y no hace falta
+            que su JS compita con el LCP. Hasta que hidrata, la pista ya es
+            desplazable con el dedo porque el scroll es nativo. */}
+        <Reveal>
+          <TestimoniosCarrusel
+            client:visible
+            items={lista}
+            etiquetas={copy.pruebaSocial.carrusel}
+            lang={lang}
+          />
+        </Reveal>
+      </>
+    ) : (
       <>
         <SectionHeading
           align="center"
@@ -119,109 +193,6 @@ const puntos = fundador.puntos.map((p) => ({
             <T v={fundador.remate} />
           </p>
         </Reveal>
-
-        {/* Recordatorio para quien edita el sitio, NO para quien lo visita.
-            Solo en desarrollo: en producción el bloque de arriba ya es una
-            sección terminada, y un aviso ámbar encima solo confundiría. */}
-        {import.meta.env.DEV && (
-          <p class="mx-auto mt-8 max-w-read rounded-lg border-2 border-dashed border-line-strong bg-surface px-4 py-3 text-center text-sm font-medium text-ink-muted">
-            ⚠ <T v={copy.pruebaSocial.avisoPlaceholder} />
-          </p>
-        )}
-      </>
-    ) : (
-      <>
-        <SectionHeading align="center" titulo={copy.pruebaSocial.titulo} />
-
-        {cifras.sonReales && (
-          <Reveal>
-            <dl class="mx-auto mt-10 grid max-w-2xl grid-cols-2 gap-6 sm:grid-cols-3">
-              <div class="text-center">
-                <dt class="text-sm text-ink-muted">
-                  <T v={copy.pruebaSocial.etiquetaAlumnos} />
-                </dt>
-                <dd class="text-3xl font-extrabold text-ink">
-                  <T v={numAlumnos} />
-                </dd>
-              </div>
-              <div class="text-center">
-                <dt class="text-sm text-ink-muted">
-                  <T v={copy.pruebaSocial.etiquetaValoracion} />
-                </dt>
-                <dd class="text-3xl font-extrabold text-ink">
-                  {cifras.valoracionMedia}
-                  <span class="text-lg text-ink-subtle">/5</span>
-                </dd>
-              </div>
-              <div class="col-span-2 text-center sm:col-span-1">
-                <dt class="text-sm text-ink-muted">
-                  <T v={copy.pruebaSocial.etiquetaNumValoraciones} />
-                </dt>
-                <dd class="text-3xl font-extrabold text-ink">
-                  <T v={numValoraciones} />
-                </dd>
-              </div>
-            </dl>
-          </Reveal>
-        )}
-
-        {/* `min-w-0` en cada <li>: un item de grid tiene `min-width: auto` y no
-            encoge por debajo de su contenido mínimo, así que con textos largos
-            la tarjeta desbordaba el viewport a 390 px. */}
-        <ul class="mt-12 grid gap-6 md:grid-cols-3">
-          {testimonios.map((t, i) => (
-            <Reveal as="li" delay={i * 0.12} y={32} class="min-w-0">
-              <figure class="relative flex h-full flex-col rounded-2xl border border-line bg-surface p-6 shadow-sm transition-[transform,box-shadow] duration-300 ease-out-soft motion-safe:hover:-translate-y-1 motion-safe:hover:shadow-lg motion-safe:active:scale-[0.99]">
-                {/* Comilla de apertura: ancla visual de la tarjeta. Decorativa. */}
-                <span
-                  aria-hidden="true"
-                  class="pointer-events-none absolute right-5 top-3 select-none font-display text-6xl leading-none text-secondary-100"
-                >
-                  &rdquo;
-                </span>
-
-                {t.resultado && (
-                  <p class="mb-4 inline-flex max-w-full self-start rounded-full bg-secondary-100 px-3 py-1 text-xs font-bold break-words text-secondary-700">
-                    <T v={t.resultado} />
-                  </p>
-                )}
-
-                <blockquote class="flex-1 text-base text-pretty text-ink">
-                  <p>«<T v={t.cita} />»</p>
-                </blockquote>
-
-                <figcaption class="mt-6 flex items-center gap-3 border-t border-line pt-5">
-                  {t.foto ? (
-                    <img
-                      src={t.foto}
-                      alt=""
-                      width="400"
-                      height="400"
-                      loading="lazy"
-                      decoding="async"
-                      class="size-11 shrink-0 rounded-full object-cover"
-                    />
-                  ) : (
-                    <span
-                      aria-hidden="true"
-                      class="grid size-11 shrink-0 place-items-center rounded-full bg-primary-100 text-sm font-bold text-primary-900"
-                    >
-                      {iniciales(t.nombre)}
-                    </span>
-                  )}
-                  <span class="min-w-0">
-                    <span class="block truncate font-semibold text-ink">
-                      {t.nombre}
-                    </span>
-                    <span class="block text-sm text-ink-subtle">
-                      <T v={t.contexto} />
-                    </span>
-                  </span>
-                </figcaption>
-              </figure>
-            </Reveal>
-          ))}
-        </ul>
       </>
     )
   }
