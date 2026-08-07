@@ -1354,6 +1354,60 @@ export const copy = {
       es: "Testimonios pendientes. No se ha inventado ninguno a propósito: pídeselos a alumnos reales, con permiso por escrito. En el comentario de `testimonios` tienes qué preguntar y qué recolectar.",
       en: "Testimonials pending. None were invented, deliberately: ask real students, with written permission. The comment on `testimonios` tells you what to ask for.",
     },
+
+    /**
+     * QUÉ SE ENSEÑA MIENTRAS NO HAY TESTIMONIOS REALES.
+     *
+     * Un curso recién abierto no tiene alumnos graduados, así que no tiene
+     * resultados que enseñar. Las dos salidas malas son dejar tres tarjetas
+     * vacías (parece una página a medio hacer) o inventarse las citas
+     * (publicidad engañosa, y encima se nota).
+     *
+     * La tercera salida es decirlo. Reconocer que eres nuevo y explicar qué
+     * ganas tú por serlo convierte la ausencia de prueba en el argumento del
+     * precio de lanzamiento, que ya es el `framing` de la sección 09. Y es
+     * verdad, que es lo importante.
+     *
+     * En cuanto `testimonios` tenga citas reales, este bloque desaparece solo
+     * y vuelve la rejilla. No hay que tocar nada.
+     */
+    fundador: {
+      titulo: {
+        es: "Aquí todavía no hay testimonios",
+        en: "There are no testimonials here yet",
+      },
+      entradilla: {
+        es: "El curso acaba de abrir: nadie lo ha terminado todavía, así que no hay resultados de alumnos que enseñarte. Podría inventármelos. No lo voy a hacer, porque una cita falsa se huele a un kilómetro y porque entonces nada de lo demás valdría nada. Esto es lo que sí te puedo poner por delante hoy.",
+        en: "The course just opened. Nobody has finished it yet, so there are no student results to show you. I could make some up. I'm not going to, because a fake quote is obvious from a mile away, and because if I did, nothing else on this page would be worth anything either. Here's what I can put in front of you today.",
+      },
+      puntos: [
+        {
+          titulo: { es: "Entras al precio más bajo", en: "You get in at the lowest price" },
+          texto: {
+            es: "{actual} en lugar de {referencia}. Cuesta esto precisamente porque todavía no hay una fila de casos de éxito detrás. Cuando la haya, el precio será el otro.",
+            en: "{actual} instead of {referencia}. It costs this precisely because there is no line of success stories behind it yet. Once there is, the price becomes the other one.",
+          },
+        },
+        {
+          titulo: { es: "El riesgo lo pongo yo", en: "I carry the risk" },
+          texto: {
+            es: "{dias} días para entrar, hacer los ejercicios y probarlos con clientes reales. Si no es para ti, escribes a soporte y te devolvemos el 100 %. No tienes que fiarte de mi palabra: tienes que poder echarte atrás.",
+            en: "{dias} days to get in, do the exercises and test them on real customers. If it isn't for you, email support and we refund 100%. You don't have to take my word for it: you have to be able to walk back out.",
+          },
+        },
+        {
+          titulo: { es: "Puedes ver qué compras antes de pagar", en: "You can see what you're buying before you pay" },
+          texto: {
+            es: "{videos} videos, un quiz al terminar cada uno y la certificación al completar los diez. El temario está entero unas líneas más arriba, módulo por módulo. Sin letra chica y sin “y mucho más”.",
+            en: "{videos} videos, a quiz after each one and a certificate once you finish all ten. The full curriculum is a few lines up, module by module. No fine print, no “and much more”.",
+          },
+        },
+      ],
+      remate: {
+        es: "Cuando los primeros terminen, sus resultados van justo aquí: con nombre y apellido, foto y permiso por escrito. Ni uno inventado.",
+        en: "When the first students finish, their results go right here: full name, photo and written permission. Not one of them invented.",
+      },
+    },
   },
 
   garantia: {

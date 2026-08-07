@@ -72,23 +72,34 @@ import { leadMagnet, copy, cta } from "@config/curso.config";
         y no lo rellena llega al segundo con la sensación de que ya se lo
         pidieron, y los dos compiten por la misma conversión sin sumarla.
         Queda uno solo, el del cierre, y esta sección manda hacia él. */}
-    <Reveal delay={0.1}>
-      <div
-        class="rounded-2xl border border-primary-700 bg-primary-950/40 p-6 text-center sm:p-8 lg:sticky lg:top-24"
-      >
-        <h3 class="text-2xl font-bold text-balance text-ink-inverse">
-          <T v={leadMagnet.titularFormulario} />
-        </h3>
-        <p class="mt-2 text-sm text-secondary-200"><T v={leadMagnet.formato} /></p>
 
-        <div class="mt-6">
-          <Button href={cta.secundario.href} variant="primary" size="lg" trackId="captura" block>
-            <T v={cta.secundario.texto} />
-          </Button>
+    {/* EL `sticky` VA AQUÍ, EN EL GRID ITEM, y no en la tarjeta de dentro.
+        Un elemento sticky solo puede desplazarse dentro de su bloque
+        contenedor. Con el sticky en la tarjeta, ese bloque era el <Reveal> que
+        la envuelve, y como el grid es `items-start` ese wrapper mide justo lo
+        que mide la tarjeta: cero recorrido, sticky que nunca se pega.
+        Puesto en el grid item, el bloque contenedor pasa a ser el ÁREA de
+        grid, que es tan alta como la columna larga de al lado. Ahí sí hay
+        recorrido: la tarjeta se queda fija mientras se leen los 7 días. */}
+    <div class="lg:sticky lg:top-24">
+      <Reveal delay={0.1}>
+        <div
+          class="rounded-2xl border border-primary-700 bg-primary-950/40 p-6 text-center sm:p-8"
+        >
+          <h3 class="text-2xl font-bold text-balance text-ink-inverse">
+            <T v={leadMagnet.titularFormulario} />
+          </h3>
+          <p class="mt-2 text-sm text-secondary-200"><T v={leadMagnet.formato} /></p>
+
+          <div class="mt-6">
+            <Button href={cta.secundario.href} variant="primary" size="lg" trackId="captura" block>
+              <T v={cta.secundario.texto} />
+            </Button>
+          </div>
+
+          <p class="mt-3 text-xs text-primary-300"><T v={leadMagnet.aviso} /></p>
         </div>
-
-        <p class="mt-3 text-xs text-primary-300"><T v={leadMagnet.aviso} /></p>
-      </div>
-    </Reveal>
+      </Reveal>
+    </div>
   </div>
 </Section>

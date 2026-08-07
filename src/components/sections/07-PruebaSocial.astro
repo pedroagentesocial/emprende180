@@ -3,10 +3,10 @@ import T from "@components/i18n/T.astro";
 import Section from "@components/ui/Section.astro";
 import SectionHeading from "@components/ui/SectionHeading.astro";
 import Reveal from "@components/motion/Reveal.astro";
-import { testimonios, cifras, copy } from "@config/curso.config";
+import { testimonios, cifras, copy, curso, garantia } from "@config/curso.config";
 import { construirTxt } from "@i18n/idioma";
 import { faltaPorRellenar } from "@lib/pendientes";
-import { formatNumber } from "@i18n/formato";
+import { formatNumber, formatMoney, interpolar } from "@i18n/formato";
 
 /**
  * 07 · PRUEBA SOCIAL — «¿le funciona a gente como yo?»
@@ -18,16 +18,27 @@ import { formatNumber } from "@i18n/formato";
  * los RESULTADOS con contexto: de dónde partía esa persona y a dónde llegó. El
  * lector busca a alguien que empezaba donde empieza él.
  *
- * ⚠ CERO TESTIMONIOS INVENTADOS. Mientras el texto siga siendo PLACEHOLDER, la
- * tarjeta se marca visiblemente como pendiente y las cifras agregadas no se
- * muestran salvo que `cifras.sonReales` sea true. Un testimonio falso es
- * publicidad engañosa, y además se nota.
+ * ⚠ CERO TESTIMONIOS INVENTADOS.
+ *
+ * LA SECCIÓN TIENE DOS ESTADOS, y elige sola:
+ *
+ *   · Con testimonios reales en el config → la rejilla de tarjetas de siempre.
+ *   · Sin ellos → el bloque "todavía no hay testimonios", que dice la verdad y
+ *     la convierte en argumento (ver `copy.pruebaSocial.fundador`).
+ *
+ * Antes, sin testimonios, salían tres tarjetas de borde punteado con el texto
+ * `[COMPLETAR:]` a la vista de cualquier visitante. Eso resuelve el problema
+ * interno (no se publica un dato falso sin darse cuenta) creando uno peor: la
+ * página parece a medio hacer justo en la sección donde el lector decide si se
+ * fía. El estado alternativo cubre los dos: nada inventado y nada sin acabar.
+ *
+ * En cuanto `testimonios` tenga citas reales esto vuelve solo a la rejilla.
  */
 
-/* Basta con que UNO de los dos idiomas siga en placeholder para avisar:
-   publicar con el español real y el inglés sin traducir es justo el fallo
-   que este aviso existe para evitar. */
-const hayPendientes = testimonios.some((x) => faltaPorRellenar(x.cita));
+/* Basta con que UNO de los dos idiomas siga en placeholder para dar la sección
+   por vacía: publicar con el español real y el inglés sin traducir es justo el
+   fallo que esta comprobación existe para evitar. */
+const sinTestimonios = testimonios.some((x) => faltaPorRellenar(x.cita));
 
 /* Los números también se localizan: el separador de miles lo decide el locale,
    no un `toLocaleString("es")` fijo que dejaba la cifra en español aunque la
@@ -45,117 +56,173 @@ const iniciales = (nombre: string) =>
     .map((p) => p[0] ?? "")
     .join("")
     .toUpperCase();
+
+/* ── Estado "todavía no hay testimonios" ───────────────────────────────────
+   Los tres puntos citan cifras que ya viven en el config (precio, garantía,
+   número de videos). Se interpolan en vez de escribirse a mano para que no
+   puedan quedarse desfasadas: si mañana el precio cambia, este texto cambia
+   con él. Es el mismo motivo por el que la sección 09 verifica su desglose. */
+const fundador = copy.pruebaSocial.fundador;
+
+const puntos = fundador.puntos.map((p) => ({
+  titulo: p.titulo,
+  texto: construirTxt((l) =>
+    interpolar(p.texto[l], {
+      actual: formatMoney(curso.precio.actual, l, curso.precio.moneda),
+      referencia: formatMoney(curso.precio.referencia, l, curso.precio.moneda),
+      dias: garantia.dias,
+      videos: curso.formato.videos,
+    }),
+  ),
+}));
 ---
 
 <Section id="testimonios" tono="muted" ariaLabel={copy.pruebaSocial.aria}>
-  <SectionHeading
-    align="center"
-    titulo={copy.pruebaSocial.titulo}
-  />
-
   {
-    cifras.sonReales && (
-      <Reveal>
-        <dl class="mx-auto mt-10 grid max-w-2xl grid-cols-2 gap-6 sm:grid-cols-3">
-          <div class="text-center">
-            <dt class="text-sm text-ink-muted"><T v={copy.pruebaSocial.etiquetaAlumnos} /></dt>
-            <dd class="text-3xl font-extrabold text-ink">
-              <T v={numAlumnos} />
-            </dd>
-          </div>
-          <div class="text-center">
-            <dt class="text-sm text-ink-muted"><T v={copy.pruebaSocial.etiquetaValoracion} /></dt>
-            <dd class="text-3xl font-extrabold text-ink">
-              {cifras.valoracionMedia}
-              <span class="text-lg text-ink-subtle">/5</span>
-            </dd>
-          </div>
-          <div class="col-span-2 text-center sm:col-span-1">
-            <dt class="text-sm text-ink-muted"><T v={copy.pruebaSocial.etiquetaNumValoraciones} /></dt>
-            <dd class="text-3xl font-extrabold text-ink">
-              <T v={numValoraciones} />
-            </dd>
-          </div>
-        </dl>
-      </Reveal>
-    )
-  }
+    sinTestimonios ? (
+      <>
+        <SectionHeading
+          align="center"
+          titulo={fundador.titulo}
+          entradilla={fundador.entradilla}
+        />
 
-  {/* `min-w-0` en cada <li>: un item de grid tiene `min-width: auto` y no
-      encoge por debajo de su contenido mínimo. Con textos largos (los
-      `[COMPLETAR:]` lo son), la tarjeta desbordaba el viewport a 390 px. */}
-  <ul class="mt-12 grid gap-6 md:grid-cols-3">
-    {
-      testimonios.map((t, i) => (
-        <Reveal as="li" delay={i * 0.12} y={32} class="min-w-0">
-          <figure
-            class:list={[
-              "relative flex h-full flex-col rounded-2xl border bg-surface p-6 shadow-sm",
-              /* Solo transform y opacity: no disparan layout ni paint caro.
-                 El hover va tras @media (hover:hover) por Tailwind, y en táctil
-                 lo que se nota es :active, no un hover que se queda pegado. */
-              "transition-[transform,box-shadow] duration-300 ease-out-soft",
-              "motion-safe:hover:-translate-y-1 motion-safe:hover:shadow-lg",
-              "motion-safe:active:scale-[0.99]",
-              faltaPorRellenar(t.cita)
-                ? "border-2 border-dashed border-line-strong"
-                : "border-line",
-            ]}
-          >
-            {/* Comilla de apertura: ancla visual de la tarjeta. Decorativa. */}
-            <span
-              aria-hidden="true"
-              class="pointer-events-none absolute right-5 top-3 select-none font-display text-6xl leading-none text-secondary-100"
-            >
-              &rdquo;
-            </span>
-            {t.resultado && (
-              <p class="mb-4 inline-flex max-w-full self-start rounded-full bg-secondary-100 px-3 py-1 text-xs font-bold break-words text-secondary-700">
-                <T v={t.resultado} resaltar />
-              </p>
-            )}
-
-            <blockquote class="flex-1 text-base text-pretty text-ink">
-              <p>«<T v={t.cita} resaltar />»</p>
-            </blockquote>
-
-            <figcaption class="mt-6 flex items-center gap-3 border-t border-line pt-5">
-              {t.foto ? (
-                <img
-                  src={t.foto}
-                  alt=""
-                  width="400"
-                  height="400"
-                  loading="lazy"
-                  decoding="async"
-                  class="size-11 shrink-0 rounded-full object-cover"
-                />
-              ) : (
+        {/* Deliberadamente NO son tres tarjetas iguales. Una rejilla de
+            tarjetas gemelas es lo que el lector ya ha aprendido a saltarse, y
+            aquí el contenido es un argumento seguido, no tres elementos
+            comparables. Una lista con filete entre puntos se lee. */}
+        <dl class="mx-auto mt-12 max-w-read">
+          {puntos.map((p, i) => (
+            <Reveal delay={i * 0.08}>
+              <div class="flex gap-5 border-t border-line py-6 first:border-t-0 first:pt-0">
                 <span
                   aria-hidden="true"
-                  class="grid size-11 shrink-0 place-items-center rounded-full bg-primary-100 text-sm font-bold text-primary-900"
+                  class="mt-1 grid size-8 shrink-0 place-items-center rounded-full bg-secondary-100 text-sm font-bold text-secondary-700"
                 >
-                  {iniciales(t.nombre)}
+                  {i + 1}
                 </span>
-              )}
-              <span class="min-w-0">
-                <span class="block truncate font-semibold text-ink">{t.nombre}</span>
-                <span class="block text-sm text-ink-subtle"><T v={t.contexto} resaltar /></span>
-              </span>
-            </figcaption>
-          </figure>
-        </Reveal>
-      ))
-    }
-  </ul>
+                <div class="min-w-0">
+                  <dt class="text-lg font-bold text-ink">
+                    <T v={p.titulo} />
+                  </dt>
+                  <dd class="mt-1.5 text-base text-pretty text-ink-muted">
+                    <T v={p.texto} />
+                  </dd>
+                </div>
+              </div>
+            </Reveal>
+          ))}
+        </dl>
 
-  {
-    hayPendientes && (
-      <Reveal>
-        <p class="mx-auto mt-8 max-w-read rounded-lg border-2 border-dashed border-line-strong bg-surface px-4 py-3 text-center text-sm font-medium text-ink-muted">
-          ⚠ <T v={copy.pruebaSocial.avisoPlaceholder} />
-        </p>
-      </Reveal>
+        <Reveal delay={0.28}>
+          <p class="mx-auto mt-10 max-w-read border-l-2 border-secondary-500 pl-5 text-base font-medium text-pretty text-ink">
+            <T v={fundador.remate} />
+          </p>
+        </Reveal>
+
+        {/* Recordatorio para quien edita el sitio, NO para quien lo visita.
+            Solo en desarrollo: en producción el bloque de arriba ya es una
+            sección terminada, y un aviso ámbar encima solo confundiría. */}
+        {import.meta.env.DEV && (
+          <p class="mx-auto mt-8 max-w-read rounded-lg border-2 border-dashed border-line-strong bg-surface px-4 py-3 text-center text-sm font-medium text-ink-muted">
+            ⚠ <T v={copy.pruebaSocial.avisoPlaceholder} />
+          </p>
+        )}
+      </>
+    ) : (
+      <>
+        <SectionHeading align="center" titulo={copy.pruebaSocial.titulo} />
+
+        {cifras.sonReales && (
+          <Reveal>
+            <dl class="mx-auto mt-10 grid max-w-2xl grid-cols-2 gap-6 sm:grid-cols-3">
+              <div class="text-center">
+                <dt class="text-sm text-ink-muted">
+                  <T v={copy.pruebaSocial.etiquetaAlumnos} />
+                </dt>
+                <dd class="text-3xl font-extrabold text-ink">
+                  <T v={numAlumnos} />
+                </dd>
+              </div>
+              <div class="text-center">
+                <dt class="text-sm text-ink-muted">
+                  <T v={copy.pruebaSocial.etiquetaValoracion} />
+                </dt>
+                <dd class="text-3xl font-extrabold text-ink">
+                  {cifras.valoracionMedia}
+                  <span class="text-lg text-ink-subtle">/5</span>
+                </dd>
+              </div>
+              <div class="col-span-2 text-center sm:col-span-1">
+                <dt class="text-sm text-ink-muted">
+                  <T v={copy.pruebaSocial.etiquetaNumValoraciones} />
+                </dt>
+                <dd class="text-3xl font-extrabold text-ink">
+                  <T v={numValoraciones} />
+                </dd>
+              </div>
+            </dl>
+          </Reveal>
+        )}
+
+        {/* `min-w-0` en cada <li>: un item de grid tiene `min-width: auto` y no
+            encoge por debajo de su contenido mínimo, así que con textos largos
+            la tarjeta desbordaba el viewport a 390 px. */}
+        <ul class="mt-12 grid gap-6 md:grid-cols-3">
+          {testimonios.map((t, i) => (
+            <Reveal as="li" delay={i * 0.12} y={32} class="min-w-0">
+              <figure class="relative flex h-full flex-col rounded-2xl border border-line bg-surface p-6 shadow-sm transition-[transform,box-shadow] duration-300 ease-out-soft motion-safe:hover:-translate-y-1 motion-safe:hover:shadow-lg motion-safe:active:scale-[0.99]">
+                {/* Comilla de apertura: ancla visual de la tarjeta. Decorativa. */}
+                <span
+                  aria-hidden="true"
+                  class="pointer-events-none absolute right-5 top-3 select-none font-display text-6xl leading-none text-secondary-100"
+                >
+                  &rdquo;
+                </span>
+
+                {t.resultado && (
+                  <p class="mb-4 inline-flex max-w-full self-start rounded-full bg-secondary-100 px-3 py-1 text-xs font-bold break-words text-secondary-700">
+                    <T v={t.resultado} />
+                  </p>
+                )}
+
+                <blockquote class="flex-1 text-base text-pretty text-ink">
+                  <p>«<T v={t.cita} />»</p>
+                </blockquote>
+
+                <figcaption class="mt-6 flex items-center gap-3 border-t border-line pt-5">
+                  {t.foto ? (
+                    <img
+                      src={t.foto}
+                      alt=""
+                      width="400"
+                      height="400"
+                      loading="lazy"
+                      decoding="async"
+                      class="size-11 shrink-0 rounded-full object-cover"
+                    />
+                  ) : (
+                    <span
+                      aria-hidden="true"
+                      class="grid size-11 shrink-0 place-items-center rounded-full bg-primary-100 text-sm font-bold text-primary-900"
+                    >
+                      {iniciales(t.nombre)}
+                    </span>
+                  )}
+                  <span class="min-w-0">
+                    <span class="block truncate font-semibold text-ink">
+                      {t.nombre}
+                    </span>
+                    <span class="block text-sm text-ink-subtle">
+                      <T v={t.contexto} />
+                    </span>
+                  </span>
+                </figcaption>
+              </figure>
+            </Reveal>
+          ))}
+        </ul>
+      </>
     )
   }
 </Section>
