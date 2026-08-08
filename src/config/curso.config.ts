@@ -561,9 +561,28 @@ export const curso = {
      *   'ninguna'     → sin elemento de urgencia.
      */
     urgencia: {
-      tipo: "lanzamiento" as "lanzamiento" | "cupos" | "fecha" | "ninguna",
+      tipo: "fecha" as "lanzamiento" | "cupos" | "fecha" | "ninguna",
       cupos: null as number | null, // SWAP (HECHO): solo si es real
-      fechaCierre: null as string | null, // SWAP (HECHO): ISO 8601, solo si es real
+
+      /**
+       * ⚠️ SWAP (HECHO) — LA FECHA MANDA SOBRE EL PRECIO, NO AL REVÉS.
+       *
+       * Con `tipo: "fecha"` esto enciende la cuenta atrás de la sección de
+       * precio. Es una fecha FIJA en ISO 8601 con zona horaria: no se calcula
+       * desde la visita, así que no se reinicia al recargar ni al abrir la
+       * página en otro navegador. Todo el mundo ve el mismo número.
+       *
+       * EL COMPROMISO QUE ADQUIERES AL PONER UNA FECHA AQUÍ: cuando llegue,
+       * `actual` tiene que subir de verdad. Si el día siguiente el precio sigue
+       * siendo 490 y aparece otra cuenta atrás, es el contador falso de toda la
+       * vida, y basta con que un visitante vuelva en una semana para verlo.
+       *
+       * Si llega la fecha y no has subido el precio, el contador NO se queda
+       * en cero engañando: desaparece solo y en desarrollo sale un aviso.
+       * Pon aquí `null` (o `tipo: "lanzamiento"`) si prefieres no comprometerte
+       * a una fecha: la sección sigue funcionando sin contador.
+       */
+      fechaCierre: "2026-08-31T23:59:59-05:00" as string | null,
     },
   },
 
@@ -1299,8 +1318,18 @@ export const copy = {
 
   problema: {
     aria: { es: "El problema y para quién es", en: "The problem, and who it's for" },
-    paraTiTitulo: { es: "Este curso es para ti si…", en: "This course is for you if…" },
+    paraTiTitulo: {
+      es: "Si te reconociste arriba, esto es para ti",
+      en: "If you recognized yourself above, this is for you",
+    },
+    /** Ya no se pinta: ver la cabecera de `02-Problema.astro`. Se conserva por
+     *  si se recupera la columna de descalificación. */
     noParaTiTitulo: { es: "NO es para ti si…", en: "It's NOT for you if…" },
+    /** Remate antes del CTA de la sección 2. */
+    remate: {
+      es: "Empieza por el reto gratuito. Siete días, diez minutos al día, y ya sabes si esto encaja contigo antes de pagar nada.",
+      en: "Start with the free challenge. Seven days, ten minutes a day, and you'll know whether this fits you before paying anything.",
+    },
   },
 
   resultados: {
@@ -1494,6 +1523,35 @@ export const copy = {
       cupos: { es: "Quedan {n} cupos en esta ronda", en: "{n} spots left in this round" },
       /** `{fecha}` = fecha de cierre ya formateada. */
       fecha: { es: "El precio sube el {fecha}", en: "The price goes up on {fecha}" },
+    },
+
+    /** Cuenta atrás. Ver `precio.urgencia.fechaCierre`. */
+    contador: {
+      titulo: {
+        es: "El precio de fundador termina en",
+        en: "The founding price ends in",
+      },
+      dias: { es: "días", en: "days" },
+      horas: { es: "horas", en: "hours" },
+      minutos: { es: "min", en: "min" },
+      segundos: { es: "seg", en: "sec" },
+      /**
+       * Alternativa para lectores de pantalla. Los dígitos que cambian cada
+       * segundo van con `aria-hidden`: anunciarlos convertiría el lector en
+       * una radio. Esta frase dice lo mismo una sola vez. `{fecha}` ya viene
+       * formateada con la hora incluida.
+       */
+      /* `{fecha}` va en medio de la frase a propósito: en español el formato
+         de hora acaba en "p. m." y dejarlo al final producía "10:59 p.m..". */
+      alternativa: {
+        es: "El precio de fundador termina el {fecha} y después sube a {referencia}.",
+        en: "The founding price ends on {fecha}, after which it goes up to {referencia}.",
+      },
+      /** Solo en desarrollo, cuando la fecha ya pasó. */
+      avisoCaducado: {
+        es: "La fecha de `precio.urgencia.fechaCierre` ya pasó, así que la cuenta atrás dejó de mostrarse sola. Sube `precio.actual` como habías anunciado y pon una fecha nueva, o cambia `urgencia.tipo` a `lanzamiento`. Lo que no puede pasar es que el precio siga igual y aparezca otro contador.",
+        en: "The date in `precio.urgencia.fechaCierre` has passed, so the countdown removed itself. Raise `precio.actual` as announced and set a new date, or switch `urgencia.tipo` to `lanzamiento`. What must not happen is the price staying the same and a new countdown appearing.",
+      },
     },
 
     /** Aviso cuando el desglose no suma la cifra ancla. */

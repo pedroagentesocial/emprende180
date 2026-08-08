@@ -5,7 +5,8 @@ import Section from "@components/ui/Section.astro";
 import SectionHeading from "@components/ui/SectionHeading.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import StaggerList from "@components/motion/StaggerList";
-import { curso, copy } from "@config/curso.config";
+import Button from "@components/ui/Button.astro";
+import { curso, copy, cta } from "@config/curso.config";
 
 /**
  * 02 · EL PROBLEMA + PARA QUIÉN ES.
@@ -14,18 +15,27 @@ import { curso, copy } from "@config/curso.config";
  *
  *  a) Describir la situación del lector mejor de lo que la describiría él.
  *     Nadie compra una solución hasta que siente que le entienden el problema.
- *  b) Auto-cualificar. Las dos columnas hacen cosas distintas: "para ti si…"
- *     hace que el lector correcto se comprometa; "NO es para ti si…" hace que
- *     el equivocado se vaya ANTES de comprar. Descalificar sube la conversión
- *     de los buenos y baja los reembolsos.
+ *  b) Que el lector correcto se reconozca y se comprometa.
  *
- * La columna del "no" tiene que ser sincera. Un "no es para ti si no quieres
- * ganar dinero" es un elogio disfrazado y el lector lo detecta al instante.
+ * AQUÍ HABÍA UNA SEGUNDA COLUMNA, "NO es para ti si…". Se quitó por decisión
+ * del cliente: quiere que la página empuje a comprar, no que descalifique.
+ * Los datos siguen en `curso.paraQuienNo` por si algún día se recupera; para
+ * volver a pintarla basta con deshacer este bloque.
+ *
+ * Lo que sí se conserva en otro sitio son los límites REALES (licencia,
+ * territorio, cómo se remunera): están en las FAQ, que es donde el lector los
+ * busca cuando ya quiere comprar. Eso no es descalificar, es evitar vender a
+ * quien literalmente no puede participar, que acaba en reembolso.
+ *
+ * Con una sola columna, el hueco lo ocupa un CTA. El lector acaba de
+ * reconocerse en cinco dolores y de verse en la lista: es el punto más caliente
+ * de toda la primera mitad, y hasta ahora no tenía dónde hacer clic. El CTA
+ * pide el email, no la compra: a estas alturas todavía no ha visto el temario
+ * ni el precio.
  */
 
 const dolores = curso.problema.dolores.map((texto) => ({ texto }));
 const paraSi = curso.paraQuien.map((texto) => ({ texto }));
-const paraNo = curso.paraQuienNo.map((texto) => ({ texto }));
 
 /* Idioma de ESTA petición. Las islas de React lo necesitan como prop: en
    el servidor no pueden leerlo del DOM, así que sin esto se renderizarían
@@ -56,26 +66,38 @@ const lang = resolverIdiomaServidor(
     </Reveal>
   </div>
 
-  <!-- Auto-cualificación -->
-  <div class="mt-16 grid gap-6 md:grid-cols-2">
-    <Reveal>
-      <div class="h-full rounded-2xl border border-line bg-surface p-7 shadow-sm">
-        <h3 class="text-xl font-bold text-ink">
-          <T v={copy.problema.paraTiTitulo} />
-        </h3>
-        <div class="mt-6">
-          <StaggerList client:visible lang={lang} items={paraSi} variante="check" />
-        </div>
-      </div>
-    </Reveal>
+  <!-- Auto-reconocimiento + la primera acción de la página -->
+  <Reveal>
+    <div
+      class="mx-auto mt-16 max-w-2xl rounded-2xl border border-line bg-surface p-7 shadow-sm sm:p-9"
+    >
+      <h3 class="text-xl font-bold text-balance text-ink sm:text-2xl">
+        <T v={copy.problema.paraTiTitulo} />
+      </h3>
 
-    <Reveal delay={0.12}>
-      <div class="h-full rounded-2xl border border-line bg-surface p-7 shadow-sm">
-        <h3 class="text-xl font-bold text-ink"><T v={copy.problema.noParaTiTitulo} /></h3>
-        <div class="mt-6">
-          <StaggerList client:visible lang={lang} items={paraNo} variante="cross" />
-        </div>
+      <div class="mt-6">
+        <StaggerList client:visible lang={lang} items={paraSi} variante="check" />
       </div>
-    </Reveal>
-  </div>
+
+      <div class="mt-8 border-t border-line pt-7 text-center">
+        <p class="text-base font-semibold text-balance text-ink">
+          <T v={copy.problema.remate} />
+        </p>
+        <div class="mt-5">
+          <Button
+            href={cta.secundario.href}
+            variant="primary"
+            size="lg"
+            trackId="problema"
+            class="w-full sm:w-auto"
+          >
+            <T v={cta.secundario.texto} />
+          </Button>
+        </div>
+        <p class="mt-3 text-sm text-ink-subtle">
+          <T v={copy.hero.microCta} />
+        </p>
+      </div>
+    </div>
+  </Reveal>
 </Section>

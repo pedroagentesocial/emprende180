@@ -4,8 +4,9 @@ import Section from "@components/ui/Section.astro";
 import SectionHeading from "@components/ui/SectionHeading.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Button from "@components/ui/Button.astro";
+import { Contador } from "@components/motion/Contador";
 import { curso, cta, garantia, copy } from "@config/curso.config";
-import { construirTxt, LOCALES } from "@i18n/idioma";
+import { construirTxt, LOCALES, resolverIdiomaServidor } from "@i18n/idioma";
 import { formatMoney } from "@i18n/formato";
 
 /**
@@ -25,10 +26,12 @@ import { formatMoney } from "@i18n/formato";
  *    FTC (EE. UU.) exigen que ese precio haya sido real y vigente.
  * Se cambia en `curso.precio.framing`.
  *
- * LO QUE NO HAY AQUÍ, A PROPÓSITO: ninguna cuenta atrás. Un contador que se
- * reinicia al recargar es el truco que más rápido quema la confianza, y basta
- * un F5 para descubrirlo. La urgencia sale de `precio.urgencia` y solo se pinta
- * si el dato es real.
+ * LA CUENTA ATRÁS. Sale de `precio.urgencia.fechaCierre` y solo si esa fecha
+ * existe y no ha pasado. Cuenta hacia un instante FIJO, así que no se reinicia
+ * al recargar: todo el mundo ve el mismo número. Cuando la fecha llega, el
+ * contador se quita solo en vez de quedarse en cero o empezar otra vuelta.
+ * El compromiso que viene con él está escrito en el config: llegada la fecha,
+ * `precio.actual` tiene que subir de verdad.
  */
 
 const { precio } = curso;
@@ -95,6 +98,39 @@ const urgencia = (() => {
   // 'lanzamiento', o un tipo sin dato real: nota honesta, sin contador.
   return esLanzamiento ? copy.precio.lanzamiento.nota : copy.precio.descuento.nota;
 })();
+
+/* ── Cuenta atrás ──────────────────────────────────────────────────────────
+   Solo con `tipo: "fecha"` y una fecha válida. Si ya pasó, el contador no se
+   pinta (lo decide él mismo en el cliente, que es quien conoce la hora del
+   visitante) y aquí solo se levanta el aviso para quien edita el sitio. */
+const fechaCierre =
+  precio.urgencia.tipo === "fecha" ? precio.urgencia.fechaCierre : null;
+const msCierre = fechaCierre ? new Date(fechaCierre).getTime() : NaN;
+const fechaValida = Number.isFinite(msCierre);
+const fechaCaducada = fechaValida && msCierre <= Date.now();
+
+/** La frase que sí lee un lector de pantalla: fecha completa y precio futuro. */
+const alternativaContador =
+  fechaValida && !fechaCaducada
+    ? construirTxt((l) =>
+        copy.precio.contador.alternativa[l]
+          .replace(
+            "{fecha}",
+            new Intl.DateTimeFormat(LOCALES[l], {
+              day: "numeric",
+              month: "long",
+              hour: "numeric",
+              minute: "2-digit",
+            }).format(new Date(msCierre)),
+          )
+          .replace("{referencia}", formatMoney(precio.referencia, l, precio.moneda)),
+      )
+    : null;
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
 ---
 
 <Section id="precio" tono="sunken" ritmo="amplio" ariaLabel={copy.precio.aria}>
@@ -204,6 +240,21 @@ const urgencia = (() => {
               )
             }
 
+            {/* La cuenta atrás va ENCIMA del botón, no debajo: es el último
+                argumento antes de la acción, y leerla después de haber pasado
+                de largo el botón no sirve de nada. */}
+            {
+              alternativaContador && fechaCierre && (
+                <Contador
+                  client:visible
+                  fechaCierre={fechaCierre}
+                  alternativa={alternativaContador}
+                  etiquetas={copy.precio.contador}
+                  lang={lang}
+                />
+              )
+            }
+
             <div class="mt-7">
               {/* Sin URL de pasarela el botón se deshabilita: un href="#"
                   saltaría al principio y parecería que está roto. */}
@@ -274,6 +325,16 @@ const urgencia = (() => {
             ⚠ <T v={copy.precio.avisoPlaceholder} />
           </p>
         </Reveal>
+      )
+    }
+
+    {/* Solo para quien edita el sitio. El visitante no ve nada raro: el
+        contador simplemente ya no está. */}
+    {
+      fechaCaducada && import.meta.env.DEV && (
+        <p class="mt-6 rounded-lg border-2 border-dashed border-warning-500 bg-warning-50 px-4 py-3 text-center text-sm font-medium text-ink">
+          ⚠ <T v={copy.precio.contador.avisoCaducado} />
+        </p>
       )
     }
   </div>
