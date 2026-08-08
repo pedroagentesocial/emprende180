@@ -99,10 +99,17 @@ export function Contador({ fechaCierre, alternativa, etiquetas, lang }: Props) {
         {t(etiquetas.titulo)}
       </p>
 
-      {/* El hueco se reserva SIEMPRE con `min-h-16`: antes de montar está
-          vacío, y aun así la tarjeta no cambia de alto cuando llegan los
-          dígitos. Es lo que mantiene el CLS en cero. */}
-      <div className="mt-3 flex min-h-16 items-center justify-center gap-2" aria-hidden="true">
+      {/* El hueco se reserva SIEMPRE: antes de montar está vacío, y aun así la
+          tarjeta no cambia de alto cuando llegan los dígitos.
+          4.25rem = 68px, que es lo que miden las celdas (2xl + etiqueta +
+          padding). Estaba en `min-h-16` (64px) y esos 4 px de diferencia bastaban
+          para empujar la tarjeta entera y meter 0.008 de CLS: la columna del
+          precio es `justify-center`, así que cualquier cambio de alto mueve
+          todo lo que hay dentro. Medido, no estimado. */}
+      <div
+        className="mt-3 flex min-h-[4.25rem] items-center justify-center gap-2"
+        aria-hidden="true"
+      >
         {celdas?.map((c, i) => (
           <div key={i} className="flex items-center gap-2">
             {i > 0 && (
