@@ -1527,10 +1527,16 @@ export const copy = {
 
     /** Cuenta atrás. Ver `precio.urgencia.fechaCierre`. */
     contador: {
-      titulo: {
-        es: "El precio de fundador termina en",
-        en: "The founding price ends in",
-      },
+      /**
+       * CORTO A PROPÓSITO, y no es una cuestión de gusto. "El precio de
+       * fundador termina en" ocupaba dos líneas o una según un reflujo de 13 px
+       * de ancho al cargar la página, y esas dos alturas distintas movían la
+       * columna del precio entera (es `justify-center`): 0.008 de CLS por un
+       * titular que estaba justo en el límite del salto de línea.
+       * Si lo alargas, comprueba que sigue cabiendo en una línea a 320 px.
+       * El contexto ya lo da el antetítulo "Precio de fundadores", justo arriba.
+       */
+      titulo: { es: "Se acaba en", en: "Ends in" },
       dias: { es: "días", en: "days" },
       horas: { es: "horas", en: "hours" },
       minutos: { es: "min", en: "min" },
