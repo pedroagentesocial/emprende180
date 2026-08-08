@@ -13,8 +13,8 @@ Este documento es para conseguir esos tres.
 
 Cuatro cosas. Si falta la primera, no sirve de nada.
 
-1. **Un resultado concreto**, con número o con plazo.
-   «Cerré mi primer cliente en la semana 6» convence.
+1. **Un resultado concreto**, con número o con plazo, y de algo que la persona
+   **hizo**. «Pedí mi primer referido en la semana 2» convence.
    «Muy buen curso, lo recomiendo» no dice absolutamente nada.
 2. **El antes.** De dónde partía. El lector busca a alguien que empezaba donde
    está él, y si no sabe de dónde salió esa persona no puede compararse.
@@ -94,6 +94,22 @@ donde sale el mejor material. **No la quites nunca**, aunque tengas prisa.
 
 ---
 
+## Lo que NO puede aparecer: cuánto ganó nadie
+
+Ni en la cita, ni en la etiqueta de resultado, ni «me pagó el carro», ni «ya
+reemplacé mi sueldo». Ninguna cifra de ingresos, ningún rango, ningún «un
+Embajador promedio».
+
+Un testimonio que dice cuánto ganó alguien es una **declaración de ingresos**.
+La FTC exige poder documentar que esa cifra es lo que consigue un Embajador
+normal, no el mejor de todos, y en un programa de referidos es por donde más
+fácil se cae. No es un detalle de redacción: es la diferencia entre una página
+que se puede defender y una que no.
+
+Si un alumno te manda un testimonio con una cifra, no lo tires: agradécele y
+**publica la parte de lo que hizo**. «Ordené 60 contactos y hablé con 12 en dos
+semanas» convierte igual y se sostiene sola.
+
 ## El permiso no es opcional
 
 Publicar el nombre y la foto de alguien sin su consentimiento expreso es un
@@ -112,20 +128,21 @@ compilar para producción.
 
 Dos de ellos, para tenerlos a mano:
 
-> **Daniela Restrepo** · Repostería por encargo · Medellín
-> *Primer cliente en la semana 6*
-> «Llevaba dos años diciendo que iba a vender mis pasteles y nunca pasaba de la
-> idea. En el módulo 2 hablé con 14 personas y tres me preguntaron el precio
-> antes de que yo se los diera. Esa semana cobré el primer pedido.»
+> **Daniela Restrepo** · Estilista · Houston, Texas
+> *Pidió su primer referido en la semana 2*
+> «Llevo doce años detrás de una silla oyendo a la gente contarme su vida, y
+> nunca se me ocurrió que ahí había algo. El curso 6 me dio las palabras
+> exactas para preguntar. La primera vez me temblaba la voz y aun así funcionó.»
 
-> **Andrés Peña** · Diseño web freelance · Guadalajara
-> *Subió su precio un 60 %*
-> «Cobraba lo que me daba vergüenza cobrar. Con la calculadora del módulo 5 vi
-> que estaba perdiendo dinero en cada proyecto. Subí el precio y no perdí un
-> solo cliente.»
+> **Andrés Peña** · Mecánico · Phoenix, Arizona
+> *Reconoció 4 situaciones en un mes*
+> «En el taller me llegan carros chocados todas las semanas y yo solo veía el
+> golpe. Después del curso 5 empecé a oír lo que me contaban mientras
+> esperaban.»
 
-Fíjate en lo que hacen: cuentan el antes, dan un número o un plazo, y usan
-palabras de persona normal. Ninguno dice «excelente curso, muy recomendado».
+Fíjate en lo que hacen: cuentan el antes, dan un número o un plazo, mencionan un
+curso concreto y usan palabras de persona normal. Ninguno dice «excelente
+curso», y **ninguno dice cuánto ganó**.
 
 ---
 

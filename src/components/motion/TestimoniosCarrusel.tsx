@@ -83,6 +83,9 @@ export function TestimoniosCarrusel({ items, etiquetas, lang }: Props) {
   const [pausaManual, setPausaManual] = useState(false);
   const [interactuando, setInteractuando] = useState(false);
   const [visible, setVisible] = useState(false);
+  /** Falso en el servidor y en el primer render del cliente. Ver el botón de
+   *  pausa, abajo: es lo que evita la discrepancia al hidratar. */
+  const [montado, setMontado] = useState(false);
 
   const total = items.length;
 
@@ -167,6 +170,8 @@ export function TestimoniosCarrusel({ items, etiquetas, lang }: Props) {
       el.removeEventListener("scroll", alHacerScroll);
     };
   }, []);
+
+  useEffect(() => setMontado(true), []);
 
   /* ── Parar cuando no se ve ──────────────────────────────────────────────
      Un carrusel girando fuera de pantalla gasta batería y, peor, hace que al
@@ -345,9 +350,16 @@ export function TestimoniosCarrusel({ items, etiquetas, lang }: Props) {
 
       {/* WCAG 2.2.2. Solo aparece si de verdad hay algo que pausar: con
           `prefers-reduced-motion` no hay avance automático, así que un botón
-          de pausa ahí solo sería una promesa falsa. */}
-      {!reducir && (
-        <div className="mt-3 flex justify-center">
+          de pausa ahí solo sería una promesa falsa.
+
+          El envoltorio se renderiza SIEMPRE, con su alto reservado, y el botón
+          espera a `montado`. El servidor no puede conocer la preferencia de
+          movimiento, así que si el botón dependiera solo de `reducir` el
+          servidor lo pintaría y el cliente con la preferencia activa lo
+          quitaría al hidratar: un aviso de discrepancia en consola y un salto
+          de layout. Reservando el hueco, no hay ni lo uno ni lo otro. */}
+      <div className="mt-3 flex min-h-11 justify-center">
+        {montado && !reducir && (
           <button
             type="button"
             onClick={pausar}
@@ -363,8 +375,8 @@ export function TestimoniosCarrusel({ items, etiquetas, lang }: Props) {
             </svg>
             {t(pausaManual ? etiquetas.reanudar : etiquetas.pausar)}
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

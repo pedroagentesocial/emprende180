@@ -34,19 +34,45 @@ interface StaggerListProps {
   className?: string;
 }
 
-const contenedor = {
-  oculto: {},
-  visible: { transition: { staggerChildren: 0.06 } },
-};
-
-const elemento = {
-  oculto: { opacity: 0, y: 16 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as const },
+/**
+ * ⚠️ `reducir` NO puede cambiar el ÁRBOL que se renderiza, solo la transición.
+ *
+ * Antes había aquí un `if (reducir) return <ul>…</ul>` con marcado distinto, y
+ * hacía invisible media página a quien navega con «reducir movimiento»:
+ *
+ *   · El servidor no puede saber esa preferencia, así que renderizaba SIEMPRE
+ *     la rama animada, y Motion hornea `style="opacity:0"` en el HTML.
+ *   · El cliente con la preferencia activada devolvía la rama estática, sin
+ *     `style`.
+ *   · React NO parchea las discrepancias de ATRIBUTOS al hidratar (lo dice su
+ *     propio aviso: "this won't be patched up"). El `opacity:0` del servidor se
+ *     quedaba en el DOM y ya nadie lo quitaba: la lista no aparecía jamás.
+ *
+ * Con el mismo árbol en los dos casos no hay discrepancia, Motion toma el
+ * control y con `duration: 0` salta a visible sin un solo píxel de movimiento,
+ * que es justo lo que pide la preferencia.
+ */
+const variantes = (reducir: boolean) => ({
+  contenedor: {
+    oculto: {},
+    visible: { transition: { staggerChildren: reducir ? 0 : 0.06 } },
   },
-};
+  elemento: {
+    /* `y: 16` SIEMPRE, también con `reducir`. Si variara con la preferencia,
+       el servidor escribiría `translateY(16px)` y el cliente `none`, y vuelve
+       la discrepancia que este comentario existe para evitar. Con `duration:
+       0` el salto de 16 px ocurre en un solo fotograma, antes de que se vea:
+       no es movimiento, y la preferencia queda respetada igual. */
+    oculto: { opacity: 0, y: 16 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: reducir
+        ? { duration: 0 }
+        : { duration: 0.45, ease: [0.22, 1, 0.36, 1] as const },
+    },
+  },
+});
 
 function Icono({
   variante,
@@ -135,18 +161,8 @@ export function StaggerList({
     </>
   );
 
-  // Sin animación: mismo marcado, sin estado inicial invisible.
-  if (reducir) {
-    return (
-      <ul className={clasesUl}>
-        {items.map((item, i) => (
-          <li key={item.texto.es} className="flex gap-3">
-            <Contenido item={item} i={i} />
-          </li>
-        ))}
-      </ul>
-    );
-  }
+  // Mismo árbol con y sin `reducir`. Ver el bloque de `variantes`.
+  const { contenedor, elemento } = variantes(Boolean(reducir));
 
   return (
     <motion.ul

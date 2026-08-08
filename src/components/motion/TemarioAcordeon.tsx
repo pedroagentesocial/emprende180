@@ -151,15 +151,25 @@ export function TemarioAcordeon({ modulos, badges, lang }: Props) {
           </div>
         );
 
-        if (reducir) return <li key={m.numero} className="min-w-0">{Contenido}</li>;
-
+        /* ⚠️ `reducir` cambia la TRANSICIÓN, nunca el árbol. Aquí había un
+           `if (reducir) return <li>…</li>` con marcado distinto, y dejaba los
+           diez módulos invisibles para siempre a quien navega con «reducir
+           movimiento»: el servidor no conoce la preferencia, renderiza la rama
+           animada y hornea `style="opacity:0"` en el HTML; el cliente devolvía
+           la otra rama, sin `style`; y React no parchea discrepancias de
+           atributos al hidratar, así que el `opacity:0` se quedaba puesto.
+           Con el mismo árbol y `duration: 0` salta a visible sin movimiento. */
         return (
           <motion.li
             key={m.numero}
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.45, delay: i * 0.05, ease: suave }}
+            transition={
+              reducir
+                ? { duration: 0 }
+                : { duration: 0.45, delay: i * 0.05, ease: suave }
+            }
             className="min-w-0"
           >
             {Contenido}
