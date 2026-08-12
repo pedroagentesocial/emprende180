@@ -6,6 +6,7 @@ import { construirTxt } from "@i18n/idioma";
 import { interpolar } from "@i18n/formato";
 import { privacidad, terminos } from "@config/legal.config";
 import CookiePreferences from "@components/legal/CookiePreferences";
+import RedesMarca from "@components/RedesMarca.astro";
 
 const anio = new Date().getFullYear();
 /* El mensaje prerrellenado de WhatsApp va en el idioma activo: abrir el chat
@@ -49,6 +50,7 @@ const lang = resolverIdiomaServidor(
           decoding="async"
         />
         <p class="mt-4 max-w-xs text-sm text-ink-muted"><T v={sitio.descripcion} /></p>
+        <RedesMarca class="mt-5" pendingLabel={lang === "es" ? "Próximamente" : "Coming soon"} />
       </div>
 
       <div class="flex flex-col gap-3 text-sm">

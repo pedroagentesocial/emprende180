@@ -1252,6 +1252,19 @@ export const contacto = {
   razonSocial: "[COMPLETAR: nombre o razón social]", // SWAP (HECHO)
 } as const;
 
+/**
+ * Las CINCO redes de la marca, siempre en este orden y siempre visibles en el
+ * pie. Sin url se muestran pero no enlazan: nunca publicamos un perfil que no
+ * existe ni apuntamos a la portada de la red.
+ */
+export const redesMarca = [
+  { key: "facebook", label: "Facebook", url: "" }, // SWAP
+  { key: "instagram", label: "Instagram", url: "" }, // SWAP
+  { key: "tiktok", label: "TikTok", url: "" }, // SWAP
+  { key: "youtube", label: "YouTube", url: "" }, // SWAP
+  { key: "linkedin", label: "LinkedIn", url: "" }, // SWAP
+] as const;
+
 // ─── CTA global ──────────────────────────────────────────────────────────────
 /**
  * Dos acciones en toda la página, ni una más, y siempre con el mismo texto:
