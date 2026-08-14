@@ -283,8 +283,25 @@ export function TestimoniosCarrusel({ items, etiquetas, lang }: Props) {
         ))}
       </ul>
 
-      {/* Controles. Los puntos van en medio para que en móvil los dos botones
-          queden en los extremos, donde llega el pulgar. */}
+      {/* Controles. Los botones van en los extremos, donde llega el pulgar.
+          En medio, los puntos… pero solo a partir de `sm`.
+
+          POR QUÉ EN MÓVIL NO HAY PUNTOS
+          ──────────────────────────────
+          Cada punto es un objetivo táctil de 44 px, que es lo que pide el
+          proyecto. Seis puntos son 264 px, más 40 de separación, más los dos
+          botones de 44 y sus dos huecos de 16: 424 px de controles. En una
+          pantalla de 320 eso no es que quede apretado, es que se sale 52 px por
+          cada lado y le mete scroll horizontal a la PÁGINA ENTERA. Era el
+          desborde que se veía en todo el móvil.
+
+          Encoger los puntos habría arreglado el ancho rompiendo la regla de los
+          44 px, y encima seis dianas de 30 px pegadas no se aciertan con el
+          dedo. Así que en móvil se cambia el control por el que sí sirve ahí:
+          un contador que dice dónde estás. Saltar a la tarjeta 4 se hace
+          deslizando, que es el gesto natural de la pista (`scroll-snap`) y
+          sigue funcionando igual. De `sm` para arriba, donde caben, vuelven los
+          puntos. */}
       <div className="mt-6 flex items-center justify-center gap-4">
         <button
           type="button"
@@ -298,7 +315,17 @@ export function TestimoniosCarrusel({ items, etiquetas, lang }: Props) {
           </svg>
         </button>
 
-        <ul className="flex items-center gap-2">
+        {/* Contador de móvil. `tabular-nums` para que el ancho no baile al
+            pasar de 1 a 2: sin eso, los dos botones de los lados se mueven
+            solos cada vez que avanza la tarjeta. */}
+        <p
+          aria-hidden="true"
+          className="text-sm font-semibold text-ink-muted tabular-nums sm:hidden"
+        >
+          {ti(etiquetas.posicion, { n: indice + 1, total: items.length })}
+        </p>
+
+        <ul className="hidden items-center gap-2 sm:flex">
           {items.map((item, i) => (
             <li key={`punto-${item.nombre}-${i}`} className="relative grid place-items-center">
               <button

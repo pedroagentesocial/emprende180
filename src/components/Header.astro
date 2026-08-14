@@ -55,15 +55,18 @@ const logoAlt = {
       />
     </a>
 
-    {/* Menú. Solo de `md` para arriba: en móvil el CTA fijo ya cubre la acción
-        y meter tres enlaces más en 390 px vuelve a aplastar el logo.
+    {/* Menú. Solo de `lg` para arriba, y el breakpoint está medido, no elegido:
+        con `md` el menú aparecía a 768 px, donde el header ya lleva logo,
+        selector de idioma y CTA. Los tres enlaces no cabían y el header
+        desbordaba 31 px, o sea scroll horizontal en toda la página justo en el
+        ancho de una tablet en vertical. A 1024 sí caben los cuatro bloques.
         Los tres llevan HACIA la compra: temario y preguntas son justo las dos
         objeciones que hacen volver arriba a buscar. */}
     <nav
       aria-label={copy.ui.menuPrincipal[lang]}
       data-aria-es={copy.ui.menuPrincipal.es}
       data-aria-en={copy.ui.menuPrincipal.en}
-      class="hidden md:flex md:items-center md:gap-1"
+      class="hidden lg:flex lg:items-center lg:gap-1"
     >
       {
         cta.navegacion.map((item) => (
@@ -82,17 +85,23 @@ const logoAlt = {
           con ?lang= equivocado tiene que poder corregirlo sin buscar. */}
       <LanguageSwitch client:load lang={lang} />
 
-      {/* `max-sm:hidden` y no `hidden sm:inline-flex`: la base del botón ya
+      {/* `max-md:hidden` y no `hidden md:inline-flex`: la base del botón ya
           trae `inline-flex`, y entre dos utilidades del mismo grupo gana la que
           Tailwind ordena después, no la que escribes al final. El resultado era
           un CTA que nunca se ocultaba y desbordaba el header en móvil. Con una
-          variante responsive no hay ambigüedad posible. */}
+          variante responsive no hay ambigüedad posible.
+
+          `md` y no `sm`, para que case con el CTA fijo de móvil: la barra fija
+          existe por debajo de 48rem (768). Con el corte en `sm` (640) había una
+          franja de 640 a 767 con los DOS CTA a la vez, que es justo lo que el
+          comentario de arriba dice que no puede pasar. Ahora el relevo es
+          exacto: por debajo de 768 manda la barra fija, por encima el header. */}
       <Button
         href={cta.primario.href}
         variant="primary"
         size="md"
         trackId="header"
-        class="max-sm:hidden"
+        class="max-md:hidden"
       >
         <T v={cta.primario.texto} />
       </Button>

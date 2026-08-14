@@ -106,20 +106,39 @@ export function Contador({ fechaCierre, alternativa, etiquetas, lang }: Props) {
           para empujar la tarjeta entera y meter 0.008 de CLS: la columna del
           precio es `justify-center`, así que cualquier cambio de alto mueve
           todo lo que hay dentro. Medido, no estimado. */}
+      {/* CUATRO CELDAS QUE TIENEN QUE CABER EN 320 px.
+          Esto era una fila con `min-w-14` (56px) por celda y dos puntos entre
+          ellas: 296 px de ancho mínimo que no se podía negociar. Y como no se
+          podía, el `min-content` de la columna del grid de la sección de precio
+          se iba a 381 px dentro de un contenedor de 348: el panel entero se
+          ensanchaba y la tarjeta, que es `overflow-hidden`, recortaba las
+          cifras del desglose. Se veía "$2,19" en lugar de "$2,190", que en una
+          página de precios es de lo peor que puede pasar.
+
+          Ahora las celdas reparten el ancho disponible (`flex-1 min-w-0`) en
+          vez de imponerlo. Los dos puntos solo aparecen de `sm` para arriba: en
+          móvil son 72 px de decoración que le quitan sitio a los números, y la
+          separación entre celdas ya dice lo mismo. De `sm` en adelante vuelve
+          el diseño de siempre, ancho fijo y dos puntos incluidos. */}
       <div
-        className="mt-3 flex min-h-[4.25rem] items-center justify-center gap-2"
+        className="mt-3 flex min-h-[4.25rem] items-center justify-center gap-1.5 sm:gap-2"
         aria-hidden="true"
       >
         {celdas?.map((c, i) => (
-          <div key={i} className="flex items-center gap-2">
+          <div
+            key={i}
+            className="flex min-w-0 flex-1 items-center gap-2 sm:flex-none"
+          >
             {i > 0 && (
-              <span className="pb-4 text-2xl font-bold text-secondary-400">:</span>
+              <span className="hidden pb-4 text-2xl font-bold text-secondary-400 sm:block">
+                :
+              </span>
             )}
-            <div className="min-w-14 rounded-xl bg-surface px-2 py-1.5 text-center shadow-sm">
-              <span className="block text-2xl font-extrabold tabular-nums text-ink">
+            <div className="min-w-0 flex-1 rounded-xl bg-surface px-1 py-1.5 text-center shadow-sm sm:min-w-14 sm:flex-none sm:px-2">
+              <span className="block text-xl font-extrabold tabular-nums text-ink sm:text-2xl">
                 {c.valor}
               </span>
-              <span className="block text-[0.65rem] font-semibold uppercase tracking-wide text-ink-subtle">
+              <span className="block text-[0.6rem] font-semibold uppercase tracking-wide text-ink-subtle sm:text-[0.65rem]">
                 {t(c.etiqueta)}
               </span>
             </div>
