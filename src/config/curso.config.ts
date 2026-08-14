@@ -36,11 +36,21 @@ import type { Txt } from "@i18n/idioma";
  * QUÉ SE VENDE AQUÍ (para no volver a escribir la página equivocada)
  *
  *   "Fundamentos de Emprende180" NO es un curso genérico de emprendimiento.
- *   Es la formación para entrar al Ecosistema Emprende180 como EMBAJADOR: diez
- *   cursos en video, cada uno con su quiz de validación, que van de qué es el
- *   Ecosistema hasta el Plan de 90 Días, empezando por dos servicios concretos,
- *   Accidentes de Auto y Vivienda. Los títulos de los diez son del cliente y
- *   están en `temario` tal cual los dio.
+ *   Es la formación para entrar al Ecosistema Emprende180 como EMBAJADOR.
+ *
+ *   ES UN SOLO CURSO. Un curso completo, formado por DIEZ VIDEOS que se ven en
+ *   orden, cada uno con su quiz de validación al final. Al superar los diez
+ *   quizzes se emite la Certificación de Embajador Emprende180.
+ *
+ *   ⚠️ NUNCA "10 cursos". Se dijo así en la primera versión de la página y era
+ *   un error de producto, no de estilo: "10 cursos" hace pensar que se compran
+ *   diez formaciones sueltas, y lo que se vende es UNA con diez videos dentro.
+ *   La palabra "curso" en singular se refiere SIEMPRE al producto entero; las
+ *   diez piezas de dentro son "videos" ("videos" en inglés, no "courses").
+ *
+ *   Va de qué es el Ecosistema hasta el Plan de 90 Días, empezando por dos
+ *   servicios concretos, Accidentes de Auto y Vivienda. Los títulos de los diez
+ *   videos son del cliente y están en `temario` tal cual los dio.
  *
  * TRES REGLAS DE CONTENIDO QUE NO SE SALTAN:
  *
@@ -67,6 +77,21 @@ export interface Modulo {
   /** Qué SABE HACER el alumno al terminar. Resultado, no descripción. */
   logras: Txt;
   lecciones?: Txt[];
+}
+
+/**
+ * Un curso de la ruta que todavía no ha salido.
+ *
+ * OJO CON LA PALABRA: aquí "curso" SÍ significa un curso entero y aparte, no un
+ * video de Fundamentos. Es la única parte del archivo donde el plural "cursos"
+ * es correcto. Ver la cabecera.
+ */
+export interface ProximoCurso {
+  /** Su lugar en la ruta. Fundamentos es el 1. */
+  numero: number;
+  titulo: Txt;
+  /** Una línea de qué resuelve. Se queda en `[COMPLETAR:]` hasta tener el tema. */
+  resumen: Txt;
 }
 
 export interface Testimonio {
@@ -112,8 +137,8 @@ export const sitio = {
     en: "Emprende180 — Become an Ambassador",
   },
   descripcion: {
-    es: "Formación para Embajadores Emprende180: 10 cursos con quiz de validación, del Ecosistema a tu Plan de 90 Días. Empieza gratis con el reto de 7 días.",
-    en: "Training for Emprende180 Ambassadors: 10 courses with validation quizzes, from the ecosystem to your 90-Day Plan. Start free with the 7-day challenge.",
+    es: "El curso completo para ser Embajador Emprende180: 10 videos, un quiz en cada uno y tu certificación al superarlos. Del Ecosistema a tu Plan de 90 Días. Empieza gratis con el reto de 7 días.",
+    en: "The complete course to become an Emprende180 Ambassador: 10 videos, a quiz in each one and your certification once you pass them. From the ecosystem to your 90-Day Plan. Start free with the 7-day challenge.",
   },
 
   ogImagen: "/imagenes/og/og.jpg",
@@ -171,8 +196,8 @@ export const curso = {
     en: "Fundamentos de Emprende180",
   },
   subtitulo: {
-    es: "10 cursos, un quiz de validación en cada uno y tu certificación de Embajador al terminar",
-    en: "10 courses, a validation quiz in each one, and your Ambassador certificate at the end",
+    es: "Un curso completo: 10 videos, un quiz de validación en cada uno y tu Certificación de Embajador al superarlos",
+    en: "One complete course: 10 videos, a validation quiz in each one, and your Ambassador Certification once you pass them",
   },
 
   /** El titular activo. El resto viven en `TITULARES` para poder probarlos. */
@@ -180,8 +205,8 @@ export const curso = {
 
   /** Subtítulo: para quién es y qué se consigue. */
   promesaApoyo: {
-    es: "La formación completa para entrar al Ecosistema Emprende180. Diez cursos que te llevan de no saber qué es esto a tener tu Plan de 90 Días escrito, empezando por dos servicios concretos: Accidentes de Auto y Vivienda. Sin experiencia previa en el sector.",
-    en: "The complete training to join the Emprende180 ecosystem. Ten courses that take you from not knowing what this is to having your 90-Day Plan in writing, starting with two concrete services: Auto and Home Accidents. No prior industry experience needed.",
+    es: "Diez videos en orden, un quiz en cada uno y tu Certificación de Embajador al superarlos. De no saber qué es esto a tener tu Plan de 90 Días escrito, empezando por Accidentes de Auto y Vivienda. Sin experiencia previa en el sector.",
+    en: "Ten videos in order, a quiz in each one and your Ambassador Certification once you pass them. From not knowing what this is to having your 90-Day Plan in writing, starting with Auto and Home Accidents. No prior industry experience needed.",
   },
 
   // ─── SECCIÓN 2 · El problema ───────────────────────────────────────────────
@@ -343,8 +368,8 @@ export const curso = {
       en: "You want the outcome without doing the work. The 90-Day Plan is yours, and nobody is going to run it for you.",
     },
     {
-      es: "Te incomoda la parte de reglas. El curso 9 es de ética y cumplimiento porque aquí hay límites y se respetan.",
-      en: "The rules part bothers you. Course 9 is on ethics and compliance because there are limits here and they're respected.",
+      es: "Te incomoda la parte de reglas. El video 9 es entero de ética y cumplimiento porque aquí hay límites y se respetan.",
+      en: "The rules part bothers you. Video 9 is entirely on ethics and compliance because there are limits here and they're respected.",
     },
     {
       es: "Esperas una cifra garantizada. Aquí hay formación y un método; lo que salga depende de lo que tú hagas con ellos.",
@@ -363,8 +388,8 @@ export const curso = {
     conCertificado: true,
 
     modalidad: {
-      es: "10 cursos en video, a tu ritmo",
-      en: "10 video courses, at your own pace",
+      es: "Un curso de 10 videos, a tu ritmo",
+      en: "One course, 10 videos, at your own pace",
     },
     acceso: {
       es: "Acceso de por vida, actualizaciones incluidas",
@@ -372,24 +397,29 @@ export const curso = {
     },
 
     /**
-     * ⚠️ SOLO LO QUE CONSTA. Las tres primeras líneas salen de lo que el
-     * cliente confirmó: diez cursos, un quiz de validación en cada uno y la
-     * certificación al superarlos. Lo demás se quedó como `[COMPLETAR:]`
-     * porque son HECHOS que no se pueden deducir del temario, y prometer en
-     * esta lista algo que luego no está es la causa número uno de reembolsos.
+     * ⚠️ SOLO LO QUE CONSTA. Las cuatro primeras líneas salen de lo que el
+     * cliente confirmó: un curso de diez videos, un quiz de validación en cada
+     * uno y la certificación al superarlos. Lo demás se quedó como
+     * `[COMPLETAR:]` porque son HECHOS que no se pueden deducir del temario, y
+     * prometer en esta lista algo que luego no está es la causa número uno de
+     * reembolsos.
      */
     incluye: [
       {
-        es: "10 cursos en video, con acceso de por vida",
-        en: "10 video courses, with lifetime access",
+        es: "Los 10 videos del curso, en orden y con acceso de por vida",
+        en: "All 10 course videos, in order and with lifetime access",
       },
       {
-        es: "Un quiz de validación al final de cada curso",
-        en: "A validation quiz at the end of every course",
+        es: "Un quiz de validación al final de cada video",
+        en: "A validation quiz at the end of every video",
       },
       {
         es: "Certificación de Embajador Emprende180 al superar los 10 quizzes",
-        en: "Emprende180 Ambassador certification once you pass all 10 quizzes",
+        en: "Emprende180 Ambassador Certification once you pass all 10 quizzes",
+      },
+      {
+        es: "Las actualizaciones futuras del curso, sin pagar de nuevo",
+        en: "Future updates to the course, without paying again",
       },
       {
         es: "[COMPLETAR: ¿el acceso al CRM va incluido con el curso o se contrata aparte?]",
@@ -405,7 +435,7 @@ export const curso = {
      * ⚠️ ESTO NO ES UN DETALLE DE MAQUETACIÓN. Un programa de referidos sobre
      * servicios de accidentes de auto y vivienda está regulado, y en muchos
      * territorios quién puede recibir una compensación por un referido —y de
-     * qué tipo— depende de si tiene licencia. El propio curso 9 existe por
+     * qué tipo— depende de si tiene licencia. El propio video 9 existe por
      * esto. Que lo confirme quien lleve cumplimiento antes de publicar, y que
      * la respuesta viva aquí para que la página no prometa lo que no puede.
      */
@@ -504,12 +534,12 @@ export const curso = {
       {
         valor: 2190,
         titulo: {
-          es: "Los 10 cursos en video, con acceso de por vida",
-          en: "The 10 video courses, with lifetime access",
+          es: "El curso completo: los 10 videos, con acceso de por vida",
+          en: "The complete course: all 10 videos, with lifetime access",
         },
         detalle: {
-          es: "De qué es Emprende180 hasta tu Plan de 90 Días, en el orden en que hay que hacerlos. Vuelves a cualquiera cuando lo necesites.",
-          en: "From what Emprende180 is through to your 90-Day Plan, in the order you need them. Come back to any of them whenever you need to.",
+          es: "De qué es Emprende180 hasta tu Plan de 90 Días, en el orden en que hay que verlos. Vuelves a cualquiera cuando lo necesites, y las actualizaciones futuras entran sin pagar de nuevo.",
+          en: "From what Emprende180 is through to your 90-Day Plan, in the order you need to watch them. Come back to any of them whenever you need to, and future updates are included at no extra cost.",
         },
       },
       {
@@ -519,8 +549,8 @@ export const curso = {
           en: "The 10 validation quizzes",
         },
         detalle: {
-          es: "Uno por curso. No están para poner nota: están para que sepas si de verdad lo fijaste antes de pasar al siguiente.",
-          en: "One per course. They're not there to grade you: they tell you whether it actually stuck before you move on.",
+          es: "Uno al final de cada video. No están para poner nota: están para que sepas si de verdad lo fijaste antes de pasar al siguiente, y son los que abren la certificación.",
+          en: "One at the end of each video. They're not there to grade you: they tell you whether it actually stuck before you move on, and they're what unlocks the certification.",
         },
       },
       {
@@ -530,8 +560,8 @@ export const curso = {
           en: "The Emprende180 Ambassador certification",
         },
         detalle: {
-          es: "Al superar los diez quizzes. Es la constancia de que hiciste la formación completa, incluida la de ética y cumplimiento.",
-          en: "Once you pass all ten quizzes. It's the record that you completed the full training, ethics and compliance included.",
+          es: "La emitimos nosotros al superar los diez quizzes. Es la constancia de que hiciste el curso entero, incluido el video de ética y cumplimiento, y de que te validaste video a video en vez de darle a «siguiente».",
+          en: "We issue it once you pass all ten quizzes. It's the record that you did the whole course, the ethics and compliance video included, and that you validated yourself video by video instead of clicking “next”.",
         },
       },
       {
@@ -541,8 +571,8 @@ export const curso = {
           en: "Your 90-Day Plan, in writing",
         },
         detalle: {
-          es: "El último curso no es teoría: sales con qué haces cada semana, con quién hablas y cómo sabes si vas bien.",
-          en: "The last course isn't theory: you leave with what you do each week, who you talk to, and how you know it's working.",
+          es: "El último video no es teoría: sales con qué haces cada semana, con quién hablas y cómo sabes si vas bien.",
+          en: "The last video isn't theory: you leave with what you do each week, who you talk to, and how you know it's working.",
         },
       },
     ],
@@ -621,14 +651,31 @@ export const curso = {
  * que no suena a folleto. Escribe el tuyo con esa estructura y tus datos.
  */
 export const instructor = {
-  nombre: "[COMPLETAR: nombre y apellido]", // SWAP (HECHO)
+  nombre: "Pedro Lira",
   rol: {
-    es: "[COMPLETAR: cargo real, p. ej. «Fundador de [Negocio]»]",
-    en: "[COMPLETAR: real title, e.g. “Founder of [Business]”]",
+    es: "Fundador de Emprende180",
+    en: "Founder of Emprende180",
   },
+  /**
+   * ⚠️ LEE ESTO ANTES DE DAR LA BIO POR BUENA.
+   *
+   * Lo que hay escrito abajo es TODO lo que se puede afirmar sin inventar: que
+   * Pedro fundó Emprende180, que diseñó el Ecosistema y el rol de Embajador, y
+   * que da él los diez videos. Eso es cierto por construcción y se sostiene
+   * delante de cualquiera.
+   *
+   * El hueco marcado es el ÚNICO que queda, y es a propósito: es de dónde
+   * viene. Dos frases. Y es, con diferencia, la parte que más convierte de
+   * toda la página, porque es la única que el lector no puede deducir del
+   * producto. La regla del proyecto —específico gana a impresionante— se juega
+   * entera aquí: "vendí seguros siete años y me harté de ver casos que se
+   * perdían por no saber a quién llamar" vale más que cualquier titulo.
+   * Inventarlo sería exactamente el infoproducto de gurú del que PRODUCT.md
+   * dice que hay que huir, así que se queda a la vista hasta que lo escribas.
+   */
   bio: {
-    es: "[COMPLETAR: 1) de dónde vienes, incluido lo que salió mal. 2) qué has conseguido, con números y fechas verificables. 3) por qué das este curso. Tres o cuatro frases. Ver el ejemplo en el comentario de arriba.]",
-    en: "[COMPLETAR: 1) where you came from, including what went wrong. 2) what you've achieved, with verifiable numbers and dates. 3) why you teach this. Three or four sentences. See the example in the comment above.]",
+    es: "Soy Pedro Lira y fundé Emprende180. El Ecosistema existe porque el desperdicio siempre era el mismo: gente con una red de contactos buena y grande, delante de situaciones que podía resolver, que no hacía nada porque nadie le había explicado qué hacer ni hasta dónde llegaba su parte. No es falta de ganas, es falta de método. [COMPLETAR: dos frases sobre de dónde vienes, incluido lo que te salió mal. Es el dato que más peso tiene de toda la página.] Doy yo los diez videos porque el rol de Embajador lo diseñé yo, y prefiero explicarlo en primera persona antes que dejar que cada quien lo interprete a su manera.",
+    en: "I'm Pedro Lira and I founded Emprende180. The ecosystem exists because the waste was always the same: people with a big, good network, standing in front of situations they could have solved, doing nothing because nobody had explained what to do or where their part ended. It isn't a lack of drive, it's a lack of method. [COMPLETAR: two sentences on where you come from, including what went wrong. It's the single highest-weight fact on the page.] I teach the ten videos myself because I designed the Ambassador role, and I'd rather explain it first-hand than let everyone interpret it their own way.",
   },
 
   /**
@@ -643,31 +690,36 @@ export const instructor = {
   credenciales: [
     {
       dato: {
-        es: "[COMPLETAR: años emprendiendo y cuántos negocios has fundado]",
-        en: "[COMPLETAR: years in business and how many companies you've founded]",
+        es: "Fundador de Emprende180 y del Ecosistema por el que pasa cada oportunidad",
+        en: "Founder of Emprende180 and of the ecosystem every opportunity runs through",
       },
-      prueba: null, // SWAP (HECHO)
+      prueba: null,
     },
     {
       dato: {
-        es: "[COMPLETAR: un resultado con cifra y año, p. ej. facturación o alumnos]",
-        en: "[COMPLETAR: one result with a number and a year, e.g. revenue or students]",
+        es: "Autor de la formación de Embajador: los diez videos y los diez quizzes de la certificación",
+        en: "Author of the Ambassador training: the ten videos and the ten certification quizzes",
       },
-      prueba: null, // SWAP (HECHO)
+      prueba: null,
     },
     {
       dato: {
-        es: "[COMPLETAR: reconocimiento, mentoría o colaboración verificable]",
-        en: "[COMPLETAR: an award, mentorship or verifiable collaboration]",
+        es: "Definió el rol del Embajador: qué hace, qué no le toca y dónde acaba su parte",
+        en: "Defined the Ambassador role: what they do, what isn't theirs, and where their part ends",
       },
-      prueba: null, // SWAP (HECHO): enlace que lo demuestre
+      prueba: null,
     },
     {
+      /* El único con número. Va el último a propósito: es el que falta y el que
+         más pesa. Los tres de arriba son ciertos por construcción, pero todos
+         dicen "hizo la cosa que te está vendiendo", que es credibilidad de
+         partida, no prueba. Un número comprobable de fuera cambia la sección
+         entera. Si el enlace existe, va en `prueba` y se vuelve verificable. */
       dato: {
-        es: "[COMPLETAR: publicaciones, ponencias o medios donde has salido]",
-        en: "[COMPLETAR: publications, talks or press features]",
+        es: "[COMPLETAR: un dato con cifra y fecha, comprobable. P. ej. cuántos Embajadores se han formado ya, o los años que llevas en el sector.]",
+        en: "[COMPLETAR: one checkable figure with a date. E.g. how many Ambassadors have been trained so far, or your years in the industry.]",
       },
-      prueba: null, // SWAP (HECHO)
+      prueba: null, // SWAP (HECHO): enlace que lo demuestre, si lo hay
     },
   ] satisfies Credencial[],
 
@@ -675,20 +727,20 @@ export const instructor = {
      Aun así, revisa que coincide con lo que de verdad enseñas. */
   queEnsena: [
     {
-      es: "Validar una idea hablando con clientes antes de gastar un dólar",
-      en: "Validating an idea by talking to customers before spending a dollar",
+      es: "Cómo funciona el Ecosistema Emprende180 y qué parte te toca a ti",
+      en: "How the Emprende180 ecosystem works and which part is yours",
     },
     {
-      es: "Construir una oferta y ponerle precio con criterio y margen",
-      en: "Building an offer and pricing it with judgment and margin",
+      es: "Reconocer una oportunidad de Accidentes de Auto o Vivienda en tu propia red",
+      en: "Spotting an Auto or Home Accident opportunity in your own network",
     },
     {
-      es: "Vender de tú a tú, sin técnicas agresivas ni guiones enlatados",
-      en: "Selling one-on-one, without pushy tactics or canned scripts",
+      es: "Pedir un referido de tú a tú, sin guiones enlatados y sin quemar la relación",
+      en: "Asking for a referral one-on-one, without canned scripts or burning the relationship",
     },
     {
-      es: "Montar un negocio de servicios o de producto simple desde cero",
-      en: "Starting a service business or a simple product business from scratch",
+      es: "Ética y cumplimiento: qué se puede decir, qué no, y por qué",
+      en: "Ethics and compliance: what you can say, what you can't, and why",
     },
   ] satisfies Txt[],
 
@@ -696,28 +748,28 @@ export const instructor = {
      y evita reembolsos de gente que esperaba otra cosa. Tiene que ser sincero. */
   queNoCubre: [
     {
-      es: "Publicidad pagada avanzada. Verás lo básico, pero no vas a aprender a escalar campañas.",
-      en: "Advanced paid ads. You'll see the basics, but you won't learn to scale campaigns.",
+      es: "No te convierte en agente ni en perito. Tú detectas y refieres; la parte técnica del caso la lleva el Ecosistema.",
+      en: "It doesn't make you an agent or an adjuster. You spot and refer; the technical side of the case is handled by the ecosystem.",
     },
     {
-      es: "Programación ni desarrollo de producto tecnológico.",
-      en: "Coding or technical product development.",
+      es: "No es publicidad pagada. El video 8 es contenido orgánico para generar conversaciones, no campañas.",
+      en: "It isn't paid advertising. Video 8 is organic content to start conversations, not campaigns.",
     },
     {
-      es: "Cómo levantar inversión o preparar una ronda.",
-      en: "Raising capital or prepping a funding round.",
+      es: "No te damos los contactos. La red con la que trabajas es la tuya, y ese es el punto.",
+      en: "We don't hand you contacts. The network you work is your own, and that's the point.",
     },
     {
-      es: "Contabilidad avanzada o fiscalidad internacional. Verás lo mínimo para operar en regla.",
-      en: "Advanced accounting or international tax. You'll see the minimum to operate properly.",
+      es: "No hay cifras prometidas. Aquí hay formación y método; lo que salga depende de lo que tú hagas con ellos.",
+      en: "There are no promised numbers. What's here is training and a method; what comes of it depends on what you do with them.",
     },
   ] satisfies Txt[],
 
   foto: "/imagenes/instructor/instructor.webp",
   fotoCuadrada: "/imagenes/instructor/instructor-cuadrado.webp",
   fotoAlt: {
-    es: "[COMPLETAR: retrato de [nombre], instructor del curso]",
-    en: "[COMPLETAR: portrait of [name], the course instructor]",
+    es: "Retrato de Pedro Lira, fundador de Emprende180",
+    en: "Portrait of Pedro Lira, founder of Emprende180",
   },
 
   redes: {
@@ -729,12 +781,15 @@ export const instructor = {
 
 // ─── Temario ─────────────────────────────────────────────────────────────────
 /**
- * Los diez cursos, en el orden en que hay que hacerlos.
+ * Los diez VIDEOS del curso, en el orden en que hay que verlos.
+ *
+ * No son diez cursos: son las diez piezas de un único curso. Ver la cabecera
+ * del archivo.
  *
  * LOS TÍTULOS SON LOS REALES, tal cual los dio el cliente. No se tocan sin que
  * él lo diga: son el contenido del producto, no copy de la página.
  *
- * `logras` sí es copy: dice qué sabe hacer el Embajador al terminar cada curso.
+ * `logras` sí es copy: dice qué sabe hacer el Embajador al terminar cada video.
  * Está escrito PEGADO al título y sin añadir nada que el título no prometa ya,
  * porque un temario que promete de más se paga en reembolsos.
  *
@@ -745,7 +800,7 @@ export const instructor = {
  * momento. Sin ellos el acordeón no se despliega, que es exactamente lo que
  * tiene que pasar mientras no haya nada real que enseñar.
  *
- * Cada curso cierra con su Quiz de validación. Eso no va aquí como módulo
+ * Cada video cierra con su Quiz de validación. Eso no va aquí como fila
  * aparte (serían veinte filas para diez contenidos): va en `formato.incluye` y
  * en la insignia "Quiz" que pinta cada fila del acordeón.
  *
@@ -759,8 +814,8 @@ export const temario: Modulo[] = [
       en: "What Emprende180 is",
     },
     logras: {
-      es: "Entiendes qué es Emprende180, qué problema resuelve y qué lugar ocupas tú dentro. Es la base sobre la que se apoyan los nueve cursos siguientes.",
-      en: "You understand what Emprende180 is, what problem it solves and where you fit into it. This is the base the other nine courses stand on.",
+      es: "Entiendes qué es Emprende180, qué problema resuelve y qué lugar ocupas tú dentro. Es la base sobre la que se apoyan los nueve videos siguientes.",
+      en: "You understand what Emprende180 is, what problem it solves and where you fit into it. This is the base the other nine videos stand on.",
     },
   },
   {
@@ -861,6 +916,60 @@ export const temario: Modulo[] = [
     logras: {
       es: "Sales con tu plan de 90 días escrito: qué haces cada semana, con quién hablas y cómo sabes si vas bien. Se acaba el curso y empieza lo tuyo.",
       en: "You leave with your 90-day plan in writing: what you do each week, who you talk to, and how you know it's working. The course ends and your part begins.",
+    },
+  },
+];
+
+// ─── Lo que viene después ────────────────────────────────────────────────────
+/**
+ * Los dos cursos siguientes de la ruta, todavía en producción.
+ *
+ * Fundamentos es el curso 1. Estos son el 2 y el 3, y son cursos ENTEROS Y
+ * APARTE: no son videos de Fundamentos. Es el único sitio del archivo donde el
+ * plural "cursos" está bien usado.
+ *
+ * ⚠️ TRES COSAS QUE ESTE BLOQUE NO PUEDE HACER:
+ *
+ * 1. NO PROMETER FECHA. "Próximamente" no compromete a nada; "en septiembre"
+ *    sí, y una fecha incumplida en la página donde alguien pagó es lo primero
+ *    que se recuerda al pedir el reembolso. Si algún día hay fecha real y
+ *    firme, se añade aquí un campo y se enseña. Hasta entonces, no.
+ *
+ * 2. NO INSINUAR QUE VAN INCLUIDOS. Lo que se compra hoy es Fundamentos y solo
+ *    Fundamentos. Por eso la entradilla de la sección lo dice con todas las
+ *    letras en vez de dejarlo al aire: un alumno que creyó que compraba la ruta
+ *    entera es un reembolso y una reseña mala.
+ *
+ * 3. NO ROBARLE EL SITIO AL CURSO QUE SÍ SE VENDE. Va al final del temario,
+ *    en tarjetas apagadas y sin CTA. Si esto brilla más que Fundamentos, la
+ *    página empieza a vender algo que todavía no existe y la gente espera.
+ *
+ * Vaciar el array esconde el bloque entero sin tocar el componente.
+ */
+export const proximosCursos: ProximoCurso[] = [
+  {
+    numero: 2,
+    titulo: {
+      es: "Marketing y Marca Personal",
+      /* El título NO se traduce: es el nombre comercial del curso, igual que
+         "Fundamentos de Emprende180". Traducirlo crearía dos nombres para un
+         mismo producto. */
+      en: "Marketing y Marca Personal",
+    },
+    resumen: {
+      es: "Que te conozcan por algo antes de que necesites pedir nada. Marca personal para Embajadores, no para influencers.",
+      en: "Getting known for something before you ever need to ask for anything. Personal brand for Ambassadors, not for influencers.",
+    },
+  },
+  {
+    numero: 3,
+    titulo: {
+      es: "Comunicación, Ventas y Referidos",
+      en: "Comunicación, Ventas y Referidos",
+    },
+    resumen: {
+      es: "El siguiente nivel de lo que empiezas en el video 6: conversaciones que avanzan y referidos que llegan solos.",
+      en: "The next level of what video 6 starts: conversations that move forward and referrals that come to you.",
     },
   },
 ];
@@ -1107,8 +1216,8 @@ export const garantia = {
     en: "If it's not for you, email support and we refund 100%. No forms, no questions.",
   },
   texto: {
-    es: "Entra, haz los primeros cursos y ponlos a prueba con tus contactos reales. Si en 30 días ves que no es para ti, escribes a soporte y te devolvemos el 100 %. Sin formularios, sin llamadas de retención y sin que tengas que justificar nada.",
-    en: "Get in, do the first courses and test them on your real contacts. If within 30 days you decide it isn't for you, email support and we refund 100%. No forms, no retention calls, and no need to justify anything.",
+    es: "Entra, mira los primeros videos y ponlos a prueba con tus contactos reales. Si en 30 días ves que no es para ti, escribes a soporte y te devolvemos el 100 %. Sin formularios, sin llamadas de retención y sin que tengas que justificar nada.",
+    en: "Get in, watch the first videos and test them on your real contacts. If within 30 days you decide it isn't for you, email support and we refund 100%. No forms, no retention calls, and no need to justify anything.",
   },
   /** La condición, dicha en claro. Una sola y razonable. */
   condicion: {
@@ -1133,8 +1242,8 @@ export const faqs: Faq[] = [
       en: "I have no experience in this industry. Will this work for me?",
     },
     respuesta: {
-      es: "Sí, está pensado justo para eso. El curso 1 empieza explicando qué es Emprende180 y no da por sabido nada: ni el sector, ni los servicios, ni haber pedido un referido antes. Lo que sí hace falta es tiempo para hacerlo y disposición para hablar con gente, que es lo que de verdad mueve la aguja.",
-      en: "Yes, that's exactly who it's built for. Course 1 starts by explaining what Emprende180 is and assumes nothing: not the industry, not the services, not having ever asked for a referral. What you do need is time to do it and a willingness to talk to people, which is what actually moves the needle.",
+      es: "Sí, está pensado justo para eso. El video 1 empieza explicando qué es Emprende180 y no da por sabido nada: ni el sector, ni los servicios, ni haber pedido un referido antes. Lo que sí hace falta es tiempo para hacerlo y disposición para hablar con gente, que es lo que de verdad mueve la aguja.",
+      en: "Yes, that's exactly who it's built for. Video 1 starts by explaining what Emprende180 is and assumes nothing: not the industry, not the services, not having ever asked for a referral. What you do need is time to do it and a willingness to talk to people, which is what actually moves the needle.",
     },
   },
   {
@@ -1143,8 +1252,8 @@ export const faqs: Faq[] = [
       en: "Do I need a license to be an Ambassador?",
     },
     respuesta: {
-      es: "[COMPLETAR (HECHO): esta es LA pregunta que va a hacer todo el mundo, y la respuesta depende del estado o país. Un programa de referidos sobre servicios de accidentes de auto y vivienda está regulado, y en muchos territorios quién puede recibir una compensación por un referido depende de si tiene licencia. Que la redacte quien lleve cumplimiento y no se publique sin su visto bueno. El curso 9 cubre esto, pero la página tiene que poder responderlo antes de que alguien pague.]",
-      en: "[COMPLETAR (FACT): this is THE question everyone will ask, and the answer depends on the state or country. A referral program around auto and home accident services is regulated, and in many territories whether an unlicensed person may receive referral compensation is restricted. Have whoever handles compliance write this, and don't publish without their sign-off. Course 9 covers it, but the page has to answer it before anyone pays.]",
+      es: "[COMPLETAR (HECHO): esta es LA pregunta que va a hacer todo el mundo, y la respuesta depende del estado o país. Un programa de referidos sobre servicios de accidentes de auto y vivienda está regulado, y en muchos territorios quién puede recibir una compensación por un referido depende de si tiene licencia. Que la redacte quien lleve cumplimiento y no se publique sin su visto bueno. El video 9 cubre esto, pero la página tiene que poder responderlo antes de que alguien pague.]",
+      en: "[COMPLETAR (FACT): this is THE question everyone will ask, and the answer depends on the state or country. A referral program around auto and home accident services is regulated, and in many territories whether an unlicensed person may receive referral compensation is restricted. Have whoever handles compliance write this, and don't publish without their sign-off. Video 9 covers it, but the page has to answer it before anyone pays.]",
     },
   },
   {
@@ -1173,8 +1282,8 @@ export const faqs: Faq[] = [
       en: "Is the CRM included in the price?",
     },
     respuesta: {
-      es: "[COMPLETAR (HECHO): el curso 7 enseña a usarlo, pero hay que decir si el acceso viene con el curso, si se contrata aparte o si es una herramienta de terceros que pone el Embajador.]",
-      en: "[COMPLETAR (FACT): course 7 teaches you to use it, but you need to state whether access comes with the course, is contracted separately, or is a third-party tool the Ambassador provides.]",
+      es: "[COMPLETAR (HECHO): el video 7 enseña a usarlo, pero hay que decir si el acceso viene con el curso, si se contrata aparte o si es una herramienta de terceros que pone el Embajador.]",
+      en: "[COMPLETAR (FACT): video 7 teaches you to use it, but you need to state whether access comes with the course, is contracted separately, or is a third-party tool the Ambassador provides.]",
     },
   },
   {
@@ -1189,12 +1298,32 @@ export const faqs: Faq[] = [
   },
   {
     pregunta: {
-      es: "¿Los cursos son en vivo o grabados?",
-      en: "Are the courses live or recorded?",
+      es: "¿Los videos son en vivo o grabados?",
+      en: "Are the videos live or recorded?",
     },
     respuesta: {
-      es: "[COMPLETAR: describe el formato real. Ej.: «Los diez cursos están grabados y disponibles desde el primer día, así que avanzas a tu ritmo y repites el que quieras».]",
-      en: "[COMPLETAR: describe the real format. E.g.: “All ten courses are recorded and available from day one, so you go at your own pace and rewatch whichever you want.”]",
+      es: "Grabados. Los diez videos están disponibles desde el primer día, así que empiezas cuando quieras, avanzas a tu ritmo y repites el que necesites las veces que haga falta. No hay horarios que cuadrar ni clases a las que llegar tarde: lo único que marca el ritmo es el quiz de cada video, que hay que superar para pasar al siguiente.",
+      en: "Recorded. All ten videos are available from day one, so you start whenever you want, go at your own pace and rewatch any of them as often as you need. There are no schedules to juggle and no live classes to be late for: the only thing setting the pace is each video's quiz, which you need to pass to move on.",
+    },
+  },
+  {
+    pregunta: {
+      es: "¿Qué es exactamente la certificación que dan?",
+      en: "What exactly is the certification you give?",
+    },
+    respuesta: {
+      es: "Es la Certificación de Embajador Emprende180, y la emitimos nosotros. No se entrega por comprar el curso ni por darle a «siguiente» diez veces: se emite cuando superas los diez quizzes de validación, uno por cada video. En cuanto apruebas el último te llega por email en PDF, con tu nombre y la fecha de emisión, lista para descargar y compartir. No caduca. Acredita que hiciste el curso entero, incluido el video 9 de ética y cumplimiento, que es justo la parte que un Embajador tiene que poder demostrar.",
+      en: "It's the Emprende180 Ambassador Certification, and we issue it ourselves. It isn't handed out for buying the course, or for clicking “next” ten times: it's issued when you pass all ten validation quizzes, one for each video. The moment you pass the last one it arrives by email as a PDF, with your name and the issue date, ready to download and share. It doesn't expire. It certifies you completed the whole course, video 9 on ethics and compliance included — precisely the part an Ambassador needs to be able to prove.",
+    },
+  },
+  {
+    pregunta: {
+      es: "¿Qué pasa si no paso un quiz?",
+      en: "What happens if I fail a quiz?",
+    },
+    respuesta: {
+      es: "Lo repites, y ya está. Los quizzes no están para filtrarte: están para que no sigas avanzando con un hueco detrás. Si fallas, ves qué parte no te quedó fija, vuelves a ese video y lo intentas otra vez. Puedes repetir cada quiz las veces que necesites, sin esperas entre intentos y sin coste. Para darlo por superado hace falta acertar el 80 % de las preguntas, y hay que superar el de un video para pasar al siguiente. Por eso el orden importa, y por eso la certificación significa algo cuando la tienes.",
+      en: "You retake it, that's all. The quizzes aren't there to screen you out: they're there so you don't move on with a gap behind you. If you get one wrong, you see which part didn't stick, go back to that video and try again. You can retake each quiz as many times as you need, with no waiting between attempts and no cost. Passing takes 80% of the questions right, and you have to pass one video's quiz to move to the next. That's why the order matters, and why the certification means something once you have it.",
     },
   },
   {
@@ -1203,8 +1332,8 @@ export const faqs: Faq[] = [
       en: "How long do I have access?",
     },
     respuesta: {
-      es: "Acceso de por vida, incluidas las actualizaciones que hagamos más adelante. Pagas una vez y el material es tuyo: puedes volver al curso del CRM dentro de un año, cuando te haga falta. No hay suscripción ni cargos recurrentes.",
-      en: "Lifetime access, including any updates we make later. You pay once and the material is yours: you can come back to the CRM course a year from now, when you need it. No subscription, no recurring charges.",
+      es: "Acceso de por vida, incluidas las actualizaciones que hagamos más adelante. Pagas una vez y el material es tuyo: puedes volver al video del CRM dentro de un año, cuando te haga falta. No hay suscripción ni cargos recurrentes.",
+      en: "Lifetime access, including any updates we make later. You pay once and the material is yours: you can come back to the CRM video a year from now, when you need it. No subscription, no recurring charges.",
     },
   },
   {
@@ -1213,8 +1342,8 @@ export const faqs: Faq[] = [
       en: "Do I have to chase my friends and family?",
     },
     respuesta: {
-      es: "No, y el curso 6 va precisamente de lo contrario. La diferencia entre incomodar a alguien y ayudarle está en cuándo hablas y qué dices, y eso se entrena. El curso 8 además trabaja el otro lado: publicar de forma que te escriban a ti, en vez de tener que escribir tú a todo el mundo.",
-      en: "No, and course 6 is about the opposite. The difference between bothering someone and helping them is when you speak and what you say, and that's trainable. Course 8 works the other side too: posting in a way that gets people to message you, instead of you messaging everyone.",
+      es: "No, y el video 6 va precisamente de lo contrario. La diferencia entre incomodar a alguien y ayudarle está en cuándo hablas y qué dices, y eso se entrena. El video 8 además trabaja el otro lado: publicar de forma que te escriban a ti, en vez de tener que escribir tú a todo el mundo.",
+      en: "No, and video 6 is about the opposite. The difference between bothering someone and helping them is when you speak and what you say, and that's trainable. Video 8 works the other side too: posting in a way that gets people to message you, instead of you messaging everyone.",
     },
   },
   {
@@ -1233,8 +1362,8 @@ export const faqs: Faq[] = [
       en: "How exactly does the guarantee work?",
     },
     respuesta: {
-      es: "Tienes 30 días desde la compra. Si en ese plazo decides que no es para ti, escribes a nuestro correo de soporte y te devolvemos el 100 %. No hay formulario que rellenar, ni llamada para convencerte de que te quedes, ni preguntas incómodas. Lo único que pedimos es que lo hayas intentado: que hayas hecho los primeros cursos.",
-      en: "You have 30 days from purchase. If within that window you decide it isn't for you, email our support address and we refund 100%. No form to fill in, no retention call, no awkward questions. The only thing we ask is that you actually tried it: that you did the first few courses.",
+      es: "Tienes 30 días desde la compra. Si en ese plazo decides que no es para ti, escribes a nuestro correo de soporte y te devolvemos el 100 %. No hay formulario que rellenar, ni llamada para convencerte de que te quedes, ni preguntas incómodas. Lo único que pedimos es que lo hayas intentado: que hayas visto los primeros videos.",
+      en: "You have 30 days from purchase. If within that window you decide it isn't for you, email our support address and we refund 100%. No form to fill in, no retention call, no awkward questions. The only thing we ask is that you actually tried it: that you watched the first few videos.",
     },
   },
 ];
@@ -1365,14 +1494,26 @@ export const copy = {
   temario: {
     aria: { es: "Temario del curso", en: "Course curriculum" },
     titulo: {
-      es: "{n} cursos, en el orden en que hay que hacerlos",
-      en: "{n} courses, in the order you actually need them",
+      es: "Un curso, {n} videos, en el orden en que hay que hacerlos",
+      en: "One course, {n} videos, in the order you actually need them",
     },
     entradilla: {
-      es: "Cada uno cierra con su quiz de validación. Los diez, con tu certificación de Embajador.",
-      en: "Each one closes with its validation quiz. All ten, with your Ambassador certificate.",
+      es: "Cada video cierra con su quiz de validación. Supera los {n} y te emitimos tu Certificación de Embajador Emprende180.",
+      en: "Every video closes with its validation quiz. Pass all {n} and we issue your Emprende180 Ambassador Certification.",
     },
     extrasTitulo: { es: "Además del temario, entra:", en: "Beyond the curriculum:" },
+  },
+
+  /** Bloque de cursos futuros, al final del temario. Ver `proximosCursos`. */
+  proximos: {
+    badge: { es: "Próximamente", en: "Coming soon" },
+    titulo: { es: "Y después de Fundamentos", en: "And after Fundamentos" },
+    /** Dice explícitamente que NO van incluidos. No se suaviza: ver el comentario
+     *  de `proximosCursos`, punto 2. */
+    entradilla: {
+      es: "Fundamentos es el primer curso de la ruta y el que compras hoy. Estos dos ya están en producción y se venden aparte cuando salgan. Si estás dentro, te enteras antes que nadie.",
+      en: "Fundamentos is the first course in the track, and the one you're buying today. These two are already in production and will be sold separately when they're ready. If you're already in, you'll hear about them first.",
+    },
   },
 
   instructor: {
@@ -1406,10 +1547,6 @@ export const copy = {
     avisoPlaceholder: {
       es: "Testimonios pendientes. No se ha inventado ninguno a propósito: pídeselos a alumnos reales, con permiso por escrito. En el comentario de `testimonios` tienes qué preguntar y qué recolectar.",
       en: "Testimonials pending. None were invented, deliberately: ask real students, with written permission. The comment on `testimonios` tells you what to ask for.",
-    },
-    avisoMuestra: {
-      es: "SOLO EN DESARROLLO. Estas seis tarjetas son una muestra de maquetación para poder ver el carrusel: no son alumnos reales y no se publican. Sustituye `testimonios` por citas reales y el carrusel pasa a usarlas.",
-      en: "DEV ONLY. These six cards are layout samples so the carousel can be seen: they are not real students and they never ship. Replace `testimonios` with real quotes and the carousel switches to them.",
     },
 
     /** Controles del carrusel. Los lee un lector de pantalla, así que van en el
@@ -1469,8 +1606,8 @@ export const copy = {
         {
           titulo: { es: "Puedes ver qué compras antes de pagar", en: "You can see what you're buying before you pay" },
           texto: {
-            es: "{videos} cursos, un quiz de validación en cada uno y la certificación de Embajador al completar los diez. El temario está entero unas líneas más arriba, curso por curso. Sin letra chica y sin “y mucho más”.",
-            en: "{videos} courses, a validation quiz in each one and the Ambassador certificate once you finish all ten. The full curriculum is a few lines up, course by course. No fine print, no “and much more”.",
+            es: "Un curso de {videos} videos, un quiz de validación en cada uno y la Certificación de Embajador al superar los diez. El temario está entero unas líneas más arriba, video por video. Sin letra chica y sin “y mucho más”.",
+            en: "One course of {videos} videos, a validation quiz in each one and the Ambassador Certification once you pass all ten. The full curriculum is a few lines up, video by video. No fine print, no “and much more”.",
           },
         },
       ],
@@ -1494,8 +1631,8 @@ export const copy = {
     aria: { es: "Precio y qué incluye", en: "Price and what's included" },
     titulo: { es: "Todo lo que te llevas", en: "Everything you get" },
     entradilla: {
-      es: "Un solo pago y el acceso es tuyo para siempre. Sin suscripción ni cargos recurrentes.",
-      en: "One payment and the access is yours for good. No subscription, no recurring charges.",
+      es: "Un solo pago: el curso completo, los diez quizzes y tu Certificación de Embajador al superarlos. El acceso es tuyo para siempre, sin suscripción ni cargos recurrentes.",
+      en: "One payment: the complete course, all ten quizzes and your Ambassador Certification once you pass them. The access is yours for good, with no subscription and no recurring charges.",
     },
     cuotas: { es: "o {n} pagos de {importe}", en: "or {n} payments of {importe}" },
     conGarantia: { es: "Con {garantia}.", en: "Includes {garantia}." },

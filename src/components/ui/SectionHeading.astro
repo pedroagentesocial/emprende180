@@ -24,7 +24,7 @@ interface Props {
   entradilla?: Txt;
   /** Úsalo con cuentagotas. Si aparece en más de una sección, sobra. */
   kicker?: Txt;
-  /** Sustituciones para los `{huecos}` del título. */
+  /** Sustituciones para los `{huecos}` del título Y de la entradilla. */
   vars?: Record<string, string | number>;
   align?: "center" | "start";
   /** Nivel del heading. La página solo puede tener un <h1>. */
@@ -84,7 +84,7 @@ const {
           inverso ? "text-secondary-200" : "text-ink-muted",
         ]}
       >
-        <T v={entradilla} />
+        <T v={entradilla} vars={vars} />
       </p>
     )
   }
