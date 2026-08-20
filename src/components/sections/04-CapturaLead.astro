@@ -136,7 +136,10 @@ const primerDia = dias[0]!;
           </Button>
         </div>
 
-        <p class="mt-3 text-xs text-primary-300">
+        {/* 13 px en móvil. Es letra pequeña, sí, pero es la que dice "sin spam
+            y te das de baja en un clic": lo que hay que leer justo antes de
+            dejar el correo. A 12 px sobre navy, en un teléfono, no se lee. */}
+        <p class="mt-3 text-[0.8125rem] text-primary-300 sm:text-xs">
           <T v={leadMagnet.aviso} />
         </p>
       </div>

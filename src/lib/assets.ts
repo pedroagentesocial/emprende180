@@ -176,6 +176,28 @@ export function logoAliado(
   return nombre ? `/imagenes/aliados/${nombre}` : null;
 }
 
+/**
+ * Proporciones reales de cada logo de aliado, para poder poner `width`/`height`
+ * en el `<img>`.
+ *
+ * ⚠️ ESTO NO ES OPCIONAL AUNQUE EL ALTO LO FIJE EL CSS. Con `h-9 w-auto` el
+ * navegador sabe el alto desde el primer momento pero NO el ancho, así que
+ * reserva cero hasta que la imagen llega y entonces empuja lo que tenga al
+ * lado: un salto de layout en la primera sección después del hero. Con los dos
+ * atributos puestos calcula `36 × (640/158)` antes de descargar nada.
+ *
+ * Se declaran aquí, y no en `curso.config.ts`, porque son un dato del ARCHIVO y
+ * no del negocio: quien añade un logo nuevo toca esta tabla, no la config.
+ * Medir con `sharp(...).metadata()`. Si falta una entrada, el `<img>` sale sin
+ * atributos —como antes— en lugar de romperse.
+ */
+const MEDIDAS_ALIADOS: Record<string, { w: number; h: number }> = {
+  senordelascasas: { w: 640, h: 158 },
+};
+
+export const medidasAliado = (archivo: string) =>
+  MEDIDAS_ALIADOS[archivo] ?? null;
+
 export function fondoResultado(indice: number): string | null {
   const n = String(indice + 1).padStart(2, "0");
   const nombre = [`${n}.webp`, `${n}.avif`, `${n}.jpg`, `${n}.png`].find((f) =>

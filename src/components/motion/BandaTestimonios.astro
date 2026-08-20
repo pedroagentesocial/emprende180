@@ -108,8 +108,16 @@ const iniciales = (nombre: string) =>
               data-banda-clon={copia === 1 ? "" : undefined}
             >
               <figure class="flex h-full flex-col rounded-2xl border border-line bg-surface p-6">
+                {/* El distintivo del resultado va a `text-sm` y no a `text-xs`:
+                    es la frase por la que existe la tarjeta, y a 12 px dentro
+                    de una banda que se mueve, en un teléfono, no da tiempo a
+                    leerla.
+
+                    (Y el comentario va AQUÍ y no dentro del `{t.resultado &&
+                    (…)}` de abajo: un comentario JSX dentro de una expresión
+                    rompe el parser de Astro.) */}
                 {t.resultado && (
-                  <p class="mb-4 inline-flex self-start rounded-full bg-secondary-100 px-3 py-1 text-xs font-bold text-secondary-700">
+                  <p class="mb-4 inline-flex self-start rounded-full bg-secondary-100 px-3 py-1 text-sm font-bold text-secondary-700">
                     <T v={t.resultado} resaltar />
                   </p>
                 )}

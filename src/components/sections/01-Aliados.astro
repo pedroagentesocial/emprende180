@@ -3,7 +3,7 @@ import T from "@components/i18n/T.astro";
 import Section from "@components/ui/Section.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import { aliados } from "@config/curso.config";
-import { logoAliado } from "@lib/assets";
+import { logoAliado, medidasAliado } from "@lib/assets";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -40,6 +40,7 @@ import { logoAliado } from "@lib/assets";
 const marcas = aliados.marcas.map((m) => ({
   ...m,
   logo: logoAliado(m.logo),
+  medidas: medidasAliado(m.logo),
 }));
 ---
 
@@ -63,16 +64,32 @@ const marcas = aliados.marcas.map((m) => ({
       <ul class="mt-10 flex flex-wrap items-stretch justify-center gap-4 sm:gap-6">
         {marcas.map((m, i) => (
           <Reveal as="li" delay={i * 0.08} class="w-full sm:w-auto">
-            {/* `rel="noopener"` no es opcional con `target="_blank"`: sin él la
+            {/* ─── CON URL ENLAZA; SIN URL, NO ────────────────────────────────
+                Una marca sin `url` sigue apareciendo —la relación es real— pero
+                se pinta como tarjeta muerta en vez de como enlace. Es la misma
+                regla de `redesMarca`: no se publica un enlace roto.
+
+                Hoy la usa Broker Lenders, cuyo sitio devuelve 403 y tiene el
+                certificado caducado. Ver el comentario de `aliados.marcas`.
+
+                `rel="noopener"` no es opcional con `target="_blank"`: sin él la
                 página de destino recibe una referencia a esta y puede
                 reescribirla. `noreferrer` porque tampoco hace falta mandarles
                 de dónde viene el clic. */}
-            <a
-              href={m.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              data-track={`aliado-${m.logo}`}
-              class="group flex h-full min-h-11 min-w-0 flex-col items-center justify-center gap-3 rounded-2xl border border-line bg-surface px-8 py-7 transition-colors duration-200 ease-out-soft hover:border-secondary-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:min-w-[17rem]"
+            <Fragment>
+            {(() => {
+              const Tarjeta = m.url ? "a" : "div";
+              return (
+            <Tarjeta
+              href={m.url ?? undefined}
+              target={m.url ? "_blank" : undefined}
+              rel={m.url ? "noopener noreferrer" : undefined}
+              data-track={m.url ? `aliado-${m.logo}` : undefined}
+              class:list={[
+                "group flex h-full min-h-11 min-w-0 flex-col items-center justify-center gap-3 rounded-2xl border border-line bg-surface px-8 py-7 transition-colors duration-200 ease-out-soft sm:min-w-[17rem]",
+                m.url &&
+                  "hover:border-secondary-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
+              ]}
             >
               {m.logo ? (
                 /* `h-10 w-auto`: los logos vienen con proporciones distintas, así
@@ -81,6 +98,8 @@ const marcas = aliados.marcas.map((m) => ({
                 <img
                   src={m.logo}
                   alt={m.nombre}
+                  width={m.medidas?.w}
+                  height={m.medidas?.h}
                   loading="lazy"
                   decoding="async"
                   class="h-9 w-auto object-contain sm:h-10"
@@ -94,10 +113,16 @@ const marcas = aliados.marcas.map((m) => ({
                 </span>
               )}
 
-              <span class="text-xs font-medium text-ink-subtle">
+              {/* `text-sm` y no `text-xs`: es lo único que explica QUÉ es cada
+                  marca. A 12 px sobre gris claro, en móvil, no se lee — y sin
+                  ese renglón la sección es un par de logos sin contexto. */}
+              <span class="text-sm font-medium text-ink-subtle">
                 <T v={m.rubro} resaltar />
               </span>
-            </a>
+            </Tarjeta>
+              );
+            })()}
+            </Fragment>
           </Reveal>
         ))}
       </ul>

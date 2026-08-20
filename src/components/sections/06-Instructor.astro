@@ -6,7 +6,7 @@ import Button from "@components/ui/Button.astro";
 import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
 import PlaceholderImage from "@components/placeholder/PlaceholderImage.astro";
 import { instructor, contacto, copy, cta, aliados } from "@config/curso.config";
-import { logoAliado, fotoInstructor } from "@lib/assets";
+import { logoAliado, medidasAliado, fotoInstructor } from "@lib/assets";
 import { resolverIdiomaServidor } from "@i18n/idioma";
 import { MARCA_COMPLETAR, tienePendiente } from "@lib/pendientes";
 
@@ -90,6 +90,7 @@ const noCubre = instructor.queNoCubre;
 /** El logotipo de su otra empresa, si está. Ver `aliados` en el config. */
 const otraMarca = aliados.marcas.find((m) => m.logo === "senordelascasas");
 const logoOtraMarca = otraMarca ? logoAliado(otraMarca.logo) : null;
+const medidasOtraMarca = otraMarca ? medidasAliado(otraMarca.logo) : null;
 
 /** WhatsApp solo si hay número de verdad. */
 const urlWhatsapp = contacto.whatsapp
@@ -157,12 +158,14 @@ const urlWhatsapp = contacto.whatsapp
                 <img
                   src={logoOtraMarca}
                   alt={otraMarca.nombre}
+                  width={medidasOtraMarca?.w}
+                  height={medidasOtraMarca?.h}
                   loading="lazy"
                   decoding="async"
                   class="h-8 w-auto object-contain"
                 />
               </a>
-              <p class="mt-1 text-xs text-ink-subtle">
+              <p class="mt-1 text-sm text-ink-subtle">
                 <T v={otraMarca.rubro} />
               </p>
             </div>
@@ -180,8 +183,15 @@ const urlWhatsapp = contacto.whatsapp
             un vistazo, que es lo único que se hace con una lista de méritos —
             nadie las lee de corrido.
 
-            Contenido centrado y `text-xs`: en media columna no caben grandes, y
-            centradas no dejan el sobrante a la derecha de cada tarjeta. */}
+            Contenido centrado: en media columna no caben grandes, y centradas
+            no dejan el sobrante a la derecha de cada tarjeta.
+
+            El cuerpo sube de 12 a 14 px, también en móvil. Doce era el mínimo
+            que hacía caber la credencial más larga en dos columnas de un
+            teléfono de 320 px, pero a ese tamaño se dejan de leer: son cuatro
+            méritos que sostienen a quien firma el curso, y un mérito que no se
+            lee no sostiene nada. Las tarjetas crecen un par de renglones y esa
+            es toda la factura. */}
         {
           credenciales.length > 0 && (
             <ul class="mt-4 grid grid-cols-2 gap-3">
@@ -191,7 +201,7 @@ const urlWhatsapp = contacto.whatsapp
                     nombre={ICONOS[i] ?? "check"}
                     class="mx-auto size-6 text-secondary-600"
                   />
-                  <p class="mt-2.5 text-xs font-semibold leading-snug text-pretty text-ink">
+                  <p class="mt-2.5 text-sm font-semibold leading-snug text-pretty text-ink">
                     <T v={c.dato} resaltar />
                   </p>
                 </li>

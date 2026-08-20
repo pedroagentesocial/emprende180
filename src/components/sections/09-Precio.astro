@@ -450,7 +450,10 @@ const lang = resolverIdiomaServidor(
               )
             }
 
-            <p class="mt-3 text-xs text-pretty text-secondary-200">
+            {/* 13 px en móvil. Es letra pequeña a propósito —impuestos y formas
+                de pago— pero es lo que evita la sorpresa en la pasarela, y a
+                12 px sobre navy, en un teléfono, no se lee. */}
+            <p class="mt-3 text-[0.8125rem] text-pretty text-secondary-200 sm:text-xs">
               <T v={precio.nota} />
             </p>
 
@@ -472,7 +475,7 @@ const lang = resolverIdiomaServidor(
                     <Icono nombre="escudo" class="size-5 shrink-0" />
                     <T v={garantia.titulo} />
                   </p>
-                  <p class="mt-1.5 text-xs text-pretty text-secondary-200">
+                  <p class="mt-1.5 text-[0.8125rem] text-pretty text-secondary-200 sm:text-xs">
                     <T v={garantia.resumen} />
                   </p>
                 </div>

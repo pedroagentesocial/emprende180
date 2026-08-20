@@ -348,10 +348,13 @@ export function LeadForm({
             aria-describedby={
               errores.consentimiento ? errorIdDe("consentimiento") : undefined
             }
-            // size-5 dentro de un label alto: el área pulsable real es toda la
-            // fila, muy por encima del mínimo de 44 px.
+            // La casilla vive dentro de un <label>, así que el área pulsable
+            // real es toda la fila y pasa de sobra los 44 px. Aun así sube de
+            // 20 a 24 px: la WCAG 2.5.8 mide el objetivo del CONTROL, y hay
+            // quien apunta al cuadrito y no al texto. 24 es el mínimo del
+            // criterio en nivel AA.
             className={[
-              "mt-0.5 size-5 shrink-0 rounded-xs accent-secondary-600",
+              "mt-0.5 size-6 shrink-0 rounded-xs accent-secondary-600",
               "focus-visible:outline-2 focus-visible:outline-offset-2",
               inverso ? "focus-visible:outline-focus-inverse" : "focus-visible:outline-focus",
             ].join(" ")}
@@ -433,7 +436,11 @@ export function LeadForm({
 
       <p
         className={[
-          "mt-3 text-center text-xs",
+          // 13 px en móvil y 12 de `sm` en adelante. Es letra pequeña de
+          // verdad —"sin spam, te das de baja en un clic"—, pero es también lo
+          // que desactiva el miedo a dejar el correo, y a 12 px en un teléfono
+          // no se lee.
+          "mt-3 text-center text-[0.8125rem] sm:text-xs",
           inverso ? "text-primary-300" : "text-ink-subtle",
         ].join(" ")}
       >

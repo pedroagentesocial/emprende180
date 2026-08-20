@@ -119,7 +119,11 @@ const etiquetas = copy.precio.cinta;
    sección oscura no se usa una franja oscura, se usa `linea`. */
 const estilos = {
   barra:
-    "bg-primary-950 text-secondary-100 text-center text-xs leading-snug px-3 py-2 sm:text-sm sm:px-4 sm:py-2.5",
+    /* `text-sm` desde el primer píxel, no `text-xs sm:text-sm`: en móvil esta
+       tira lleva el precio y la fecha en que sube, o sea el dato por el que se
+       decide comprar hoy, y a 12 px se lee con esfuerzo justo donde menos aire
+       hay. Mobile-first significa que el tamaño bueno es el de móvil. */
+    "bg-primary-950 text-secondary-100 text-center text-sm leading-snug px-3 py-2 sm:px-4 sm:py-2.5",
   panel: inverso
     ? "rounded-2xl border border-primary-700 bg-primary-950/60 text-secondary-100 text-center text-sm px-5 py-4"
     : "rounded-2xl border border-secondary-200 bg-secondary-50 text-ink text-center text-sm px-5 py-4",

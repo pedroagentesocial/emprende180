@@ -482,8 +482,12 @@ export const curso = {
         en: "None to start the course: you begin from zero, with no industry experience.",
       },
       {
-        es: "[COMPLETAR: ¿hace falta licencia, registro o algún requisito legal para actuar como Embajador? ¿En qué estados o países aplica?]",
-        en: "[COMPLETAR: is any license, registration or legal requirement needed to act as an Ambassador? Which states or countries does it apply in?]",
+        /* Misma regla que en la FAQ de licencia: lo que NO se puede escribir
+           aquí es "no hace falta licencia". Se dice lo verificable —el curso no
+           habilita para nada regulado— y el caso concreto se resuelve hablando.
+           Ver la respuesta de `faqs`. */
+        es: "Para actuar como Embajador, lo que aplique en tu estado o país: el curso forma, no habilita para ninguna actividad regulada. Se revisa contigo antes de empezar.",
+        en: "To act as an Ambassador, whatever applies in your state or country: the course trains you, it doesn't authorize any regulated activity. We go over your case before you start.",
       },
     ] satisfies Txt[],
     idioma: { es: "Español", en: "Spanish" },
@@ -708,7 +712,24 @@ export const aliados = {
     {
       nombre: "Broker Lenders",
       rubro: { es: "Préstamos hipotecarios", en: "Mortgage lending" },
-      url: "https://brokerlenders.com",
+      /**
+       * ⚠️ SIN ENLACE: EL SITIO ESTÁ CAÍDO (comprobado el 20/08/2026).
+       *
+       * `brokerlenders.com` responde 403 Forbidden en las tres variantes
+       * (https, https+www y http) y además su certificado TLS caducó el 3 de
+       * julio de 2026, así que un navegador enseña primero una pantalla roja de
+       * "Tu conexión no es privada" y después un 403.
+       *
+       * Esta tarjeta está en la sección que dice "estas empresas ya trabajan
+       * con nosotros": mandar ahí a alguien que está decidiendo si paga 490
+       * dólares hace exactamente lo contrario de lo que la sección pretende.
+       * Sin `url` la tarjeta se sigue viendo pero no enlaza — la misma regla que
+       * ya usa `redesMarca`: la marca es real, el enlace roto no se publica.
+       *
+       * ⚠️ SWAP: en cuanto renueven el certificado y el sitio vuelva, devuelve
+       * `url: "https://brokerlenders.com"` y entra solo.
+       */
+      url: null as string | null,
       /* ⚠️ SIN LOGO TODAVÍA. brokerlenders.com bloquea las descargas
          automáticas (responde 403), así que no se ha podido sacar el suyo.
          Mientras tanto se pinta el nombre como logotipo tipográfico. Para
@@ -1384,8 +1405,21 @@ export const faqs: Faq[] = [
       en: "Do I need a license to be an Ambassador?",
     },
     respuesta: {
-      es: "[COMPLETAR (HECHO): esta es LA pregunta que va a hacer todo el mundo, y la respuesta depende del estado o país. Un programa de referidos sobre servicios de accidentes de auto y vivienda está regulado, y en muchos territorios quién puede recibir una compensación por un referido depende de si tiene licencia. Que la redacte quien lleve cumplimiento y no se publique sin su visto bueno. El video 9 cubre esto, pero la página tiene que poder responderlo antes de que alguien pague.]",
-      en: "[COMPLETAR (FACT): this is THE question everyone will ask, and the answer depends on the state or country. A referral program around auto and home accident services is regulated, and in many territories whether an unlicensed person may receive referral compensation is restricted. Have whoever handles compliance write this, and don't publish without their sign-off. Video 9 covers it, but the page has to answer it before anyone pays.]",
+      /**
+       * ⚠️ REDACTADA PARA NO AFIRMAR NADA QUE NO SE PUEDA SOSTENER.
+       *
+       * Lo peligroso aquí no es callarse: es decir "no hace falta licencia".
+       * Los requisitos para recibir compensación por un referido sobre
+       * servicios de accidentes cambian por estado y por tipo de caso, así que
+       * una frase tranquilizadora en una landing que lee gente de varios
+       * territorios sería falsa en alguno de ellos.
+       *
+       * Por eso la respuesta dice lo único verificable —qué es y qué NO es este
+       * curso— y remite a una llamada para el caso concreto. Si cumplimiento
+       * redacta una versión con los territorios cerrados, sustitúyela.
+       */
+      es: "El curso no te da ninguna licencia ni te habilita para ejercer una actividad regulada. Lo que enseña es a reconocer una situación, pasarla a quien sí puede resolverla y saber dónde termina tu parte. Qué se puede hacer y qué no depende del territorio y del tipo de caso, y por eso el video 9 va entero de ética, cumplimiento y comunicación responsable. Esto no es asesoría legal: si tu situación tiene algo particular, llámame antes de comprar y lo vemos.",
+      en: "The course does not give you a license and does not authorize you to carry out any regulated activity. What it teaches is how to recognize a situation, pass it to someone who can actually resolve it, and know where your part ends. What is and isn't allowed depends on your territory and on the type of case, which is exactly why video 9 is entirely about ethics, compliance and responsible communication. This isn't legal advice: if there's anything particular about your situation, call me before you buy and we'll go through it.",
     },
   },
   {
@@ -1394,8 +1428,21 @@ export const faqs: Faq[] = [
       en: "How does an Ambassador earn?",
     },
     respuesta: {
-      es: "[COMPLETAR (HECHO): describe el modelo real de compensación: si es una tarifa fija por referido, una comisión, un bono, o ninguna de las tres. No pongas cifras de ingresos ni ejemplos de «un Embajador promedio gana X»: en EE. UU. eso son declaraciones de ingresos y la FTC las regula, y una cifra sin respaldo documentado es sancionable. Si no puedes documentarla, no la pongas.]",
-      en: "[COMPLETAR (FACT): describe the actual compensation model: a flat referral fee, a commission, a bonus, or none of them. Do not put earnings figures or “the average Ambassador makes X” examples: in the US those are income claims, the FTC regulates them, and an unsubstantiated figure is actionable. If you can't document it, leave it out.]",
+      /**
+       * ⚠️ LA RESPUESTA MÁS DELICADA DE LA PÁGINA, Y LA QUE MÁS SE LEE.
+       *
+       * Una cifra aquí —"un Embajador gana X", "hasta X por referido", incluso
+       * un ejemplo— es una declaración de ingresos. En EE. UU. la FTC las
+       * regula (16 CFR 465) y exige poder documentar que ese resultado es el
+       * típico, no el mejor. Sin ese respaldo, la cifra es sancionable.
+       *
+       * Así que la respuesta hace justo lo contrario de lo que hace una landing
+       * de oportunidad: dice de entrada que esto es FORMACIÓN y no una oferta
+       * de ingresos, y explica POR QUÉ no hay cifras. Decirlo en voz alta
+       * convierte una ausencia sospechosa en una señal de seriedad.
+       */
+      es: "Lo primero, y va en serio: lo que compras aquí es formación, no una oferta de ingresos. En esta página no vas a encontrar ni una cifra de lo que gana nadie, y es a propósito — publicar ingresos que no se puedan documentar caso por caso es engañoso, y en Estados Unidos además es sancionable. Lo que sí te enseña el curso es el rol: qué hace un Embajador, cómo nace una oportunidad a partir de un contacto y dónde termina tu parte. Las condiciones concretas de compensación no forman parte de lo que compras aquí y dependen del servicio y del territorio, así que prefiero explicártelas por teléfono, con tu caso delante y antes de que decidas. Llámame.",
+      en: "First things first, and I mean it: what you're buying here is training, not an income opportunity. You won't find a single earnings figure on this page, and that's deliberate — publishing income that can't be documented case by case is misleading, and in the United States it's also actionable. What the course does teach you is the role: what an Ambassador does, how an opportunity comes out of a contact, and where your part ends. The specific compensation terms aren't part of what you buy here and depend on the service and the territory, so I'd rather walk you through them on the phone, with your situation in front of us and before you decide. Call me.",
     },
   },
   {
@@ -1404,8 +1451,19 @@ export const faqs: Faq[] = [
       en: "Where can I work as an Ambassador from?",
     },
     respuesta: {
-      es: "[COMPLETAR (HECHO): en qué estados o países opera el Ecosistema hoy y a qué zonas se pueden referir Accidentes de Auto y Vivienda. Si alguien compra desde una zona donde el servicio no llega, tienes un reembolso asegurado y un cliente enfadado con razón.]",
-      en: "[COMPLETAR (FACT): which states or countries the ecosystem operates in today, and where Auto and Home Accident cases can be referred. If someone buys from an area the service doesn't reach, you've bought yourself a refund and a rightly annoyed customer.]",
+      /**
+       * Separa las dos cosas que la pregunta mezcla: dónde puedes HACER el
+       * curso (en cualquier sitio, es online) y a dónde puedes REFERIR (tiene
+       * cobertura por zonas). Sin esa separación, cualquier respuesta corta es
+       * medio falsa.
+       *
+       * Y ofrece comprobarlo ANTES de pagar. Es la respuesta que menos vende de
+       * toda la página y la que más reembolsos evita: alguien que compra desde
+       * una zona sin cobertura no es una venta, es una devolución con un cliente
+       * enfadado con razón.
+       */
+      es: "El curso es online y lo haces desde donde estés: diez videos con su quiz, sin horarios y con acceso de por vida. A dónde puedes referir es otra cosa: los servicios de Accidentes de Auto y Vivienda tienen cobertura por zonas, y eso depende de dónde estés tú y dónde esté tu gente. Antes de pagar, llámame y lo comprobamos en dos minutos. Si tu zona todavía no está cubierta te lo digo y no compras: prefiero eso a devolverte el dinero dentro de un mes.",
+      en: "The course is online and you take it from wherever you are: ten videos with their quizzes, no schedule, lifetime access. Where you can refer is a different question: Auto and Home Accident services have coverage by area, and that depends on where you are and where your people are. Before you pay, call me and we'll check it in two minutes. If your area isn't covered yet I'll tell you and you don't buy: I'd rather do that than refund you a month from now.",
     },
   },
   {
@@ -1424,8 +1482,19 @@ export const faqs: Faq[] = [
       en: "How much time do I need per week?",
     },
     respuesta: {
-      es: "Cuenta con [COMPLETAR: X horas] a la semana: una parte para ver el curso y otra, la más importante, para hablar con tus contactos. Si una semana no puedes, no pasa nada: el acceso no caduca y retomas donde lo dejaste. Pero avanzar sin tener las conversaciones no sirve de mucho.",
-      en: "Plan on [COMPLETAR: X hours] a week: part for watching the course and part, the important part, for talking to your contacts. If you miss a week, nothing breaks: access doesn't expire and you pick up where you left off. But moving forward without having the conversations doesn't get you far.",
+      /**
+       * "Dos o tres horas" es una RECOMENDACIÓN, no una promesa de resultados,
+       * y está escrita como tal ("cuenta con", no "en X horas consigues Y").
+       * Esa diferencia es la que la mantiene fuera del terreno de las
+       * declaraciones de resultados.
+       *
+       * El reparto —una hora de curso, el resto de conversaciones— es el que
+       * sostiene el argumento de toda la página: lo que mueve la aguja son las
+       * conversaciones, no los videos. Si se cambia la cifra, no se toque el
+       * reparto.
+       */
+      es: "Cuenta con dos o tres horas a la semana: una para el curso y el resto —la parte que de verdad cuenta— para hablar con tus contactos. Si una semana no puedes, no pasa nada: el acceso no caduca y retomas donde lo dejaste. Pero avanzar en los videos sin tener las conversaciones no sirve de mucho.",
+      en: "Plan on two or three hours a week: one for the course and the rest — the part that actually counts — for talking to your contacts. If you miss a week, nothing breaks: access doesn't expire and you pick up where you left off. But moving through the videos without having the conversations doesn't get you far.",
     },
   },
   {
@@ -1668,8 +1737,12 @@ export const copy = {
     escena: {
       remitente: { es: "Un contacto tuyo", en: "Someone you know" },
       /* El mensaje que llega y se queda sin respuesta. */
+      /* "Un desmadre" se fue: en México es coloquial, pero en buena parte del
+         español es vulgar, y esto lo lee gente de varios países en la primera
+         pantalla que les habla de su propia vida. "Un lío" dice exactamente lo
+         mismo y no chirría en ningún sitio. */
       mensaje1: {
-        es: "Oye, ayer choqué el carro. Un desmadre, no sé ni por dónde empezar.",
+        es: "Oye, ayer choqué el carro. Un lío tremendo, no sé ni por dónde empezar.",
         en: "Hey, I crashed my car yesterday. Total mess, I don't even know where to start.",
       },
       sinResponder: { es: "Visto. Sin responder.", en: "Seen. No reply." },
