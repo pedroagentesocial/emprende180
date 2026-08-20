@@ -19,25 +19,18 @@
     -webkit-text-size-adjust: 100%;
   }
 
-  /* El CTA fijo de móvil es `position: fixed`, así que no ocupa espacio en el
-     flujo: sin esto tapaba el final del pie, enlaces legales incluidos.
-     `StickyCta` marca el documento mientras la barra está visible y el hueco
-     se reserva aquí. Solo por debajo de `md`, que es donde existe la barra. */
-  /* Hueco para la barra flotante.
-     Se reserva SIEMPRE, en todos los anchos, no solo cuando la barra está
-     visible. Alternarlo con una clase parecía más limpio, pero cambiar el
-     `padding-bottom` del body a mitad de scroll ES un cambio de layout: valía
-     0,15 de CLS en Lighthouse. Ochenta píxeles de aire al final del pie cuestan
-     menos que eso. La barra es `position: fixed`, así que sin esta reserva
-     tapaba los enlaces legales.
+  /* ⚠️ AQUÍ HABÍA DOS BLOQUES `body` Y EL SEGUNDO ANULABA AL PRIMERO.
+     El de arriba reservaba `calc(5rem + env(safe-area-inset-bottom))` para la
+     barra flotante; el de abajo, resto de cuando la barra era solo de móvil,
+     volvía a declarar `padding-bottom: env(safe-area-inset-bottom)`. Misma
+     especificidad y más abajo en el archivo, así que ganaba: en escritorio el
+     hueco reservado era de CERO píxeles y la barra tapaba los últimos 69 px de
+     la página — justo donde está el copyright.
 
-     Antes esto vivía dentro de `@media (width < 48rem)`, porque el CTA fijo era
-     solo de móvil. La barra flotante existe en todos los tamaños (ver
-     BarraFlotante.astro), así que la reserva también. */
-  body {
-    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
-  }
-
+     La reserva ya no vive aquí. Se la queda el propio `<footer>`, porque el
+     hueco tiene que ser DEL COLOR DEL PIE: puesto en el body, esos 80 px eran
+     una franja blanca asomando por debajo de un pie navy.
+     Ver `Footer.astro`. */
   body {
     background-color: var(--color-surface);
     color: var(--color-ink);
@@ -46,8 +39,6 @@
     line-height: var(--text-base--line-height);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    /* El CTA fijo de móvil tapa el final de la página: se reserva su altura. */
-    padding-bottom: env(safe-area-inset-bottom);
 
     /* Aquí NO va `padding-top`. El header está en el flujo y ocupa su sitio él
        solo; reservarle hueco además dejaría una franja en blanco de 64 px encima

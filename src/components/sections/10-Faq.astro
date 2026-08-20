@@ -63,32 +63,57 @@ const lang = resolverIdiomaServidor(
 );
 
 /**
- * Sigue mandando sobre el JSON-LD, pero ya no pinta nada en la página: el aviso
- * de "quedan respuestas por rellenar" era una nota para quien edita el sitio
- * puesta donde la leía el visitante. Si falta un dato, el rich snippet no se
- * emite y punto; el que edita se entera abriendo el config, no el cliente
- * enterándose de que la página está a medias.
+ * ─── LAS RESPUESTAS A MEDIAS NO SALEN A LA CALLE ───────────────────────────
+ *
+ * Cuatro respuestas seguían con su `[COMPLETAR]` dentro y se estaban IMPRIMIENDO
+ * tal cual para el visitante. En una página que pide 490 dólares, leer
+ * «[COMPLETAR (HECHO): describe el modelo real de compensación…]» debajo de
+ * "¿Cómo gana un Embajador?" es peor que no tener esa pregunta: dice que nadie
+ * ha terminado de escribir la página, y lo dice justo en la objeción que más
+ * pesa.
+ *
+ * Así que en producción se filtran. No se puede hacer otra cosa honesta: la
+ * respuesta a "¿hace falta licencia?" o "¿cómo se cobra?" es un HECHO regulado
+ * —la FTC vigila las declaraciones de ingresos y las licencias cambian por
+ * estado—, y una respuesta inventada aquí no es una errata, es una infracción.
+ *
+ * En desarrollo salen TODAS, con su marcador resaltado, para que quien edita el
+ * sitio siga viendo lo que falta cada vez que abre la página.
+ *
+ * Efecto secundario bueno: el JSON-LD ya no está bloqueado. Se emite con las
+ * preguntas que sí se ven, que es exactamente lo que Google pide —que el marcado
+ * corresponda al contenido visible—, así que el rich snippet vuelve a existir en
+ * vez de esperar a que se rellenen las cuatro.
  */
-const hayPlaceholders = faqs.some((f) => faltaPorRellenar(f.respuesta));
+const faqsVisibles = import.meta.env.DEV
+  ? faqs
+  : faqs.filter((f) => !faltaPorRellenar(f.respuesta));
 
 const cuantas = construirTxt((l) =>
-  interpolar(copy.faq.cuantas[l], { n: faqs.length }),
+  interpolar(copy.faq.cuantas[l], { n: faqsVisibles.length }),
 );
 
-const schemaFaq = hayPlaceholders
-  ? null
-  : {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      // El JSON-LD se emite SOLO en el idioma servido: mezclar dos idiomas
-      // en el mismo bloque no es válido.
-      inLanguage: LOCALES[lang],
-      mainEntity: faqs.map((f) => ({
-        "@type": "Question",
-        name: f.pregunta[lang],
-        acceptedAnswer: { "@type": "Answer", text: f.respuesta[lang] },
-      })),
-    };
+/* Se construye sobre `faqsVisibles`, nunca sobre `faqs`: el marcado tiene que
+   corresponder con lo que se ve en la página. Y se vuelve a filtrar por
+   `faltaPorRellenar` para el caso de desarrollo, donde `faqsVisibles` son
+   todas — un `[COMPLETAR]` dentro de un JSON-LD sería marcado basura. */
+const paraSchema = faqsVisibles.filter((f) => !faltaPorRellenar(f.respuesta));
+
+const schemaFaq =
+  paraSchema.length > 0
+    ? {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        // El JSON-LD se emite SOLO en el idioma servido: mezclar dos idiomas
+        // en el mismo bloque no es válido.
+        inLanguage: LOCALES[lang],
+        mainEntity: paraSchema.map((f) => ({
+          "@type": "Question",
+          name: f.pregunta[lang],
+          acceptedAnswer: { "@type": "Answer", text: f.respuesta[lang] },
+        })),
+      }
+    : null;
 ---
 
 {/* ─── EL REPARTO EN DOS COLUMNAS ─────────────────────────────────────────────
@@ -146,7 +171,7 @@ const schemaFaq = hayPlaceholders
         y el aire entre ellas es lo que hace que trece no parezcan un muro. */}
     <div class="grid content-start gap-2.5 lg:order-1">
       {
-        faqs.map((f, i) => (
+        faqsVisibles.map((f, i) => (
           <Reveal delay={Math.min(i, 6) * 0.03}>
             <details
               data-faq
@@ -256,6 +281,21 @@ const schemaFaq = hayPlaceholders
         <p class="mt-4 text-sm text-ink-subtle">{contacto.email}</p>
       </div>
     </Reveal>
+
+    {/* Solo en desarrollo. Se recuenta aquí y no arriba porque en dev
+        `faqsVisibles` son todas: lo que hay que decir es cuántas SE CAERÍAN al
+        publicar, no cuántas se están ocultando ahora mismo (ninguna). */}
+    {
+      import.meta.env.DEV &&
+        faqs.some((f) => faltaPorRellenar(f.respuesta)) && (
+          <p class="mt-8 rounded-lg border-2 border-dashed border-warning-500 bg-warning-50 px-4 py-3 text-center text-sm font-medium text-ink lg:order-4 lg:col-span-2">
+            ⚠ {faqs.filter((f) => faltaPorRellenar(f.respuesta)).length} respuestas
+            siguen con `[COMPLETAR]`. En producción esas preguntas NO se publican
+            —ni ellas ni su JSON-LD—, así que el visitante no ve el marcador pero
+            tampoco ve la pregunta. Rellénalas en `faqs`, en `curso.config.ts`.
+          </p>
+        )
+    }
 
     {/* AQUÍ TERMINA LA SECCIÓN, A PROPÓSITO.
 

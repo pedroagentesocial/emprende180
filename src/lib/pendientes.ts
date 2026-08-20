@@ -17,8 +17,24 @@ import type { Txt } from "@i18n/idioma";
  * cuesta credibilidad y, según qué se invente, puede ser publicidad engañosa.
  */
 
-/** Va dentro del texto: "Necesitas [COMPLETAR: X horas] a la semana". */
-export const MARCA_COMPLETAR = "[COMPLETAR:";
+/**
+ * Va dentro del texto: "Necesitas [COMPLETAR: X horas] a la semana".
+ *
+ * ⚠️ SIN LOS DOS PUNTOS, Y ESO ERA UN BUG DE VERDAD.
+ *
+ * Esta constante era `"[COMPLETAR:"`. Pero en el config conviven dos formas de
+ * escribir el marcador —`[COMPLETAR: …]` y `[COMPLETAR (HECHO): …]`— y la
+ * segunda NO contiene la subcadena `"[COMPLETAR:"`. Resultado: tres respuestas
+ * de preguntas frecuentes, las tres reguladas (licencia, compensación, zonas de
+ * operación), no las detectaba nadie. No salían resaltadas, no levantaban el
+ * aviso y se publicaron tal cual: el visitante leía «[COMPLETAR (HECHO):
+ * describe el modelo real de compensación…]» debajo de "¿Cómo gana un
+ * Embajador?".
+ *
+ * Cortando en `[COMPLETAR` entran las dos formas y cualquier otra que se
+ * invente después: `[COMPLETAR (FACT)`, `[COMPLETAR — …`, lo que sea.
+ */
+export const MARCA_COMPLETAR = "[COMPLETAR";
 
 /** El valor entero es un placeholder, no solo una parte. */
 export const MARCA_PLACEHOLDER = "PLACEHOLDER";
@@ -41,7 +57,9 @@ export const faltaPorRellenar = (v: Txt): boolean =>
  */
 export const resaltarPendientes = (texto: string): string =>
   texto.replace(
-    /\[COMPLETAR:[^\]]*\]/g,
+    // Mismo motivo que en `MARCA_COMPLETAR`: sin exigir los dos puntos justo
+    // después, para que `[COMPLETAR (HECHO): …]` también se resalte.
+    /\[COMPLETAR\b[^\]]*\]/g,
     (m) =>
       `<mark class="rounded-xs bg-warning-50 px-1 font-semibold text-warning-700">${m}</mark>`,
   );

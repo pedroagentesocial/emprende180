@@ -68,7 +68,27 @@ const lang = resolverIdiomaServidor(
 );
 ---
 
-<footer class="relative isolate overflow-hidden border-t border-primary-800 bg-primary-950 text-secondary-200">
+{/* ─── EL HUECO DE LA BARRA FLOTANTE LO RESERVA EL PIE ────────────────────────
+    `BarraFlotante` es `position: fixed`, así que no ocupa sitio en el flujo y
+    tapaba los últimos ~70 px de la página: el copyright quedaba debajo de ella
+    y no había forma de leerlo. (La reserva existía en `global.css`, pero un
+    segundo bloque `body` heredado de cuando la barra era solo de móvil volvía a
+    declarar `padding-bottom` y la anulaba. Ver el comentario de allí.)
+
+    Se reserva aquí y no en el `body` por el color: el pie es navy y el body es
+    blanco, así que 80 px de `padding` en el body eran una franja blanca
+    asomando por debajo del pie. En el `<footer>` el hueco es del mismo color y
+    no se ve.
+
+    Y se reserva SIEMPRE, no solo mientras la barra está visible: alternarlo con
+    una clase cambia el layout a mitad de scroll, y eso son 0,15 de CLS.
+
+    6,5rem y no 5: la barra mide 69 px en escritorio y 65 en móvil, así que con
+    5rem el copyright quedaba a 11 px de ella —descubierto, pero pegado, que se
+    lee como si siguiera tapado a medias—. Con 104 px quedan 35 de aire. */}
+<footer
+  class="relative isolate overflow-hidden border-t border-primary-800 bg-primary-950 pb-[calc(6.5rem+env(safe-area-inset-bottom))] text-secondary-200"
+>
   <MarcaAgua posicion="derecha" class="opacity-[0.06]" />
 
   <div class="container-page py-14">
