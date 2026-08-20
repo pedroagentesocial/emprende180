@@ -1,17 +1,16 @@
 ---
-import { resolverIdiomaServidor } from "@i18n/idioma";
 import BaseLayout from "@layouts/BaseLayout.astro";
 import Header from "@components/layout/Header.astro";
 import Footer from "@components/layout/Footer.astro";
-import StickyCta from "@components/layout/StickyCta";
+import BarraFlotante from "@components/layout/BarraFlotante.astro";
 import CintaPrecio from "@components/ui/CintaPrecio.astro";
 import CintaAnuncio from "@components/ui/CintaAnuncio.astro";
 
 /* ───────────────────────────────────────────────────────────────────────────
    DÓNDE VIVE CADA COSA
 
-     components/layout/   Header, Footer, StickyCta, RedesMarca. El armazón que
-                          rodea a la página y se repite en las legales.
+     components/layout/   Header, Footer, BarraFlotante, RedesMarca. El armazón
+                          que rodea a la página y se repite en las legales.
      components/hero/     El hero y sus piezas (fondo de vídeo, franja de datos).
                           Tiene carpeta propia porque no es "una sección más":
                           es la única con vídeo, con velos y con animación de
@@ -56,33 +55,14 @@ import Precio from "@components/sections/09-Precio.astro";
 import Faq from "@components/sections/10-Faq.astro";
 import CtaFinal from "@components/sections/11-CtaFinal.astro";
 
-import { cta, curso } from "@config/curso.config";
-import { construirTxt } from "@i18n/idioma";
-import { formatMoney, interpolar } from "@i18n/formato";
+/* Esta página ya no prepara datos para nadie.
+   Las tiras de anuncios resuelven sus seis frases desde el config, y la barra
+   flotante resuelve la suya. Aquí solo se decide QUÉ va y en qué ORDEN, que es
+   lo único que debería decidir un archivo de página.
 
-/**
- * Nota del CTA fijo: el dato que más ayuda a decidir en ese momento.
- * Se construye por idioma porque lleva dinero, y el dinero lo formatea Intl.
- */
-const notaSticky = construirTxt((l) => {
-  const precio = formatMoney(curso.precio.actual, l, curso.precio.moneda);
-  if (!curso.precio.cuotas) return precio;
-  return `${precio} · ${interpolar(cta.notaCuotas[l], {
-    n: curso.precio.cuotas.numero,
-  })}`;
-});
-
-/* Idioma de ESTA petición. Las islas de React lo necesitan como prop: en
-   el servidor no pueden leerlo del DOM, así que sin esto se renderizarían
-   siempre en español aunque la URL pida inglés. */
-const lang = resolverIdiomaServidor(
-  Astro.url,
-  Astro.request.headers.get("accept-language"),
-);
-
-/* Las tiras de anuncios no necesitan que esta página les prepare nada: cada
-   `CintaAnuncio` resuelve sus seis frases desde el config. Aquí solo se decide
-   DÓNDE van. */
+   Tampoco necesita el idioma de la petición: lo necesitaban las islas de React,
+   que en el servidor no podían leerlo del DOM. Ya no queda ninguna en esta
+   página salvo el formulario, que lo resuelve él. */
 ---
 
 <BaseLayout>
@@ -138,16 +118,9 @@ const lang = resolverIdiomaServidor(
 
   <Footer />
 
-  {/* Solo móvil. Aparece al dejar atrás el hero y se mantiene el resto de la
-      página, salvo mientras #precio está en pantalla: ahí ya hay un CTA grande
+  {/* Barra flotante: teletipo de ofertas y acciones. Aparece al dejar atrás el
+      hero, salvo mientras #precio está en pantalla: ahí ya hay un CTA grande
       a la vista y dos botones idénticos a la vez compiten entre sí.
-      `client:idle`: no le disputa el hilo principal al LCP del hero. */}
-  <StickyCta
-    client:idle lang={lang}
-    texto={cta.primario.texto}
-    href={cta.primario.href}
-    nota={notaSticky}
-    observarDesde="inicio"
-    ocultarEn="precio"
-  />
+      Ver BarraFlotante.astro. */}
+  <BarraFlotante />
 </BaseLayout>

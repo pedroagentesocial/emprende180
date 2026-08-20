@@ -1,0 +1,182 @@
+---
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import CintaAnuncio from "@components/ui/CintaAnuncio.astro";
+import { cta, contacto, copy } from "@config/curso.config";
+import { resolverIdiomaServidor } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * BARRA FLOTANTE — teletipo + acciones, al dejar atrás el hero
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Sustituye a `StickyCta`, que era una isla de React solo para móvil con un
+ * botón. Ahora es Astro puro, existe en todos los tamaños y lleva tres cosas:
+ * el teletipo de ofertas, el teléfono y el enlace al formulario.
+ *
+ * ─── POR QUÉ UNA BARRA Y NO BOTONES FLOTANTES SUELTOS ──────────────────────
+ *
+ * Se pidieron "botones flotantes" y un teletipo. Puestos por separado serían
+ * TRES elementos fijos compitiendo por la misma pantalla —los botones, la cinta
+ * y el CTA de móvil que ya existía—, y en un celular de 390 px eso no es una
+ * interfaz, es una obstrucción. Agrupados en una sola barra ocupan una franja,
+ * se leen como una unidad y el visitante sabe dónde mirar.
+ *
+ * ─── NO APARECE ANTES DE TIEMPO ────────────────────────────────────────────
+ *
+ * Se mantiene el comportamiento que ya tenía, porque estaba bien pensado:
+ *
+ *   · Aparece al dejar atrás el hero. Antes taparía justo la pantalla donde se
+ *     decide si se sigue leyendo.
+ *   · Desaparece mientras la sección de precio está a la vista: ahí ya hay un
+ *     botón grande de comprar, y dos botones idénticos a la vez restan claridad.
+ *   · Se esconde mientras alguien escribe en un campo. En un celular el teclado
+ *     ocupa media pantalla y la barra acabaría montada encima del botón de
+ *     enviar, que es el único que hay que poder pulsar en ese momento. Se
+ *     detecta por el FOCO y no por la altura del viewport: `visualViewport` se
+ *     comporta distinto en iOS y en Android y no es fiable para esto.
+ *
+ * ─── EL HUECO SE RESERVA SIEMPRE ───────────────────────────────────────────
+ *
+ * `body` lleva `padding-bottom` en todos los anchos (antes solo por debajo de
+ * `md`). La barra es `fixed`, así que sin esa reserva taparía el final del pie,
+ * enlaces legales incluidos. Y se reserva SIEMPRE, no solo cuando está visible:
+ * alternarlo a mitad de scroll es un cambio de layout, y eso valía 0,15 de CLS.
+ */
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+---
+
+<div
+  data-barra
+  data-observar="inicio"
+  data-ocultar="precio"
+  aria-label={copy.barra.etiqueta[lang]}
+  data-aria-es={copy.barra.etiqueta.es}
+  data-aria-en={copy.barra.etiqueta.en}
+  class="fixed inset-x-0 bottom-0 z-40 translate-y-full border-t border-primary-800 bg-primary-950/95 opacity-0 shadow-sticky backdrop-blur-md transition-[transform,opacity] duration-300 ease-out-soft data-[visible=true]:translate-y-0 data-[visible=true]:opacity-100"
+  style="padding-bottom:env(safe-area-inset-bottom)"
+>
+  <div class="flex items-center gap-3 px-3 py-2.5 sm:gap-5 sm:px-5 sm:py-3">
+    {/* EL TELETIPO. Solo de `lg` para arriba: por debajo, entre él y tres
+        botones no queda ancho para ninguno de los dos, y los botones son los
+        que convierten. `min-w-0` para que pueda encogerse en vez de empujar. */}
+    <div class="hidden min-w-0 flex-1 lg:block">
+      <CintaAnuncio class="rounded-full !bg-primary-900 !py-2" />
+    </div>
+
+    {/* Las acciones. `ml-auto` para que se peguen a la derecha cuando el
+        teletipo no está (por debajo de `lg`, donde ocupan la barra entera). */}
+    <div class="flex flex-1 items-center justify-end gap-2 sm:gap-3 lg:flex-none">
+      {
+        contacto.telefono && (
+          <a
+            href={`tel:${contacto.telefono}`}
+            data-track="barra-llamar"
+            class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-primary-700 px-3 text-sm font-semibold text-secondary-100 transition-colors duration-200 hover:border-secondary-400 hover:text-ink-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse sm:px-4"
+          >
+            <Icono nombre="telefono" class="size-4 shrink-0" grosor={2} />
+            {/* El texto se cae en móvil: el icono de un teléfono no necesita
+                que le expliquen qué hace, y ahí el ancho vale oro. */}
+            <span class="max-sm:sr-only">
+              <T v={copy.barra.llamar} />
+            </span>
+          </a>
+        )
+      }
+
+      {/* Al formulario del mini-curso, que es el único que hay. */}
+      <a
+        href={cta.secundario.href}
+        data-track="barra-contacto"
+        class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-primary-700 px-3 text-sm font-semibold text-secondary-100 transition-colors duration-200 hover:border-secondary-400 hover:text-ink-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse sm:px-4"
+      >
+        <Icono nombre="conversacion" class="size-4 shrink-0" grosor={2} />
+        <span class="max-sm:sr-only">
+          <T v={copy.barra.contacto} />
+        </span>
+      </a>
+
+      {/* La acción principal. Teal, como en toda la página. */}
+      <a
+        href={cta.primario.href}
+        data-track="barra-comprar"
+        class="inline-flex min-h-11 min-w-0 items-center justify-center rounded-full bg-cta px-4 text-sm font-semibold text-ink-inverse shadow-cta transition-colors duration-200 hover:bg-cta-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse motion-safe:active:scale-[0.98] sm:px-6"
+      >
+        <span class="truncate">
+          <T v={cta.primario.texto} />
+        </span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  /**
+   * Decide cuándo se ve la barra.
+   *
+   * Dos observadores en vez de un listener de scroll: un `scroll` dispara
+   * decenas de veces por segundo y obliga a leer geometría en cada uno, que es
+   * la receta clásica para que el scroll vaya a tirones en un móvil. Con
+   * IntersectionObserver el navegador avisa solo cuando algo cruza el umbral.
+   */
+  function montarBarra(barra: HTMLElement) {
+    const hero = document.getElementById(barra.dataset.observar ?? "");
+    const precio = document.getElementById(barra.dataset.ocultar ?? "");
+
+    /* Sin hero no hay referencia para decidir: se queda oculta antes que
+       arriesgarse a tapar contenido. */
+    if (!hero) return;
+
+    let heroFuera = false;
+    let precioDentro = false;
+    let escribiendo = false;
+
+    const aplicar = () => {
+      barra.dataset.visible = String(heroFuera && !precioDentro && !escribiendo);
+    };
+
+    new IntersectionObserver(
+      ([e]) => {
+        heroFuera = !e!.isIntersecting;
+        aplicar();
+      },
+      { rootMargin: "-80px 0px 0px 0px" },
+    ).observe(hero);
+
+    if (precio) {
+      new IntersectionObserver(
+        ([e]) => {
+          precioDentro = e!.isIntersecting;
+          aplicar();
+        },
+        { threshold: 0.25 },
+      ).observe(precio);
+    }
+
+    /* Mientras se escribe, fuera. Ver la nota de la cabecera: se detecta por el
+       foco porque `visualViewport` no es fiable entre iOS y Android. */
+    const esCampo = (el: EventTarget | null) =>
+      el instanceof HTMLElement &&
+      el.matches("input:not([type=checkbox]):not([type=radio]), textarea, select");
+
+    document.addEventListener("focusin", (e) => {
+      if (esCampo(e.target)) {
+        escribiendo = true;
+        aplicar();
+      }
+    });
+    document.addEventListener("focusout", (e) => {
+      if (esCampo(e.target)) {
+        escribiendo = false;
+        aplicar();
+      }
+    });
+
+    aplicar();
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-barra]").forEach(montarBarra);
+</script>

@@ -5,6 +5,7 @@ import SectionHeading from "@components/ui/SectionHeading.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Button from "@components/ui/Button.astro";
 import { Contador } from "@components/motion/Contador";
+import Icono from "@components/ui/Icono.astro";
 import { curso, cta, garantia, copy } from "@config/curso.config";
 import { construirTxt, LOCALES, resolverIdiomaServidor } from "@i18n/idioma";
 import { formatMoney } from "@i18n/formato";
@@ -85,6 +86,23 @@ const textoSubira = construirTxt((l) =>
     formatMoney(precio.referencia, l, precio.moneda),
   ),
 );
+
+/**
+ * El enganche: la diferencia entre lo que suma el desglose y lo que se paga.
+ *
+ * Solo se pinta si el desglose CUADRA. Si alguien toca un valor y la suma deja
+ * de dar la referencia, esta frase pasaría a comparar contra un número que no
+ * existe, y es justo la clase de afirmación que no puede salir mal. Prefiere no
+ * decir nada antes que decir una cifra que no se sostiene.
+ */
+const textoFrenteAlDesglose = desgloseCuadra
+  ? construirTxt((l) =>
+      copy.precio.lanzamiento.frenteAlDesglose[l].replace(
+        "{importe}",
+        formatMoney(ahorro, l, precio.moneda),
+      ),
+    )
+  : null;
 
 const textoCuotas = precio.cuotas
   ? construirTxt((l) =>
@@ -274,7 +292,20 @@ const lang = resolverIdiomaServidor(
                   <p class="mt-1 text-sm font-medium text-ink-muted">
                     <T v={copy.precio.lanzamiento.etiquetaPrecio} />
                   </p>
-                  <p class="mt-4 text-base font-semibold text-balance text-ink">
+
+                  {/* EL ENGANCHE. El desglose de al lado suma 3.990 y aquí se
+                      paga 490: esta insignia pone la diferencia en una cifra en
+                      vez de dejar que el visitante la calcule. Va pegada al
+                      precio, que es donde se mira, y no al final de la tarjeta.
+                      Ver la nota de `frenteAlDesglose` en el config: compara
+                      contra la SUMA, nunca contra un precio anterior. */}
+                  {textoFrenteAlDesglose && (
+                    <p class="mt-4 inline-flex self-center rounded-full bg-secondary-100 px-4 py-1.5 text-sm font-bold text-balance text-secondary-700">
+                      <T v={textoFrenteAlDesglose} />
+                    </p>
+                  )}
+
+                  <p class="mt-3 text-base font-semibold text-balance text-ink">
                     <T v={textoSubira} />
                   </p>
                 </Fragment>
@@ -360,28 +391,19 @@ const lang = resolverIdiomaServidor(
                 alinea, no la del texto que tiene al lado. */}
             {
               garantia.activa && (
-                <div class="mt-5 flex items-start gap-2.5 border-t border-line pt-4 text-left text-sm">
-                  <span aria-hidden="true" class="marca-linea">
-                    <span class="grid size-7 place-items-center rounded-full bg-secondary-100 text-secondary-700">
-                      <svg viewBox="0 0 24 24" fill="none" class="size-4" stroke-width="2">
-                        <path
-                          d="M12 3 4 6v6c0 4.4 3.4 8.2 8 9 4.6-.8 8-4.6 8-9V6l-8-3Z"
-                          stroke="currentColor"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        />
-                        <path d="m9 12 2 2 4-4" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" />
-                      </svg>
-                    </span>
-                  </span>
-                  <span class="min-w-0">
-                    <span class="block text-sm font-bold text-ink">
-                      <T v={garantia.titulo} />
-                    </span>
-                    <span class="mt-0.5 block text-xs text-pretty text-ink-muted">
-                      <T v={garantia.resumen} />
-                    </span>
-                  </span>
+                /* LA GARANTÍA SUBE DE RANGO. Estaba al pie de la tarjeta, en
+                   texto pequeño y gris: la pieza que más desactiva el miedo
+                   puesta donde menos se mira. Ahora es un bloque teal con su
+                   icono, justo debajo del botón, que es el instante exacto en
+                   que aparece la duda de "¿y si no es para mí?". */
+                <div class="mt-5 rounded-xl bg-secondary-50 p-4 text-center">
+                  <p class="flex items-center justify-center gap-2 text-sm font-bold text-secondary-800">
+                    <Icono nombre="escudo" class="size-5 shrink-0" />
+                    <T v={garantia.titulo} />
+                  </p>
+                  <p class="mt-1.5 text-xs text-pretty text-ink-muted">
+                    <T v={garantia.resumen} />
+                  </p>
                 </div>
               )
             }

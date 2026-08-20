@@ -1945,6 +1945,26 @@ export const copy = {
       etiquetaPrecio: { es: "Precio de lanzamiento", en: "Launch price" },
       /** `{referencia}` = la cifra ancla ya formateada. */
       subira: { es: "Después subirá a {referencia}", en: "It goes up to {referencia} after that" },
+      /**
+       * EL ENGANCHE DE LA SECCIÓN, y está escrito con mucho cuidado.
+       *
+       * Compara el precio de hoy con LO QUE SUMA EL DESGLOSE, no con un precio
+       * anterior. Esa distinción es toda la diferencia:
+       *
+       *   · "Ahorras 3.500" a secas insinúa que antes costaba 3.990. Nunca
+       *     costó eso, y afirmarlo es el precio anterior falso que persiguen
+       *     PROFECO y la FTC.
+       *   · "3.500 menos de lo que suma el desglose" es comprobable en la misma
+       *     pantalla: el visitante tiene las cuatro partidas al lado y puede
+       *     sumarlas. La sección incluso avisa si dejan de cuadrar.
+       *
+       * Y por eso el desglose no es decoración: es lo que le da derecho a esta
+       * frase a existir. Si alguien infla una partida, esta frase pasa a mentir.
+       */
+      frenteAlDesglose: {
+        es: "{importe} menos de lo que suma el desglose",
+        en: "{importe} less than the breakdown adds up to",
+      },
       nota: {
         es: "Precio de lanzamiento por tiempo limitado. Quien entra ahora lo mantiene: el precio no te sube después.",
         en: "Launch price for a limited time. If you get in now you keep it: your price doesn't go up later.",
@@ -2182,6 +2202,22 @@ export const copy = {
         en: "Today it's {actual}, or {cuotas} monthly payments. On {fecha} it becomes {referencia}, and whoever got in earlier keeps their price.",
       },
     },
+  },
+
+  /**
+   * ─── LA BARRA FLOTANTE ───────────────────────────────────────────────────
+   *
+   * Aparece al dejar atrás el hero y acompaña el resto de la página: teletipo
+   * de ofertas a la izquierda y botones a la derecha. Ver `BarraFlotante.astro`.
+   *
+   * Los textos son CORTOS a propósito. Es una barra de 64 px que convive con el
+   * contenido: cada palabra de más le roba sitio al teletipo, que es lo único
+   * que ahí dentro se mueve y por tanto lo único que se mira.
+   */
+  barra: {
+    llamar: { es: "Llamar", en: "Call" },
+    contacto: { es: "Contacto", en: "Contact us" },
+    etiqueta: { es: "Acciones rápidas", en: "Quick actions" },
   },
 
   /** Vídeo de introducción del hero. Ver `VideoVsl.astro`. */

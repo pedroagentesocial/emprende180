@@ -23,17 +23,19 @@
      flujo: sin esto tapaba el final del pie, enlaces legales incluidos.
      `StickyCta` marca el documento mientras la barra está visible y el hueco
      se reserva aquí. Solo por debajo de `md`, que es donde existe la barra. */
-  /* Hueco para el CTA fijo de móvil.
-     Se reserva SIEMPRE por debajo de `md`, no solo cuando la barra está
+  /* Hueco para la barra flotante.
+     Se reserva SIEMPRE, en todos los anchos, no solo cuando la barra está
      visible. Alternarlo con una clase parecía más limpio, pero cambiar el
      `padding-bottom` del body a mitad de scroll ES un cambio de layout: valía
      0,15 de CLS en Lighthouse. Ochenta píxeles de aire al final del pie cuestan
      menos que eso. La barra es `position: fixed`, así que sin esta reserva
-     tapaba los enlaces legales. */
-  @media (width < 48rem) {
-    body {
-      padding-bottom: calc(5rem + env(safe-area-inset-bottom));
-    }
+     tapaba los enlaces legales.
+
+     Antes esto vivía dentro de `@media (width < 48rem)`, porque el CTA fijo era
+     solo de móvil. La barra flotante existe en todos los tamaños (ver
+     BarraFlotante.astro), así que la reserva también. */
+  body {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
   }
 
   body {
