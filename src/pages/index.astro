@@ -1,11 +1,30 @@
 ---
 import { resolverIdiomaServidor } from "@i18n/idioma";
 import BaseLayout from "@layouts/BaseLayout.astro";
-import Header from "@components/Header.astro";
-import Footer from "@components/Footer.astro";
-import StickyCta from "@components/StickyCta";
+import Header from "@components/layout/Header.astro";
+import Footer from "@components/layout/Footer.astro";
+import StickyCta from "@components/layout/StickyCta";
+import CintaPrecio from "@components/ui/CintaPrecio.astro";
+import CintaAnuncio from "@components/ui/CintaAnuncio.astro";
 
 /* ───────────────────────────────────────────────────────────────────────────
+   DÓNDE VIVE CADA COSA
+
+     components/layout/   Header, Footer, StickyCta, RedesMarca. El armazón que
+                          rodea a la página y se repite en las legales.
+     components/hero/     El hero y sus piezas (fondo de vídeo, franja de datos).
+                          Tiene carpeta propia porque no es "una sección más":
+                          es la única con vídeo, con velos y con animación de
+                          entrada sin observador.
+     components/sections/ El resto del argumento, numerado en orden de lectura.
+                          Empieza en 02 porque el 01 es el hero, que está en su
+                          carpeta. Falta el 08: la garantía dejó de ser sección
+                          propia y vive dentro de la tarjeta de precio.
+     components/ui/       Primitivos sin opinión de contenido: Button, Pill,
+                          Input, Modal, Section, SectionHeading, LeadForm.
+     components/motion/   Lo que orquesta movimiento de verdad.
+
+   ───────────────────────────────────────────────────────────────────────────
    ORDEN DE DECISIÓN
    No es un orden estético: es la secuencia de preguntas que se hace quien
    entra, en el orden en que se las hace. Cambiar el orden rompe el argumento.
@@ -25,7 +44,8 @@ import StickyCta from "@components/StickyCta";
    decir una frase. Ahora vive dentro de la tarjeta de precio, que es donde
    aparece el miedo que neutraliza, y en una línea del cierre.
    ─────────────────────────────────────────────────────────────────────────── */
-import Hero from "@components/sections/01-Hero.astro";
+import Hero from "@components/hero/Hero.astro";
+import Aliados from "@components/sections/01-Aliados.astro";
 import Problema from "@components/sections/02-Problema.astro";
 import QueVasALograr from "@components/sections/03-QueVasALograr.astro";
 import CapturaLead from "@components/sections/04-CapturaLead.astro";
@@ -60,21 +80,59 @@ const lang = resolverIdiomaServidor(
   Astro.request.headers.get("accept-language"),
 );
 
+/* Las tiras de anuncios no necesitan que esta página les prepare nada: cada
+   `CintaAnuncio` resuelve sus seis frases desde el config. Aquí solo se decide
+   DÓNDE van. */
 ---
 
 <BaseLayout>
+  {/* Cinta de precio, arriba del todo.
+      Va ENCIMA del header y dentro del flujo, así que se va con el scroll igual
+      que la barra: nada queda pegado a la pantalla. Es lo primero que se ve y lo
+      único de la página que da una razón para no dejarlo para mañana.
+      Si `precio.urgencia.fechaCierre` se pone a `null`, desaparece sola. */}
+  <CintaPrecio variante="barra" />
+
   <Header />
 
+  {/* ─────────────────────────────────────────────────────────────────────────
+      LAS TIRAS DE ANUNCIOS VAN ENTRE SECCIONES, NO DENTRO DE ELLAS.
+
+      Aquí y no en el archivo de cada sección, por dos motivos. Uno: una sección
+      no tiene por qué saber quién va detrás de ella, y estas tiras son
+      transiciones, no contenido de nadie. Dos: puestas en fila en este archivo
+      se ve de un vistazo cuántas hay, que es lo único que impide que acaben
+      siendo seis.
+
+      Las tres son el MISMO componente y dicen lo mismo, en bucle: precio,
+      subida, plazo, contenido, garantía, cuotas. Antes eran tres cintas
+      distintas, cada una con un mensaje y con el detalle escondido detrás del
+      cursor; ahora las seis frases pasan en todas. Ver `CintaAnuncio.astro`.
+      ───────────────────────────────────────────────────────────────────────── */}
   <main id="contenido">
     <Hero />
+
+    {/* Franja de negocios del Ecosistema, pegada al hero: responde "¿esto
+        existe de verdad?" mientras todavía hay atención. Ver 01-Aliados. */}
+    <Aliados />
+
     <Problema />
     <QueVasALograr />
+
+    <CintaAnuncio />
+
     <CapturaLead />
     <Temario />
     <Instructor />
+
+    <CintaAnuncio />
+
     <PruebaSocial />
     <Precio />
     <Faq />
+
+    <CintaAnuncio />
+
     <CtaFinal />
   </main>
 

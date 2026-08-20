@@ -220,29 +220,59 @@ export const curso = {
       en: "It's that nobody taught you what to do with those contacts. So situations pass right by you, get handled without you, and you find out afterwards.",
     },
 
-    /** En primera persona del lector. Que se reconozca en al menos dos. */
+    /**
+     * En primera persona del lector. Que se reconozca en al menos dos.
+     *
+     * CADA DOLOR TIENE DOS PIEZAS Y NO SON INTERCAMBIABLES:
+     *
+     *   `titulo`  — de tres a cinco palabras. Es lo ÚNICO que se lee seguro:
+     *               es lo que queda visible siempre y lo que se escanea. Tiene
+     *               que sostenerse solo, sin el detalle. Si un título necesita
+     *               que leas el detalle para entenderse, está mal escrito.
+     *   `detalle` — la frase completa. Amplía, no completa. En escritorio
+     *               aparece al pasar el ratón; en móvil y en táctil se ve
+     *               siempre, porque ahí no hay ratón que pasar.
+     *
+     * El icono va emparejado en el componente por posición (ver 02-Problema),
+     * no aquí: es decisión de maquetación, no de contenido.
+     */
     dolores: [
       {
-        es: "Conoces a mucha gente, pero no sabes cómo convertir eso en algo sin que parezca que vas a aprovecharte de tus amistades.",
-        en: "You know a lot of people, but you don't know how to turn that into anything without looking like you're using your friends.",
+        titulo: { es: "Tu red no se mueve", en: "Your network sits still" },
+        detalle: {
+          es: "Conoces a mucha gente, pero no sabes cómo convertir eso en algo sin que parezca que vas a aprovecharte de tus amistades.",
+          en: "You know a lot of people, but you don't know how to turn that into anything without looking like you're using your friends.",
+        },
       },
       {
-        es: "Intuyes que hay oportunidades a tu alrededor y no sabes reconocerlas cuando las tienes delante, ni qué hacer con ellas si las reconoces.",
-        en: "You sense there are opportunities around you, and you can't spot them when they're in front of you, or know what to do with them if you do.",
+        titulo: { es: "No las ves venir", en: "You don't spot them" },
+        detalle: {
+          es: "Intuyes que hay oportunidades a tu alrededor y no sabes reconocerlas cuando las tienes delante, ni qué hacer con ellas si las reconoces.",
+          en: "You sense there are opportunities around you, and you can't spot them when they're in front of you, or know what to do with them if you do.",
+        },
       },
       {
-        es: "Alguien cercano tuvo un accidente de auto o un problema en su casa, y no supiste ni qué decirle ni a quién mandarlo.",
-        en: "Someone close to you had a car accident or a problem at home, and you didn't know what to say or who to send them to.",
+        titulo: { es: "No supiste a quién llamar", en: "You didn't know who to call" },
+        detalle: {
+          es: "Alguien cercano tuvo un accidente de auto o un problema en su casa, y no supiste ni qué decirle ni a quién mandarlo.",
+          en: "Someone close to you had a car accident or a problem at home, and you didn't know what to say or who to send them to.",
+        },
       },
       {
-        es: "Pedir un referido te da pena. Prefieres no preguntar antes que sonar a que le quieres vender algo a un conocido.",
-        en: "Asking for a referral makes you cringe. You'd rather not ask than sound like you're selling something to someone you know.",
+        titulo: { es: "Pedir te da pena", en: "Asking makes you cringe" },
+        detalle: {
+          es: "Pedir un referido te da pena. Prefieres no preguntar antes que sonar a que le quieres vender algo a un conocido.",
+          en: "Asking for a referral makes you cringe. You'd rather not ask than sound like you're selling something to someone you know.",
+        },
       },
       {
-        es: "Te has apuntado a cosas con muchas ganas y a las tres semanas ya no sabías por dónde ibas, porque nadie te dio un plan con fechas.",
-        en: "You've signed up for things full of enthusiasm and three weeks later lost the thread, because nobody gave you a plan with dates on it.",
+        titulo: { es: "Empiezas y lo dejas", en: "You start, then drift" },
+        detalle: {
+          es: "Te has apuntado a cosas con muchas ganas y a las tres semanas ya no sabías por dónde ibas, porque nadie te dio un plan con fechas.",
+          en: "You've signed up for things full of enthusiasm and three weeks later lost the thread, because nobody gave you a plan with dates on it.",
+        },
       },
-    ] satisfies Txt[],
+    ] satisfies { titulo: Txt; detalle: Txt }[],
 
     coste: {
       es: "Dentro de un año vas a conocer a la misma gente. La diferencia es que las oportunidades que te pasaron por delante se habrán resuelto sin ti otra vez.",
@@ -421,13 +451,20 @@ export const curso = {
         es: "Las actualizaciones futuras del curso, sin pagar de nuevo",
         en: "Future updates to the course, without paying again",
       },
+      /* Confirmado por el cliente: las dos cosas van incluidas con el curso. */
       {
-        es: "[COMPLETAR: ¿el acceso al CRM va incluido con el curso o se contrata aparte?]",
-        en: "[COMPLETAR: is CRM access included with the course, or contracted separately?]",
+        es: "El acceso al CRM, incluido con el curso",
+        en: "CRM access, included with the course",
       },
       {
-        es: "[COMPLETAR: ¿hay acompañamiento, comunidad o soporte después del curso? Si no lo hay, borra esta línea.]",
-        en: "[COMPLETAR: is there any mentoring, community or support after the course? If not, delete this line.]",
+        /* ⚠️ El cliente confirmó que hay acompañamiento después del curso, pero
+           no CÓMO es. Y "específico gana a impresionante" es la regla que manda
+           en esta página: "acompañamiento y soporte" es cierto pero no dice
+           nada, mientras que "un grupo de WhatsApp con los Embajadores" o "una
+           sesión de preguntas al mes" convierten. En cuanto se sepa la forma
+           exacta, esta línea se cambia por ella. */
+        es: "Acompañamiento y soporte después del curso",
+        en: "Mentoring and support after the course",
       },
     ] satisfies Txt[],
 
@@ -624,6 +661,65 @@ export const curso = {
   },
 } as const;
 
+// ─── Aliados ─────────────────────────────────────────────────────────────────
+/**
+ * ⚠️ ESTO ES UN HECHO, NO COPY. Cada marca que aparezca aquí le está diciendo
+ * al visitante "estas empresas ya trabajan con nosotros". Solo entra quien de
+ * verdad tenga una relación con Emprende180, y quien pueda confirmarlo si
+ * alguien pregunta. Una marca de más aquí no es un adorno: es una afirmación
+ * que hay que poder sostener.
+ *
+ * ⚠️ Y OJO CON EL ENCUADRE. `senordelascasas.com` es la OTRA empresa de Pedro
+ * Lira, el mismo que firma el curso. Presentarla bajo "con quién trabajamos ya"
+ * es cierto en la letra pero engorda la prueba social: quien lo descubra —y se
+ * descubre entrando a la web, donde pone su nombre— ve dos empresas de la misma
+ * persona presentadas como si fueran dos respaldos independientes.
+ *
+ * Lo honesto y, además, más fuerte, es contar lo que de verdad son: los
+ * negocios del Ecosistema por los que pasan los referidos que aprende a generar
+ * el Embajador. Eso explica el modelo en vez de solo enseñar sellos. El texto
+ * de `titulo`/`entradilla` está escrito así a medias — cámbialo si prefieres el
+ * encuadre directo, pero sabiendo lo que se gana y lo que se arriesga.
+ *
+ * `logo` es el nombre base del archivo en `/public/imagenes/aliados/`. Si no
+ * existe, la sección pinta el nombre como logotipo tipográfico y no se rompe.
+ */
+export const aliados = {
+  /** `false` esconde la sección entera. */
+  activa: true,
+
+  titulo: {
+    es: "Los negocios que ya están dentro",
+    en: "The businesses already inside",
+  },
+  entradilla: {
+    es: "Emprende180 no es una idea en un papel: el Ecosistema ya opera con negocios reales, y son ellos los que resuelven las oportunidades que detectas.",
+    en: "Emprende180 isn't an idea on paper: the ecosystem already runs with real businesses, and they're the ones who handle the opportunities you spot.",
+  },
+
+  marcas: [
+    {
+      nombre: "El Señor de las Casas",
+      /** Qué hace, en tres o cuatro palabras. Debajo del logo. */
+      rubro: { es: "Financiamiento inmobiliario", en: "Real estate financing" },
+      url: "https://senordelascasas.com",
+      logo: "senordelascasas",
+    },
+    {
+      nombre: "Broker Lenders",
+      rubro: { es: "Préstamos hipotecarios", en: "Mortgage lending" },
+      url: "https://brokerlenders.com",
+      /* ⚠️ SIN LOGO TODAVÍA. brokerlenders.com bloquea las descargas
+         automáticas (responde 403), así que no se ha podido sacar el suyo.
+         Mientras tanto se pinta el nombre como logotipo tipográfico. Para
+         arreglarlo: deja el archivo en
+         `/public/imagenes/aliados/brokerlenders.webp` (y, si lo hay,
+         `brokerlenders-blanco.webp`) y entra solo. */
+      logo: "brokerlenders",
+    },
+  ],
+} as const;
+
 // ─── Instructor ──────────────────────────────────────────────────────────────
 
 /**
@@ -674,8 +770,29 @@ export const instructor = {
    * dice que hay que huir, así que se queda a la vista hasta que lo escribas.
    */
   bio: {
-    es: "Soy Pedro Lira y fundé Emprende180. El Ecosistema existe porque el desperdicio siempre era el mismo: gente con una red de contactos buena y grande, delante de situaciones que podía resolver, que no hacía nada porque nadie le había explicado qué hacer ni hasta dónde llegaba su parte. No es falta de ganas, es falta de método. [COMPLETAR: dos frases sobre de dónde vienes, incluido lo que te salió mal. Es el dato que más peso tiene de toda la página.] Doy yo los diez videos porque el rol de Embajador lo diseñé yo, y prefiero explicarlo en primera persona antes que dejar que cada quien lo interprete a su manera.",
-    en: "I'm Pedro Lira and I founded Emprende180. The ecosystem exists because the waste was always the same: people with a big, good network, standing in front of situations they could have solved, doing nothing because nobody had explained what to do or where their part ended. It isn't a lack of drive, it's a lack of method. [COMPLETAR: two sentences on where you come from, including what went wrong. It's the single highest-weight fact on the page.] I teach the ten videos myself because I designed the Ambassador role, and I'd rather explain it first-hand than let everyone interpret it their own way.",
+    /**
+     * ⚠️ AQUÍ HABÍA UN `[COMPLETAR:]` PIDIENDO DOS FRASES SOBRE DE DÓNDE VIENES,
+     * INCLUIDO LO QUE TE SALIÓ MAL. Está a medio rellenar, y conviene saber qué
+     * parte se escribió y con qué.
+     *
+     * LO QUE SÍ SE ESCRIBIÓ sale de un hecho comprobable y público: en
+     * senordelascasas.com, la otra web de Pedro, se presenta como loan officer
+     * en Utah dedicado a financiamiento inmobiliario. Eso no es una suposición,
+     * está publicado y firmado por él, y conecta con la tesis del curso: en ese
+     * trabajo se ve todos los días a alguien con una oportunidad delante que no
+     * sabe a quién llamar.
+     *
+     * LO QUE NO SE ESCRIBIÓ, Y NO SE PUEDE: el fracaso. "Lo que te salió mal"
+     * es un hecho de su vida que no está publicado en ninguna parte, y es
+     * justamente el que más pesa —porque es el único que el lector no puede
+     * deducir del producto—. Inventarlo sería exactamente el infoproducto de
+     * gurú del que huye PRODUCT.md.
+     *
+     * Sigue siendo la frase que más convertiría de toda la página. Dos líneas
+     * suyas, con lo que le costó, y esta bio pasa de correcta a buena.
+     */
+    es: "Soy Pedro Lira y fundé Emprende180. El Ecosistema existe porque el desperdicio siempre era el mismo: gente con una red de contactos buena y grande, delante de situaciones que podía resolver, que no hacía nada porque nadie le había explicado qué hacer ni hasta dónde llegaba su parte. No es falta de ganas, es falta de método. Lo sé porque mi otro trabajo es financiar casas en Utah, y ahí lo veo cada semana: alguien con la oportunidad delante que no sabe a quién llamar, y alguien que sí lo sabe y por eso le llega a él. Doy yo los diez videos porque el rol de Embajador lo diseñé yo, y prefiero explicarlo en primera persona antes que dejar que cada quien lo interprete a su manera.",
+    en: "I'm Pedro Lira and I founded Emprende180. The ecosystem exists because the waste was always the same: people with a big, good network, standing in front of situations they could have solved, doing nothing because nobody had explained what to do or where their part ended. It isn't a lack of drive, it's a lack of method. I know because my other job is financing homes in Utah, and I see it there every week: someone with the opportunity right in front of them who doesn't know who to call, and someone else who does — which is why it reaches them instead. I teach the ten videos myself because I designed the Ambassador role, and I'd rather explain it first-hand than let everyone interpret it their own way.",
   },
 
   /**
@@ -715,11 +832,26 @@ export const instructor = {
          dicen "hizo la cosa que te está vendiendo", que es credibilidad de
          partida, no prueba. Un número comprobable de fuera cambia la sección
          entera. Si el enlace existe, va en `prueba` y se vuelve verificable. */
+      /**
+       * Esta era la única credencial con `[COMPLETAR:]`, y se rellenó con lo
+       * que SÍ se puede comprobar: Pedro dirige El Señor de las Casas,
+       * financiamiento inmobiliario en Utah. Está publicado en su web y por eso
+       * `prueba` lleva el enlace — cualquiera puede verificarlo en un clic, que
+       * es exactamente lo que esta lista promete.
+       *
+       * Es la más valiosa de las cuatro por un motivo: las otras tres dicen
+       * "hizo la cosa que te está vendiendo", que es credibilidad de partida.
+       * Esta habla de un negocio de fuera, del sector, y que existe hoy.
+       *
+       * SIGUE FALTANDO EL NÚMERO. Cuántos Embajadores se han formado ya, o
+       * cuántos años lleva en el sector: una cifra con fecha convertiría esto
+       * en prueba dura. No se inventa.
+       */
       dato: {
-        es: "[COMPLETAR: un dato con cifra y fecha, comprobable. P. ej. cuántos Embajadores se han formado ya, o los años que llevas en el sector.]",
-        en: "[COMPLETAR: one checkable figure with a date. E.g. how many Ambassadors have been trained so far, or your years in the industry.]",
+        es: "Dirige El Señor de las Casas, financiamiento inmobiliario en Utah",
+        en: "Runs El Señor de las Casas, real estate financing in Utah",
       },
-      prueba: null, // SWAP (HECHO): enlace que lo demuestre, si lo hay
+      prueba: "https://senordelascasas.com",
     },
   ] satisfies Credencial[],
 
@@ -1282,8 +1414,8 @@ export const faqs: Faq[] = [
       en: "Is the CRM included in the price?",
     },
     respuesta: {
-      es: "[COMPLETAR (HECHO): el video 7 enseña a usarlo, pero hay que decir si el acceso viene con el curso, si se contrata aparte o si es una herramienta de terceros que pone el Embajador.]",
-      en: "[COMPLETAR (FACT): video 7 teaches you to use it, but you need to state whether access comes with the course, is contracted separately, or is a third-party tool the Ambassador provides.]",
+      es: "Sí. El acceso al CRM entra con el curso, no se contrata aparte y no es una herramienta que tengas que poner tú. El video 7 te enseña a usarlo con lo mínimo para empezar: cada contacto y cada oportunidad en un sitio, con su estado al día.",
+      en: "Yes. CRM access comes with the course. It isn't contracted separately and it isn't a tool you have to bring yourself. Video 7 teaches you to use it with the bare minimum to get going: every contact and every opportunity in one place, with its status current.",
     },
   },
   {
@@ -1372,6 +1504,21 @@ export const faqs: Faq[] = [
 
 export const contacto = {
   email: "hola@emprende180.com", // SWAP (HECHO): confirmar
+  /**
+   * Teléfono para el botón de "Llámame ahora". Formato internacional.
+   *
+   * ⚠️ SWAP (HECHO) — CONFÍRMALO. Este número NO lo inventé: está publicado en
+   * senordelascasas.com, la otra web de Pedro, y es el mismo que usa allí para
+   * WhatsApp. Pero en esa web hay VARIOS números (801 838 9808, 801 308 0273),
+   * así que este es el más probable, no el confirmado. Un botón de llamar que
+   * suena en el teléfono equivocado es peor que no tener botón.
+   *
+   * Vacío (`""`) esconde el botón en todas partes.
+   */
+  telefono: "+18017557181",
+  /** Cómo se enseña escrito. Se separa del `tel:` porque el enlace no lleva
+   *  espacios y el texto sí. */
+  telefonoVisible: "(801) 755-7181",
   /** Formato internacional, solo dígitos. Vacío para ocultar el botón. */
   whatsapp: "", // SWAP (HECHO)
   whatsappMensaje: {
@@ -1452,6 +1599,12 @@ export const copy = {
   hero: {
     microCta: { es: "Gratis. Sin tarjeta.", en: "Free. No credit card." },
     paraTiSi: { es: "Para ti si", en: "This is for you if" },
+    /**
+     * Segundo botón del hero. Es NAVEGACIÓN, no conversión: baja al temario
+     * dentro de la misma página. Existe para el visitante que no da su email
+     * sin ver antes qué hay dentro, que si no tiene dónde pulsar se va.
+     */
+    verTemario: { es: "Ver el temario", en: "See the curriculum" },
     pruebaSocial: {
       es: "{alumnos} alumnos · {nota}/5 en {n} valoraciones",
       en: "{alumnos} students · {nota}/5 from {n} reviews",
@@ -1460,6 +1613,70 @@ export const copy = {
 
   problema: {
     aria: { es: "El problema y para quién es", en: "The problem, and who it's for" },
+    /** Encabeza la rejilla de dolores. Corto: el trabajo lo hacen los títulos. */
+    doloresTitulo: {
+      es: "Dónde se te escapa, en concreto",
+      en: "Where it slips away, specifically",
+    },
+    costeTitulo: {
+      es: "Y dentro de un año",
+      en: "And a year from now",
+    },
+    /**
+     * Etiquetas de los dos gráficos de la sección.
+     *
+     * Los gráficos son ILUSTRACIONES, no datos: no hay ninguna cifra dentro y
+     * no representan ninguna medición. Dibujan lo que dice el texto de al lado
+     * y nada más. `alt` es lo que se lee en voz alta en su lugar, así que tiene
+     * que decir la IDEA, no describir formas ("doce puntos y unas líneas" no le
+     * sirve a nadie).
+     */
+    /**
+     * ─── LOS DOS MOCKUPS DE CONVERSACIÓN ─────────────────────────────────
+     *
+     * AQUÍ HUBO DOS DIAGRAMAS Y NO FUNCIONARON. Eran una red de nodos ("tu red,
+     * hoy") y una línea de tiempo de un año. El cliente los vio dos veces: la
+     * primera preguntó qué eran, se les añadieron títulos y leyenda, y la
+     * segunda dijo que seguían sin entenderse. Ese es el veredicto y no hay que
+     * discutirlo: un gráfico conceptual le pide al visitante que descifre una
+     * metáfora, y en una página de venta nadie hace ese trabajo.
+     *
+     * Lo que los sustituye no es otro diagrama: es la ESCENA, literal. Dos
+     * mensajes en el celular, que es exactamente donde ocurre lo que cuenta el
+     * texto. No hay nada que interpretar.
+     *
+     * ⚠️ SON ILUSTRACIONES, NO CAPTURAS. Y la diferencia importa, porque
+     * PRODUCT.md prohíbe las capturas falsas por nombre. Estas no imitan a
+     * WhatsApp ni a iOS: van en los colores de la marca, el remitente es
+     * genérico ("un contacto tuyo") y no hay foto de perfil, ni hora, ni
+     * nombre de persona. Dramatizan una situación que el texto de al lado ya
+     * describe; no presentan una prueba de nada. Si alguien las rediseña para
+     * que parezcan una captura de verdad, cruzan la línea.
+     */
+    escena: {
+      remitente: { es: "Un contacto tuyo", en: "Someone you know" },
+      /* El mensaje que llega y se queda sin respuesta. */
+      mensaje1: {
+        es: "Oye, ayer choqué el carro. Un desmadre, no sé ni por dónde empezar.",
+        en: "Hey, I crashed my car yesterday. Total mess, I don't even know where to start.",
+      },
+      sinResponder: { es: "Visto. Sin responder.", en: "Seen. No reply." },
+      escena1Alt: {
+        es: "Un mensaje de un contacto contando que chocó el carro, visto y sin responder.",
+        en: "A message from a contact saying they crashed their car, seen and left unanswered.",
+      },
+      /* Semanas después: se resolvió, y sin ti. */
+      despues: { es: "Tres semanas después", en: "Three weeks later" },
+      sinTi: { es: "Se resolvió sin ti.", en: "It got handled without you." },
+      mensaje2: {
+        es: "Ya se resolvió. Al final me ayudó un conocido de mi primo.",
+        en: "It's sorted now. A friend of my cousin ended up helping me.",
+      },
+      escena2Alt: {
+        es: "Tres semanas después, el mismo contacto avisa de que su problema ya se resolvió: lo ayudó otra persona.",
+        en: "Three weeks later the same contact says their problem is already sorted: someone else helped them.",
+      },
+    },
     paraTiTitulo: {
       es: "Si te reconociste arriba, esto es para ti",
       en: "If you recognized yourself above, this is for you",
@@ -1489,6 +1706,26 @@ export const copy = {
   captura: {
     aria: { es: "Mini-curso gratuito por email", en: "Free email mini-course" },
     kicker: { es: "Empieza gratis", en: "Start free" },
+    /**
+     * ─── LA MUESTRA DEL DÍA 1 ────────────────────────────────────────────
+     *
+     * La sección enseñaba los siete `entrega` completos: siete párrafos, unas
+     * 210 palabras, para pedir un email. Nadie los lee.
+     *
+     * Ahora el raíl enseña los siete TÍTULOS y solo se despliega el contenido
+     * de UNO, el primero. Es el mismo argumento con la novena parte del texto:
+     * lo que convence no es leer los siete, es comprobar que el primero es
+     * concreto de verdad. Si el día 1 entrega algo real, los otros seis se dan
+     * por buenos.
+     *
+     * Va el día 1 y no otro a propósito: es el único que el visitante puede
+     * verificar mañana.
+     */
+    muestraTitulo: {
+      es: "Esto es lo que te llega el día 1",
+      en: "This is what lands on day 1",
+    },
+    railTitulo: { es: "Los siete días", en: "The seven days" },
   },
 
   temario: {
@@ -1501,7 +1738,54 @@ export const copy = {
       es: "Cada video cierra con su quiz de validación. Supera los {n} y te emitimos tu Certificación de Embajador Emprende180.",
       en: "Every video closes with its validation quiz. Pass all {n} and we issue your Emprende180 Ambassador Certification.",
     },
-    extrasTitulo: { es: "Además del temario, entra:", en: "Beyond the curriculum:" },
+    extrasTitulo: { es: "Y además", en: "And on top of that" },
+    /**
+     * ─── LO QUE ENTRA ADEMÁS DEL TEMARIO ────────────────────────────────
+     *
+     * Aquí había una lista de las seis frases de `curso.formato.incluye`, a
+     * cuerpo pequeño y a dos columnas: unas 90 palabras que casi nadie leía.
+     * Y cuatro de las seis ya estaban dichas dos veces más arriba — la franja
+     * del hero y la rejilla de diez videos ya dicen "10 videos", "un quiz en
+     * cada uno" y "acceso de por vida".
+     *
+     * Lo que de verdad quedaba por decir después de ver los diez videos son
+     * TRES cosas, y ahora se dicen con un icono grande y cuatro palabras.
+     *
+     * Las frases largas siguen en `curso.formato.incluye`, que es donde vive
+     * el detalle y de donde salen los dos `[COMPLETAR:]` que la sección sigue
+     * enseñando aparte para que no se olviden.
+     */
+    extras: [
+      {
+        titulo: { es: "Certificación de Embajador", en: "Ambassador Certification" },
+        nota: {
+          es: "Al superar los diez quizzes",
+          en: "Once you pass all ten quizzes",
+        },
+      },
+      {
+        titulo: { es: "Acceso de por vida", en: "Lifetime access" },
+        nota: {
+          es: "Sin suscripción ni cargos recurrentes",
+          en: "No subscription, no recurring charges",
+        },
+      },
+      {
+        titulo: { es: "Actualizaciones incluidas", en: "Updates included" },
+        nota: { es: "Sin pagar de nuevo", en: "Without paying again" },
+      },
+    ],
+    /** Encabeza los `[COMPLETAR:]` que quedan por decidir. */
+    pendientesTitulo: {
+      es: "Falta confirmar",
+      en: "Still to confirm",
+    },
+    /** Cierre de la sección: invitación + las dos salidas. */
+    cierre: {
+      es: "Eso es todo lo que incluye Fundamentos. Ni más ni menos.",
+      en: "That's everything Fundamentos includes. No more, no less.",
+    },
+    preguntar: { es: "Tengo una duda", en: "I have a question" },
   },
 
   /** Bloque de cursos futuros, al final del temario. Ver `proximosCursos`. */
@@ -1521,14 +1805,39 @@ export const copy = {
     kicker: { es: "Quién te enseña", en: "Who's teaching" },
     credencialesTitulo: { es: "Los datos", en: "The receipts" },
     ensenaTitulo: { es: "Lo que enseño bien", en: "What I'm good at teaching" },
+    /**
+     * ⚠️ ESTE BLOQUE NO SE BORRA. Se rediseñó porque no gustaba cómo se veía
+     * —cuatro aspas rojas seguidas parecen una lista de errores— pero el
+     * contenido se queda: PRODUCT.md dice que la honestidad se usa como
+     * herramienta de venta y que los límites llevan el mismo peso que las
+     * promesas. Quien admite lo que no hace resulta creíble en todo lo demás, y
+     * de paso no le vende a quien esperaba otra cosa (reembolso y reseña mala).
+     *
+     * Lo que cambió es el encuadre: de "lo que NO cubre" (negación) a "para que
+     * no haya sorpresas" (cuidado). Dice exactamente lo mismo y se lee como una
+     * cortesía en vez de como una advertencia.
+     */
     noCubreTitulo: {
-      es: "Lo que este curso NO cubre",
-      en: "What this course does NOT cover",
+      es: "Para que no haya sorpresas",
+      en: "So there are no surprises",
     },
     noCubreNota: {
       es: "Prefiero que lo sepas ahora y no cuando ya hayas pagado.",
       en: "I'd rather you know now than after you've paid.",
     },
+    /** Bajo el logo de su otra empresa. Es una credencial, no un anuncio. */
+    tambien: { es: "También al frente de", en: "Also runs" },
+    /**
+     * El botón de contacto directo.
+     *
+     * Era "Escríbeme" con un `mailto:`. Se cambió a llamada por petición del
+     * cliente, y es mejor decisión de lo que parece: un correo tarda horas y
+     * enfría; una llamada se resuelve en el momento, y quien llega hasta aquí
+     * con una duda concreta está a un paso de comprar. El número está en
+     * `contacto.telefono`; si se vacía, el botón desaparece.
+     */
+    llamame: { es: "Llámame ahora", en: "Call me now" },
+    whatsapp: { es: "WhatsApp", en: "WhatsApp" },
     avisoPlaceholder: {
       es: "Faltan los datos del instructor. Son HECHOS: rellénalos en `instructor` de `src/config/curso.config.ts`. No los inventes.",
       en: "Instructor details are missing. These are FACTS: fill them in under `instructor` in `src/config/curso.config.ts`. Don't invent them.",
@@ -1547,20 +1856,6 @@ export const copy = {
     avisoPlaceholder: {
       es: "Testimonios pendientes. No se ha inventado ninguno a propósito: pídeselos a alumnos reales, con permiso por escrito. En el comentario de `testimonios` tienes qué preguntar y qué recolectar.",
       en: "Testimonials pending. None were invented, deliberately: ask real students, with written permission. The comment on `testimonios` tells you what to ask for.",
-    },
-
-    /** Controles del carrusel. Los lee un lector de pantalla, así que van en el
-     *  idioma de la página como cualquier otro texto. */
-    carrusel: {
-      etiqueta: { es: "Testimonios de alumnos", en: "Student testimonials" },
-      rol: { es: "carrusel", en: "carousel" },
-      anterior: { es: "Testimonio anterior", en: "Previous testimonial" },
-      siguiente: { es: "Testimonio siguiente", en: "Next testimonial" },
-      /** `{n}` de `{total}`, para el aria-label de cada tarjeta. */
-      posicion: { es: "{n} de {total}", en: "{n} of {total}" },
-      irA: { es: "Ir al testimonio {n}", en: "Go to testimonial {n}" },
-      pausar: { es: "Pausar el avance automático", en: "Pause auto-advance" },
-      reanudar: { es: "Reanudar el avance automático", en: "Resume auto-advance" },
     },
 
     /**
@@ -1719,6 +2014,52 @@ export const copy = {
       es: "El botón de compra no lleva a ningún sitio todavía. Pon la URL real de la pasarela en `curso.precio.urlCheckout`.",
       en: "The buy button goes nowhere yet. Add the real checkout URL in `curso.precio.urlCheckout`.",
     },
+
+    /**
+     * ─── LAS CINTAS DE PRECIO ────────────────────────────────────────────
+     *
+     * Texto de `CintaPrecio.astro`, el aviso de "esto sube de precio" que se
+     * repite en tres puntos de la página.
+     *
+     * TODO ESTO SALE DE UN ÚNICO DATO: `curso.precio.urgencia.fechaCierre`.
+     * No hay una segunda fecha en ningún sitio, no hay un contador que arranque
+     * en la visita y no hay forma de que dos cintas digan cosas distintas.
+     * Si esa fecha se pone a `null`, las tres desaparecen a la vez.
+     *
+     * LO QUE SE DICE ES LA FECHA, NO EL TIEMPO QUE QUEDA. "El precio sube el 31
+     * de agosto" no caduca nunca aunque la página se quede cacheada en un CDN o
+     * en el botón de atrás del navegador; "quedan 12 días" sí, y quedarse a
+     * medio día de distancia de la verdad en una página que presume de no
+     * inflar nada sale muy caro. Los días los añade JavaScript en el cliente,
+     * que sí sabe qué hora es. Sin JavaScript se lee la fecha y se entiende
+     * igual.
+     */
+    cinta: {
+      /** Se antepone al precio. Corto: la cinta tiene que caber en una línea. */
+      etiqueta: { es: "Precio de lanzamiento", en: "Launch price" },
+      /**
+       * El argumento fuerte, y el que faltaba: enseñar las DOS cifras juntas.
+       *
+       * "$490 · sube a $3,990 el 31 de agosto" pega mucho más que "el precio
+       * sube el 31 de agosto", porque el salto se ve en vez de imaginarse.
+       *
+       * ⚠️ Y AUN ASÍ NO ES UN DESCUENTO, NI PUEDE PRESENTARSE COMO TAL. Con
+       * `framing: "lanzamiento"` los 3.990 son el precio FUTURO, no uno pasado.
+       * Nada de tachar los 3.990 ni de escribir "antes 3.990": PROFECO y la FTC
+       * exigen que un precio anterior tachado haya sido real y estado vigente,
+       * y este nunca lo ha estado. Enseñar las dos cifras con un "sube a" es
+       * verdad desde el primer día; tacharlas sería publicidad engañosa.
+       */
+      sube: {
+        es: "sube a {referencia} el {fecha}",
+        en: "goes up to {referencia} on {fecha}",
+      },
+      /** Lo rellena el script del cliente. `{n}` = días completos que faltan. */
+      quedanDias: { es: "quedan {n} días", en: "{n} days left" },
+      quedaUnDia: { es: "queda 1 día", en: "1 day left" },
+      ultimoDia: { es: "último día", en: "last day" },
+      verPrecio: { es: "Ver el precio", en: "See pricing" },
+    },
   },
 
   faq: {
@@ -1736,6 +2077,139 @@ export const copy = {
       es: "Quedan respuestas con datos por rellenar. El JSON-LD de FAQPage NO se emite hasta que estén completas.",
       en: "Some answers still have facts to fill in. The FAQPage JSON-LD is NOT emitted until they're complete.",
     },
+  },
+
+  /**
+   * ─── CINTAS ENTRE SECCIONES ──────────────────────────────────────────────
+   *
+   * Bandas finas que se cuelan entre dos secciones para recordar por qué vale
+   * la pena. Las pinta `CintaMensaje.astro`.
+   *
+   * TRES REGLAS, Y LAS TRES SON DE CREDIBILIDAD, NO DE ESTILO:
+   *
+   * 1. CADA UNA DICE ALGO DISTINTO. Si las tres repiten "aprovecha, sube el
+   *    precio", la página deja de ser una página y pasa a ser un cartel: es
+   *    exactamente el infoproducto de gurú del que huye PRODUCT.md. Una habla
+   *    de riesgo (garantía), otra de propiedad (acceso de por vida) y solo la
+   *    última del precio.
+   *
+   * 2. NINGUNA INVENTA NADA. Los 30 días salen de `garantia.dias`, el acceso de
+   *    `curso.formato.acceso`, las cuotas de `precio.cuotas` y las dos cifras de
+   *    `precio.actual` y `precio.referencia`. Si mañana cambia un dato en el
+   *    config, cambia la cinta. No hay ni un número escrito a mano aquí.
+   *
+   * 3. EL `detalle` AMPLÍA, NUNCA COMPLETA. Se despliega al pasar el cursor, así
+   *    que el `titulo` tiene que entenderse solo. En móvil el detalle se ve
+   *    siempre (ahí no hay cursor que pasar), de modo que nadie se queda sin la
+   *    promoción: lo único que cambia es si hay que hacer un gesto para ver la
+   *    letra pequeña.
+   *
+   * ⚠️ Si algún día son cinco o seis, el problema no será el diseño: será que la
+   * página ya no argumenta, insiste.
+   */
+  /**
+   * ─── LAS TIRAS EN MOVIMIENTO ─────────────────────────────────────────────
+   *
+   * Franjas navy que cruzan la página anunciando el precio, el plazo y lo que
+   * incluye el curso. Sustituyen a las cintas de hover: aquellas escondían el
+   * detalle detrás del cursor y no se veían en móvil, y encima eran tres cajas
+   * quietas. Estas se leen solas.
+   *
+   * REGLAS DE ESCRITURA:
+   *  · Frases de CUATRO O CINCO PALABRAS. El texto va pasando; lo que no se lee
+   *    de un vistazo no se lee.
+   *  · Sin verbos de relleno ("aprovecha", "no te lo pierdas"). El dato es el
+   *    argumento: la cifra, la fecha, lo que entra.
+   *  · `{actual}`, `{referencia}`, `{fecha}`, `{dias}` y `{videos}` se
+   *    interpolan desde el config. Ni un número escrito a mano.
+   *
+   * `{dias}` lo rellena JavaScript en el cliente, que es quien sabe qué día es
+   * hoy; sin JavaScript esa frase no se pinta y las demás siguen. Ver
+   * `CintaAnuncio.astro`.
+   */
+  anuncios: {
+    precio: {
+      es: "Precio de lanzamiento: {actual}",
+      en: "Launch price: {actual}",
+    },
+    sube: {
+      es: "Sube a {referencia} el {fecha}",
+      en: "Goes up to {referencia} on {fecha}",
+    },
+    dias: { es: "Quedan {dias} días", en: "{dias} days left" },
+    ultimoDia: { es: "Último día", en: "Last day" },
+    curso: {
+      es: "{videos} videos y tu certificación",
+      en: "{videos} videos and your certification",
+    },
+    garantia: {
+      es: "Garantía de {garantiaDias} días",
+      en: "{garantiaDias}-day guarantee",
+    },
+    acceso: { es: "Acceso de por vida", en: "Lifetime access" },
+    cuotas: { es: "O {cuotas} mensualidades", en: "Or {cuotas} monthly payments" },
+    etiqueta: { es: "Anuncios del curso", en: "Course announcements" },
+  },
+
+  cintasIntermedias: {
+    garantia: {
+      titulo: {
+        es: "Pruébalo {dias} días. Si no es para ti, te devolvemos el 100 %",
+        en: "Try it for {dias} days. If it's not for you, we refund 100%",
+      },
+      detalle: {
+        es: "Sin formularios, sin llamadas de retención y sin que tengas que justificar nada. Escribes a soporte y ya.",
+        en: "No forms, no retention calls, and nothing to justify. You email support and that's it.",
+      },
+    },
+    acceso: {
+      titulo: {
+        es: "Lo compras una vez y es tuyo para siempre",
+        en: "You buy it once and it's yours for good",
+      },
+      detalle: {
+        es: "Acceso de por vida a los diez videos, sin suscripción ni cargos recurrentes. Las actualizaciones futuras entran sin pagar de nuevo.",
+        en: "Lifetime access to all ten videos, with no subscription and no recurring charges. Future updates are included at no extra cost.",
+      },
+    },
+    aprovecha: {
+      titulo: {
+        es: "Todavía estás a tiempo del precio de lanzamiento",
+        en: "You're still in time for the launch price",
+      },
+      detalle: {
+        es: "Hoy son {actual}, o {cuotas} mensualidades. El {fecha} pasa a {referencia}, y quien entró antes conserva su precio.",
+        en: "Today it's {actual}, or {cuotas} monthly payments. On {fecha} it becomes {referencia}, and whoever got in earlier keeps their price.",
+      },
+    },
+  },
+
+  /** Vídeo de introducción del hero. Ver `VideoVsl.astro`. */
+  vsl: {
+    /** Rótulo sobre el póster. Dice qué es antes de que nadie pulse. */
+    etiqueta: {
+      es: "Míralo en 90 segundos",
+      en: "Watch it in 90 seconds",
+    },
+    /** Lo lee un lector de pantalla al llegar al botón. */
+    reproducir: {
+      es: "Reproducir el vídeo de introducción a Emprende180",
+      en: "Play the Emprende180 introduction video",
+    },
+    pistaSubtitulos: { es: "Español", en: "Spanish" },
+  },
+
+  /**
+   * Banda de testimonios. Ver `BandaTestimonios.astro`.
+   *
+   * Los tres los lee un lector de pantalla, así que van en el idioma de la
+   * página como cualquier otro texto. `etiqueta` nombra la lista: sin ella, lo
+   * que se anuncia es "lista, doce elementos" y no se sabe de qué.
+   */
+  banda: {
+    etiqueta: { es: "Testimonios de alumnos", en: "Student testimonials" },
+    pausar: { es: "Pausar los testimonios", en: "Pause the testimonials" },
+    reanudar: { es: "Reanudar los testimonios", en: "Resume the testimonials" },
   },
 
   cierre: {
@@ -1762,6 +2236,21 @@ export const copy = {
     infoLegal: { es: "Información legal", en: "Legal information" },
     enlacesLegales: { es: "Enlaces legales", en: "Legal links" },
     menuPrincipal: { es: "Menú principal", en: "Main menu" },
+    /**
+     * Pista de las rejillas que despliegan el detalle al pasar el cursor.
+     *
+     * Vive en `ui` y no dentro de una sección porque la usan dos (el problema y
+     * los resultados) y las va a usar cualquiera que adopte el patrón. Estaba
+     * bajo `problema.doloresPista`, y reutilizar desde otra sección una clave
+     * que se llama "dolores" es el tipo de acoplamiento que acaba en dos textos
+     * distintos para el mismo mecanismo.
+     *
+     * Solo se pinta donde hay ratón: ver `[data-pista-hover]` en global.css.
+     */
+    pistaHover: {
+      es: "Pasa el cursor por cada uno para ver el detalle",
+      en: "Hover over any of them for the detail",
+    },
     copyright: {
       es: "© {anio} {razonSocial}. Todos los derechos reservados.",
       en: "© {anio} {razonSocial}. All rights reserved.",
@@ -1790,10 +2279,38 @@ export const copy = {
   },
 
   /** Etiquetas del visual del hero. Datos reales del curso, no adorno. */
-  heroVisual: {
-    videos: { es: "videos", en: "videos" },
-    quizzes: { es: "quizzes", en: "quizzes" },
-    certificacion: { es: "Certificación", en: "Certificate" },
+  /**
+   * La franja de datos que cierra el hero.
+   *
+   * Los cuatro son HECHOS del producto, no adjetivos: diez videos, diez
+   * quizzes, una certificación y acceso de por vida. Es la respuesta a "¿qué
+   * me estás vendiendo exactamente?" en cuatro palabras, y va en el hero
+   * porque esa pregunta aparece antes que cualquier otra.
+   *
+   * Aquí NO puede entrar ninguna cifra de alumnos, valoraciones ni resultados:
+   * eso vive en `cifras`, va marcado como pendiente y solo sale cuando sea
+   * verificable.
+   */
+  heroDatos: {
+    /**
+     * LOS CUATRO TIENEN QUE SER LA MISMA CLASE DE COSA.
+     *
+     * La primera versión mezclaba dos gramáticas: dos con cantidad ("10 videos
+     * del curso", "10 quizzes de validación") y dos sin ella ("Certificación de
+     * Embajador", "Acceso de por vida"). Leídos en fila se notaba muchísimo:
+     * parecían dos datos y dos sobras, no una lista.
+     *
+     * Ahora los cuatro son la misma frase: algo que te llevas. `{n}` sale de
+     * `curso.formato.videos`, así que si el curso pasa a tener doce videos esto
+     * lo dice solo.
+     */
+    videos: { es: "{n} videos, en orden", en: "{n} videos, in order" },
+    quizzes: { es: "Un quiz en cada video", en: "A quiz in every video" },
+    certificacion: {
+      es: "Certificación de Embajador",
+      en: "Ambassador Certification",
+    },
+    acceso: { es: "Acceso de por vida", en: "Lifetime access" },
   },
 
   /** Distintivos de cada módulo del temario. */

@@ -165,6 +165,28 @@
   --color-cta: var(--color-secondary-600); /* blanco encima: 4.69:1 */
   --color-cta-hover: var(--color-secondary-700); /* blanco encima: 6.75:1 */
 
+  /* ─── VELOS SOBRE VÍDEO ────────────────────────────────────────────────────
+     El hero pone texto blanco encima de un vídeo, y un vídeo no tiene un color:
+     tiene todos. El contraste no se puede "mirar", hay que garantizarlo, así
+     que el texto nunca se apoya en el vídeo sino en estos velos.
+
+     Son el navy-950 de la marca (no negro: un velo negro apaga el teal y
+     ensucia la piel del vídeo) a tres opacidades con un trabajo cada una:
+
+       -fuerte → la franja donde de verdad cae el texto. A 0.92 sobre el
+                 fotograma más claro del vídeo el resultado sigue siendo más
+                 oscuro que primary-900, o sea que el blanco encima pasa de
+                 12:1. Ese es el número que hace que esto sea seguro y no una
+                 apuesta.
+       -medio  → la transición, para que el velo no acabe en un canto.
+       -leve   → el tinte general que unifica el vídeo con la paleta.
+
+     Si algún día se cambia el vídeo por otro más claro, NO hay que remedir
+     nada: el peor caso ya está cubierto por -fuerte. */
+  --scrim-fuerte: oklch(0.205 0.0719 253.9 / 0.92);
+  --scrim-medio: oklch(0.205 0.0719 253.9 / 0.68);
+  --scrim-leve: oklch(0.205 0.0719 253.9 / 0.32);
+
   /* ─── TIPOGRAFÍA ───────────────────────────────────────────────────────────
      La guía especifica MONTSERRAT (Bold / SemiBold / Regular / Light).
      Se sirve autoalojada con @fontsource-variable/montserrat: sin petición a
@@ -242,6 +264,16 @@
 
   --container-read: 42rem; /* ~68 caracteres por línea */
   --container-page: 72rem;
+
+  /* Alto del header.
+     El header está en el flujo normal (`position: static`): ocupa su sitio él
+     solo y se va con el scroll, así que nadie tiene que reservarle hueco.
+     Este token existe por UN motivo: el hero resta esta altura a la pantalla
+     (`min-h: calc(100svh - var(--header-h))`) para que header + hero sumen
+     exactamente una pantalla y no sobre una franja ni falte. Los dos números
+     tienen que salir del mismo sitio o el hero deja de cuadrar. */
+  --header-h: 4rem;
+  --header-h-lg: 4.5rem;
 
   /* Objetivo táctil mínimo: 44 px (Apple HIG / WCAG 2.5.5) = `min-h-11`.
      Ningún elemento pulsable debe quedar por debajo. */

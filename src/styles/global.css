@@ -11,8 +11,11 @@
 @layer base {
   html {
     scroll-behavior: smooth;
-    /* Compensa el header sticky al saltar a un ancla (#oferta, #gratis…). */
-    scroll-padding-top: 5rem;
+    /* El header ya NO es fijo: se va con el scroll, así que no tapa nada y no
+       hay que compensar su altura al saltar a un ancla. Queda 1rem de aire para
+       que el título de la sección no arranque pegado al borde de la pantalla.
+       (Las secciones añaden su propio `scroll-mt`; ver Section.astro.) */
+    scroll-padding-top: 1rem;
     -webkit-text-size-adjust: 100%;
   }
 
@@ -43,6 +46,10 @@
     text-rendering: optimizeLegibility;
     /* El CTA fijo de móvil tapa el final de la página: se reserva su altura. */
     padding-bottom: env(safe-area-inset-bottom);
+
+    /* Aquí NO va `padding-top`. El header está en el flujo y ocupa su sitio él
+       solo; reservarle hueco además dejaría una franja en blanco de 64 px encima
+       de la barra en todas las páginas. Hizo falta mientras fue `fixed`. */
   }
 
   /* Feedback táctil.
@@ -157,6 +164,68 @@ html[lang="en"] [data-t="es"] {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   ENTRADA DEL HERO  (ver src/components/hero/Hero.astro)
+   ═══════════════════════════════════════════════════════════════════════════
+   El hero NO usa `[data-reveal]`, y es a propósito. `Reveal` espera a que un
+   IntersectionObserver diga que el elemento entró en pantalla, y el hero YA
+   está en pantalla: esperar a un observador para animar lo que se ve desde el
+   primer fotograma es trabajo de más y, si el script tarda, el titular aparece
+   tarde. Y el titular del hero es el LCP.
+
+   Esto es una animación CSS pura con `both`: el estado inicial lo pone el
+   propio `@keyframes` durante el retardo, así que no hace falta ninguna clase
+   de JavaScript ni hay ningún caso en el que el texto se quede invisible. Si
+   el CSS carga, la animación corre; si no carga, no hay página que animar.
+
+   El escalonado se pasa por `--i` desde el marcado: cada bloque entra 70 ms
+   después del anterior, que es lo justo para que se lea como una secuencia y no
+   como cinco cosas moviéndose a la vez.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+[data-hero-enter] {
+  animation: hero-enter 700ms var(--ease-out-expo)
+    calc(var(--i, 0) * 70ms + var(--hero-enter-base, 60ms)) both;
+}
+
+@keyframes hero-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--hero-enter-y, 20px), 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-hero-enter] {
+    animation: none;
+  }
+}
+
+/* La flecha del final del hero. Es la única animación en bucle de la página, y
+   dura 2,4 s a propósito: un bucle rápido es un adorno que pide atención; uno
+   lento se lee como "sigue bajando" y se olvida. */
+@keyframes cue-bajar {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-cue] {
+    animation: cue-bajar 2.4s var(--ease-in-out-soft) infinite;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    UTILIDADES DE PROYECTO
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -185,6 +254,177 @@ html[lang="en"] [data-t="es"] {
 
 @utility section-y-sm {
   padding-block: clamp(2.5rem, 1.9rem + 3vw, 4.25rem);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BANDA EN MOVIMIENTO  (ver src/components/motion/BandaTestimonios.astro)
+   ═══════════════════════════════════════════════════════════════════════════
+   Una fila de tarjetas que cruza la pantalla de lado a lado sin parar.
+
+   CÓMO SE HACE EL BUCLE SIN COSTURA. La pista lleva la lista DOS VECES y se
+   desplaza exactamente un -50 %. En el instante en que la primera copia termina
+   de salir, la segunda está justo donde estaba la primera al empezar: el salto
+   al reiniciar cae en un fotograma idéntico y no se ve. Por eso el duplicado no
+   es opcional, y por eso tiene que ser exacto — si alguien añade una tarjeta a
+   una copia y no a la otra, aparece un tirón cada vuelta.
+
+   LA VELOCIDAD ES CONSTANTE, NO LA DURACIÓN. `--duracion` se calcula desde el
+   número de tarjetas en el componente. Con una duración fija, seis testimonios
+   pasarían despacio y veinte irían disparados.
+
+   `linear` y no una curva suave: cualquier aceleración se percibe como un
+   tirón cuando el movimiento es continuo.
+
+   ─── PARADA · WCAG 2.2.2, NIVEL A ────────────────────────────────────────
+   Todo lo que se mueve solo más de cinco segundos tiene que poder pararse. Hay
+   tres formas, y las tres hacen falta:
+     · El botón de pausa del componente (es el que cubre táctil, y el que hace
+       que esto cumpla de verdad).
+     · Pasar el cursor o tabular dentro: si no, no se puede leer una cita que
+       se está moviendo.
+     · `prefers-reduced-motion`, que la apaga entera.
+
+   Con movimiento reducido NO se queda quieta y a medias: se apaga la animación,
+   se esconde la copia duplicada y la pista pasa a ser desplazable con el dedo.
+   Se puede leer todo igual, sin que nada se mueva solo.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes banda-desplazar {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+[data-banda-pista] {
+  animation: banda-desplazar var(--duracion, 60s) linear infinite;
+  /* `fit-content` para que la pista mida lo que suman sus tarjetas y el -50 %
+     se calcule sobre ese ancho, no sobre el del contenedor. */
+  width: fit-content;
+}
+
+[data-banda]:hover [data-banda-pista],
+[data-banda]:focus-within [data-banda-pista],
+[data-banda][data-pausada="true"] [data-banda-pista] {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-banda-pista] {
+    animation: none;
+    width: auto;
+  }
+
+  /* La copia solo existe para que el bucle no tenga costura. Sin bucle, sobra:
+     dejarla haría que cada testimonio apareciera dos veces. */
+  [data-banda-clon] {
+    display: none;
+  }
+
+  [data-banda-viewport] {
+    overflow-x: auto;
+  }
+
+  /* Sin animación, el botón de pausa no controla nada. */
+  [data-banda-pausa] {
+    display: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DETALLE QUE APARECE AL PASAR EL CURSOR
+   ═══════════════════════════════════════════════════════════════════════════
+   Un bloque `[data-revelar]` contiene un titular siempre visible y un
+   `[data-detalle]` que solo se despliega al pasar el ratón por encima.
+
+   LA REGLA QUE HACE QUE ESTO SEA LEGÍTIMO Y NO UNA TRAMPA: el titular tiene que
+   sostenerse SOLO. El detalle amplía, nunca completa. Si hay que pasar el ratón
+   para entender de qué va el punto, la información está escondida, y esconder
+   información esencial detrás de un gesto que la mitad de los visitantes no
+   puede hacer es un error, no una decisión de diseño.
+
+   POR ESO SE COLAPSA SOLO DONDE HAY RATÓN DE VERDAD. La media query
+   `(hover: hover) and (pointer: fine)` deja fuera móviles, tabletas y cualquier
+   entrada táctil: ahí el detalle se ve SIEMPRE, sin nada que descubrir. Es lo
+   contrario de lo habitual —que es colapsarlo en móvil "porque no cabe"— y es a
+   propósito: el 73 % de esta audiencia entra desde el celular.
+
+   Se despliega también con `:focus-within`, para quien navega con teclado.
+
+   El truco de la altura es `grid-template-rows: 0fr → 1fr`: anima el alto sin
+   que nadie tenga que saber cuánto mide el texto, así que funciona igual con
+   dos líneas que con cinco y en los dos idiomas. `max-height` con un número
+   inventado se rompe en cuanto la traducción es más larga.
+
+   El detalle NO lleva `display:none` ni `aria-hidden`: sigue en el árbol de
+   accesibilidad y un lector de pantalla lo lee, igual que lo lee quien entra
+   desde el móvil.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (hover: hover) and (pointer: fine) {
+  [data-detalle] {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition:
+      grid-template-rows 380ms var(--ease-out-soft),
+      opacity 240ms var(--ease-out-soft);
+  }
+
+  [data-detalle] > * {
+    overflow: hidden;
+  }
+
+  [data-revelar]:hover [data-detalle],
+  [data-revelar]:focus-within [data-detalle] {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+}
+
+/* La pista de "pasa el cursor" solo tiene sentido si hay cursor. */
+[data-pista-hover] {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  [data-pista-hover] {
+    display: block;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MARCA ALINEADA A LA PRIMERA LÍNEA
+   ═══════════════════════════════════════════════════════════════════════════
+   Envuelve un icono, un número o una insignia que va A LA IZQUIERDA de un texto
+   y lo centra en la PRIMERA LÍNEA de ese texto, ocupe el texto una línea o cinco.
+
+   EL PROBLEMA QUE RESUELVE. La forma habitual de hacer esto es `items-start` más
+   un `mt-0.5` a ojo. Funciona para el tamaño de letra con el que se probó y se
+   rompe en cuanto cambia: basta con que el texto pase de una línea a dos, o que
+   la traducción al inglés sea más corta, para que la marca quede a media altura
+   y la fila se lea como dos cosas sueltas en vez de una. En esta página había
+   tres sitios así, desviados entre 4 y 6 px.
+
+   CÓMO FUNCIONA. `1lh` es exactamente una interlínea del elemento. Dándole ese
+   alto a la caja y centrando dentro, la marca cae en el centro óptico de la
+   primera línea sin ningún número que mantener.
+
+   OJO: la caja hereda la tipografía de su PADRE, no la del texto de al lado. Si
+   el texto lleva su propio `text-sm`, ese `text-sm` tiene que estar en la FILA,
+   o `1lh` medirá la interlínea equivocada.
+
+   Sin soporte de la unidad `lh` (Chrome <109, Safari <16.4) la declaración se
+   descarta, la caja se queda con su alto natural y la marca queda alineada
+   arriba: exactamente como estaba antes. No hay regresión posible.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@utility marca-linea {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  height: 1lh;
 }
 
 /* Solo para lectores de pantalla. */

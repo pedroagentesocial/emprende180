@@ -8,11 +8,41 @@ import { resolverIdiomaServidor } from "@i18n/idioma";
 /**
  * Header de la landing.
  *
- * Deliberadamente sin menú de navegación: en una página de conversión cada
- * enlace es una salida. Solo el logo (que vuelve arriba) y UN CTA.
+ * ES ESTÁTICO EN EL SENTIDO LITERAL: `position: static`
+ * ─────────────────────────────────────────────────────
+ * La barra vive en el flujo normal, arriba del documento, y SE VA con el scroll
+ * como cualquier otro contenido. No se pega, no reaparece, no se encoge, no
+ * cambia de fondo. Ni un listener de scroll: el componente no sabe por dónde va
+ * la página y no necesita saberlo.
  *
- * Se usa el lockup horizontal porque el vertical de la guía, a la altura de un
- * header de 64 px, deja el nombre en unos 20 px de ancho.
+ * Pasó por tres versiones y conviene dejar constancia para no volver atrás sin
+ * querer: era `sticky` con fondo translúcido y desenfoque; luego `fixed` con
+ * fondo opaco; ahora estático. Lo pidió el cliente, con estas palabras: que la
+ * barra se quede en su lugar y no baje con nosotros.
+ *
+ * QUÉ SE GANA. La primera pantalla es del hero entero y de nadie más, y al
+ * bajar no hay una franja blanca comiéndose 64 px de cada sección. En una
+ * página de una sola columna con el argumento en orden, eso es aire.
+ *
+ * QUÉ SE PIERDE, PARA QUE ESTÉ DICHO. En escritorio el botón "Inscribirme al
+ * curso" deja de estar disponible en cuanto se pasa el hero: quien decide
+ * comprar en mitad del temario tiene que seguir bajando hasta la sección de
+ * precio o subir del todo. En móvil no pasa, porque ahí manda el CTA fijo
+ * inferior (`StickyCta`), que sigue apareciendo al dejar atrás el hero. Si algún
+ * día se quiere tapar ese hueco sin resucitar el header pegajoso, lo correcto es
+ * extender esa misma barra inferior a escritorio, no volver a `fixed`.
+ *
+ * El fondo es OPACO y no translúcido con desenfoque. Ya no hace falta para
+ * convivir con el vídeo (la barra deja de montarse encima al bajar), pero un
+ * `backdrop-blur` a pantalla completa cuesta compositing en cada scroll y aquí
+ * no compra nada.
+ *
+ * El alto sale del token `--header-h` y no de una utilidad de Tailwind: el mismo
+ * número lo usa el hero para calcular su altura, de modo que header + hero suman
+ * exactamente una pantalla. Escrito en un solo sitio, no pueden desincronizarse.
+ *
+ * Sin menú de navegación más allá de tres anclas: en una página de conversión
+ * cada enlace es una salida, y los tres que hay llevan HACIA la compra.
  *
  * El CTA del header se oculta en móvil: ya está el CTA fijo inferior, y dos
  * botones idénticos a la vez compiten entre sí.
@@ -32,10 +62,13 @@ const logoAlt = {
 };
 ---
 
-<header
-  class="sticky top-0 z-50 border-b border-line/70 bg-surface/85 backdrop-blur-md"
->
-  <div class="container-page flex h-16 items-center justify-between gap-4">
+{/* Sin `position`, sin `z-index` y sin `inset`: está en el flujo. El único
+    motivo por el que queda un `relative` es que el logo y el CTA necesitan
+    contexto de apilamiento propio si algún día se les pone un adorno encima. */}
+<header class="relative border-b border-line bg-surface">
+  <div
+    class="container-page flex h-[var(--header-h)] items-center justify-between gap-4 lg:h-[var(--header-h-lg)]"
+  >
     {/* shrink-0: sin esto, en móvil el flex del header comprimía el enlace y
         el logo salía deformado (115×32 sobre un arte de 573×120). */}
     <a

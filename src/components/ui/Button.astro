@@ -9,8 +9,18 @@
  * No usar `primary` para nada más, o el ojo deja de saber dónde ir.
  */
 interface Props {
-  variant?: "primary" | "secondary" | "ghost";
+  variant?: "primary" | "secondary" | "ghost" | "inverse";
   size?: "md" | "lg";
+  /**
+   * Sobre qué fondo se apoya el botón. SOLO cambia el color del anillo de foco.
+   *
+   * No es un detalle de gusto: WCAG 1.4.11 pide 3:1 del indicador de foco
+   * contra lo que tiene al lado, y el teal de `--color-focus` está calculado
+   * contra fondos claros. Sobre el navy del hero se queda justo en el límite.
+   * `oscuro` usa el teal claro (`--color-focus-inverse`, 7.93:1 sobre navy),
+   * que sí se ve sin dudar.
+   */
+  sobre?: "claro" | "oscuro";
   href?: string;
   type?: "button" | "submit";
   /** Ocupa todo el ancho. En móvil casi siempre `true`. */
@@ -25,6 +35,7 @@ interface Props {
 const {
   variant = "primary",
   size = "lg",
+  sobre = "claro",
   href,
   type = "button",
   block = false,
@@ -37,11 +48,16 @@ const {
 const base =
   "inline-flex items-center justify-center gap-2 rounded-full text-center font-semibold " +
   // min-h-11 = 44 px: objetivo táctil mínimo, no bajar de aquí.
-  "min-h-11 transition-[transform,background-color,box-shadow] duration-200 ease-out-soft " +
-  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus " +
+  "min-h-11 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out-soft " +
+  "focus-visible:outline-2 focus-visible:outline-offset-2 " +
   // El movimiento se apaga solo bajo prefers-reduced-motion (ver global.css),
   // pero además se declara aquí para que ni siquiera se aplique la escala.
   "motion-safe:active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50";
+
+const focos = {
+  claro: "focus-visible:outline-focus",
+  oscuro: "focus-visible:outline-focus-inverse",
+} as const;
 
 const variants = {
   // El teal es el color de acción de la marca y el ÚNICO color de CTA de la
@@ -52,6 +68,23 @@ const variants = {
   secondary:
     "bg-surface text-ink border border-line-strong hover:bg-surface-muted",
   ghost: "bg-transparent text-ink-brand hover:bg-surface-muted",
+  /**
+   * Botón secundario SOBRE FONDO OSCURO (el hero con vídeo).
+   *
+   * Es de contorno y no relleno a propósito. La regla del proyecto es que en
+   * toda la página hay UN solo color de acción, así que el segundo botón del
+   * hero no puede competir en peso con el teal: si los dos van rellenos, el ojo
+   * tiene que elegir y tarda. Un contorno blanco se ve perfectamente y deja
+   * claro cuál de los dos es la acción principal.
+   *
+   * El borde va al 70 % y no más bajo porque un control de interfaz necesita
+   * 3:1 contra su fondo (WCAG 1.4.11). Por debajo de ahí el botón se queda sin
+   * límites visibles para bastante gente, sobre todo encima de un vídeo, que
+   * cambia de claridad en cada fotograma.
+   */
+  inverse:
+    "border border-neutral-0/70 bg-neutral-0/5 text-ink-inverse " +
+    "hover:border-neutral-0 hover:bg-neutral-0 hover:text-ink",
 } as const;
 
 const sizes = {
@@ -61,6 +94,7 @@ const sizes = {
 
 const classes = [
   base,
+  focos[sobre],
   variants[variant],
   sizes[size],
   block ? "w-full" : "",

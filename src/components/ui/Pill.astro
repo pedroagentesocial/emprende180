@@ -1,0 +1,54 @@
+---
+/**
+ * Píldora: etiqueta corta, redonda, en mayúsculas discretas.
+ *
+ * DÓNDE SE PUEDE USAR Y DÓNDE NO
+ * ──────────────────────────────
+ * DESIGN.md prohíbe la etiqueta diminuta en mayúsculas encima de CADA título de
+ * sección: repetida deja de ser voz y pasa a ser andamiaje de plantilla. Este
+ * componente existe para los usos puntuales que sí valen —el claim del hero, un
+ * "Próximamente", una insignia de "Quiz"— no para encabezar secciones en serie.
+ *
+ * Si te descubres poniendo una encima del tercer `<h2>`, la respuesta no es
+ * otra píldora: es que ese título no dice bastante por sí solo.
+ *
+ * El `tracking` es de 0.14em y no más: en mayúsculas y a 12 px, por debajo de
+ * eso las letras se pegan y por encima la palabra se deshace en letras sueltas.
+ */
+interface Props {
+  /** Sobre qué fondo se apoya. Cambia colores, no forma. */
+  tono?: "claro" | "oscuro" | "solido";
+  class?: string;
+}
+
+const { tono = "claro", class: className = "" } = Astro.props;
+
+const tonos = {
+  /** Sobre superficies blancas o `surface-muted`. Teal-700: 6.75:1. */
+  claro: "bg-secondary-100 text-secondary-700",
+  /**
+   * Sobre navy o sobre el vídeo del hero.
+   *
+   * El fondo es teal al 18 % y NO un blanco translúcido: encima de un vídeo,
+   * un velo blanco recoge el color de lo que tenga detrás y la píldora cambia
+   * de tono con cada fotograma. Con el teal de marca eso no pasa, porque el
+   * color ya está decidido. El texto es `secondary-200`, que da 7.93:1 sobre el
+   * navy del velo: pasa AA de sobra incluso donde el vídeo aclara.
+   */
+  oscuro:
+    "bg-secondary-500/18 text-secondary-200 ring-1 ring-inset ring-secondary-300/30",
+  /** Relleno teal opaco. Para cuando tiene que pesar de verdad. */
+  solido: "bg-secondary-600 text-ink-inverse",
+} as const;
+---
+
+<span
+  class:list={[
+    "inline-flex items-center gap-2 rounded-full px-4 py-1.5",
+    "text-xs font-bold uppercase tracking-[0.14em]",
+    tonos[tono],
+    className,
+  ]}
+>
+  <slot />
+</span>

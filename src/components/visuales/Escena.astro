@@ -1,0 +1,129 @@
+---
+import T from "@components/i18n/T.astro";
+import { copy } from "@config/curso.config";
+import { resolverIdiomaServidor, type Txt } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * ESCENA — un mensaje en el celular
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Sustituye a los dos diagramas que había en la sección del problema (una red
+ * de nodos y una línea de tiempo). Aquellos se probaron dos veces con el
+ * cliente y las dos veces hubo que explicárselos. Un gráfico conceptual le pide
+ * al visitante que descifre una metáfora, y en una página de venta ese trabajo
+ * no lo hace nadie: o se entiende en un segundo, o es decoración.
+ *
+ * Esto no pide descifrar nada. Es la escena, tal cual: un mensaje que llega al
+ * celular. Y es el sitio correcto, porque es literalmente donde pasa lo que
+ * cuenta el texto de al lado.
+ *
+ * ─── ES UNA ILUSTRACIÓN, NO UNA CAPTURA ────────────────────────────────────
+ *
+ * La distinción no es de matiz: PRODUCT.md prohíbe por nombre las capturas
+ * falsas (transferencias, pantallazos de resultados). Esto se mantiene al otro
+ * lado de esa línea a propósito, y así tiene que seguir:
+ *
+ *   · NO imita a WhatsApp ni a iOS. Va en los colores de la marca.
+ *   · El remitente es genérico ("un contacto tuyo"), sin nombre de persona.
+ *   · No hay foto de perfil, ni hora, ni palomitas de leído, ni batería.
+ *   · No demuestra nada. Dramatiza una situación que el texto ya describe.
+ *
+ * Si alguien le añade una hora, un nombre y una foto para que "quede más
+ * real", deja de ser una ilustración y pasa a ser una captura falsa.
+ *
+ * ─── ACCESIBILIDAD ─────────────────────────────────────────────────────────
+ *
+ * La burbuja es texto de verdad, no una imagen: se lee, se traduce con el resto
+ * de la página y escala con el tamaño de fuente del sistema. El `role="img"` va
+ * en el marco con un `aria-label` que cuenta la escena entera, porque oír las
+ * piezas sueltas ("Un contacto tuyo. Oye, ayer choqué el carro…") no transmite
+ * lo mismo que verlas colocadas.
+ */
+interface Props {
+  /** Texto de la burbuja. */
+  mensaje: Txt;
+  /** Línea de estado bajo la burbuja: "Visto. Sin responder." */
+  estado: Txt;
+  /** Descripción completa de la escena, para lectores de pantalla. */
+  alt: Txt;
+  /** Encabeza el marco. Por defecto, el remitente genérico. */
+  encabezado?: Txt;
+  /** Apaga el mensaje: se usa en la segunda escena, la de "ya se resolvió". */
+  apagado?: boolean;
+  class?: string;
+}
+
+const {
+  mensaje,
+  estado,
+  alt,
+  encabezado = copy.problema.escena.remitente,
+  apagado = false,
+  class: className = "",
+} = Astro.props;
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+---
+
+<figure
+  class:list={[
+    "relative overflow-hidden rounded-2xl border border-line bg-surface shadow-sm",
+    className,
+  ]}
+  role="img"
+  aria-label={alt[lang]}
+  data-aria-es={alt.es}
+  data-aria-en={alt.en}
+>
+  {/* Cabecera del marco: quién escribe. Sin nombre y sin foto, a propósito. */}
+  <div
+    class="flex items-center gap-3 border-b border-line px-5 py-3.5"
+    aria-hidden="true"
+  >
+    {/* Avatar sin cara: un círculo con la trama de la marca. Poner iniciales
+        o una silueta sería empezar a inventar una persona. */}
+    <span
+      class="size-8 shrink-0 rounded-full bg-surface-sunken"
+      style="background-image:radial-gradient(var(--color-neutral-400) 1px,transparent 1px);background-size:6px 6px"
+    ></span>
+    <span class="text-sm font-semibold text-ink-muted">
+      <T v={encabezado} />
+    </span>
+  </div>
+
+  <div class="px-5 py-6 sm:px-6 sm:py-7" aria-hidden="true">
+    {/* LA BURBUJA. Entrante, así que va a la izquierda y con la esquina
+        inferior izquierda cuadrada: es la convención universal de "esto me lo
+        mandaron a mí", y se entiende sin haber visto nunca esta página. */}
+    <p
+      class:list={[
+        "max-w-[19rem] rounded-2xl rounded-bl-sm px-4 py-3 text-base text-pretty",
+        apagado
+          ? "bg-surface-muted text-ink-muted"
+          : "bg-surface-sunken text-ink",
+      ]}
+    >
+      <T v={mensaje} />
+    </p>
+
+    {/* El estado. En la primera escena es el silencio; en la segunda, el
+        tiempo que pasó. Es la frase que remata la idea. */}
+    <p
+      class:list={[
+        "mt-3 text-sm font-semibold",
+        apagado ? "text-ink-subtle" : "text-error-600",
+      ]}
+    >
+      <T v={estado} />
+    </p>
+  </div>
+
+  <figcaption class="sr-only">
+    <span data-t="es">{alt.es}</span>
+    <span data-t="en">{alt.en}</span>
+  </figcaption>
+</figure>

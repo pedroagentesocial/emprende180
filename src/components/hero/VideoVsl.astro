@@ -1,0 +1,161 @@
+---
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import { copy } from "@config/curso.config";
+import { vsl } from "@lib/assets";
+import { resolverIdiomaServidor } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * VÍDEO DE INTRODUCCIÓN — fachada con carga diferida
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Lo que se pinta de entrada NO es un vídeo: es una imagen y un botón. El
+ * `<video>` no existe en el DOM hasta que alguien pulsa play.
+ *
+ * ─── POR QUÉ, EN NÚMEROS ───────────────────────────────────────────────────
+ *
+ * El vídeo pesa 3,6 MB. Ponerlo con `preload="metadata"` ya son cientos de
+ * kilobytes en cada visita; con `preload="auto"`, los 3,6 MB enteros a todo el
+ * mundo, lo vea o no. La fachada cuesta 20 KB (el póster) y el vídeo solo lo
+ * descarga quien de verdad quiere verlo.
+ *
+ * Y hay una razón que no es de peso: esto está en el hero, o sea que compite
+ * por el ancho de banda con la fuente, el CSS y el LCP. Un vídeo cargando ahí
+ * retrasa lo único que TODOS los visitantes necesitan ver.
+ *
+ * ─── EL VÍDEO ARRANCA CON SONIDO, Y ES DELIBERADO ──────────────────────────
+ *
+ * La regla del proyecto es que nada se autoreproduce con audio, y se respeta:
+ * esto no se autoreproduce. Arranca porque alguien lo pulsó, y quien pulsa un
+ * botón de play espera oírlo. Lleva `controls` desde el primer fotograma para
+ * poder pararlo, silenciarlo o buscar.
+ *
+ * ─── SIN SUBTÍTULOS NO ESTÁ TERMINADO ──────────────────────────────────────
+ *
+ * Si existe `/video/vsl.vtt` se engancha solo. Mientras no exista, el aviso
+ * salta en la consola de desarrollo. No es un adorno de accesibilidad: la
+ * mayoría de la gente ve vídeo sin sonido, y sin pista de texto ese público se
+ * queda sin el mensaje entero.
+ */
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+---
+
+{
+  vsl.disponible && (
+    <figure
+      data-vsl
+      data-src={vsl.mp4}
+      data-subtitulos={vsl.subtitulos ?? undefined}
+      data-pista-label={copy.vsl.pistaSubtitulos[lang]}
+      class="relative mx-auto w-full max-w-[19rem] overflow-hidden rounded-3xl border border-secondary-200/25 bg-primary-950 shadow-xl sm:max-w-[21rem]"
+    >
+      {/* La proporción está fijada aquí y no la decide el vídeo al cargar: sin
+          esto, el marco mide cero hasta que llegan los metadatos y todo lo que
+          hay debajo pega un salto. 9/16 es el corte del original. */}
+      <div class="relative aspect-[9/16]">
+        {vsl.poster && (
+          <img
+            src={vsl.poster}
+            alt=""
+            aria-hidden="true"
+            width="480"
+            height="854"
+            fetchpriority="high"
+            decoding="async"
+            data-vsl-poster
+            class="absolute inset-0 size-full object-cover"
+          />
+        )}
+
+        {/* Un velo suave: el póster es un fotograma cualquiera y el botón
+            tiene que verse encima sin depender de lo claro que salga. */}
+        <div
+          aria-hidden="true"
+          class="absolute inset-0"
+          style="background-image:linear-gradient(to top, var(--scrim-medio) 0%, transparent 45%, var(--scrim-leve) 100%)"
+        />
+
+        <button
+          type="button"
+          data-vsl-play
+          class="group absolute inset-0 grid place-items-center focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-focus-inverse"
+        >
+          <span class="sr-only">
+            <span data-t="es">{copy.vsl.reproducir.es}</span>
+            <span data-t="en">{copy.vsl.reproducir.en}</span>
+          </span>
+
+          <span
+            aria-hidden="true"
+            class="grid size-16 place-items-center rounded-full bg-cta text-ink-inverse shadow-cta transition-transform duration-200 ease-out-soft motion-safe:group-hover:scale-105 motion-safe:group-active:scale-95"
+          >
+            {/* `ml-1`: el triángulo de play tiene el centro de masa a la
+                izquierda, así que centrado geométricamente se ve descentrado. */}
+            <Icono nombre="play" class="ml-1 size-7" grosor={1} />
+          </span>
+        </button>
+
+        <figcaption class="pointer-events-none absolute inset-x-0 bottom-0 p-4 text-center">
+          <span class="text-sm font-semibold text-ink-inverse">
+            <T v={copy.vsl.etiqueta} />
+          </span>
+        </figcaption>
+      </div>
+    </figure>
+  )
+}
+
+<script>
+  /**
+   * Sustituye la fachada por un <video> de verdad al pulsar.
+   *
+   * El elemento se crea aquí, no está oculto en el HTML: así el navegador no
+   * puede empezar a descargar nada por su cuenta antes de tiempo.
+   */
+  function montarVsl(figura: HTMLElement) {
+    const boton = figura.querySelector<HTMLButtonElement>("[data-vsl-play]");
+    const marco = boton?.parentElement;
+    const src = figura.dataset.src;
+    if (!boton || !marco || !src) return;
+
+    boton.addEventListener(
+      "click",
+      () => {
+        const video = document.createElement("video");
+        video.src = src;
+        video.controls = true;
+        video.autoplay = true;
+        video.playsInline = true;
+        video.preload = "auto";
+        video.className = "absolute inset-0 size-full bg-primary-950 object-contain";
+
+        if (figura.dataset.subtitulos) {
+          const pista = document.createElement("track");
+          pista.kind = "subtitles";
+          pista.src = figura.dataset.subtitulos;
+          pista.srclang = document.documentElement.lang || "es";
+          pista.label = figura.dataset.pistaLabel ?? "";
+          pista.default = true;
+          video.appendChild(pista);
+        }
+
+        /* Se vacía el marco entero: póster, velo, botón y rótulo. Dejarlos
+           debajo significaría que el póster sigue ahí si el vídeo falla, pero
+           también que el botón queda por encima capturando los clics de los
+           controles. */
+        marco.replaceChildren(video);
+
+        /* Si el navegador bloquea la reproducción, `controls` ya está puesto:
+           el visitante ve el vídeo parado con su botón, no una caja negra. */
+        void video.play().catch(() => {});
+      },
+      { once: true },
+    );
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-vsl]").forEach(montarVsl);
+</script>

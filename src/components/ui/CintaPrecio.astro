@@ -1,0 +1,305 @@
+---
+import T from "@components/i18n/T.astro";
+import { curso, copy } from "@config/curso.config";
+import { construirTxt, LOCALES, type Txt } from "@i18n/idioma";
+import { formatMoney } from "@i18n/formato";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * CINTA DE PRECIO — "esto sube el día X"
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Se repite en tres puntos de la página: la barra de arriba, el final del
+ * temario y el cierre. Es el mismo componente y el mismo dato en los tres.
+ *
+ * ─── LAS CUATRO REGLAS QUE LA SEPARAN DE UN CONTADOR DE GURÚ ───────────────
+ *
+ * 1. UN SOLO ORIGEN. Todo sale de `curso.precio.urgencia.fechaCierre`. No hay
+ *    una segunda fecha en ningún sitio, así que dos cintas no pueden decir
+ *    cosas distintas, y poner esa fecha a `null` las apaga las tres de golpe.
+ *
+ * 2. LA FECHA ES FIJA, NO RELATIVA A LA VISITA. Nada arranca cuando entras.
+ *    Recargar no reinicia nada, abrirlo en otro navegador da lo mismo y dos
+ *    personas distintas ven el mismo día. Es justo lo contrario del contador
+ *    que se reinicia con F5, que es el truco que PRODUCT.md prohíbe por
+ *    nombre y que basta una recarga para descubrir.
+ *
+ * 3. CUANDO LA FECHA PASA, LA CINTA DESAPARECE. No se queda en cero, no
+ *    empieza otra ronda. Si el precio no ha subido de verdad, en desarrollo
+ *    sale un aviso en consola para quien edita el sitio.
+ *
+ * 4. SE ANUNCIA LA FECHA, NO EL TIEMPO QUE QUEDA. "Sube el 31 de agosto" es
+ *    verdad aunque la página lleve horas cacheada en un CDN; "quedan 12 días"
+ *    puede quedarse a medio día de la verdad, y eso en esta página cuesta más
+ *    de lo que aporta. Los días los añade el script de abajo en el cliente,
+ *    que sí sabe qué hora es. Sin JavaScript se lee la fecha y se entiende.
+ *
+ * ⚠️ EL COMPROMISO QUE SE ADQUIERE AL ENCENDER ESTO: el día que llegue la
+ * fecha, `curso.precio.actual` tiene que subir de verdad. Ahora esa promesa
+ * está escrita en tres sitios en vez de en uno, así que incumplirla también
+ * cuesta el triple.
+ */
+interface Props {
+  /**
+   * `barra`  — franja navy de ancho completo. Para la cabecera de la página.
+   * `panel`  — bloque con borde. Para cerrar una sección.
+   * `linea`  — una línea de texto, sin caja. Para meter dentro de otro bloque.
+   */
+  variante?: "barra" | "panel" | "linea";
+  /** Enlace al precio. `false` en secciones que ya tienen su propio CTA. */
+  conEnlace?: boolean;
+  /** Sobre fondo navy (`Section tono="inverse"`). Solo cambia colores. */
+  inverso?: boolean;
+  class?: string;
+}
+
+const {
+  variante = "barra",
+  conEnlace = true,
+  inverso = false,
+  class: className = "",
+} = Astro.props;
+
+const { precio } = curso;
+const { fechaCierre, tipo } = precio.urgencia;
+
+/* Se pinta solo con una fecha REAL y todavía por delante. Cualquier otra cosa
+   —tipo distinto, fecha inválida, fecha ya pasada— y el componente no existe. */
+const ms = fechaCierre ? new Date(fechaCierre).getTime() : NaN;
+const activa = tipo === "fecha" && Number.isFinite(ms) && ms > Date.now();
+
+if (import.meta.env.DEV && tipo === "fecha" && Number.isFinite(ms) && ms <= Date.now()) {
+  console.warn(
+    "[CintaPrecio] La fecha de `precio.urgencia.fechaCierre` ya pasó, así que " +
+      "las cintas no se pintan. Si el precio subió, actualiza `precio.actual` y " +
+      "pon una fecha nueva o `tipo: \"lanzamiento\"`. Si no subió, quita la fecha.",
+  );
+}
+
+/**
+ * El mensaje va en DOS PIEZAS, no en una cadena, porque en móvil solo cabe una.
+ *
+ * A 320 px la cinta entera ("Precio de lanzamiento: $490 · El precio sube el 31
+ * de agosto · quedan 12 días · Ver el precio") ocupaba tres líneas, 62 px de
+ * alto, y eso bastaba para empujar el botón del hero por debajo del pliegue.
+ * Medido, no supuesto.
+ *
+ * Así que por debajo de `sm` se cae la etiqueta, que es la única parte que no
+ * informa de nada: "$490 · El precio sube el 31 de agosto" ya dice qué cuesta,
+ * que va a subir y cuándo. La etiqueta vuelve en cuanto hay ancho.
+ */
+const vacio: Txt = { es: "", en: "" };
+
+const etiquetaTxt: Txt = activa ? copy.precio.cinta.etiqueta : vacio;
+
+/** El precio de hoy, solo. Va aparte para poder pintarlo más grande. */
+const precioHoy: Txt = activa
+  ? construirTxt((l) => formatMoney(precio.actual, l, precio.moneda))
+  : vacio;
+
+/** "sube a $3,990 el 31 de agosto" — las dos cifras juntas. */
+const subeTxt: Txt = activa
+  ? construirTxt((l) => {
+      const fecha = new Intl.DateTimeFormat(LOCALES[l], {
+        day: "numeric",
+        month: "long",
+      }).format(new Date(fechaCierre!));
+
+      return copy.precio.cinta.sube[l]
+        .replace("{referencia}", formatMoney(precio.referencia, l, precio.moneda))
+        .replace("{fecha}", fecha);
+    })
+  : vacio;
+
+/* Las etiquetas de los días viajan al script como atributos: el script es uno
+   solo para toda la página y no puede importar el config. */
+const etiquetas = copy.precio.cinta;
+
+/* `barra` ya es navy por sí misma, así que no tiene versión inversa: sobre una
+   sección oscura no se usa una franja oscura, se usa `linea`. */
+const estilos = {
+  barra:
+    "bg-primary-950 text-secondary-100 text-center text-xs leading-snug px-3 py-2 sm:text-sm sm:px-4 sm:py-2.5",
+  panel: inverso
+    ? "rounded-2xl border border-primary-700 bg-primary-950/60 text-secondary-100 text-center text-sm px-5 py-4"
+    : "rounded-2xl border border-secondary-200 bg-secondary-50 text-ink text-center text-sm px-5 py-4",
+  linea: inverso ? "text-sm text-secondary-200" : "text-sm text-ink-muted",
+} as const;
+
+/* El enlace necesita 4.5:1 contra su fondo. Sobre navy, `secondary-300`
+   (7.93:1); sobre claro, `ink-brand` (6.75:1). */
+const claseEnlace =
+  variante === "barra" || inverso
+    ? "text-secondary-300 hover:text-ink-inverse"
+    : "text-ink-brand hover:text-secondary-800";
+
+/**
+ * EN LA BARRA, EL ENLACE ES LA BARRA ENTERA.
+ *
+ * Dos motivos, los dos medidos:
+ *
+ *  · Objetivo táctil. Un "Ver el precio" subrayado dentro de una franja de
+ *    12 px es un blanco de unos 18 px de alto. La regla del proyecto es 44 px
+ *    mínimo, y ese enlace se me había colado sin cumplirla. Con la franja
+ *    entera pulsable el blanco pasa a ser de 53 px por todo el ancho, que es
+ *    de lo mejor que puede haber en un móvil.
+ *  · Altura. A 320 px, la línea del enlace era la que hacía que la franja
+ *    ocupara tres líneas en vez de dos, y esos 16 px de más eran justo los que
+ *    empujaban el botón del hero por debajo del pliegue.
+ *
+ * El texto "Ver el precio" se queda de `sm` para arriba como señal de que
+ * aquello es pulsable, pero ya NO es un <a> dentro de otro <a>: es texto.
+ */
+const barraPulsable = variante === "barra" && conEnlace;
+const Envoltorio = barraPulsable ? "a" : "div";
+const propsEnvoltorio = barraPulsable
+  ? { href: "#precio", "data-track": "cinta-barra" }
+  : {};
+---
+
+{
+  activa && (
+    <Envoltorio
+      {...propsEnvoltorio}
+      class:list={[
+        estilos[variante],
+        /* `min-h-11` = 44 px. La barra ENTERA es el objetivo táctil, así que
+           tiene que cumplir el mínimo del proyecto igual que cualquier botón.
+           Sin esto medía 33 px de alto en móvil: se pulsa, pero mal, y es
+           justo el tipo de fallo que no sale en una captura. */
+        barraPulsable &&
+          "flex min-h-11 items-center justify-center transition-colors duration-200 hover:bg-primary-900 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-inverse",
+        className,
+      ]}
+      data-cinta-precio
+      data-cierre={fechaCierre}
+      data-dias-es={etiquetas.quedanDias.es}
+      data-dias-en={etiquetas.quedanDias.en}
+      data-undia-es={etiquetas.quedaUnDia.es}
+      data-undia-en={etiquetas.quedaUnDia.en}
+      data-hoy-es={etiquetas.ultimoDia.es}
+      data-hoy-en={etiquetas.ultimoDia.en}
+    >
+      <span class="mx-auto flex max-w-page flex-wrap items-center justify-center gap-x-2 gap-y-1">
+        <span class="font-semibold">
+          {/* La etiqueta se cae en móvil: ver la nota de arriba. */}
+          <span class:list={[variante === "barra" && "max-sm:hidden"]}>
+            <T v={etiquetaTxt} />:{" "}
+          </span>
+
+          {/* El precio de hoy, un punto más grande que el resto de la cinta.
+              Es la cifra que tiene que quedarse en la cabeza. */}
+          <span class="text-base font-extrabold sm:text-lg">
+            <T v={precioHoy} />
+          </span>{" "}
+          ·{" "}
+          {/* Y el precio futuro, en el color de acción. Enseñar las dos cifras
+              juntas es lo que hace que el salto se VEA en vez de imaginarse.
+              Ojo: no se tacha ni se llama "antes". Ver la nota de `cinta.sube`
+              en el config, que es legal y no estética. */}
+          <span
+            class:list={[
+              variante === "barra" || inverso
+                ? "text-secondary-300"
+                : "text-ink-brand",
+            ]}
+          >
+            <T v={subeTxt} />
+          </span>
+        </span>
+
+        {/* Lo rellena el script. Nace vacío y sin separador: si el JavaScript
+            no llega, no queda un "·" suelto colgando de la frase.
+
+            `max-[359px]:hidden` en la barra, y el número está medido: por debajo
+            de 360 px los días hacen que la franja pase a dos líneas, y esos
+            16 px de más son exactamente los que empujan el botón del hero por
+            debajo del pliegue en una pantalla de 568 px de alto. El corte va en
+            359 y no en `sm` (640) a propósito: a 375 px cabe todo en una línea,
+            y ahí sí se ven los días. Solo lo pierde el iPhone SE de 2016. */}
+        <span
+          data-quedan
+          class:list={["opacity-90", variante === "barra" && "max-[359px]:hidden"]}
+        />
+
+        {/* En la barra esto es TEXTO, no un enlace: la barra entera ya lo es.
+            Se oculta en móvil porque ahí la señal de "pulsable" la da el propio
+            bloque, y la línea de más costaba 16 px del pliegue. */}
+        {barraPulsable && (
+          <span class:list={["max-sm:hidden font-semibold underline underline-offset-2", claseEnlace]}>
+            <T v={etiquetas.verPrecio} />
+          </span>
+        )}
+
+        {/* En `panel` y `linea` sí es un enlace de verdad, con su altura
+            mínima de 44 px porque ahí no hay bloque pulsable que lo envuelva. */}
+        {conEnlace && !barraPulsable && (
+          <a
+            href="#precio"
+            data-track={`cinta-${variante}`}
+            class:list={[
+              "inline-flex min-h-11 items-center font-semibold underline underline-offset-2",
+              "focus-visible:outline-2 focus-visible:outline-offset-2",
+              inverso ? "focus-visible:outline-focus-inverse" : "focus-visible:outline-focus",
+              claseEnlace,
+            ]}
+          >
+            <T v={etiquetas.verPrecio} />
+          </a>
+        )}
+      </span>
+    </Envoltorio>
+  )
+}
+
+{/*
+  Un solo script para todas las cintas de la página: Astro lo empaqueta una vez
+  aunque el componente aparezca tres veces.
+
+  Solo AÑADE los días que faltan. La frase ya es correcta sin él, así que aquí
+  no hay nada que pueda romperse: si el script no corre, se lee la fecha.
+*/}
+<script>
+  function pintarDias() {
+    const cintas = document.querySelectorAll<HTMLElement>("[data-cinta-precio]");
+    if (!cintas.length) return;
+
+    const idioma = document.documentElement.lang === "en" ? "en" : "es";
+
+    cintas.forEach((cinta) => {
+      const hueco = cinta.querySelector<HTMLElement>("[data-quedan]");
+      const cierre = cinta.dataset.cierre;
+      if (!hueco || !cierre) return;
+
+      const ms = new Date(cierre).getTime() - Date.now();
+
+      /* Ya pasó: se quita la cinta entera en vez de dejarla mintiendo. El
+         servidor no puede saberlo si la página lleva rato abierta o cacheada. */
+      if (!Number.isFinite(ms) || ms <= 0) {
+        cinta.remove();
+        return;
+      }
+
+      /* Días COMPLETOS que faltan, redondeando hacia ABAJO. Con `ceil` se
+         redondea a favor propio: a 25 horas del cierre diría "quedan 2 días".
+         Con `floor` dice "queda 1 día", que es lo que hay. Prefiero quedarme
+         corto en una cifra de urgencia que pasarme. */
+      const dias = Math.floor(ms / 86_400_000);
+
+      const plantilla =
+        dias === 0
+          ? cinta.dataset[idioma === "en" ? "hoyEn" : "hoyEs"]
+          : dias === 1
+            ? cinta.dataset[idioma === "en" ? "undiaEn" : "undiaEs"]
+            : cinta.dataset[idioma === "en" ? "diasEn" : "diasEs"];
+
+      if (!plantilla) return;
+      hueco.textContent = `· ${plantilla.replace("{n}", String(dias))}`;
+    });
+  }
+
+  pintarDias();
+  /* Al cambiar de idioma sin recargar hay que reescribirlo: es texto que pone
+     JavaScript, así que el truco de CSS de `<T>` no lo alcanza. */
+  window.addEventListener("e180:idioma", pintarDias);
+</script>

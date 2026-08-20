@@ -1,0 +1,243 @@
+---
+import Button from "@components/ui/Button.astro";
+import Pill from "@components/ui/Pill.astro";
+import T from "@components/i18n/T.astro";
+import VideoVsl from "@components/hero/VideoVsl.astro";
+import FranjaDatos from "@components/hero/FranjaDatos.astro";
+import { curso, cta, cifras, sitio, copy } from "@config/curso.config";
+import { vsl } from "@lib/assets";
+import { construirTxt } from "@i18n/idioma";
+import { formatNumber, interpolar } from "@i18n/formato";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 01 · HERO — relevancia en 8 segundos
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * QUÉ consigue, PARA QUIÉN es y QUÉ hacer ahora. El CTA lleva al mini-curso
+ * GRATIS, no a comprar: quien lleva ocho segundos en la página no está listo
+ * para pagar. La compra se pide en la sección de precio, con temario,
+ * instructor y garantía ya vistos.
+ *
+ * ─── EL VÍDEO PASÓ DE FONDO A PROTAGONISTA ─────────────────────────────────
+ *
+ * Aquí hubo un bucle mudo a pantalla completa: metraje de archivo de una
+ * persona cualquiera dando clase, con el texto encima y tres velos para que se
+ * pudiera leer. Era papel pintado, y funcionaba como tal.
+ *
+ * Con el vídeo real de Pedro dejó de tener sentido, por dos motivos que no son
+ * de gusto:
+ *
+ *   · Era STOCK. Una persona que no tiene nada que ver con este negocio, en una
+ *     página cuyo PRODUCT.md prohíbe el stock por nombre.
+ *   · Un vídeo con locución y rótulos NO PUEDE ser fondo. Mudo y en bucle
+ *     detrás del titular, sus textos pelean con el h1 y se tira justo lo que lo
+ *     hace valioso, que es lo que dice.
+ *
+ * Así que el vídeo real va DELANTE, en su marco vertical, con su botón de play
+ * y su sonido. Y el fondo vuelve a ser lo que siempre debió ser: la marca.
+ * Ver `VideoVsl.astro`.
+ *
+ * ─── SE FUERON LOS VELOS, Y CON ELLOS UN PROBLEMA ──────────────────────────
+ *
+ * Sin vídeo de fondo no hay que garantizar contraste contra un fotograma que
+ * cambia 24 veces por segundo: el texto se apoya en un navy sólido de la
+ * paleta. Blanco sobre `primary-950` da 17:1 y no depende de nada. Los tokens
+ * `--scrim-*` siguen existiendo porque los usan las tarjetas de la sección 03
+ * y el póster del propio VSL.
+ *
+ * ─── LA ENTRADA NO USA `Reveal` ────────────────────────────────────────────
+ *
+ * `Reveal` espera a un IntersectionObserver, y el hero YA está en pantalla. Se
+ * usa `[data-hero-enter]` con `--i` para el escalonado: animación CSS pura, sin
+ * JavaScript, sin esperar a nada y sin ningún caso en que el titular se quede
+ * invisible. Ver global.css.
+ *
+ * ─── DOS BOTONES, Y NO ES UN DESCUIDO ──────────────────────────────────────
+ *
+ * La regla del proyecto es un solo color de acción, no un solo elemento
+ * pulsable. El teal relleno es la acción; el de contorno es NAVEGACIÓN hacia
+ * abajo en la misma página, para quien necesita ver qué hay dentro antes de dar
+ * su email. No compiten: compiten dos botones del mismo peso, y estos no lo son.
+ */
+
+/* Este componente no necesita saber el idioma de la petición: todo su texto
+   pasa por `<T>`, que renderiza los dos y deja que el CSS oculte el que no
+   toca. */
+
+/**
+ * "Para ti si…" + el primer perfil, en minúscula inicial y en cada idioma.
+ *
+ * Se le quita el punto final además de bajar la inicial. El texto de
+ * `paraQuien` es una frase completa en el config —lo es porque en la sección
+ * del problema se pinta suelto, como elemento de una lista— pero aquí va cosido
+ * detrás de "Para ti si", así que el punto lo pone la plantilla.
+ */
+const primerPerfil = curso.paraQuien[0]!;
+const paraQuien = construirTxt((l) => {
+  const frase = primerPerfil[l].replace(/\.\s*$/, "");
+  return frase.charAt(0).toLowerCase() + frase.slice(1);
+});
+
+/** Los números también se localizan: el separador de miles es del locale. */
+const pruebaSocial = construirTxt((l) =>
+  interpolar(copy.hero.pruebaSocial[l], {
+    alumnos: formatNumber(cifras.alumnos, l),
+    nota: cifras.valoracionMedia,
+    n: formatNumber(cifras.numeroValoraciones, l),
+  }),
+);
+---
+
+<section
+  id="inicio"
+  class="relative isolate flex min-h-[calc(100svh-var(--header-h))] flex-col overflow-hidden bg-primary-950 lg:min-h-[calc(100svh-var(--header-h-lg))]"
+>
+  {/* La trama de puntos de la guía de marca. Al 10 %: tiene que notarse que
+      hay una textura, no verse los puntos. */}
+  <div
+    aria-hidden="true"
+    class="pointer-events-none absolute inset-0 -z-10 opacity-10"
+    style="background-image:radial-gradient(currentColor 1px,transparent 1px);background-size:16px 16px;color:var(--color-secondary-200)"
+  >
+  </div>
+
+  {/* Un halo teal muy suave detrás del vídeo. Es lo único que separa la mitad
+      derecha de un rectángulo navy plano, y va detrás del contenido para que no
+      toque el contraste de nada. */}
+  <div
+    aria-hidden="true"
+    class="pointer-events-none absolute -right-32 top-1/4 -z-10 hidden size-[38rem] rounded-full opacity-20 blur-3xl lg:block"
+    style="background-image:radial-gradient(closest-side, var(--color-secondary-500), transparent)"
+  >
+  </div>
+
+  <div class="container-page relative flex flex-1 flex-col pb-8 pt-5 sm:pt-12 md:pb-14">
+    <div
+      class="flex flex-1 flex-col justify-center gap-10 lg:flex-row lg:items-center lg:gap-16"
+    >
+      {/* ─── Columna de texto ──────────────────────────────────────────── */}
+      <div class="max-w-2xl lg:flex-1">
+        <div data-hero-enter style="--i:0">
+          <Pill tono="oscuro">
+            <T v={sitio.claim} />
+          </Pill>
+        </div>
+
+        <h1
+          class="mt-4 text-hero font-extrabold text-balance text-ink-inverse sm:mt-5"
+          data-hero-enter
+          style="--i:1"
+        >
+          <T v={curso.promesa} />
+        </h1>
+
+        {/* `secondary-100` y no blanco puro: el párrafo de apoyo cede jerarquía
+            al titular, y sobre fondo oscuro eso se hace bajando la luminosidad,
+            no metiendo opacidad. Da más de 11:1 sobre el navy. */}
+        <p
+          class="mt-4 max-w-xl text-base text-pretty text-secondary-100 sm:mt-5 sm:text-lg lg:text-xl"
+          data-hero-enter
+          style="--i:2"
+        >
+          <T v={curso.promesaApoyo} />
+        </p>
+
+        <div
+          class="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:items-center sm:gap-4"
+          data-hero-enter
+          style="--i:3"
+        >
+          {/* La acción. Va al mini-curso gratis, no a comprar. */}
+          <Button
+            href={cta.secundario.href}
+            variant="primary"
+            size="lg"
+            sobre="oscuro"
+            trackId="hero"
+            class="w-full sm:w-auto"
+          >
+            <T v={cta.secundario.texto} />
+          </Button>
+
+          {/* Navegación, no conversión. Ver la nota de la cabecera. */}
+          <Button
+            href="#temario"
+            variant="inverse"
+            size="lg"
+            sobre="oscuro"
+            trackId="hero-temario"
+            class="w-full sm:w-auto"
+          >
+            <T v={copy.hero.verTemario} />
+          </Button>
+        </div>
+
+        <p class="mt-4 text-sm text-secondary-200" data-hero-enter style="--i:4">
+          <T v={copy.hero.microCta} />
+          <span aria-hidden="true">·</span>
+          <T v={curso.formato.idioma} />
+          <span aria-hidden="true">·</span>
+          <T v={curso.formato.nivel} />
+        </p>
+
+        {/* "Para quién es", en una línea. Cualifica sin ocupar pantalla. */}
+        <div
+          class="mt-8 border-l-2 border-secondary-400 pl-4"
+          data-hero-enter
+          style="--i:5"
+        >
+          <p class="max-w-xl text-base text-secondary-100">
+            <span class="font-semibold text-ink-inverse">
+              <T v={copy.hero.paraTiSi} />
+            </span>{" "}
+            <T v={paraQuien} />.
+          </p>
+        </div>
+
+        {
+          cifras.sonReales && (
+            <p
+              class="mt-6 text-sm font-medium text-secondary-200"
+              data-hero-enter
+              style="--i:6"
+            >
+              <T v={pruebaSocial} />
+            </p>
+          )
+        }
+      </div>
+
+      {/* ─── El vídeo ──────────────────────────────────────────────────────
+          En móvil va DESPUÉS del texto, para que el botón de acción no quede
+          empujado por debajo del pliegue por un marco vertical de 9:16. En
+          escritorio, a la derecha, donde el ojo llega al terminar la frase. */}
+      {/* El ancho se fija AQUÍ, en el contenedor, y no con `lg:w-auto`. Con
+          `w-auto` el ancho salía del contenido, y el contenido es un <figure>
+          con `w-full`: cada uno esperaba al otro y la columna se resolvía en
+          2 px. Con un ancho definido, el `w-full` de dentro tiene de qué
+          agarrarse. */}
+      {
+        vsl.disponible && (
+          <div
+            class="mx-auto w-full max-w-[21rem] lg:mx-0 lg:shrink-0"
+            data-hero-enter
+            style="--i:2"
+          >
+            <VideoVsl />
+          </div>
+        )
+      }
+    </div>
+
+    {/* La franja de datos cierra el hero: responde a "¿qué me estás vendiendo
+        exactamente?" antes de que haya que hacer scroll para averiguarlo. */}
+    <div
+      class="mt-10 border-t border-secondary-200/20 pt-6 sm:mt-12"
+      data-hero-enter
+      style="--i:7"
+    >
+      <FranjaDatos />
+    </div>
+  </div>
+</section>

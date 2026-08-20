@@ -22,6 +22,15 @@ interface Props {
    * servidor y el switch la actualiza (ver el script de Section).
    */
   ariaLabel?: Txt;
+  /**
+   * Quita el `container-page`, dejando el contenido a todo el ancho.
+   *
+   * Para lo que tiene que sangrar de borde a borde: una banda en movimiento,
+   * una fila que se desplaza. La sección se hace responsable entonces de meter
+   * su propio `container-page` en las partes que sí deben alinearse con el
+   * resto de la página (el titular, casi siempre).
+   */
+  sinContenedor?: boolean;
   class?: string;
 }
 
@@ -30,6 +39,7 @@ const {
   tono = "surface",
   ritmo = "normal",
   ariaLabel,
+  sinContenedor = false,
   class: className = "",
 } = Astro.props;
 
@@ -59,7 +69,13 @@ const ritmos = {
   data-aria-en={ariaLabel?.en}
   class:list={[ritmos[ritmo], "scroll-mt-20", tonos[tono], className]}
 >
-  <div class="container-page">
-    <slot />
-  </div>
+  {
+    sinContenedor ? (
+      <slot />
+    ) : (
+      <div class="container-page">
+        <slot />
+      </div>
+    )
+  }
 </section>

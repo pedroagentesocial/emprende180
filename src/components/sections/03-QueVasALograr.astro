@@ -4,6 +4,8 @@ import Section from "@components/ui/Section.astro";
 import SectionHeading from "@components/ui/SectionHeading.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Button from "@components/ui/Button.astro";
+import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
+import { fondoResultado } from "@lib/assets";
 import { curso, cta, copy } from "@config/curso.config";
 
 /**
@@ -20,7 +22,84 @@ import { curso, cta, copy } from "@config/curso.config";
  * trabajo. Quien baja rápido se lleva el mensaje entero leyendo solo los seis
  * titulares, que es exactamente lo que pide un bloque "skimmeable en 5
  * segundos".
+ *
+ * ─── EL DETALLE, AL PASAR EL CURSOR ────────────────────────────────────────
+ *
+ * Mismo mecanismo que la rejilla de la sección 02: el titular se ve siempre y
+ * el párrafo se despliega al pasar el ratón. Y por el mismo motivo, que aquí es
+ * todavía más claro: los seis `titulo` de `transformaciones` ya son frases
+ * completas y autosuficientes ("Reconocerás una oportunidad cuando la tengas
+ * delante"). El `detalle` dice de qué video sale y con qué empieza: amplía, no
+ * completa. Quien no pasa el ratón no se pierde el argumento, solo la letra
+ * pequeña.
+ *
+ * En móvil y en táctil el detalle se ve SIEMPRE. Ver `[data-revelar]` en
+ * global.css.
+ *
+ * ─── ICONOS EN LUGAR DE NUMERALES ──────────────────────────────────────────
+ *
+ * Aquí hubo un 01…06 grande. Se cambió por iconos a petición del cliente.
+ *
+ * Lo que se pierde, para que quede escrito: el numeral demostraba de un vistazo
+ * que son SEIS y que van en orden, que es justo lo que promete la entradilla
+ * ("Seis cosas concretas"). Eso ahora lo sostienen dos cosas más débiles: el
+ * `<ol>`, que solo lo "ve" un lector de pantalla, y el propio texto.
+ *
+ * Lo que se gana: cada resultado se reconoce por su dibujo antes de leerlo, y
+ * seis iconos distintos se escanean más rápido que seis números iguales de
+ * forma.
+ *
+ * NO SE PONEN LOS DOS. Icono y numeral juntos es ruido: dos marcas compitiendo
+ * por el mismo hueco a la izquierda del titular.
+ *
+ * ⚠️ Con esto, las secciones 02 y 03 comparten mecanismo (icono + titular +
+ * detalle al pasar el cursor). Lo que las separa ahora es la maqueta: la 02 va
+ * a tres columnas y a ancho completo; la 03, a dos columnas con la cabecera
+ * fija al lado. Si alguien iguala también eso, la página pasa a tener dos
+ * secciones seguidas que se leen como la misma.
+ *
+ * ─── AHORA SÍ SON TARJETAS, Y CON FOTO DE FONDO ────────────────────────────
+ *
+ * Esto se pidió expresamente. Antes eran entradas de lista con un filete
+ * superior, sin caja. Ahora son tarjetas navy con la imagen de fondo.
+ *
+ * Lo que hay que vigilar, porque es el riesgo que trae: seis tarjetas iguales
+ * es la forma que DESIGN.md prohíbe. Lo que las salva de serlo es justamente
+ * que cada una lleve SU foto: seis imágenes distintas no se leen como un patrón
+ * repetido, se leen como seis cosas distintas. Si algún día se quitan las fotos
+ * y se quedan los seis fondos genéricos iguales, la prohibición vuelve a
+ * aplicar y hay que replantear la sección.
+ *
+ * MIENTRAS NO HAYA FOTOS. No hay ni una imagen en el proyecto, así que hoy cada
+ * tarjeta pinta un fondo de marca (navy + trama de puntos) con su icono. En
+ * cuanto se deje una foto en `/public/imagenes/resultados/01.webp` (02, 03…),
+ * esa tarjeta la usa y esconde el icono. Se pueden mezclar. Ver
+ * `fondoResultado()` en `src/lib/assets.ts`.
+ *
+ * ⚠️ NO SE PUSIERON FOTOS DE STOCK. Seis fotos genéricas de gente en una
+ * oficina son la anti-referencia del "landing de plantilla" de PRODUCT.md, y
+ * ninguna diría nada de este negocio en concreto.
+ *
+ * EL CONTRASTE DEL TEXTO NO DEPENDE DE LA FOTO. Va sobre `--scrim-fuerte`, que
+ * garantiza más de 12:1 para el blanco encima del fotograma más claro posible.
+ * Cambiar las imágenes no obliga a volver a medir nada.
  */
+
+/**
+ * Un icono por resultado, emparejado POR POSICIÓN con `curso.transformaciones`.
+ *
+ * Vive aquí y no en el config porque qué dibujo acompaña a un texto es
+ * maquetación, no contenido. Si se añade un séptimo resultado sin su icono, el
+ * `?? "check"` del marcado evita que la página se rompa.
+ */
+const ICONOS: NombreIcono[] = [
+  "brujula", // dónde encajas
+  "diana", // reconocer la oportunidad
+  "bocadillos", // pedir un referido
+  "lista", // contactos organizados
+  "megafono", // publicar para que te escriban
+  "escudo", // qué se puede decir y qué no
+];
 ---
 
 <Section id="resultados" ritmo="amplio" ariaLabel={copy.resultados.aria}>
@@ -46,33 +125,95 @@ import { curso, cta, copy } from "@config/curso.config";
       </Reveal>
     </div>
 
-    <ol class="grid gap-px overflow-hidden rounded-2xl bg-line sm:grid-cols-2">
-      {
-        curso.transformaciones.map((t, i) => (
-          <Reveal as="li" delay={i * 0.05} class="bg-surface">
-            <div class="h-full p-6 sm:p-7">
-              {/* Decorativo: el orden ya lo da el <ol>, por eso va oculto a
-                  lectores de pantalla. Aun así usa teal-600 y no el 200: a
-                  1.46:1 no se veía, y el 500 se quedaba en 2.98:1 cuando el
-                  texto grande necesita 3:1. Con el 600 pasa y sigue leyéndose
-                  como acento, no como titular. */}
-              <span
-                aria-hidden="true"
-                class="block text-4xl font-extrabold leading-none tracking-tight text-secondary-600"
-              >
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <h3 class="mt-4 text-lg font-bold text-balance text-ink">
-                <T v={t.titulo} />
-              </h3>
-              <p class="mt-2 text-base text-pretty text-ink-muted">
-                <T v={t.detalle} />
-              </p>
-            </div>
-          </Reveal>
-        ))
-      }
-    </ol>
+    <div>
+      {/* La pista solo existe si hay un cursor con el que pasar. */}
+      <Reveal>
+        <p data-pista-hover class="mb-6 text-right text-sm text-ink-subtle">
+          <T v={copy.ui.pistaHover} />
+        </p>
+      </Reveal>
+
+      <ol class="grid gap-5 sm:grid-cols-2">
+        {
+          curso.transformaciones.map((t, i) => {
+            const fondo = fondoResultado(i);
+            return (
+              <Reveal as="li" delay={i * 0.05}>
+                <article
+                  data-revelar
+                  class="group relative isolate h-full overflow-hidden rounded-2xl bg-primary-900 p-6 sm:p-7"
+                >
+                  {/* CAPA 1 · La foto, si la hay. `scale-105` en reposo y
+                      `scale-100` al pasar el cursor: la imagen se asienta en vez
+                      de crecer, que es más sobrio y no empuja nada del layout. */}
+                  {fondo && (
+                    <img
+                      src={fondo}
+                      alt=""
+                      aria-hidden="true"
+                      loading="lazy"
+                      decoding="async"
+                      class="absolute inset-0 -z-10 size-full scale-105 object-cover transition-transform duration-700 ease-out-soft group-hover:scale-100"
+                    />
+                  )}
+
+                  {/* CAPA 2 · El velo. Aquí es donde vive el contraste del
+                      texto, no en la suerte que tenga la foto: `--scrim-fuerte`
+                      abajo garantiza más de 12:1 para el blanco encima de
+                      CUALQUIER imagen, así que cambiar las fotos no obliga a
+                      volver a medir nada. Ver tokens.css. */}
+                  {fondo && (
+                    <div
+                      aria-hidden="true"
+                      class="absolute inset-0 -z-10"
+                      style="background-image:linear-gradient(to top, var(--scrim-fuerte) 0%, var(--scrim-fuerte) 38%, var(--scrim-medio) 72%, var(--scrim-leve) 100%)"
+                    />
+                  )}
+
+                  {/* CAPA 3 · La trama de puntos de la guía. Sin foto es el
+                      fondo entero; con foto, una textura muy suave que hace que
+                      la tarjeta siga perteneciendo a la marca. */}
+                  <div
+                    aria-hidden="true"
+                    class:list={[
+                      "pointer-events-none absolute inset-0 -z-10",
+                      fondo ? "opacity-[0.08]" : "opacity-[0.14]",
+                    ]}
+                    style="background-image:radial-gradient(currentColor 1px,transparent 1px);background-size:16px 16px;color:var(--color-secondary-200)"
+                  />
+
+                  {/* El icono solo mientras NO hay foto: es el sustituto, no un
+                      adorno que se le superpone encima. */}
+                  {!fondo && (
+                    <Icono
+                      nombre={ICONOS[i] ?? "check"}
+                      class="size-8 text-secondary-300 transition-colors duration-200 ease-out-soft group-hover:text-ink-inverse"
+                    />
+                  )}
+
+                  <h3
+                    class:list={[
+                      "text-lg font-bold text-balance text-ink-inverse",
+                      !fondo && "mt-3.5",
+                    ]}
+                  >
+                    <T v={t.titulo} />
+                  </h3>
+
+                  <div data-detalle>
+                    <div>
+                      <p class="mt-2 text-base text-pretty text-secondary-100">
+                        <T v={t.detalle} />
+                      </p>
+                    </div>
+                  </div>
+                </article>
+              </Reveal>
+            );
+          })
+        }
+      </ol>
+    </div>
 
     <Reveal class="lg:hidden">
       <Button

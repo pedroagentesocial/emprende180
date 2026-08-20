@@ -1,0 +1,182 @@
+---
+import T from "@components/i18n/T.astro";
+import { curso, copy, garantia } from "@config/curso.config";
+import { construirTxt, LOCALES, type Txt } from "@i18n/idioma";
+import { formatMoney, interpolar } from "@i18n/formato";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * TIRA DE ANUNCIOS — navy, de lado a lado, sin parar
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Sustituye a las cintas de hover que había entre secciones. Aquellas tenían
+ * tres problemas a la vez: escondían el detalle detrás del cursor (o sea, no
+ * existía en móvil), eran cajas quietas que se saltaban igual que un banner, y
+ * cada una decía una sola cosa.
+ *
+ * Esta dice SEIS cosas —precio, subida, plazo, contenido, garantía, cuotas— y
+ * las va pasando. No hay nada que descubrir: todo está a la vista, solo que por
+ * turnos.
+ *
+ * ─── EL MOVIMIENTO ES EL MISMO QUE EL DE LA BANDA DE TESTIMONIOS ───────────
+ *
+ * Reutiliza `[data-banda]` / `[data-banda-pista]` de global.css, y eso no es
+ * pereza: significa que hay UN solo comportamiento de "algo que se desplaza" en
+ * toda la página, con un solo sitio donde ajustar la velocidad, un solo bucle
+ * sin costura y una sola regla de `prefers-reduced-motion`. Dos implementaciones
+ * distintas de lo mismo acaban desincronizándose.
+ *
+ * La lista se pinta dos veces y la pista se desplaza un -50 % exacto: el
+ * fotograma en que reinicia es idéntico al de salida y no se ve la costura.
+ *
+ * ─── SIN BOTÓN DE PAUSA, Y AQUÍ SÍ SE PUEDE ────────────────────────────────
+ *
+ * La banda de testimonios lleva botón porque son párrafos que hay que leer y
+ * pararlos es la única forma. Esto son seis frases de cuatro palabras que se
+ * repiten en bucle: si una se pasa, vuelve. Aun así se para al pasar el cursor
+ * o al tabular dentro, y `prefers-reduced-motion` la deja quieta y legible.
+ *
+ * ─── TODO SALE DEL CONFIG ──────────────────────────────────────────────────
+ *
+ * Ni una cifra escrita a mano. Si mañana cambia el precio, la fecha o el número
+ * de videos, cambian las seis frases. Y si `precio.urgencia.fechaCierre` se pone
+ * a `null`, las dos que hablan del plazo desaparecen solas y quedan las otras.
+ */
+interface Props {
+  class?: string;
+}
+
+const { class: className = "" } = Astro.props;
+
+const { precio } = curso;
+const { fechaCierre, tipo } = precio.urgencia;
+
+const ms = fechaCierre ? new Date(fechaCierre).getTime() : NaN;
+const conPlazo = tipo === "fecha" && Number.isFinite(ms) && ms > Date.now();
+
+/** Cada anuncio ya resuelto en los dos idiomas. */
+const frase = (plantilla: Txt, extra: Record<string, string | number> = {}) =>
+  construirTxt((l) =>
+    interpolar(plantilla[l], {
+      actual: formatMoney(precio.actual, l, precio.moneda),
+      referencia: formatMoney(precio.referencia, l, precio.moneda),
+      videos: curso.formato.videos,
+      garantiaDias: garantia.dias,
+      cuotas: precio.cuotas?.numero ?? 0,
+      fecha: fechaCierre
+        ? new Intl.DateTimeFormat(LOCALES[l], {
+            day: "numeric",
+            month: "long",
+          }).format(new Date(fechaCierre))
+        : "",
+      ...extra,
+    }),
+  );
+
+const a = copy.anuncios;
+
+/**
+ * El orden alterna urgencia y contenido a propósito. Seis frases seguidas de
+ * precio se leen como un cartel de rebajas; intercaladas con lo que entra en el
+ * curso, se leen como información.
+ */
+const anuncios: { texto: Txt; dias?: boolean }[] = [
+  { texto: frase(a.precio) },
+  { texto: frase(a.curso) },
+  ...(conPlazo ? [{ texto: frase(a.sube) }] : []),
+  { texto: frase(a.garantia) },
+  ...(conPlazo ? [{ texto: frase(a.dias, { dias: "—" }), dias: true }] : []),
+  { texto: frase(a.acceso) },
+  ...(precio.cuotas ? [{ texto: frase(a.cuotas) }] : []),
+];
+
+/** Velocidad constante: cinco segundos por anuncio. */
+const duracion = `${anuncios.length * 5}s`;
+---
+
+<div
+  data-banda
+  class:list={["overflow-hidden bg-primary-900 py-3.5", className]}
+  data-cierre={conPlazo ? fechaCierre : undefined}
+  data-dias-es={a.dias.es}
+  data-dias-en={a.dias.en}
+  data-hoy-es={a.ultimoDia.es}
+  data-hoy-en={a.ultimoDia.en}
+>
+  <ul
+    data-banda-pista
+    class="flex w-max items-center gap-8 sm:gap-12"
+    style={`--duracion:${duracion}`}
+    aria-label={copy.anuncios.etiqueta.es}
+    data-aria-es={copy.anuncios.etiqueta.es}
+    data-aria-en={copy.anuncios.etiqueta.en}
+  >
+    {
+      [0, 1].map((copia) =>
+        anuncios.map((item) => (
+          <li
+            class="flex shrink-0 items-center gap-8 sm:gap-12"
+            aria-hidden={copia === 1 ? "true" : undefined}
+            data-banda-clon={copia === 1 ? "" : undefined}
+          >
+            <span
+              class="text-sm font-bold whitespace-nowrap text-secondary-100 sm:text-base"
+              data-anuncio-dias={item.dias ? "" : undefined}
+            >
+              <T v={item.texto} />
+            </span>
+
+            {/* Separador. Un punto teal, que es el acento de la marca: sin él
+                las frases se leen como una sola tirada de palabras. */}
+            <span
+              aria-hidden="true"
+              class="size-1.5 shrink-0 rounded-full bg-secondary-500"
+            />
+          </li>
+        )),
+      )
+    }
+  </ul>
+</div>
+
+<script>
+  /**
+   * Rellena los días que faltan en las tiras.
+   *
+   * El servidor no los pinta: una página cacheada diría "quedan 12 días" tres
+   * días después. La fecha en sí sí va desde el servidor (esa no caduca) y es
+   * la frase que sostiene el argumento; esto solo añade la cuenta.
+   */
+  function pintarDiasAnuncio() {
+    document.querySelectorAll<HTMLElement>("[data-banda][data-cierre]").forEach((tira) => {
+      const cierre = tira.dataset.cierre;
+      const huecos = tira.querySelectorAll<HTMLElement>("[data-anuncio-dias]");
+      if (!cierre || !huecos.length) return;
+
+      const restante = new Date(cierre).getTime() - Date.now();
+      const idioma = document.documentElement.lang === "en" ? "en" : "es";
+
+      /* Si la fecha ya pasó, se quitan las frases del plazo en vez de dejarlas
+         mintiendo. Las demás siguen: la tira no desaparece entera. */
+      if (!Number.isFinite(restante) || restante <= 0) {
+        huecos.forEach((h) => h.closest("li")?.remove());
+        return;
+      }
+
+      /* Hacia ABAJO: a 25 horas del cierre, "queda 1 día", no "quedan 2". */
+      const dias = Math.floor(restante / 86_400_000);
+      const plantilla =
+        dias === 0
+          ? tira.dataset[idioma === "en" ? "hoyEn" : "hoyEs"]
+          : tira.dataset[idioma === "en" ? "diasEn" : "diasEs"];
+      if (!plantilla) return;
+
+      huecos.forEach((h) => {
+        h.textContent = plantilla.replace("{dias}", String(dias));
+      });
+    });
+  }
+
+  pintarDiasAnuncio();
+  window.addEventListener("e180:idioma", pintarDiasAnuncio);
+</script>

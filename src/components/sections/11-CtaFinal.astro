@@ -5,7 +5,11 @@ import Section from "@components/ui/Section.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Button from "@components/ui/Button.astro";
 import LeadForm from "@components/ui/LeadForm";
-import { curso, cta, leadMagnet, garantia, copy } from "@config/curso.config";
+import CintaPrecio from "@components/ui/CintaPrecio.astro";
+import { curso, cta, leadMagnet, garantia, copy, contacto } from "@config/curso.config";
+import Icono from "@components/ui/Icono.astro";
+import { construirTxt } from "@i18n/idioma";
+import { formatMoney, interpolar } from "@i18n/formato";
 
 /**
  * 11 · CTA FINAL — cerrar sin obligar a subir.
@@ -27,6 +31,48 @@ import { curso, cta, leadMagnet, garantia, copy } from "@config/curso.config";
 
 const checkoutPendiente = curso.precio.urlCheckout === "#";
 
+const { precio } = curso;
+
+/** El precio, formateado por Intl en cada idioma. Ni un "$" a mano. */
+const precioActual = construirTxt((l) =>
+  formatMoney(precio.actual, l, precio.moneda),
+);
+
+const textoCuotas = precio.cuotas
+  ? construirTxt((l) =>
+      copy.precio.cuotas[l]
+        .replace("{n}", String(precio.cuotas.numero))
+        .replace("{importe}", formatMoney(precio.cuotas.importe, l, precio.moneda)),
+    )
+  : null;
+
+/**
+ * Las tres razones para no dudar, en la última pantalla.
+ *
+ * Aquí solo estaba la garantía, en un párrafo suelto. Faltaban las otras dos
+ * cosas que frenan en el último momento —"¿y si no me da tiempo?" y "¿tengo que
+ * pagarlo de golpe?"— y las tres respuestas ya existen en el config. Puestas en
+ * fila y con icono se leen de un vistazo; en prosa, no se leen.
+ */
+const tranquilidad = [
+  ...(garantia.activa
+    ? [{ icono: "escudo" as const, texto: garantia.titulo }]
+    : []),
+  { icono: "infinito" as const, texto: copy.anuncios.acceso },
+  ...(precio.cuotas
+    ? [
+        {
+          icono: "actualizar" as const,
+          texto: construirTxt((l) =>
+            interpolar(copy.anuncios.cuotas[l], {
+              cuotas: precio.cuotas.numero,
+            }),
+          ),
+        },
+      ]
+    : []),
+];
+
 /* Idioma de ESTA petición. Las islas de React lo necesitan como prop: en
    el servidor no pueden leerlo del DOM, así que sin esto se renderizarían
    siempre en español aunque la URL pida inglés. */
@@ -43,34 +89,86 @@ const lang = resolverIdiomaServidor(
       <h2 class="text-4xl font-extrabold text-balance text-ink-inverse sm:text-5xl">
         <T v={curso.promesa} />
       </h2>
-      <p class="mx-auto mt-5 max-w-xl text-lg text-pretty text-secondary-200">
-        <T v={curso.promesaApoyo} />
+
+      {/* SE FUE `promesaApoyo`. Son cinco líneas que el visitante ya ha leído
+          palabra por palabra en el hero: repetirlas en el cierre no cierra
+          nada, alarga. Lo que sí hace falta aquí es el PRECIO, que hasta ahora
+          no aparecía en toda la sección donde se decide pagarlo. */}
+      <p class="mt-6 text-5xl font-extrabold tracking-tight text-ink-inverse sm:text-6xl">
+        <T v={precioActual} />
       </p>
+      {
+        textoCuotas && (
+          <p class="mt-2 text-base font-medium text-secondary-200">
+            <T v={textoCuotas} />
+          </p>
+        )
+      }
     </Reveal>
 
     <!-- Salida 1: comprar -->
     <Reveal delay={0.1}>
-      <div class="mt-9">
+      {/* La cabecera de este archivo decía: "si algún día hay fecha de cierre
+          REAL, este es el sitio donde tiene sentido". Ya la hay, y sale del
+          mismo `precio.urgencia.fechaCierre` que las tiras: no hay una segunda
+          fecha que se pueda desincronizar. Sin enlace, porque el botón que
+          lleva a comprar está tres centímetros más abajo. */}
+      <CintaPrecio
+        variante="panel"
+        inverso
+        conEnlace={false}
+        class="mx-auto mt-7 max-w-md"
+      />
+
+      <div class="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
         {/* Mientras no haya pasarela, el botón lleva a la sección de precio en
             lugar de a un href="#" que saltaría al inicio de la página. */}
         <Button
           href={checkoutPendiente ? cta.primario.href : curso.precio.urlCheckout}
           variant="primary"
           size="lg"
+          sobre="oscuro"
           trackId="cierre"
           class="w-full sm:w-auto"
         >
           <T v={cta.primario.texto} />
         </Button>
 
+        {/* El botón de llamar, aquí también: quien llega al final y no compra
+            suele tener UNA duda concreta, y una llamada la resuelve en el
+            momento mientras que un correo la enfría. Solo si hay número. */}
         {
-          garantia.activa && (
-            <p class="mt-4 text-sm text-secondary-200">
-              <T v={copy.cierre.garantiaNota} vars={{ garantia: garantia.titulo }} />
-            </p>
+          contacto.telefono && (
+            <Button
+              href={`tel:${contacto.telefono}`}
+              variant="inverse"
+              size="lg"
+              sobre="oscuro"
+              trackId="cierre-llamada"
+              class="w-full sm:w-auto"
+            >
+              <T v={copy.instructor.llamame} />
+            </Button>
           )
         }
       </div>
+
+      {/* Las tres razones para no dudar, en una línea y con icono. Sustituyen
+          al párrafo suelto de la garantía: dicen lo mismo más lo que faltaba
+          (que el acceso no caduca y que se puede pagar a plazos), y se leen de
+          un vistazo en vez de en una frase. */}
+      <ul class="mt-8 flex flex-wrap items-center justify-center gap-x-7 gap-y-3 text-sm text-secondary-200">
+        {
+          tranquilidad.map((t) => (
+            <li class="flex items-center gap-2">
+              <span aria-hidden="true" class="text-secondary-300">
+                <Icono nombre={t.icono} class="size-5" />
+              </span>
+              <T v={t.texto} />
+            </li>
+          ))
+        }
+      </ul>
     </Reveal>
   </div>
 

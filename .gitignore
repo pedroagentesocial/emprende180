@@ -9,6 +9,14 @@ node_modules/
 # leads capturados en desarrollo (ver src/lib/leads.ts)
 .leads.jsonl
 
+# Originales sin comprimir (vídeo de intro, retratos en bruto).
+# Se quedan en disco para poder volver a exportar, pero NO se versionan: el
+# intro en bruto son 35 MB, y un binario así se queda en el historial de git
+# para siempre y lo baja entero cualquiera que clone. Lo que sí se versiona es
+# la versión comprimida que se publica (public/video/vsl.mp4, 3,6 MB).
+# ⚠️ Guarda una copia fuera del repo: aquí no hay red de seguridad.
+marca-originales/originales-sin-procesar/
+
 # env
 .env
 .env.production

@@ -1,0 +1,221 @@
+---
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import { copy } from "@config/curso.config";
+import type { Testimonio } from "@config/curso.config";
+import { resolverIdiomaServidor } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * BANDA DE TESTIMONIOS — cruza la pantalla sin parar
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Sustituye al carrusel de flechas. Un carrusel espera que alguien decida
+ * pulsar; una banda enseña sola. En una página que se recorre bajando, la
+ * segunda gana: el visitante ve pasar cinco testimonios sin hacer nada.
+ *
+ * ─── SIN JAVASCRIPT PARA MOVERSE ───────────────────────────────────────────
+ *
+ * El movimiento es una animación CSS, no una isla de React. Eso importa más de
+ * lo que parece para algo que "nunca para": una animación CSS la lleva el
+ * compositor, sigue fluida aunque el hilo principal esté ocupado y no cuesta ni
+ * un kilobyte de hidratación. El carrusel anterior era una isla entera.
+ *
+ * El único JavaScript es el botón de pausa, y son diez líneas.
+ *
+ * ─── LA COPIA DUPLICADA NO ES UN ERROR ─────────────────────────────────────
+ *
+ * La lista se pinta DOS veces y la pista se desplaza un -50 % exacto. Así el
+ * fotograma en el que la animación reinicia es idéntico al de salida y no se ve
+ * la costura. La segunda copia va `aria-hidden`: para un lector de pantalla los
+ * testimonios son los que son, no el doble.
+ *
+ * ⚠️ Las dos copias tienen que ser EXACTAMENTE iguales. Si alguien añade una
+ * tarjeta a una y no a la otra, aparece un tirón en cada vuelta.
+ *
+ * ─── SE PUEDE PARAR, Y ES OBLIGATORIO ──────────────────────────────────────
+ *
+ * WCAG 2.2.2 (nivel A) exige que todo lo que se mueve solo más de cinco
+ * segundos se pueda parar. Aquí hay tres formas: el botón, pasar el cursor o
+ * tabular dentro, y `prefers-reduced-motion`, que la apaga entera y convierte
+ * la pista en una fila que se arrastra con el dedo.
+ *
+ * El botón es el que de verdad hace que esto cumpla, porque es el único que
+ * funciona en un celular: ahí no hay cursor que pasar. La banda sigue sin
+ * pararse nunca por su cuenta; lo que hay es un mando para quien lo necesite.
+ *
+ * ─── QUÉ NO PUEDE ENTRAR AQUÍ ──────────────────────────────────────────────
+ *
+ * Ninguna cifra de dinero. Un testimonio que dice cuánto ganó alguien es una
+ * declaración de ingresos: la FTC exige poder documentar que es representativa
+ * de lo que consigue un participante normal, y en un programa de referidos es
+ * por donde más fácil se cae. Ver la cabecera de `testimonios.muestra.ts`.
+ */
+interface Props {
+  items: Testimonio[];
+  class?: string;
+}
+
+const { items, class: className = "" } = Astro.props;
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+/**
+ * Velocidad constante, no duración constante.
+ *
+ * Nueve segundos por tarjeta: lo bastante lento para leer una cita al vuelo y
+ * lo bastante vivo para que no parezca colgado. Con una duración fija, seis
+ * testimonios irían despacio y veinte a toda velocidad.
+ */
+const duracion = `${items.length * 9}s`;
+
+/** Iniciales, para cuando no hay foto. */
+const iniciales = (nombre: string) =>
+  nombre
+    .split(" ")
+    .slice(0, 2)
+    .map((p) => p[0] ?? "")
+    .join("")
+    .toUpperCase();
+---
+
+<div
+  data-banda
+  data-pausada="false"
+  class:list={["relative", className]}
+>
+  {/* `overflow-hidden` recorta la pista sin sacar la banda del ancho de la
+      página: nada de `100vw`, que incluye la barra de scroll y provoca scroll
+      horizontal en toda la web. */}
+  <div data-banda-viewport class="overflow-hidden">
+    <ul
+      data-banda-pista
+      class="flex w-max gap-5 py-1"
+      style={`--duracion:${duracion}`}
+      aria-label={copy.banda.etiqueta[lang]}
+      data-aria-es={copy.banda.etiqueta.es}
+      data-aria-en={copy.banda.etiqueta.en}
+    >
+      {
+        [0, 1].map((copia) =>
+          items.map((t) => (
+            <li
+              class="w-[19rem] shrink-0 sm:w-[22rem]"
+              aria-hidden={copia === 1 ? "true" : undefined}
+              data-banda-clon={copia === 1 ? "" : undefined}
+            >
+              <figure class="flex h-full flex-col rounded-2xl border border-line bg-surface p-6">
+                {t.resultado && (
+                  <p class="mb-4 inline-flex self-start rounded-full bg-secondary-100 px-3 py-1 text-xs font-bold text-secondary-700">
+                    <T v={t.resultado} resaltar />
+                  </p>
+                )}
+
+                <blockquote class="flex-1 text-base text-pretty text-ink">
+                  <T v={t.cita} resaltar />
+                </blockquote>
+
+                <figcaption class="mt-6 flex items-center gap-3 border-t border-line pt-5">
+                  {t.foto ? (
+                    <img
+                      src={t.foto}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      class="size-11 shrink-0 rounded-full object-cover"
+                    />
+                  ) : (
+                    <span
+                      aria-hidden="true"
+                      class="grid size-11 shrink-0 place-items-center rounded-full bg-surface-sunken text-sm font-bold text-ink-muted"
+                    >
+                      {iniciales(t.nombre)}
+                    </span>
+                  )}
+                  <span class="min-w-0">
+                    <span class="block font-semibold text-ink">{t.nombre}</span>
+                    <span class="block text-sm text-ink-subtle">
+                      <T v={t.contexto} resaltar />
+                    </span>
+                  </span>
+                </figcaption>
+              </figure>
+            </li>
+          )),
+        )
+      }
+    </ul>
+  </div>
+
+  {/* El mando de parada. Ver la nota de la cabecera: es lo que hace que esto
+      cumpla WCAG 2.2.2, y el único que sirve en un celular. */}
+  <div class="container-page mt-5 flex justify-end">
+    <button
+      type="button"
+      data-banda-pausa
+      aria-pressed="false"
+      aria-label={copy.banda.pausar[lang]}
+      data-aria-es={copy.banda.pausar.es}
+      data-aria-en={copy.banda.pausar.en}
+      data-etiqueta-pausar-es={copy.banda.pausar.es}
+      data-etiqueta-pausar-en={copy.banda.pausar.en}
+      data-etiqueta-reanudar-es={copy.banda.reanudar.es}
+      data-etiqueta-reanudar-en={copy.banda.reanudar.en}
+      class="inline-grid size-11 place-items-center rounded-full border border-line bg-surface text-ink-muted transition-colors duration-200 hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+    >
+      <Icono nombre="pausa" class="size-4" grosor={2} data-icono-pausa />
+      <Icono nombre="play" class="hidden size-4" grosor={1} data-icono-play />
+    </button>
+  </div>
+</div>
+
+<script>
+  /**
+   * Pausa y reanuda la banda.
+   *
+   * Cambia un atributo del contenedor y el CSS hace el resto
+   * (`animation-play-state`). No se toca el DOM de la pista: parar una
+   * animación CSS por atributo la deja EXACTAMENTE donde estaba, mientras que
+   * cualquier cosa que altere el marcado la reiniciaría desde el principio.
+   */
+  function montarBanda(banda: HTMLElement) {
+    const boton = banda.querySelector<HTMLButtonElement>("[data-banda-pausa]");
+    if (!boton) return;
+
+    const iconoPausa = boton.querySelector<SVGElement>("[data-icono-pausa]");
+    const iconoPlay = boton.querySelector<SVGElement>("[data-icono-play]");
+
+    const pintar = () => {
+      const pausada = banda.dataset.pausada === "true";
+      const idioma = document.documentElement.lang === "en" ? "en" : "es";
+      const clave = pausada
+        ? idioma === "en"
+          ? "etiquetaReanudarEn"
+          : "etiquetaReanudarEs"
+        : idioma === "en"
+          ? "etiquetaPausarEn"
+          : "etiquetaPausarEs";
+
+      const etiqueta = boton.dataset[clave];
+      if (etiqueta) boton.setAttribute("aria-label", etiqueta);
+      boton.setAttribute("aria-pressed", String(pausada));
+      iconoPausa?.classList.toggle("hidden", pausada);
+      iconoPlay?.classList.toggle("hidden", !pausada);
+    };
+
+    boton.addEventListener("click", () => {
+      banda.dataset.pausada = banda.dataset.pausada === "true" ? "false" : "true";
+      pintar();
+    });
+
+    /* Al cambiar de idioma sin recargar hay que reescribir el `aria-label`: lo
+       pone JavaScript, así que el truco de CSS de `<T>` no lo alcanza. */
+    window.addEventListener("e180:idioma", pintar);
+    pintar();
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-banda]").forEach(montarBanda);
+</script>

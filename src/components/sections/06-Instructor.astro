@@ -1,60 +1,136 @@
 ---
-import { resolverIdiomaServidor } from "@i18n/idioma";
 import T from "@components/i18n/T.astro";
 import Section from "@components/ui/Section.astro";
 import Reveal from "@components/motion/Reveal.astro";
-import StaggerList from "@components/motion/StaggerList";
+import Button from "@components/ui/Button.astro";
+import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
 import PlaceholderImage from "@components/placeholder/PlaceholderImage.astro";
-import { instructor, copy } from "@config/curso.config";
-import { MARCA_COMPLETAR } from "@lib/pendientes";
+import { instructor, contacto, copy, cta, aliados } from "@config/curso.config";
+import { logoAliado } from "@lib/assets";
+import { MARCA_COMPLETAR, tienePendiente } from "@lib/pendientes";
 
 /**
+ * ═══════════════════════════════════════════════════════════════════════════
  * 06 · INSTRUCTOR — «¿y tú quién eres para enseñarme esto?»
+ * ═══════════════════════════════════════════════════════════════════════════
  *
  * Llega después del temario a propósito: primero se ve que hay contenido, luego
  * quién lo respalda.
  *
- * Dos decisiones de fondo:
+ * ─── POR QUÉ SE REHÍZO ─────────────────────────────────────────────────────
  *
- *  · Credibilidad con EVIDENCIA, no autoridad genérica. Cada credencial es un
- *    dato verificable (número, fecha, enlace). "Experto reconocido" resta.
- *  · Se dice en voz alta QUÉ NO CUBRE el curso. Contraintuitivo pero funciona:
- *    quien admite sus límites resulta creíble en todo lo demás. Y de paso evita
- *    reembolsos de gente que esperaba otra cosa.
+ * Era la sección más larga de la página: una bio de párrafo entero más TRES
+ * listas de cuatro elementos cada una —credenciales, "lo que enseño bien" y "lo
+ * que no cubre"— apiladas. Doce puntos seguidos, todos del mismo tamaño y con
+ * la misma palomita. Y encima no tenía un solo botón: el visitante llegaba al
+ * punto en el que decide si se fía de la persona y no tenía dónde pulsar.
  *
- * Mientras el nombre siga siendo el placeholder, la sección avisa en vez de
- * fingir que hay un instructor real.
+ * ─── SE FUE "LO QUE ENSEÑO BIEN" ───────────────────────────────────────────
+ *
+ * Los cuatro puntos de `queEnsena` eran los mismos que la sección 03 ya cuenta
+ * en seis: el Ecosistema, reconocer la oportunidad, pedir el referido, ética y
+ * cumplimiento. Repetirlos aquí no añadía credibilidad, añadía scroll. Siguen
+ * en el config por si algún día se separan de los resultados.
+ *
+ * ─── SE QUEDA "LO QUE NO CUBRE" ────────────────────────────────────────────
+ *
+ * Y no se toca. PRODUCT.md dice que la honestidad se usa como herramienta de
+ * venta y que los límites llevan el mismo peso visual que las promesas: quien
+ * admite lo que no hace resulta creíble en todo lo demás, y de paso no vende a
+ * quien esperaba otra cosa (que es un reembolso y una reseña mala). Aquí es la
+ * única lista que sobrevive, y por eso ahora se lee.
+ *
+ * ─── LO GRÁFICO ────────────────────────────────────────────────────────────
+ *
+ *  · La foto pasa a mandar: columna propia y pegajosa mientras se lee el resto.
+ *  · Las credenciales dejan de ser una lista con palomitas y pasan a ser
+ *    tarjetas con icono.
+ *  · Entra el logotipo de su otra empresa. No es un anuncio: que la persona que
+ *    da el curso dirija además un negocio real del sector es exactamente la
+ *    credencial que esta sección tiene que demostrar, y un logotipo lo dice más
+ *    rápido que una frase.
+ *
+ * ─── LOS BOTONES ───────────────────────────────────────────────────────────
+ *
+ * Dos siempre: entrar al curso y escribirle. El de WhatsApp aparece SOLO si
+ * `contacto.whatsapp` tiene número; hoy está vacío, así que no se pinta. Un
+ * botón de llamar que no lleva a ningún sitio es peor que no tenerlo.
  */
 
 /* El nombre es un dato, no un texto traducible: si sigue siendo el de
    ejemplo, la sección lo avisa en pantalla en vez de fingir un instructor. */
 const sinRellenar = instructor.nombre.includes(MARCA_COMPLETAR);
-const credenciales = instructor.credenciales.map((c) => ({ texto: c.dato }));
-const ensena = instructor.queEnsena.map((texto) => ({ texto }));
-const noCubre = instructor.queNoCubre.map((texto) => ({ texto }));
 
-/* Idioma de ESTA petición. Las islas de React lo necesitan como prop: en
-   el servidor no pueden leerlo del DOM, así que sin esto se renderizarían
-   siempre en español aunque la URL pida inglés. */
-const lang = resolverIdiomaServidor(
-  Astro.url,
-  Astro.request.headers.get("accept-language"),
+/** Un icono por credencial, emparejado por posición. */
+const ICONOS: NombreIcono[] = ["brujula", "certificado", "escudo", "diana"];
+
+/**
+ * Las credenciales que ya son un hecho, separadas de las que faltan.
+ *
+ * Las confirmadas se pintan como tarjetas; la pendiente, aparte y en ámbar.
+ * Mezcladas, un `[COMPLETAR:]` se lee como una credencial más y acaba
+ * publicándose sin que nadie lo note.
+ */
+const credenciales = instructor.credenciales.filter((c) => !tienePendiente(c.dato));
+const credencialesPendientes = instructor.credenciales.filter((c) =>
+  tienePendiente(c.dato),
 );
 
+const noCubre = instructor.queNoCubre;
+
+/** El logotipo de su otra empresa, si está. Ver `aliados` en el config. */
+const otraMarca = aliados.marcas.find((m) => m.logo === "senordelascasas");
+const logoOtraMarca = otraMarca ? logoAliado(otraMarca.logo) : null;
+
+/** WhatsApp solo si hay número de verdad. */
+const urlWhatsapp = contacto.whatsapp
+  ? `https://wa.me/${contacto.whatsapp}?text=${encodeURIComponent(contacto.whatsappMensaje.es)}`
+  : null;
 ---
 
 <Section id="instructor" ariaLabel={copy.instructor.aria}>
-  <div class="grid items-start gap-10 md:grid-cols-[minmax(0,20rem)_1fr] md:gap-14">
-    <!-- Foto -->
+  <div class="grid items-start gap-10 lg:grid-cols-[minmax(0,22rem)_1fr] lg:gap-16">
+    <!-- ─── Foto + identidad ─────────────────────────────────────────────── -->
     <Reveal>
-      <div class="md:sticky md:top-24">
+      <div class="lg:sticky lg:top-8">
         <PlaceholderImage
           label={copy.placeholders.fotoInstructor}
           medidas={copy.placeholders.fotoInstructorDetalle}
-          ruta="/imagenes/instructor/instructor.webp"
+          ruta={instructor.foto}
           ratio="4/5"
           class="rounded-2xl"
         />
+
+        {/* El logotipo de su otra empresa, debajo de la foto. Que quien firma
+            el curso dirija además un negocio real del sector es LA credencial
+            de esta sección, y el logotipo lo dice antes que cualquier frase. */}
+        {
+          logoOtraMarca && otraMarca && (
+            <div class="mt-5 rounded-2xl border border-line bg-surface-muted px-5 py-4">
+              <p class="text-[0.7rem] font-bold uppercase tracking-[0.12em] text-ink-subtle">
+                <T v={copy.instructor.tambien} />
+              </p>
+              <a
+                href={otraMarca.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-track="instructor-otra-marca"
+                class="mt-3 inline-flex min-h-11 items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              >
+                <img
+                  src={logoOtraMarca}
+                  alt={otraMarca.nombre}
+                  loading="lazy"
+                  decoding="async"
+                  class="h-8 w-auto object-contain"
+                />
+              </a>
+              <p class="mt-1 text-xs text-ink-subtle">
+                <T v={otraMarca.rubro} />
+              </p>
+            </div>
+          )
+        }
       </div>
     </Reveal>
 
@@ -63,55 +139,157 @@ const lang = resolverIdiomaServidor(
         <p class="text-xs font-bold uppercase tracking-[0.16em] text-ink-brand">
           <T v={copy.instructor.kicker} />
         </p>
-        <h2 class="mt-3 text-3xl font-bold text-balance text-ink sm:text-4xl">
+        <h2 class="mt-3 text-4xl font-extrabold text-balance text-ink sm:text-5xl">
           {instructor.nombre}
         </h2>
-        <p class="mt-2 text-lg font-medium text-ink-brand"><T v={instructor.rol} resaltar /></p>
-        <p class="mt-5 text-lg text-pretty text-ink-muted"><T v={instructor.bio} resaltar /></p>
+        <p class="mt-2 text-lg font-medium text-ink-brand">
+          <T v={instructor.rol} resaltar />
+        </p>
+        <p class="mt-6 max-w-2xl text-lg text-pretty text-ink-muted">
+          <T v={instructor.bio} resaltar />
+        </p>
       </Reveal>
 
-      <!-- Credibilidad con evidencia -->
-      <Reveal delay={0.14}>
-        <div class="mt-8 rounded-2xl border border-line bg-surface-muted p-6">
-          <h3 class="text-sm font-bold uppercase tracking-wider text-ink-subtle">
-            <T v={copy.instructor.credencialesTitulo} />
-          </h3>
-          <div class="mt-4">
-            <StaggerList client:visible lang={lang} items={credenciales} variante="check" />
+      {/* ─── Credenciales, como tarjetas ────────────────────────────────────
+          Eran una lista de cuatro líneas con palomita dentro de una caja gris.
+          En tarjetas con icono se escanean, que es lo único que se hace con
+          una lista de credenciales. */}
+      {
+        credenciales.length > 0 && (
+          <Reveal delay={0.14}>
+            <ul class="mt-10 grid gap-4 sm:grid-cols-3">
+              {credenciales.map((c, i) => (
+                <li class="rounded-2xl border border-line bg-surface-muted p-5">
+                  <Icono
+                    nombre={ICONOS[i] ?? "check"}
+                    class="size-7 text-secondary-600"
+                  />
+                  <p class="mt-3 text-sm font-semibold text-pretty text-ink">
+                    <T v={c.dato} resaltar />
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </Reveal>
+        )
+      }
+
+      {/* ─── Lo que NO cubre ────────────────────────────────────────────────
+          La única lista que sobrevive, y va sin caja para que no compita con
+          las tarjetas de arriba. Ver la nota de la cabecera: esto no se
+          recorta. */}
+      {/* Se rediseñó, no se recortó. Ver la nota de `noCubreTitulo` en el
+          config: cuatro aspas ROJAS seguidas se leen como una lista de errores
+          del producto, cuando lo que dicen es justo lo contrario —que aquí se
+          juega limpio—. Ahora van en una caja tranquila, con un guion neutro en
+          vez del aspa y el color de la marca en el título. */}
+      <Reveal delay={0.2}>
+        <div class="mt-10 rounded-2xl border border-line bg-surface-muted p-6 sm:p-7">
+          <div class="flex items-start gap-3">
+            <span aria-hidden="true" class="marca-linea text-secondary-600">
+              <Icono nombre="escudo" class="size-5" />
+            </span>
+            <div class="min-w-0">
+              <h3 class="text-base font-bold text-ink">
+                <T v={copy.instructor.noCubreTitulo} />
+              </h3>
+              <p class="mt-1 text-sm text-ink-subtle">
+                <T v={copy.instructor.noCubreNota} />
+              </p>
+            </div>
           </div>
+
+          <ul class="mt-5 grid gap-x-10 gap-y-2.5 border-t border-line pt-5 text-sm sm:grid-cols-2">
+            {
+              noCubre.map((item) => (
+                <li class="flex items-start gap-2.5">
+                  {/* Un guion, no un aspa: marca el límite sin dramatizarlo. */}
+                  <span
+                    aria-hidden="true"
+                    class="marca-linea text-ink-subtle"
+                  >
+                    <span class="block h-px w-3 bg-current" />
+                  </span>
+                  <span class="text-pretty text-ink-muted">
+                    <T v={item} />
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
         </div>
       </Reveal>
 
-      <!-- Honestidad: qué enseña y qué no -->
-      <div class="mt-8 grid gap-6 sm:grid-cols-2">
-        <Reveal delay={0.18}>
-          <div>
-            <h3 class="text-base font-bold text-ink"><T v={copy.instructor.ensenaTitulo} /></h3>
-            <div class="mt-4">
-              <StaggerList client:visible lang={lang} items={ensena} variante="check" />
-            </div>
-          </div>
-        </Reveal>
+      {/* ─── La acción ──────────────────────────────────────────────────────
+          Este es el punto en el que se decide si uno se fía de la persona, y
+          hasta ahora no había dónde pulsar. El de WhatsApp solo existe si hay
+          número en el config. */}
+      <Reveal delay={0.26}>
+        <div class="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+          <Button
+            href={cta.primario.href}
+            variant="primary"
+            size="lg"
+            trackId="instructor"
+            class="w-full sm:w-auto"
+          >
+            <T v={cta.primario.texto} />
+          </Button>
 
-        <Reveal delay={0.24}>
-          <div>
-            <h3 class="text-base font-bold text-ink"><T v={copy.instructor.noCubreTitulo} /></h3>
-            <div class="mt-4">
-              <StaggerList client:visible lang={lang} items={noCubre} variante="cross" />
-            </div>
-            <p class="mt-4 text-sm text-ink-subtle">
-              <T v={copy.instructor.noCubreNota} />
-            </p>
-          </div>
-        </Reveal>
-      </div>
+          {/* Solo si hay número. Un botón de llamar que no llama es peor que
+              no tenerlo: se pulsa, no pasa nada, y se pierde la confianza justo
+              en la sección que existe para ganarla. */}
+          {
+            contacto.telefono && (
+              <Button
+                href={`tel:${contacto.telefono}`}
+                variant="secondary"
+                size="lg"
+                trackId="instructor-llamada"
+                class="w-full sm:w-auto"
+              >
+                <T v={copy.instructor.llamame} />
+              </Button>
+            )
+          }
+
+          {
+            urlWhatsapp && (
+              <Button
+                href={urlWhatsapp}
+                variant="secondary"
+                size="lg"
+                trackId="instructor-whatsapp"
+                class="w-full sm:w-auto"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <T v={copy.instructor.whatsapp} />
+              </Button>
+            )
+          }
+        </div>
+      </Reveal>
+
+      {/* Los HECHOS que siguen sin rellenar, aparte y en ámbar. */}
+      {
+        credencialesPendientes.length > 0 && (
+          <Reveal delay={0.3}>
+            <ul class="mt-8 grid gap-2 rounded-xl border-2 border-dashed border-line-strong bg-surface-muted p-5 text-sm">
+              {credencialesPendientes.map((c) => (
+                <li class="text-pretty text-ink-muted">
+                  <T v={c.dato} resaltar />
+                </li>
+              ))}
+            </ul>
+          </Reveal>
+        )
+      }
 
       {
         sinRellenar && (
-          <p class="mt-8 rounded-lg border-2 border-dashed border-line-strong bg-surface-muted px-4 py-3 text-sm font-medium text-ink-muted">
-            ⚠ Datos del instructor todavía sin rellenar. Buscar
-            <code class="font-mono">instructor</code> en
-            <code class="font-mono">src/config/curso.config.ts</code>.
+          <p class="mt-6 rounded-lg border-2 border-dashed border-line-strong bg-surface-muted px-4 py-3 text-sm font-medium text-ink-muted">
+            ⚠ <T v={copy.instructor.avisoPlaceholder} />
           </p>
         )
       }

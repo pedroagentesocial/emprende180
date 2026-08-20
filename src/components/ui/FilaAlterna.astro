@@ -1,0 +1,53 @@
+---
+/**
+ * Fila de dos columnas: texto a un lado, visual al otro.
+ *
+ * Es el ritmo clásico de una landing larga: una fila con el visual a la
+ * derecha, la siguiente con el visual a la izquierda. Alternar hace que el ojo
+ * tenga que volver al principio de línea en sitios distintos, y eso es lo que
+ * impide que tres bloques seguidos se lean como el mismo bloque repetido.
+ *
+ * EL ORDEN EN MÓVIL NO SE ALTERNA, Y ES DELIBERADO. Por debajo de `lg` las dos
+ * columnas se apilan y SIEMPRE sale primero el texto. La alternancia en una
+ * sola columna no se percibe como ritmo (no hay dos lados que comparar), pero
+ * sí tiene un coste real: en la mitad de las filas el visitante se encontraría
+ * un dibujo antes de saber de qué le hablan. El orden lo cambia `lg:order-*`,
+ * que solo existe cuando hay dos columnas de verdad.
+ *
+ * Los dos slots son obligatorios en la práctica: sin visual, usa un contenedor
+ * normal, no esto.
+ */
+interface Props {
+  /** `true` pone el visual a la IZQUIERDA (solo de `lg` para arriba). */
+  invertir?: boolean;
+  /**
+   * Alineación vertical de las dos columnas. `centro` para bloques de alturas
+   * parecidas; `arriba` cuando una columna es mucho más alta que la otra y
+   * centrarla dejaría el visual flotando en mitad de la nada.
+   */
+  alinear?: "centro" | "arriba";
+  class?: string;
+}
+
+const {
+  invertir = false,
+  alinear = "centro",
+  class: className = "",
+} = Astro.props;
+---
+
+<div
+  class:list={[
+    "grid gap-10 lg:grid-cols-2 lg:gap-16",
+    alinear === "centro" ? "items-center" : "items-start",
+    className,
+  ]}
+>
+  <div class:list={[invertir && "lg:order-2"]}>
+    <slot name="texto" />
+  </div>
+
+  <div class:list={[invertir && "lg:order-1"]}>
+    <slot name="visual" />
+  </div>
+</div>

@@ -1,34 +1,73 @@
 ---
-import { resolverIdiomaServidor } from "@i18n/idioma";
 import T from "@components/i18n/T.astro";
 import Section from "@components/ui/Section.astro";
 import SectionHeading from "@components/ui/SectionHeading.astro";
 import Reveal from "@components/motion/Reveal.astro";
-import TemarioAcordeon from "@components/motion/TemarioAcordeon";
-import { temario, curso, copy, proximosCursos } from "@config/curso.config";
+import Button from "@components/ui/Button.astro";
+import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
+import CintaPrecio from "@components/ui/CintaPrecio.astro";
+import { tienePendiente } from "@lib/pendientes";
+import { temario, curso, copy, contacto, cta } from "@config/curso.config";
 
 /**
+ * ═══════════════════════════════════════════════════════════════════════════
  * 05 · TEMARIO — «¿qué incluye exactamente?»
+ * ═══════════════════════════════════════════════════════════════════════════
  *
  * Después de la transformación (sección 3), aquí se demuestra que hay un plan
  * detrás y no una promesa suelta. Su trabajo es reducir incertidumbre.
  *
- * Cada módulo muestra el título Y la línea de "qué logras al terminarlo", sin
- * necesidad de desplegar: un temario que lista temas vende menos que uno que
- * lista capacidades.
- *
  * Sin duraciones: ver la regla 2 de curso.config.ts. La página no anuncia
  * cuánto dura el curso.
+ *
+ * ─── DE ACORDEÓN A REJILLA DE CUATRO ───────────────────────────────────────
+ *
+ * Era `TemarioAcordeon`, una isla de React con diez filas apiladas. Ahora son
+ * diez tarjetas en cuatro columnas, que con diez elementos caen solas en 4+4+2.
+ *
+ * Se gana lo evidente: los diez videos se ven de un vistazo en tres filas en
+ * vez de en diez, que es lo que hace que un temario se lea como un plan y no
+ * como una lista de deberes.
+ *
+ * Y se gana algo menos evidente: esto ya no necesita JavaScript. El acordeón
+ * existía para desplegar `lecciones`, que está VACÍO a propósito (ver el
+ * comentario de `temario` en el config: los puntos de dentro de cada video son
+ * un HECHO que no se puede inventar). O sea que era una isla de React que
+ * hidrataba para no desplegar nada.
+ *
+ * ⚠️ `TemarioAcordeon.tsx` NO se ha borrado. El día que el cliente pase el
+ * guion de cada video y `lecciones` deje de estar vacío, el acordeón vuelve a
+ * ser el componente correcto y esta rejilla, no.
+ *
+ * ─── "PRÓXIMAMENTE" SE FUE DE AQUÍ ─────────────────────────────────────────
+ *
+ * El bloque de `proximosCursos` vive ahora al final de la sección de preguntas.
+ * Es su sitio: "¿y después de Fundamentos, qué?" es literalmente una pregunta
+ * frecuente, y ahí no le roba atención al curso que sí se vende. En medio del
+ * temario hacía justo lo que el config prohíbe — anunciar algo que todavía no
+ * existe en el mismo bloque donde se demuestra lo que sí existe.
+ *
+ * ─── SE FUE LA LÍNEA DE «QUÉ LOGRAS» ───────────────────────────────────────
+ *
+ * Cada fila mostraba además `logras`, unas 25 palabras por video: 250 palabras
+ * en total. En cuatro columnas no caben, y sobre todo REPITEN: la sección 03 es
+ * entera "qué sabrás hacer al terminar", con seis resultados escritos para eso.
+ * Aquí basta el título del video, que es el dato que el visitante viene a
+ * buscar. `logras` sigue en el config, intacto.
  */
 
-/* Idioma de ESTA petición. Las islas de React lo necesitan como prop: en
-   el servidor no pueden leerlo del DOM, así que sin esto se renderizarían
-   siempre en español aunque la URL pida inglés. */
-const lang = resolverIdiomaServidor(
-  Astro.url,
-  Astro.request.headers.get("accept-language"),
-);
+/** Un icono por cada extra, emparejado por posición con `copy.temario.extras`. */
+const ICONOS_EXTRAS: NombreIcono[] = ["certificado", "infinito", "actualizar"];
 
+/**
+ * Los HECHOS de `formato.incluye` que siguen sin decidirse.
+ *
+ * Se separan de las tres cosas que sí se pueden prometer porque no son lo
+ * mismo: una característica confirmada vende, y un hueco por rellenar es un
+ * recordatorio para quien edita el sitio. Mezclados en la misma lista, un
+ * `[COMPLETAR:]` acaba publicado sin que nadie lo note.
+ */
+const pendientes = curso.formato.incluye.filter(tienePendiente);
 ---
 
 <Section id="temario" tono="muted" ariaLabel={copy.temario.aria}>
@@ -39,28 +78,80 @@ const lang = resolverIdiomaServidor(
     entradilla={copy.temario.entradilla}
   />
 
-  <TemarioAcordeon client:visible lang={lang} modulos={temario} badges={copy.temarioBadges} />
+  {/* 4 columnas · 10 videos = 4 + 4 + 2.
+      ES FLEX Y NO GRID, y ese es todo el motivo: con `grid-cols-4` la última
+      fila se pega a la izquierda y deja dos huecos a la derecha, que se leen
+      como si faltaran dos videos. `flex-wrap` + `justify-center` centra la
+      última fila, así que el 4+4+2 queda equilibrado.
+      Los anchos llevan restado su parte del hueco: con `gap-4` (16 px) y cuatro
+      columnas hay 3 huecos que repartir entre 4 tarjetas, o sea 12 px cada una;
+      con dos columnas, 8 px. */}
+  <ol class="mt-10 flex flex-wrap justify-center gap-4">
+    {
+      temario.map((m, i) => (
+        <Reveal
+          as="li"
+          delay={Math.min(i, 5) * 0.04}
+          class="w-full sm:w-[calc(50%-0.5rem)] lg:w-[calc(25%-0.75rem)]"
+        >
+          <article class="flex h-full flex-col rounded-2xl border border-line bg-surface p-5">
+            <span
+              aria-hidden="true"
+              class="text-2xl font-extrabold leading-none tracking-tight text-secondary-600"
+            >
+              {String(m.numero).padStart(2, "0")}
+            </span>
 
-  <Reveal delay={0.1}>
-    <div class="mx-auto mt-12 max-w-read rounded-2xl border border-line bg-surface p-7">
-      <h3 class="text-lg font-bold text-ink"><T v={copy.temario.extrasTitulo} /></h3>
-      <ul class="mt-5 grid gap-3 sm:grid-cols-2">
-        {
-          curso.formato.incluye.map((item) => (
-            <li class="flex gap-3 text-base text-ink-muted">
-              <span
-                aria-hidden="true"
-                class="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-secondary-100 text-secondary-700"
-              >
-                <svg viewBox="0 0 24 24" fill="none" class="size-3.5" stroke-width="3.5">
-                  <path
-                    d="M20 6 9 17l-5-5"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"></path>
-                </svg>
+            <h3 class="mt-3 flex-1 text-base font-bold text-balance text-ink">
+              <T v={m.titulo} />
+            </h3>
+
+            {/* Video + Quiz. Van en cada tarjeta porque la promesa del curso es
+                justo esa: los diez llevan quiz, y de ahí sale la certificación. */}
+            <div class="mt-4 flex flex-wrap items-center gap-1.5">
+              <span class="inline-flex items-center gap-1 rounded-full bg-surface-muted px-2 py-1 text-[0.7rem] font-bold text-ink-muted">
+                <Icono nombre="play" class="size-3" grosor={1} />
+                <T v={copy.temarioBadges.video} />
               </span>
-              <T v={item} />
+              {curso.formato.conQuiz && (
+                <span class="inline-flex items-center gap-1 rounded-full bg-secondary-100 px-2 py-1 text-[0.7rem] font-bold text-secondary-700">
+                  <Icono nombre="check" class="size-3" grosor={3} />
+                  <T v={copy.temarioBadges.quiz} />
+                </span>
+              )}
+            </div>
+          </article>
+        </Reveal>
+      ))
+    }
+  </ol>
+
+  {/* ─── Y ADEMÁS · tres cosas, tres iconos ────────────────────────────────
+      Esto era la lista de las seis frases de `formato.incluye` a dos columnas y
+      a cuerpo pequeño: 90 palabras que casi nadie lee, y cuatro de las seis ya
+      dichas dos veces más arriba (la franja del hero y la rejilla de diez
+      videos). Ahora son tres iconos grandes y cuatro palabras cada uno. */}
+  <Reveal delay={0.1}>
+    <div class="mt-14 border-t border-line pt-10">
+      <h3 class="text-center text-xs font-bold uppercase tracking-[0.16em] text-ink-subtle">
+        <T v={copy.temario.extrasTitulo} />
+      </h3>
+
+      <ul class="mx-auto mt-8 grid max-w-3xl gap-8 text-center sm:grid-cols-3">
+        {
+          copy.temario.extras.map((e, i) => (
+            <li>
+              <Icono
+                nombre={ICONOS_EXTRAS[i] ?? "check"}
+                class="mx-auto size-10 text-secondary-600"
+                grosor={1.5}
+              />
+              <p class="mt-4 text-base font-bold text-balance text-ink">
+                <T v={e.titulo} />
+              </p>
+              <p class="mt-1 text-sm text-pretty text-ink-subtle">
+                <T v={e.nota} />
+              </p>
             </li>
           ))
         }
@@ -68,32 +159,21 @@ const lang = resolverIdiomaServidor(
     </div>
   </Reveal>
 
-  {/* Lo que viene después. Deliberadamente apagado y sin CTA: si compite con el
-      curso que sí se vende, la página empieza a vender algo que no existe y la
-      gente espera. Ver el comentario de `proximosCursos` en el config. */}
+  {/* Los HECHOS que siguen sin decidirse. No son una característica del curso,
+      así que no van con las tres de arriba: van aparte, en ámbar, para que el
+      cliente los vea cada vez que abra la página. Cuando se rellenen en el
+      config, este bloque desaparece solo. */}
   {
-    proximosCursos.length > 0 && (
+    pendientes.length > 0 && (
       <Reveal delay={0.15}>
-        <div class="mx-auto mt-12 max-w-read">
-          <h3 class="text-xl font-bold text-ink">
-            <T v={copy.proximos.titulo} />
-          </h3>
-          <p class="mt-3 text-base text-ink-muted">
-            <T v={copy.proximos.entradilla} />
+        <div class="mx-auto mt-10 max-w-read rounded-xl border-2 border-dashed border-line-strong bg-surface p-5">
+          <p class="text-xs font-bold uppercase tracking-[0.12em] text-warning-700">
+            ⚠ <T v={copy.temario.pendientesTitulo} />
           </p>
-
-          <ul class="mt-6 grid gap-4 sm:grid-cols-2">
-            {proximosCursos.map((c) => (
-              <li class="rounded-2xl border border-dashed border-line bg-surface-muted/60 p-5">
-                <span class="inline-flex items-center rounded-full bg-surface px-2.5 py-1 text-xs font-bold tracking-wide text-ink-subtle uppercase">
-                  <T v={copy.proximos.badge} />
-                </span>
-                <p class="mt-3 text-base font-bold text-balance text-ink-muted">
-                  <T v={c.titulo} resaltar />
-                </p>
-                <p class="mt-2 text-sm text-pretty text-ink-subtle">
-                  <T v={c.resumen} resaltar />
-                </p>
+          <ul class="mt-3 grid gap-2 text-sm">
+            {pendientes.map((item) => (
+              <li class="text-pretty text-ink-muted">
+                <T v={item} resaltar />
               </li>
             ))}
           </ul>
@@ -101,4 +181,51 @@ const lang = resolverIdiomaServidor(
       </Reveal>
     )
   }
+
+  {/* ─── CIERRE: la invitación y las dos salidas ─────────────────────────────
+      Quien llega aquí ha visto los diez videos y todo lo que entra. Las dos
+      cosas que puede querer hacer son entrar o preguntar, y hasta ahora no
+      tenía dónde pulsar ninguna de las dos: solo había una cinta con un enlace.
+
+      "Tengo una duda" abre el correo con el asunto puesto. Es la única vía de
+      pregunta que existe hoy en el sitio (la misma que ofrece la sección de
+      preguntas); el formulario de la página es el del mini-curso y pedir un
+      email para responder una duda es una fricción que no hace falta. */}
+  <Reveal delay={0.1}>
+    <div class="mx-auto mt-12 max-w-read text-center">
+      <p class="text-lg font-semibold text-balance text-ink">
+        <T v={copy.temario.cierre} />
+      </p>
+
+      <div
+        class="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4"
+      >
+        <Button
+          href={cta.primario.href}
+          variant="primary"
+          size="lg"
+          trackId="temario"
+          class="w-full sm:w-auto"
+        >
+          <T v={cta.primario.texto} />
+        </Button>
+
+        <Button
+          href={`mailto:${contacto.email}?subject=${encodeURIComponent(curso.nombre.es)}`}
+          variant="secondary"
+          size="lg"
+          trackId="temario-duda"
+          class="w-full sm:w-auto"
+        >
+          <T v={copy.temario.preguntar} />
+        </Button>
+      </div>
+    </div>
+  </Reveal>
+
+  {/* Puente al precio: el visitante acaba de ver TODO lo que incluye y la
+      siguiente pregunta es cuánto vale. */}
+  <Reveal>
+    <CintaPrecio variante="panel" class="mx-auto mt-12 max-w-read" />
+  </Reveal>
 </Section>

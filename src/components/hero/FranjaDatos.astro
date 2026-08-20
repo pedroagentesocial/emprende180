@@ -1,0 +1,111 @@
+---
+import T from "@components/i18n/T.astro";
+import { curso, copy } from "@config/curso.config";
+
+/**
+ * Franja de datos que cierra el hero.
+ *
+ * QUÉ HACE AQUÍ. El titular promete un ESTADO ("conviértete en Embajador").
+ * Esta franja responde a la pregunta que viene justo después: "ya, ¿pero qué me
+ * estás vendiendo?". Cuatro hechos comprobables, sin un solo adjetivo. Ninguno
+ * es una cifra de resultados ni de alumnos: eso vive en `cifras`, está marcado
+ * como pendiente y no sale hasta que sea verificable.
+ *
+ * ─── CÓMO SE ALINEA EL ICONO CON EL TEXTO ──────────────────────────────────
+ *
+ * Esto es lo único delicado del componente, así que va explicado.
+ *
+ * La primera versión ponía los cuatro datos con `items-baseline` y un número
+ * grande delante de dos de ellos. Se veía mal por dos motivos a la vez:
+ *
+ *   · Dos elementos llevaban un "10" de 30 px y los otros dos una palomita de
+ *     14 px. Cuatro cosas que deberían leerse como una lista se leían como dos
+ *     sistemas distintos pegados.
+ *   · "Certificación de Embajador" ocupa DOS líneas y los demás una. Con el
+ *     icono centrado sobre el bloque entero, en el de dos líneas caía a media
+ *     altura, o sea por debajo de la primera línea. Los cuatro iconos acababan
+ *     a cuatro alturas distintas y la franja se deshacía.
+ *
+ * Y había un tercer problema, que era de LENGUAJE y no de maquetación: dos
+ * datos llevaban cantidad ("10 videos del curso", "10 quizzes de validación") y
+ * los otros dos no ("Certificación de Embajador", "Acceso de por vida"). Leídos
+ * en fila parecían dos datos y dos sobras. Ahora los cuatro son la misma frase
+ * —algo que te llevas— y por eso los cuatro llevan la misma palomita y ninguno
+ * lleva número suelto delante. El texto vive en `copy.heroDatos`.
+ *
+ * La solución no es un `mt-0.5` a ojo, que es lo que se suele hacer y lo que se
+ * rompe en cuanto cambia el cuerpo del texto o el idioma. El icono va dentro de
+ * un contenedor cuya ALTURA ES EXACTAMENTE LA INTERLÍNEA del texto (`h-6` con
+ * `leading-6`, `h-7` con `leading-7`), y se centra dentro de él. Así el icono
+ * queda centrado en la PRIMERA LÍNEA siempre: dé el texto una línea o tres, en
+ * español o en inglés, sin ningún número mágico que mantener.
+ *
+ * Los números siguen ahí, en negrita y en teal, pero DENTRO del texto. Además
+ * de arreglar la alineación quita una confusión: dos "10" enormes seguidos
+ * parecían veinte cosas, cuando los diez quizzes son los de los diez videos.
+ */
+import { construirTxt } from "@i18n/idioma";
+import { interpolar } from "@i18n/formato";
+
+const { videos, conQuiz, conCertificado } = curso.formato;
+
+/* `{n}` sale del config, no del texto: si el curso pasa a tener doce videos,
+   la franja lo dice sola y en los dos idiomas. */
+const datos = [
+  construirTxt((l) => interpolar(copy.heroDatos.videos[l], { n: videos })),
+  ...(conQuiz ? [copy.heroDatos.quizzes] : []),
+  ...(conCertificado ? [copy.heroDatos.certificacion] : []),
+  copy.heroDatos.acceso,
+];
+---
+
+{/* `items-start`: los cuatro arrancan arriba, así sus primeras líneas quedan a
+    la misma altura aunque uno ocupe dos líneas y otro una. Con el alineado por
+    defecto (`stretch`) daba igual, pero dejarlo explícito evita que un cambio
+    de altura en un dato mueva a sus vecinos. */}
+{/* `lg:grid-cols-4` y no `sm:`: a 640 px cuatro columnas dejan unos 130 px por
+    dato y "Certificación de Embajador" se parte en tres líneas. En dos columnas
+    respira, y la fila de cuatro entra a partir de 1024, donde sí caben. */}
+<ul class="grid grid-cols-1 items-start gap-x-4 gap-y-4 sm:grid-cols-2 sm:gap-y-5 lg:grid-cols-4 lg:gap-x-0">
+  {
+    datos.map((texto, i) => (
+      <li
+        class:list={[
+          /* El tamaño y la interlínea van en la FILA, no solo en el texto: la
+             caja de la marca los hereda de aquí para calcular su `1lh`. */
+          "flex items-start gap-2.5 text-sm leading-6 sm:text-base sm:leading-7",
+          /* Los filetes solo en la fila de cuatro: en una o dos columnas no
+             separarían nada, cortarían por la mitad. */
+          i > 0 && "lg:border-l lg:border-secondary-200/25 lg:pl-5",
+          i < datos.length - 1 && "lg:pr-5",
+        ]}
+      >
+        {/* `marca-linea` centra el icono en la primera línea del texto. Ver la
+            nota de la cabecera y la definición en global.css. */}
+        <span aria-hidden="true" class="marca-linea">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            class="size-[1.05rem] text-secondary-300 sm:size-5"
+            stroke-width="2.5"
+          >
+            <path
+              d="m4.5 12.5 5 5 10-11"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </span>
+
+        {/* `text-balance` y no `pretty`: son etiquetas de dos o tres palabras,
+            y cuando una parte en dos líneas queda mejor repartida ("Certificación
+            / de Embajador") que con una línea llena y una huérfana. `pretty` está
+            pensado para párrafos, que aquí no hay. */}
+        <span class="text-balance text-secondary-100">
+          <T v={texto} />
+        </span>
+      </li>
+    ))
+  }
+</ul>

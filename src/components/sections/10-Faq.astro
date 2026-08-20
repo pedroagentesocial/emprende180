@@ -4,7 +4,7 @@ import Section from "@components/ui/Section.astro";
 import SectionHeading from "@components/ui/SectionHeading.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Accordion from "@components/ui/Accordion";
-import { faqs, contacto, copy } from "@config/curso.config";
+import { faqs, contacto, copy, proximosCursos } from "@config/curso.config";
 import { resolverIdiomaServidor } from "@i18n/idioma";
 import { faltaPorRellenar } from "@lib/pendientes";
 import { LOCALES } from "@i18n/idioma";
@@ -57,6 +57,44 @@ const schemaFaq = hayPlaceholders
     <Reveal>
       <Accordion client:visible lang={lang} items={faqs} />
     </Reveal>
+
+    {/* ─── Y DESPUÉS DE FUNDAMENTOS ──────────────────────────────────────────
+        Venía del medio del temario, donde anunciaba algo que todavía no existe
+        justo en el bloque donde se demuestra lo que sí existe. Aquí es su sitio:
+        "¿y después, qué?" es literalmente una pregunta frecuente, y en una
+        sección de trámite no le roba atención al curso que sí se vende.
+
+        Sigue apagado y sin CTA, como manda el comentario de `proximosCursos`.
+        Y en dos líneas, no en dos tarjetas: la insignia, el título y la
+        entradilla decían "Próximamente" tres veces. */}
+    {
+      proximosCursos.length > 0 && (
+        <Reveal delay={0.08}>
+          <div class="mt-10 border-t border-line pt-8">
+            <h3 class="text-base font-bold text-ink">
+              <T v={copy.proximos.titulo} />
+            </h3>
+            <p class="mt-2 text-sm text-pretty text-ink-subtle">
+              <T v={copy.proximos.entradilla} />
+            </p>
+            <ul class="mt-4 grid gap-2.5 text-sm">
+              {proximosCursos.map((c) => (
+                <li class="flex items-start gap-2.5">
+                  <span aria-hidden="true" class="marca-linea shrink-0">
+                    <span class="rounded-full border border-dashed border-line-strong px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-ink-subtle">
+                      <T v={copy.proximos.badge} />
+                    </span>
+                  </span>
+                  <span class="text-ink-muted">
+                    <T v={c.titulo} resaltar />
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Reveal>
+      )
+    }
 
     <Reveal delay={0.1}>
       <p class="mt-8 text-center text-base text-ink-muted">

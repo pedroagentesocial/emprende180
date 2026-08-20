@@ -3,7 +3,7 @@ import T from "@components/i18n/T.astro";
 import Section from "@components/ui/Section.astro";
 import SectionHeading from "@components/ui/SectionHeading.astro";
 import Reveal from "@components/motion/Reveal.astro";
-import { TestimoniosCarrusel } from "@components/motion/TestimoniosCarrusel";
+import BandaTestimonios from "@components/motion/BandaTestimonios.astro";
 import { testimonios, cifras, copy, curso, garantia } from "@config/curso.config";
 /* En su propio módulo, y no dentro de `curso.config`, para que Rollup pueda
    descartarlo entero del build de producción: allí `import.meta.env.DEV` se
@@ -11,7 +11,7 @@ import { testimonios, cifras, copy, curso, garantia } from "@config/curso.config
    Que las seis citas de maquetación ni siquiera existan en el servidor
    publicado es más garantía que cualquier aviso en pantalla. */
 import { testimoniosMuestra } from "@config/testimonios.muestra";
-import { construirTxt, resolverIdiomaServidor } from "@i18n/idioma";
+import { construirTxt } from "@i18n/idioma";
 import { faltaPorRellenar } from "@lib/pendientes";
 import { formatNumber, formatMoney, interpolar } from "@i18n/formato";
 
@@ -50,10 +50,10 @@ import { formatNumber, formatMoney, interpolar } from "@i18n/formato";
  * No depende de que nadie se acuerde de quitar nada.
  */
 
-const lang = resolverIdiomaServidor(
-  Astro.url,
-  Astro.request.headers.get("accept-language"),
-);
+/* Esta sección ya no necesita saber el idioma de la petición: la banda de
+   testimonios es Astro puro y todo su texto pasa por `<T>`. Lo necesitaba el
+   carrusel de React, que era una isla y no podía leerlo del DOM en el
+   servidor. */
 
 /* Basta con que UNO de los dos idiomas siga en placeholder para dar la sección
    por vacía: publicar con el español real y el inglés sin traducir es justo el
@@ -100,14 +100,23 @@ const puntos = fundador.puntos.map((p) => ({
 }));
 ---
 
-<Section id="testimonios" tono="muted" ariaLabel={copy.pruebaSocial.aria}>
+{/* `sinContenedor`: la banda tiene que cruzar de borde a borde, así que la
+    sección suelta su `container-page` y cada bloque de dentro pone el suyo. */}
+<Section
+  id="testimonios"
+  tono="muted"
+  ariaLabel={copy.pruebaSocial.aria}
+  sinContenedor={lista.length > 0}
+>
   {
     lista.length > 0 ? (
       <>
-        <SectionHeading align="center" titulo={copy.pruebaSocial.titulo} />
+        <div class="container-page">
+          <SectionHeading align="center" class="mx-auto" titulo={copy.pruebaSocial.titulo} />
+        </div>
 
         {cifras.sonReales && (
-          <Reveal>
+          <Reveal class="container-page block">
             <dl class="mx-auto mt-10 grid max-w-2xl grid-cols-2 gap-6 sm:grid-cols-3">
               <div class="text-center">
                 <dt class="text-sm text-ink-muted">
@@ -138,20 +147,15 @@ const puntos = fundador.puntos.map((p) => ({
           </Reveal>
         )}
 
-        {/* `client:visible`: el carrusel está a media página y no hace falta
-            que su JS compita con el LCP. Hasta que hidrata, la pista ya es
-            desplazable con el dedo porque el scroll es nativo. */}
-        <Reveal>
-          <TestimoniosCarrusel
-            client:visible
-            items={lista}
-            etiquetas={copy.pruebaSocial.carrusel}
-            lang={lang}
-          />
-        </Reveal>
+        {/* La banda va FUERA de `Reveal`: el fundido de entrada empieza con el
+            bloque desplazado 24 px y eso, en algo que ya se está moviendo solo,
+            se ve como un tirón al aparecer. */}
+        <div class="mt-12">
+          <BandaTestimonios items={lista} />
+        </div>
       </>
     ) : (
-      <>
+      <div class="container-page">
         <SectionHeading
           align="center"
           titulo={fundador.titulo}
@@ -190,7 +194,7 @@ const puntos = fundador.puntos.map((p) => ({
             <T v={fundador.remate} />
           </p>
         </Reveal>
-      </>
+      </div>
     )
   }
 </Section>
