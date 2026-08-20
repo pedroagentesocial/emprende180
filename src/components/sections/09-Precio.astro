@@ -6,7 +6,7 @@ import Reveal from "@components/motion/Reveal.astro";
 import Button from "@components/ui/Button.astro";
 import { Contador } from "@components/motion/Contador";
 import Icono from "@components/ui/Icono.astro";
-import { curso, cta, garantia, copy } from "@config/curso.config";
+import { curso, cta, garantia, copy, contacto } from "@config/curso.config";
 import { construirTxt, LOCALES, resolverIdiomaServidor } from "@i18n/idioma";
 import { formatMoney } from "@i18n/formato";
 
@@ -348,23 +348,55 @@ const lang = resolverIdiomaServidor(
             }
 
             <div class="mt-7">
-              {/* Sin URL de pasarela el botón se deshabilita: un href="#"
-                  saltaría al principio y parecería que está roto. */}
+              {/* MIENTRAS NO HAYA PASARELA, EL BOTÓN LLAMA.
+
+                  Antes se deshabilitaba y debajo salía un aviso explicando por
+                  qué. Ese aviso se ha quitado de la página —era una nota para
+                  quien edita el sitio impresa para el cliente—, y un botón
+                  apagado y mudo en el punto exacto de la compra es peor que no
+                  tener botón: el visitante no deduce "falta configurar la
+                  pasarela", deduce que la página está rota.
+
+                  No cae al formulario de `#gratis` a propósito: ese es el imán
+                  gratuito de siete días. Mandar ahí a quien acaba de pulsar
+                  "Inscribirme al curso" es prometer una compra y entregar un
+                  boletín. Cae al teléfono, que es la única vía por la que hoy
+                  se puede pagar de verdad, y el texto del botón lo dice.
+
+                  En cuanto `precio.urlCheckout` deje de ser "#", vuelve solo a
+                  ser el botón de compra. Y si tampoco hay teléfono, se apaga
+                  como antes: sin ninguna de las dos cosas no hay nada que
+                  ofrecer. */}
               <Button
-                href={checkoutPendiente ? undefined : precio.urlCheckout}
-                disabled={checkoutPendiente}
+                href={
+                  checkoutPendiente
+                    ? contacto.telefono
+                      ? `tel:${contacto.telefono}`
+                      : undefined
+                    : precio.urlCheckout
+                }
+                disabled={checkoutPendiente && !contacto.telefono}
                 variant="primary"
                 size="lg"
                 trackId="precio"
                 block
               >
-                <T v={cta.primario.texto} />
+                {checkoutPendiente && contacto.telefono && (
+                  <Icono nombre="telefono" class="size-4 shrink-0" grosor={2} />
+                )}
+                <T
+                  v={
+                    checkoutPendiente && contacto.telefono
+                      ? copy.precio.llamarParaInscribirse
+                      : cta.primario.texto
+                  }
+                />
               </Button>
             </div>
 
             {/* AQUÍ HABÍA UNA TERCERA FORMA DE DECIR LA MISMA FECHA.
                 El panel ya dice "Después subirá a $3,990" y encima tiene la
-                cuenta atrás corriendo; añadir "El precio sube el 31 de agosto"
+                cuenta atrás corriendo; añadir "El precio sube el 30 de septiembre"
                 debajo del botón era decir el mismo plazo tres veces en veinte
                 centímetros. Repetir un argumento no lo refuerza: lo devalúa, y
                 de paso hace que el panel parezca un panfleto.
@@ -412,15 +444,11 @@ const lang = resolverIdiomaServidor(
       </div>
     </Reveal>
 
-    {
-      checkoutPendiente && (
-        <Reveal>
-          <p class="mt-6 rounded-lg border-2 border-dashed border-line-strong bg-surface px-4 py-3 text-center text-sm font-medium text-ink-muted">
-            ⚠ <T v={copy.precio.avisoPlaceholder} />
-          </p>
-        </Reveal>
-      )
-    }
+    {/* EL AVISO DE "FALTA LA PASARELA" YA NO SE PINTA PARA EL VISITANTE.
+        Era una nota de mantenimiento en mitad de la sección que vende, y le
+        contaba al cliente que la tienda está a medio montar. El botón de arriba
+        ya resuelve el caso llamando; quien edita el sitio se entera abriendo
+        `curso.precio.urlCheckout`. */}
 
     {/* Solo para quien edita el sitio. El visitante no ve nada raro: el
         contador simplemente ya no está. */}

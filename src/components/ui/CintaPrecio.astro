@@ -28,7 +28,7 @@ import { formatMoney } from "@i18n/formato";
  *    empieza otra ronda. Si el precio no ha subido de verdad, en desarrollo
  *    sale un aviso en consola para quien edita el sitio.
  *
- * 4. SE ANUNCIA LA FECHA, NO EL TIEMPO QUE QUEDA. "Sube el 31 de agosto" es
+ * 4. SE ANUNCIA LA FECHA, NO EL TIEMPO QUE QUEDA. "Sube el 30 de septiembre" es
  *    verdad aunque la página lleve horas cacheada en un CDN; "quedan 12 días"
  *    puede quedarse a medio día de la verdad, y eso en esta página cuesta más
  *    de lo que aporta. Los días los añade el script de abajo en el cliente,
@@ -85,7 +85,7 @@ if (import.meta.env.DEV && tipo === "fecha" && Number.isFinite(ms) && ms <= Date
  * Medido, no supuesto.
  *
  * Así que por debajo de `sm` se cae la etiqueta, que es la única parte que no
- * informa de nada: "$490 · El precio sube el 31 de agosto" ya dice qué cuesta,
+ * informa de nada: "$490 · El precio sube el 30 de septiembre" ya dice qué cuesta,
  * que va a subir y cuándo. La etiqueta vuelve en cuanto hay ancho.
  */
 const vacio: Txt = { es: "", en: "" };
@@ -97,7 +97,7 @@ const precioHoy: Txt = activa
   ? construirTxt((l) => formatMoney(precio.actual, l, precio.moneda))
   : vacio;
 
-/** "sube a $3,990 el 31 de agosto" — las dos cifras juntas. */
+/** "sube a $3,990 el 30 de septiembre" — las dos cifras juntas. */
 const subeTxt: Txt = activa
   ? construirTxt((l) => {
       const fecha = new Intl.DateTimeFormat(LOCALES[l], {

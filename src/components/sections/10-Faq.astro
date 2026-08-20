@@ -1,12 +1,12 @@
 ---
 import T from "@components/i18n/T.astro";
 import Section from "@components/ui/Section.astro";
-import SectionHeading from "@components/ui/SectionHeading.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Button from "@components/ui/Button.astro";
 import Icono from "@components/ui/Icono.astro";
-import { faqs, contacto, copy, proximosCursos } from "@config/curso.config";
-import { resolverIdiomaServidor, LOCALES } from "@i18n/idioma";
+import { faqs, contacto, copy, cta } from "@config/curso.config";
+import { resolverIdiomaServidor, LOCALES, construirTxt } from "@i18n/idioma";
+import { interpolar } from "@i18n/formato";
 import { faltaPorRellenar, resaltarPendientes } from "@lib/pendientes";
 
 /**
@@ -62,7 +62,18 @@ const lang = resolverIdiomaServidor(
   Astro.request.headers.get("accept-language"),
 );
 
+/**
+ * Sigue mandando sobre el JSON-LD, pero ya no pinta nada en la página: el aviso
+ * de "quedan respuestas por rellenar" era una nota para quien edita el sitio
+ * puesta donde la leía el visitante. Si falta un dato, el rich snippet no se
+ * emite y punto; el que edita se entera abriendo el config, no el cliente
+ * enterándose de que la página está a medias.
+ */
 const hayPlaceholders = faqs.some((f) => faltaPorRellenar(f.respuesta));
+
+const cuantas = construirTxt((l) =>
+  interpolar(copy.faq.cuantas[l], { n: faqs.length }),
+);
 
 const schemaFaq = hayPlaceholders
   ? null
@@ -80,13 +91,57 @@ const schemaFaq = hayPlaceholders
     };
 ---
 
-<Section id="faq" tono="muted" ritmo="compacto" ariaLabel={copy.faq.aria}>
-  <SectionHeading align="start" class="mx-auto" titulo={copy.faq.titulo} />
+{/* ─── EL REPARTO EN DOS COLUMNAS ─────────────────────────────────────────────
+    Preguntas a la izquierda, título a la derecha y más abajo que la primera
+    pregunta. No es un capricho de maqueta: una columna de trece barras a lo
+    ancho de la lectura es un muro: en cuanto se estrecha a la mitad, cada
+    pregunta se lee de un golpe de vista y las trece caben en menos pantalla.
 
-  <div class="mx-auto mt-10 max-w-read">
+    El título baja para que no arranque a la misma altura que la primera
+    pregunta. Dos bloques que empiezan en la misma línea compiten; desfasados,
+    se lee primero la lista y el título hace de rótulo al lado.
+
+    ORDEN DEL DOM ≠ ORDEN VISUAL. El encabezado va PRIMERO en el marcado y se
+    manda a la derecha con `order`. Al revés —marcado con trece preguntas antes
+    del <h2>— un lector de pantalla recorrería toda la lista sin saber todavía
+    de qué sección le están hablando.
+
+    El `sticky` es lo que hace que la columna derecha valga la pena: el rótulo y
+    el recuento acompañan mientras se recorren las trece. Sin él sería un título
+    solo, con dos pantallas de blanco debajo. */}
+<Section id="faq" tono="muted" ritmo="compacto" ariaLabel={copy.faq.aria}>
+  <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-x-16 xl:gap-x-20">
+    <aside class="lg:order-2 lg:pt-24">
+      <div class="lg:sticky lg:top-10">
+        <Reveal>
+          <p class="inline-flex items-center gap-2 rounded-full border border-secondary-200 bg-secondary-50 px-3 py-1 text-xs font-bold tracking-wide text-secondary-700 uppercase">
+            <span aria-hidden="true" class="marca-linea">
+              <span class="size-1.5 rounded-full bg-secondary-500"></span>
+            </span>
+            <T v={cuantas} />
+          </p>
+
+          {/* El ancho de la columna es lo que mide este titular, no un
+              `text-*` más pequeño. A 20rem salía en cinco renglones con un
+              "que" suelto en medio; a 22rem entra en tres limpios al mismo
+              cuerpo. (Y bajarlo con `lg:text-3xl` no habría funcionado:
+              Tailwind emite `text-4xl` DESPUÉS de `text-3xl`, así que con la
+              misma especificidad gana el 4xl aunque el `lg:` sea más
+              específico de intención. Se cambia el ancho, no el cuerpo.) */}
+          <h2 class="mt-4 text-3xl font-extrabold text-balance text-ink sm:text-4xl">
+            <T v={copy.faq.titulo} />
+          </h2>
+
+          <p class="mt-4 text-base text-pretty text-ink-muted">
+            <T v={copy.faq.entradilla} />
+          </p>
+        </Reveal>
+      </div>
+    </aside>
+
     {/* `gap-2.5` en vez de filetes pegados: cada pregunta es una tarjeta suelta
         y el aire entre ellas es lo que hace que trece no parezcan un muro. */}
-    <div class="grid gap-2.5">
+    <div class="grid content-start gap-2.5 lg:order-1">
       {
         faqs.map((f, i) => (
           <Reveal delay={Math.min(i, 6) * 0.03}>
@@ -141,16 +196,24 @@ const schemaFaq = hayPlaceholders
     </div>
 
     {/* ─── LA DUDA QUE NO ESTÁ EN LA LISTA ──────────────────────────────────
-        Era una línea de texto con el correo subrayado en medio. Ahora es un
-        bloque con dos botones, y el de llamar va primero: quien llega al final
-        de trece preguntas y sigue con una duda tiene UNA concreta, y una
-        llamada la resuelve en el momento mientras que un correo la enfría un
-        día entero.
+        Cierra la sección a lo ancho de las dos columnas: es la salida para
+        quien ha recorrido las trece y sigue con una duda, así que no puede
+        vivir dentro de la columna estrecha de las preguntas.
+
+        Los dos botones son LLAMAR y DEJAR LOS DATOS. El `mailto:` que había
+        aquí se fue: abre un cliente de correo que en móvil muchas veces ni
+        está configurado, y cuando funciona la respuesta llega un día después.
+        El formulario deja el contacto en el sistema; el teléfono lo resuelve
+        en el momento. El correo sigue escrito debajo para quien lo prefiera.
 
         El de llamar solo existe si hay número en `contacto.telefono`. */}
-    <Reveal delay={0.1}>
-      <div class="mt-10 rounded-2xl border border-line bg-surface p-6 text-center sm:p-8">
-        <p class="text-lg font-bold text-balance text-ink">
+    {/* Las clases de rejilla van en el `Reveal` y no en el `div` de dentro:
+        `Reveal` renderiza su propia etiqueta, así que el ítem de la rejilla es
+        ÉL. Puestas en el hijo, `order` y `col-span` no las lee nadie —el
+        bloque se colaba en la primera columna y empujaba el título abajo. */}
+    <Reveal delay={0.1} class="lg:order-3 lg:col-span-2">
+      <div class="rounded-2xl border border-line bg-surface p-6 text-center sm:p-8">
+        <p class="text-lg font-bold text-balance text-ink sm:text-xl">
           <T v={copy.faq.quedaDuda} />
         </p>
         <p class="mx-auto mt-2 max-w-md text-base text-pretty text-ink-muted">
@@ -174,13 +237,14 @@ const schemaFaq = hayPlaceholders
           }
 
           <Button
-            href={`mailto:${contacto.email}`}
+            href={cta.secundario.href}
             variant="secondary"
             size="lg"
-            trackId="faq-email"
+            trackId="faq-contacto"
             class="w-full sm:w-auto"
           >
-            <T v={copy.faq.escribir} />
+            <Icono nombre="conversacion" class="size-4 shrink-0" grosor={2} />
+            <T v={copy.faq.contactar} />
           </Button>
         </div>
 
@@ -190,49 +254,18 @@ const schemaFaq = hayPlaceholders
       </div>
     </Reveal>
 
-    {/* ─── Y DESPUÉS DE FUNDAMENTOS ──────────────────────────────────────────
-        Venía del medio del temario, donde anunciaba algo que todavía no existe
-        justo en el bloque donde se demuestra lo que sí existe. Aquí es su sitio:
-        "¿y después, qué?" es literalmente una pregunta frecuente, y en una
-        sección de trámite no le roba atención al curso que sí se vende.
+    {/* AQUÍ TERMINA LA SECCIÓN, A PROPÓSITO.
 
-        Sigue apagado y sin CTA, como manda el comentario de `proximosCursos`. */}
-    {
-      proximosCursos.length > 0 && (
-        <Reveal delay={0.12}>
-          <div class="mt-10 border-t border-line pt-8">
-            <h3 class="text-base font-bold text-ink">
-              <T v={copy.proximos.titulo} />
-            </h3>
-            <p class="mt-2 text-sm text-pretty text-ink-subtle">
-              <T v={copy.proximos.entradilla} />
-            </p>
-            <ul class="mt-4 grid gap-2.5 text-sm">
-              {proximosCursos.map((c) => (
-                <li class="flex items-start gap-2.5">
-                  <span aria-hidden="true" class="marca-linea shrink-0">
-                    <span class="rounded-full border border-dashed border-line-strong px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-ink-subtle">
-                      <T v={copy.proximos.badge} />
-                    </span>
-                  </span>
-                  <span class="text-ink-muted">
-                    <T v={c.titulo} resaltar />
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </Reveal>
-      )
-    }
+        Debajo había dos bloques más: "Y después de Fundamentos" (los dos cursos
+        que todavía no existen) y el aviso de respuestas por rellenar. Los dos
+        fuera.
 
-    {
-      hayPlaceholders && (
-        <p class="mt-6 rounded-lg border-2 border-dashed border-line-strong bg-surface px-4 py-3 text-center text-sm font-medium text-ink-muted">
-          ⚠ <T v={copy.faq.avisoPlaceholder} />
-        </p>
-      )
-    }
+        El de próximos cursos porque la última impresión de la sección de dudas
+        no puede ser "esto que compras es solo el primero de tres, y los otros
+        dos ni están": justo después de desactivar trece objeciones, abría una
+        nueva. Y el aviso porque era una nota para quien edita el sitio impresa
+        para el cliente. El JSON-LD lo sigue vigilando `hayPlaceholders`, en
+        silencio y sin decírselo a quien viene a comprar. */}
   </div>
 
   {schemaFaq && <script type="application/ld+json" set:html={JSON.stringify(schemaFaq)} is:inline />}

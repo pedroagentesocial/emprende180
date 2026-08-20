@@ -649,7 +649,7 @@ export const curso = {
        * Pon aquí `null` (o `tipo: "lanzamiento"`) si prefieres no comprometerte
        * a una fecha: la sección sigue funcionando sin contador.
        */
-      fechaCierre: "2026-08-31T23:59:59-05:00" as string | null,
+      fechaCierre: "2026-09-30T23:59:59-05:00" as string | null,
     },
   },
 
@@ -2030,9 +2030,14 @@ export const copy = {
       es: "El desglose no suma el precio de referencia. Ajusta los valores de `precio.desglose` o `precio.referencia` en `curso.config.ts`: un ancla que no cuadra es peor que no poner ancla.",
       en: "The breakdown doesn't add up to the reference price. Adjust `precio.desglose` or `precio.referencia` in `curso.config.ts`: an anchor that doesn't add up is worse than no anchor.",
     },
-    avisoPlaceholder: {
-      es: "El botón de compra no lleva a ningún sitio todavía. Pon la URL real de la pasarela en `curso.precio.urlCheckout`.",
-      en: "The buy button goes nowhere yet. Add the real checkout URL in `curso.precio.urlCheckout`.",
+    /**
+     * Texto del botón mientras `urlCheckout` siga siendo "#". No es un aviso:
+     * es la acción real que hay disponible hoy para inscribirse. Ver el
+     * comentario del botón en `09-Precio.astro`.
+     */
+    llamarParaInscribirse: {
+      es: "Llámame para inscribirte",
+      en: "Call me to enroll",
     },
 
     /**
@@ -2060,8 +2065,8 @@ export const copy = {
       /**
        * El argumento fuerte, y el que faltaba: enseñar las DOS cifras juntas.
        *
-       * "$490 · sube a $3,990 el 31 de agosto" pega mucho más que "el precio
-       * sube el 31 de agosto", porque el salto se ve en vez de imaginarse.
+       * "$490 · sube a $3,990 el 30 de septiembre" pega mucho más que "el precio
+       * sube el 30 de septiembre", porque el salto se ve en vez de imaginarse.
        *
        * ⚠️ Y AUN ASÍ NO ES UN DESCUENTO, NI PUEDE PRESENTARSE COMO TAL. Con
        * `framing: "lanzamiento"` los 3.990 son el precio FUTURO, no uno pasado.
@@ -2088,11 +2093,22 @@ export const copy = {
       es: "Preguntas que probablemente te estás haciendo",
       en: "Questions you're probably asking yourself",
     },
-    dudaAntes: {
-      es: "¿Te queda otra duda? Escríbeme a",
-      en: "Still wondering something? Email me at",
+
+    /**
+     * La columna del título es lo único que se ve mientras se recorren las
+     * preguntas, así que no puede ser solo el título: tiene que decir qué son
+     * estas respuestas y quién las escribe. `entradilla` hace ese trabajo.
+     */
+    entradilla: {
+      es: "Las que más me llegan por teléfono, contestadas sin rodeos. Si algo aquí no te cuadra, prefiero que lo sepas antes de pagar y no después.",
+      en: "The ones I get most on the phone, answered straight. If something here doesn't add up for you, I'd rather you knew before paying, not after.",
     },
-    dudaDespues: { es: "y te contesto yo.", en: "and I'll answer myself." },
+    /** Se rellena con el número real de preguntas. Ver `10-Faq.astro`. */
+    cuantas: {
+      es: "{n} dudas resueltas",
+      en: "{n} questions answered",
+    },
+
     /** Cierre de la sección: la duda que no está en la lista. */
     quedaDuda: {
       es: "¿Y si tu duda no está aquí?",
@@ -2102,11 +2118,7 @@ export const copy = {
       es: "Te contesto yo, no un chatbot ni un formulario. Llámame y lo resolvemos en cinco minutos.",
       en: "I answer, not a chatbot or a form. Call me and we sort it out in five minutes.",
     },
-    escribir: { es: "Escríbeme", en: "Email me" },
-    avisoPlaceholder: {
-      es: "Quedan respuestas con datos por rellenar. El JSON-LD de FAQPage NO se emite hasta que estén completas.",
-      en: "Some answers still have facts to fill in. The FAQPage JSON-LD is NOT emitted until they're complete.",
-    },
+    contactar: { es: "Dejarme tus datos", en: "Leave me your details" },
   },
 
   /**
