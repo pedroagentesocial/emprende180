@@ -136,10 +136,14 @@ const urlWhatsapp = contacto.whatsapp
 
         {/* El logotipo de su otra empresa, debajo de la foto. Que quien firma
             el curso dirija además un negocio real del sector es LA credencial
-            de esta sección, y el logotipo lo dice antes que cualquier frase. */}
+            de esta sección, y el logotipo lo dice antes que cualquier frase.
+
+            Todo centrado: la tarjeta es más ancha que su contenido, y alineado
+            a la izquierda dejaba un sobrante a la derecha que se leía como un
+            hueco. Centrado, el aire queda repartido y parece intencionado. */}
         {
           logoOtraMarca && otraMarca && (
-            <div class="mt-5 rounded-2xl border border-line bg-surface-muted px-5 py-4">
+            <div class="mt-5 rounded-2xl border border-line bg-surface-muted px-5 py-5 text-center">
               <p class="text-[0.7rem] font-bold uppercase tracking-[0.12em] text-ink-subtle">
                 <T v={copy.instructor.tambien} />
               </p>
@@ -148,7 +152,7 @@ const urlWhatsapp = contacto.whatsapp
                 target="_blank"
                 rel="noopener noreferrer"
                 data-track="instructor-otra-marca"
-                class="mt-3 inline-flex min-h-11 items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                class="mx-auto mt-3 inline-flex min-h-11 items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
               >
                 <img
                   src={logoOtraMarca}
@@ -162,6 +166,37 @@ const urlWhatsapp = contacto.whatsapp
                 <T v={otraMarca.rubro} />
               </p>
             </div>
+          )
+        }
+
+        {/* ─── Credenciales, en 2×2 bajo el logo ────────────────────────────
+            Estaban en la columna de texto, en una fila de tres tarjetas
+            grandes: partían la lectura entre la bio y los límites, y la cuarta
+            se quedaba sola en una segunda fila.
+
+            Aquí abajo funcionan mejor por dos motivos. Uno: son credenciales de
+            LA PERSONA, y pertenecen a la columna de la persona, junto a su foto
+            y al logo de su otra empresa. Dos: en 2×2 y pequeñas se escanean de
+            un vistazo, que es lo único que se hace con una lista de méritos —
+            nadie las lee de corrido.
+
+            Contenido centrado y `text-xs`: en media columna no caben grandes, y
+            centradas no dejan el sobrante a la derecha de cada tarjeta. */}
+        {
+          credenciales.length > 0 && (
+            <ul class="mt-4 grid grid-cols-2 gap-3">
+              {credenciales.map((c, i) => (
+                <li class="rounded-xl border border-line bg-surface-muted p-4 text-center">
+                  <Icono
+                    nombre={ICONOS[i] ?? "check"}
+                    class="mx-auto size-6 text-secondary-600"
+                  />
+                  <p class="mt-2.5 text-xs font-semibold leading-snug text-pretty text-ink">
+                    <T v={c.dato} resaltar />
+                  </p>
+                </li>
+              ))}
+            </ul>
           )
         }
       </div>
@@ -183,41 +218,19 @@ const urlWhatsapp = contacto.whatsapp
         </p>
       </Reveal>
 
-      {/* ─── Credenciales, como tarjetas ────────────────────────────────────
-          Eran una lista de cuatro líneas con palomita dentro de una caja gris.
-          En tarjetas con icono se escanean, que es lo único que se hace con
-          una lista de credenciales. */}
-      {
-        credenciales.length > 0 && (
-          <Reveal delay={0.14}>
-            <ul class="mt-10 grid gap-4 sm:grid-cols-3">
-              {credenciales.map((c, i) => (
-                <li class="rounded-2xl border border-line bg-surface-muted p-5">
-                  <Icono
-                    nombre={ICONOS[i] ?? "check"}
-                    class="size-7 text-secondary-600"
-                  />
-                  <p class="mt-3 text-sm font-semibold text-pretty text-ink">
-                    <T v={c.dato} resaltar />
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </Reveal>
-        )
-      }
+      {/* ─── Para que no haya sorpresas ─────────────────────────────────────
+          SUBE, y no es solo colocación. Las credenciales se fueron a la columna
+          de la foto, así que esto queda pegado a la bio: se lee "quién soy" y
+          justo después "y esto es lo que no hago". Ese es el orden en que
+          convence — primero la persona, luego sus límites.
 
-      {/* ─── Lo que NO cubre ────────────────────────────────────────────────
-          La única lista que sobrevive, y va sin caja para que no compita con
-          las tarjetas de arriba. Ver la nota de la cabecera: esto no se
-          recorta. */}
-      {/* Se rediseñó, no se recortó. Ver la nota de `noCubreTitulo` en el
+          Se rediseñó, no se recortó. Ver la nota de `noCubreTitulo` en el
           config: cuatro aspas ROJAS seguidas se leen como una lista de errores
           del producto, cuando lo que dicen es justo lo contrario —que aquí se
           juega limpio—. Ahora van en una caja tranquila, con un guion neutro en
           vez del aspa y el color de la marca en el título. */}
-      <Reveal delay={0.2}>
-        <div class="mt-10 rounded-2xl border border-line bg-surface-muted p-6 sm:p-7">
+      <Reveal delay={0.14}>
+        <div class="mt-9 rounded-2xl border border-line bg-surface-muted p-6 sm:p-7">
           <div class="flex items-start gap-3">
             <span aria-hidden="true" class="marca-linea text-secondary-600">
               <Icono nombre="escudo" class="size-5" />
@@ -253,61 +266,10 @@ const urlWhatsapp = contacto.whatsapp
         </div>
       </Reveal>
 
-      {/* ─── La acción ──────────────────────────────────────────────────────
-          Este es el punto en el que se decide si uno se fía de la persona, y
-          hasta ahora no había dónde pulsar. El de WhatsApp solo existe si hay
-          número en el config. */}
-      <Reveal delay={0.26}>
-        <div class="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
-          <Button
-            href={cta.primario.href}
-            variant="primary"
-            size="lg"
-            trackId="instructor"
-            class="w-full sm:w-auto"
-          >
-            <T v={cta.primario.texto} />
-          </Button>
-
-          {/* Solo si hay número. Un botón de llamar que no llama es peor que
-              no tenerlo: se pulsa, no pasa nada, y se pierde la confianza justo
-              en la sección que existe para ganarla. */}
-          {
-            contacto.telefono && (
-              <Button
-                href={`tel:${contacto.telefono}`}
-                variant="secondary"
-                size="lg"
-                trackId="instructor-llamada"
-                class="w-full sm:w-auto"
-              >
-                <T v={copy.instructor.llamame} />
-              </Button>
-            )
-          }
-
-          {
-            urlWhatsapp && (
-              <Button
-                href={urlWhatsapp}
-                variant="secondary"
-                size="lg"
-                trackId="instructor-whatsapp"
-                class="w-full sm:w-auto"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <T v={copy.instructor.whatsapp} />
-              </Button>
-            )
-          }
-        </div>
-      </Reveal>
-
       {/* Los HECHOS que siguen sin rellenar, aparte y en ámbar. */}
       {
         credencialesPendientes.length > 0 && (
-          <Reveal delay={0.3}>
+          <Reveal delay={0.2}>
             <ul class="mt-8 grid gap-2 rounded-xl border-2 border-dashed border-line-strong bg-surface-muted p-5 text-sm">
               {credencialesPendientes.map((c) => (
                 <li class="text-pretty text-ink-muted">
@@ -328,4 +290,65 @@ const urlWhatsapp = contacto.whatsapp
       }
     </div>
   </div>
+
+  {/* ─── La acción ────────────────────────────────────────────────────────
+      FUERA de las dos columnas, y ese es todo el arreglo. Dentro de la columna
+      de texto los botones heredaban su borde izquierdo, o sea que arrancaban a
+      un tercio de la página y quedaban escorados a la derecha: parecían
+      colgando en vez de centrados.
+
+      Aquí abajo, a todo el ancho, se centran de verdad respecto a la sección
+      entera. Y funcionan mejor: cierran la sección para quien acaba de leer la
+      bio Y para quien solo miró la foto y las credenciales.
+
+      Este es el punto en el que se decide si uno se fía de la persona. El botón
+      de WhatsApp solo existe si hay número en el config. */}
+  <Reveal delay={0.26}>
+    <div
+      class="mt-12 flex flex-col items-center justify-center gap-3 border-t border-line pt-10 sm:flex-row sm:flex-wrap sm:gap-4"
+    >
+      <Button
+        href={cta.primario.href}
+        variant="primary"
+        size="lg"
+        trackId="instructor"
+        class="w-full sm:w-auto"
+      >
+        <T v={cta.primario.texto} />
+      </Button>
+
+      {/* Solo si hay número. Un botón de llamar que no llama es peor que no
+          tenerlo: se pulsa, no pasa nada, y se pierde la confianza justo en la
+          sección que existe para ganarla. */}
+      {
+        contacto.telefono && (
+          <Button
+            href={`tel:${contacto.telefono}`}
+            variant="secondary"
+            size="lg"
+            trackId="instructor-llamada"
+            class="w-full sm:w-auto"
+          >
+            <T v={copy.instructor.llamame} />
+          </Button>
+        )
+      }
+
+      {
+        urlWhatsapp && (
+          <Button
+            href={urlWhatsapp}
+            variant="secondary"
+            size="lg"
+            trackId="instructor-whatsapp"
+            class="w-full sm:w-auto"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <T v={copy.instructor.whatsapp} />
+          </Button>
+        )
+      }
+    </div>
+  </Reveal>
 </Section>
