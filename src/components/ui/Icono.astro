@@ -59,6 +59,15 @@ const ICONOS = {
   pausa: `<path d="M8 5.5h2.6v13H8zM13.4 5.5H16v13h-2.6z" fill="currentColor" stroke-linejoin="round"/>`,
   /** Flecha hacia la derecha. */
   flecha: `<path d="M4 12h15m0 0-5.5-5.5M19 12l-5.5 5.5"/>`,
+  /**
+   * Persona. Es el acceso de alumnos del header.
+   *
+   * Una PERSONA y no un candado a propósito: el candado dice "esto está
+   * cerrado" y la silueta dice "esto es tuyo". Para quien ya pagó, lo segundo
+   * es lo cierto; para quien no, el candado sería una puerta en la cara en la
+   * primera barra de la página.
+   */
+  usuario: `<circle cx="12" cy="8.2" r="3.9"/><path d="M4.8 20.2a7.2 7.2 0 0 1 14.4 0"/>`,
 } as const;
 
 export type NombreIcono = keyof typeof ICONOS;

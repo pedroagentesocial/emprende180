@@ -1,0 +1,167 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import Header from "@components/layout/Header.astro";
+import Footer from "@components/layout/Footer.astro";
+import T from "@components/i18n/T.astro";
+import Button from "@components/ui/Button.astro";
+import Icono from "@components/ui/Icono.astro";
+import MarcaAgua from "@components/ui/MarcaAgua.astro";
+import { sitio, contacto, copy } from "@config/curso.config";
+import { construirTxt } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * /acceso — la puerta del área de alumnos, antes de que exista la puerta
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * ⚠️ AQUÍ NO HAY UN FORMULARIO DE LOGIN, Y NO ES UN OLVIDO.
+ *
+ * Lo fácil habría sido pintar dos campos y un botón "Entrar" que no valida
+ * nada. Sería peor que no tener nada: un campo de contraseña PIDE una
+ * credencial, y pedirla sabiendo que no se va a comprobar entrena a la gente a
+ * teclear su contraseña en cualquier caja que se lo pida. Además, quien ya pagó
+ * lo intentaría, fallaría y concluiría que su compra no funciona.
+ *
+ * Así que esta página dice la verdad —el área está en construcción— y da la vía
+ * que SÍ funciona hoy: el teléfono. Es la misma solución que el botón de compra
+ * mientras no hay pasarela.
+ *
+ * ─── ESTÁ ESCRITA PARA DOS PERSONAS ────────────────────────────────────────
+ *
+ * Quien llega aquí es una de dos, y necesitan cosas opuestas:
+ *
+ *   · YA COMPRÓ y quiere entrar → necesita una vía humana, ya. Va primero.
+ *   · SE EQUIVOCÓ de botón → necesita volver a la venta sin sentirse perdido.
+ *
+ * Por eso son dos tarjetas y no un párrafo: una respuesta que sirve para las
+ * dos personas no sirve del todo para ninguna.
+ *
+ * ─── `noindex` ─────────────────────────────────────────────────────────────
+ *
+ * No tiene nada que buscar nadie desde Google y, cuando exista el login de
+ * verdad, tampoco lo tendrá. Que no entre en el índice evita que dentro de tres
+ * meses alguien aterrice aquí desde una búsqueda de "emprende180 acceso" y lea
+ * un aviso caducado.
+ *
+ * SWAP cuando exista el sistema: `cta.acceso.href` apunta al login real y este
+ * archivo se borra. El header no se toca.
+ */
+export const prerender = false;
+
+const tituloPagina = construirTxt(
+  (l) => `${copy.acceso.titulo[l]} · ${sitio.nombre}`,
+);
+---
+
+<BaseLayout
+  titulo={tituloPagina}
+  descripcion={copy.acceso.entradilla}
+  noindex
+>
+  <Header />
+
+  <main id="contenido" class="relative isolate overflow-hidden bg-primary-950 section-y">
+    <MarcaAgua posicion="derecha" class="opacity-[0.06]" />
+
+    <div class="container-page">
+      <div class="mx-auto max-w-2xl text-center">
+        <p
+          class="inline-flex items-center gap-2 rounded-full border border-primary-700 bg-primary-900/60 px-3 py-1 text-xs font-bold tracking-wide text-secondary-300 uppercase"
+        >
+          <span aria-hidden="true" class="marca-linea">
+            <Icono nombre="usuario" class="size-3.5" grosor={2} />
+          </span>
+          <T v={copy.acceso.kicker} />
+        </p>
+
+        <h1 class="mt-5 text-4xl font-extrabold text-balance text-ink-inverse sm:text-5xl">
+          <T v={copy.acceso.titulo} />
+        </h1>
+
+        <p class="mx-auto mt-5 max-w-xl text-lg text-pretty text-secondary-200">
+          <T v={copy.acceso.entradilla} />
+        </p>
+      </div>
+
+      {/* ─── Las dos personas, en dos tarjetas ─────────────────────────────── */}
+      <div class="mx-auto mt-12 grid max-w-3xl gap-5 sm:grid-cols-2">
+        {/* La que ya pagó va primera y con el botón sólido: es la única que
+            tiene un problema que resolver hoy. */}
+        <div class="flex flex-col rounded-2xl border border-primary-700 bg-primary-900/60 p-6 text-center sm:p-7">
+          <h2 class="text-lg font-bold text-balance text-ink-inverse">
+            <T v={copy.acceso.yaCompre.titulo} />
+          </h2>
+          <p class="mt-2 flex-1 text-base text-pretty text-secondary-200">
+            <T v={copy.acceso.yaCompre.texto} />
+          </p>
+
+          <div class="mt-6 grid gap-3">
+            {
+              contacto.telefono && (
+                <Button
+                  href={`tel:${contacto.telefono}`}
+                  variant="primary"
+                  sobre="oscuro"
+                  trackId="acceso-llamada"
+                  class="w-full"
+                >
+                  <Icono nombre="telefono" class="size-4 shrink-0" grosor={2} />
+                  <T v={copy.instructor.llamame} />
+                </Button>
+              )
+            }
+            <p class="text-sm break-all text-secondary-200">{contacto.email}</p>
+          </div>
+        </div>
+
+        <div class="flex flex-col rounded-2xl border border-primary-800 bg-primary-900/30 p-6 text-center sm:p-7">
+          <h2 class="text-lg font-bold text-balance text-ink-inverse">
+            <T v={copy.acceso.noCompre.titulo} />
+          </h2>
+          <p class="mt-2 flex-1 text-base text-pretty text-secondary-200">
+            <T v={copy.acceso.noCompre.texto} />
+          </p>
+
+          <div class="mt-6">
+            <Button
+              href="/"
+              variant="inverse"
+              sobre="oscuro"
+              trackId="acceso-volver"
+              class="w-full"
+            >
+              <T v={copy.acceso.noCompre.cta} />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Qué habrá dentro ──────────────────────────────────────────────
+          No es relleno: quien ya pagó y no puede entrar necesita ver que lo que
+          compró existe y sigue siendo suyo. Son las mismas tres promesas de la
+          página de venta, sin una de más. */}
+      <div class="mx-auto mt-12 max-w-2xl border-t border-primary-800 pt-10">
+        <h2
+          class="text-center text-xs font-bold tracking-[0.16em] text-secondary-300 uppercase"
+        >
+          <T v={copy.acceso.queHabra.titulo} />
+        </h2>
+
+        <ul class="mx-auto mt-6 grid max-w-xl gap-3">
+          {
+            copy.acceso.queHabra.puntos.map((p) => (
+              <li class="flex items-start gap-3 text-base text-secondary-100">
+                <span aria-hidden="true" class="marca-linea shrink-0 text-secondary-400">
+                  <Icono nombre="check" class="size-5" grosor={2.5} />
+                </span>
+                <T v={p} />
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>

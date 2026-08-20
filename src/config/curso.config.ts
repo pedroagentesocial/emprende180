@@ -1642,6 +1642,29 @@ export const cta = {
     texto: leadMagnet.cta,
     href: "#gratis",
   },
+  /**
+   * ─── ACCESO DE ALUMNOS ────────────────────────────────────────────────────
+   *
+   * El punto de entrada de quien YA compró. Va en el header, separado del CTA
+   * de compra, porque son dos personas distintas: una viene a decidir y la otra
+   * viene a entrar. Mezclarlos obliga a la segunda a buscar.
+   *
+   * ⚠️ HOY NO HAY AUTENTICACIÓN. `/acceso` es una página real que explica el
+   * estado y da una vía humana para entrar mientras tanto; NO es un formulario
+   * de login de mentira. Un campo de contraseña que no valida nada es peor que
+   * no tener acceso: pide una credencial y no hace nada con ella.
+   *
+   * SWAP cuando exista el sistema: `href` pasa a apuntar al login real (propio
+   * o del LMS) y `/acceso` se borra o se convierte en la pantalla de entrada.
+   * El header no hay que tocarlo.
+   */
+  acceso: {
+    texto: { es: "Acceso", en: "Log in" },
+    /** Rótulo largo, para el aria-label y la página. */
+    textoLargo: { es: "Acceso de alumnos", en: "Student log in" },
+    href: "/acceso",
+  },
+
   /** Cierre de la página. Más directo que los anteriores: ya ha leído todo. */
   final: {
     texto: { es: "Quiero empezar ahora", en: "I want to start now" },
@@ -1888,6 +1911,60 @@ export const copy = {
     todosConQuiz: {
       es: "Los {n} llevan quiz al final. Se hacen en orden.",
       en: "All {n} end with a quiz. You take them in order.",
+    },
+  },
+
+  /**
+   * ─── PÁGINA `/acceso` ─────────────────────────────────────────────────────
+   *
+   * Lo que lee quien pulsa "Acceso" en el header antes de que exista el
+   * sistema. Está escrita para las DOS personas que van a llegar: la que ya
+   * pagó y quiere entrar, y la que se ha equivocado de botón.
+   *
+   * No promete fecha. "Muy pronto" sin día es honesto; "el 15 de octubre" sin
+   * poder cumplirlo es la misma clase de mentira que un contador falso.
+   */
+  acceso: {
+    titulo: { es: "Acceso de alumnos", en: "Student access" },
+    kicker: { es: "Área de alumnos", en: "Student area" },
+    entradilla: {
+      es: "El área de alumnos está en construcción. Es lo siguiente que estamos montando y, cuando esté, entrarás desde aquí con tu correo.",
+      en: "The student area is being built. It's the next thing we're working on and, once it's ready, you'll sign in here with your email.",
+    },
+    /** Qué habrá dentro. Todo esto ya se promete en la página de venta. */
+    queHabra: {
+      titulo: { es: "Qué vas a encontrar dentro", en: "What you'll find inside" },
+      puntos: [
+        {
+          es: "Los 10 videos del curso, en orden y con acceso de por vida",
+          en: "The 10 course videos, in order and with lifetime access",
+        },
+        {
+          es: "Los 10 quizzes de validación, uno por video",
+          en: "The 10 validation quizzes, one per video",
+        },
+        {
+          es: "Tu Certificación de Embajador Emprende180 al superarlos",
+          en: "Your Emprende180 Ambassador Certification once you pass them",
+        },
+      ] satisfies Txt[],
+    },
+    /** Para quien YA compró y quiere entrar hoy. */
+    yaCompre: {
+      titulo: { es: "Ya compré el curso", en: "I already bought the course" },
+      texto: {
+        es: "Mientras el área no esté abierta, te doy acceso yo. Llámame o escríbeme y lo resolvemos el mismo día.",
+        en: "While the area isn't open yet, I'll give you access myself. Call me or write and we'll sort it the same day.",
+      },
+    },
+    /** Para quien llegó aquí por error. */
+    noCompre: {
+      titulo: { es: "Todavía no lo he comprado", en: "I haven't bought it yet" },
+      texto: {
+        es: "Entonces esto no es para ti todavía. Vuelve a la página y mira qué incluye.",
+        en: "Then this isn't for you yet. Head back to the page and see what's included.",
+      },
+      cta: { es: "Ver el curso", en: "See the course" },
     },
   },
 

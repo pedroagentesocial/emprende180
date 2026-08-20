@@ -20,9 +20,25 @@ interface Props {
   /** Sobrescribe el <title>. Debe venir en los dos idiomas. */
   titulo?: Txt;
   descripcion?: Txt;
+  /**
+   * Deja la página fuera del índice de los buscadores.
+   *
+   * Para páginas que existen porque hacen falta, no porque haya que
+   * encontrarlas: hoy, `/acceso`. Nadie debería aterrizar ahí desde una
+   * búsqueda, y menos leyendo un aviso que quedará caducado en cuanto exista el
+   * login de verdad.
+   *
+   * Se emite `noindex, follow`: que no se indexe NO significa que los enlaces
+   * de dentro dejen de contar.
+   */
+  noindex?: boolean;
 }
 
-const { titulo = sitio.titulo, descripcion = sitio.descripcion } = Astro.props;
+const {
+  titulo = sitio.titulo,
+  descripcion = sitio.descripcion,
+  noindex = false,
+} = Astro.props;
 
 /**
  * Idioma resuelto en el SERVIDOR: `?lang=` y, si no, `Accept-Language`.
@@ -134,6 +150,7 @@ const precioFormateado = {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
 
     <title>{titulo[lang]}</title>
     <meta name="description" content={descripcion[lang]} />

@@ -2,6 +2,7 @@
 import T from "@components/i18n/T.astro";
 import { sitio, cta, copy } from "@config/curso.config";
 import Button from "@components/ui/Button.astro";
+import Icono from "@components/ui/Icono.astro";
 import LanguageSwitch from "@components/i18n/LanguageSwitch";
 import { resolverIdiomaServidor } from "@i18n/idioma";
 
@@ -66,8 +67,15 @@ const logoAlt = {
     motivo por el que queda un `relative` es que el logo y el CTA necesitan
     contexto de apilamiento propio si algún día se les pone un adorno encima. */}
 <header class="relative border-b border-line bg-surface">
+  {/* ─── EL HEADER A 320 PX ─────────────────────────────────────────────────
+      Con el acceso de alumnos dentro, la fila pasó a pedir 347 px en un
+      teléfono de 320: 27 px de desbordamiento, o sea scroll horizontal en toda
+      la página. Se recuperan repartidos y sin quitar nada de la barra —el
+      hueco entre bloques, el ancho del logotipo y el acolchado del acceso—,
+      porque los tres elementos que hay tienen que seguir estando: la marca, el
+      idioma y la puerta de quien ya pagó. */}
   <div
-    class="container-page flex h-[var(--header-h)] items-center justify-between gap-4 lg:h-[var(--header-h-lg)]"
+    class="container-page flex h-[var(--header-h)] items-center justify-between gap-2 max-[359px]:gap-1 sm:gap-4 lg:h-[var(--header-h-lg)]"
   >
     {/* shrink-0: sin esto, en móvil el flex del header comprimía el enlace y
         el logo salía deformado (115×32 sobre un arte de 573×120). */}
@@ -82,7 +90,7 @@ const logoAlt = {
         data-alt-en={logoAlt.en}
         width={logo.w}
         height={logo.h}
-        class="h-8 w-auto shrink-0 sm:h-9"
+        class="h-8 w-auto shrink-0 max-[359px]:h-7 sm:h-9"
         fetchpriority="high"
         decoding="async"
       />
@@ -113,10 +121,36 @@ const logoAlt = {
       }
     </nav>
 
-    <div class="flex shrink-0 items-center gap-3">
+    <div class="flex shrink-0 items-center gap-2 sm:gap-3">
       {/* El selector va SIEMPRE visible, también en móvil: si alguien llega
           con ?lang= equivocado tiene que poder corregirlo sin buscar. */}
       <LanguageSwitch client:load lang={lang} />
+
+      {/* ─── ACCESO DE ALUMNOS ────────────────────────────────────────────────
+          Va SIEMPRE visible, también en móvil, y ese es el punto: quien ya pagó
+          no viene a leer la página, viene a entrar. Si el acceso solo aparece
+          en escritorio, en el teléfono tiene que recorrer una landing de venta
+          entera para encontrar la puerta de su propio curso.
+
+          Es un enlace de texto y no un botón: en esta barra el único elemento
+          con peso de botón es el de comprar. Dos botones sólidos compiten, y el
+          que tiene que ganar la mirada de un visitante nuevo es el de comprar.
+
+          En móvil se queda solo el icono y el rótulo se va a `sr-only`: a
+          320 px, con logo, selector de idioma y esto, la palabra no cabe sin
+          apretar el logo. El `aria-label` lleva el rótulo largo para que quien
+          lo escuche no oiga solo "acceso" sin contexto. */}
+      <a
+        href={cta.acceso.href}
+        aria-label={cta.acceso.textoLargo[lang]}
+        data-aria-es={cta.acceso.textoLargo.es}
+        data-aria-en={cta.acceso.textoLargo.en}
+        data-track="header-acceso"
+        class="inline-flex min-h-11 items-center gap-2 rounded-full px-2.5 text-sm font-semibold text-ink-muted transition-colors duration-200 hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus max-[359px]:px-1 sm:px-3"
+      >
+        <Icono nombre="usuario" class="size-5 shrink-0" grosor={1.8} />
+        <span class="max-sm:sr-only"><T v={cta.acceso.texto} /></span>
+      </a>
 
       {/* `max-md:hidden` y no `hidden md:inline-flex`: la base del botón ya
           trae `inline-flex`, y entre dos utilidades del mismo grupo gana la que
