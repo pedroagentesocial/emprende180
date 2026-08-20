@@ -6,7 +6,8 @@ import Button from "@components/ui/Button.astro";
 import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
 import PlaceholderImage from "@components/placeholder/PlaceholderImage.astro";
 import { instructor, contacto, copy, cta, aliados } from "@config/curso.config";
-import { logoAliado } from "@lib/assets";
+import { logoAliado, fotoInstructor } from "@lib/assets";
+import { resolverIdiomaServidor } from "@i18n/idioma";
 import { MARCA_COMPLETAR, tienePendiente } from "@lib/pendientes";
 
 /**
@@ -59,6 +60,14 @@ import { MARCA_COMPLETAR, tienePendiente } from "@lib/pendientes";
 
 /* El nombre es un dato, no un texto traducible: si sigue siendo el de
    ejemplo, la sección lo avisa en pantalla en vez de fingir un instructor. */
+/* El `alt` de la foto lleva texto traducible, y un `alt` es un atributo: no
+   puede pasar por `<T>`. Se resuelve con el idioma del servidor y el script del
+   layout lo actualiza al cambiar de idioma (data-alt-es / data-alt-en). */
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
 const sinRellenar = instructor.nombre.includes(MARCA_COMPLETAR);
 
 /** Un icono por credencial, emparejado por posición. */
@@ -93,13 +102,37 @@ const urlWhatsapp = contacto.whatsapp
     <!-- ─── Foto + identidad ─────────────────────────────────────────────── -->
     <Reveal>
       <div class="lg:sticky lg:top-8">
-        <PlaceholderImage
-          label={copy.placeholders.fotoInstructor}
-          medidas={copy.placeholders.fotoInstructorDetalle}
-          ruta={instructor.foto}
-          ratio="4/5"
-          class="rounded-2xl"
-        />
+        {/* La foto REAL si existe; si no, el hueco.
+            Antes aquí solo estaba `PlaceholderImage`, que no comprueba nada y
+            pinta el recuadro punteado siempre: la foto podía estar en su
+            carpeta y la página seguía enseñando "aquí va la foto". Ver
+            `fotoInstructor` en src/lib/assets.ts.
+
+            `aspect-[4/5]` + `object-cover` y no `h-auto`: así el hueco mide lo
+            mismo con foto y sin ella, y el layout no salta cuando llega. */}
+        {
+          fotoInstructor ? (
+            <img
+              src={fotoInstructor}
+              alt={instructor.fotoAlt[lang]}
+              data-alt-es={instructor.fotoAlt.es}
+              data-alt-en={instructor.fotoAlt.en}
+              width="800"
+              height="1000"
+              loading="lazy"
+              decoding="async"
+              class="aspect-[4/5] w-full rounded-2xl object-cover shadow-lg"
+            />
+          ) : (
+            <PlaceholderImage
+              label={copy.placeholders.fotoInstructor}
+              medidas={copy.placeholders.fotoInstructorDetalle}
+              ruta={instructor.foto}
+              ratio="4/5"
+              class="rounded-2xl"
+            />
+          )
+        }
 
         {/* El logotipo de su otra empresa, debajo de la foto. Que quien firma
             el curso dirija además un negocio real del sector es LA credencial

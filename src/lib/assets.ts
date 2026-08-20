@@ -100,6 +100,33 @@ export const portadaCurso = (() => {
 })();
 
 /**
+ * Retrato del instructor.
+ *
+ * ⚠️ ESTO FALTABA, Y ES UN FALLO QUE MERECE QUEDAR ESCRITO. La sección del
+ * instructor usaba `PlaceholderImage`, un componente que NO comprueba nada:
+ * pinta el hueco punteado siempre. O sea que la foto real podía estar en su
+ * carpeta, con su nombre correcto, y la página seguía enseñando el recuadro de
+ * "aquí va la foto" para siempre. No había forma de que apareciera.
+ *
+ * Ahora la sección pregunta primero si el archivo existe (esto) y solo cae al
+ * hueco si no está. Es el mismo patrón que el vídeo, los logos y los fondos de
+ * los resultados: dejar el archivo en su sitio es todo lo que hay que hacer.
+ */
+const archivosInstructor = Object.keys(
+  import.meta.glob("../../public/imagenes/instructor/*.{webp,avif,jpg,png}"),
+);
+
+export const fotoInstructor = (() => {
+  const nombre = [
+    "instructor.webp",
+    "instructor.avif",
+    "instructor.jpg",
+    "instructor.png",
+  ].find((n) => tiene(archivosInstructor, n));
+  return nombre ? `/imagenes/instructor/${nombre}` : null;
+})();
+
+/**
  * Fondos de las tarjetas de "Qué sabrás hacer al terminar" (sección 03).
  *
  * Se buscan por POSICIÓN: `01`, `02`… hasta `06`, en la carpeta
