@@ -97,9 +97,12 @@ const schemaFaq = hayPlaceholders
     ancho de la lectura es un muro: en cuanto se estrecha a la mitad, cada
     pregunta se lee de un golpe de vista y las trece caben en menos pantalla.
 
-    El título baja para que no arranque a la misma altura que la primera
-    pregunta. Dos bloques que empiezan en la misma línea compiten; desfasados,
-    se lee primero la lista y el título hace de rótulo al lado.
+    Los dos bloques arrancan A LA MISMA ALTURA. La primera versión bajaba el
+    título 140 px y quedaba raro: el rótulo de la sección flotando a media
+    altura, sin nada arriba a su lado, leía como si se hubiera descolgado.
+    Alineados por arriba, la fila superior se lee de un tirón —título y primera
+    pregunta— y el desfase que hace falta lo pone el `sticky`, que es un
+    movimiento, no un hueco.
 
     ORDEN DEL DOM ≠ ORDEN VISUAL. El encabezado va PRIMERO en el marcado y se
     manda a la derecha con `order`. Al revés —marcado con trece preguntas antes
@@ -111,7 +114,7 @@ const schemaFaq = hayPlaceholders
     solo, con dos pantallas de blanco debajo. */}
 <Section id="faq" tono="muted" ritmo="compacto" ariaLabel={copy.faq.aria}>
   <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-x-16 xl:gap-x-20">
-    <aside class="lg:order-2 lg:pt-24">
+    <aside class="lg:order-2">
       <div class="lg:sticky lg:top-10">
         <Reveal>
           <p class="inline-flex items-center gap-2 rounded-full border border-secondary-200 bg-secondary-50 px-3 py-1 text-xs font-bold tracking-wide text-secondary-700 uppercase">

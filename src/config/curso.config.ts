@@ -1785,7 +1785,25 @@ export const copy = {
       es: "Eso es todo lo que incluye Fundamentos. Ni más ni menos.",
       en: "That's everything Fundamentos includes. No more, no less.",
     },
-    preguntar: { es: "Tengo una duda", en: "I have a question" },
+
+    /**
+     * Distintivo de la columna del título. `{n}` = número de videos, que van
+     * con su quiz cada uno, así que la misma cifra sirve para los dos.
+     */
+    cuantos: {
+      es: "{n} videos · {n} quizzes",
+      en: "{n} videos · {n} quizzes",
+    },
+
+    /**
+     * Sustituye a los veinte distintivos "Video/Quiz" que llevaban las diez
+     * tarjetas: repetir diez veces lo mismo no lo refuerza, lo convierte en
+     * ruido. Se dice una vez, al lado del título.
+     */
+    todosConQuiz: {
+      es: "Los {n} llevan quiz al final. Se hacen en orden.",
+      en: "All {n} end with a quiz. You take them in order.",
+    },
   },
 
   /** Bloque de cursos futuros, al final del temario. Ver `proximosCursos`. */

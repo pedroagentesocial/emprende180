@@ -1,13 +1,14 @@
 ---
 import T from "@components/i18n/T.astro";
 import Section from "@components/ui/Section.astro";
-import SectionHeading from "@components/ui/SectionHeading.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Button from "@components/ui/Button.astro";
 import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
 import CintaPrecio from "@components/ui/CintaPrecio.astro";
 import { tienePendiente } from "@lib/pendientes";
 import { temario, curso, copy, contacto, cta } from "@config/curso.config";
+import { construirTxt } from "@i18n/idioma";
+import { interpolar } from "@i18n/formato";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -20,40 +21,47 @@ import { temario, curso, copy, contacto, cta } from "@config/curso.config";
  * Sin duraciones: ver la regla 2 de curso.config.ts. La página no anuncia
  * cuánto dura el curso.
  *
- * ─── DE ACORDEÓN A REJILLA DE CUATRO ───────────────────────────────────────
+ * ─── DE REJILLA DE CUATRO A RUTA DE DIEZ ───────────────────────────────────
  *
- * Era `TemarioAcordeon`, una isla de React con diez filas apiladas. Ahora son
- * diez tarjetas en cuatro columnas, que con diez elementos caen solas en 4+4+2.
+ * Antes de esto fue un acordeón de React; después, una rejilla de cuatro
+ * columnas. La rejilla arreglaba lo de leer diez filas apiladas, pero rompía
+ * justo lo que esta sección tiene que demostrar: el titular dice "EN EL ORDEN
+ * en que hay que hacerlos" y luego los ponía en cuatro columnas, donde el 04 y
+ * el 05 quedan en esquinas opuestas y el 01 se lee al lado del 04. Un orden que
+ * hay que reconstruir con la vista no es un orden.
  *
- * Se gana lo evidente: los diez videos se ven de un vistazo en tres filas en
- * vez de en diez, que es lo que hace que un temario se lea como un plan y no
- * como una lista de deberes.
+ * Ahora es una sola columna de diez filas numeradas: se recorre 01 → 10 como se
+ * va a hacer el curso. Y ocupa MENOS que la rejilla, no más, porque cada video
+ * es una fila de una línea y no una tarjeta con su hueco.
  *
- * Y se gana algo menos evidente: esto ya no necesita JavaScript. El acordeón
- * existía para desplegar `lecciones`, que está VACÍO a propósito (ver el
- * comentario de `temario` en el config: los puntos de dentro de cada video son
- * un HECHO que no se puede inventar). O sea que era una isla de React que
- * hidrataba para no desplegar nada.
+ * ─── SE FUERON LOS VEINTE DISTINTIVOS ──────────────────────────────────────
+ *
+ * Cada tarjeta llevaba "Video" y "Quiz". Diez veces cada uno, cuarenta palabras
+ * para decir dos cosas que son iguales en las diez. Repetir un dato diez veces
+ * no lo refuerza: lo convierte en fondo. Ahora se dice una vez, en la columna
+ * del título, con `copy.temario.todosConQuiz`.
+ *
+ * ─── LA COLUMNA DE LA IZQUIERDA ────────────────────────────────────────────
+ *
+ * El título, el recuento, la promesa del quiz y los DOS BOTONES viven en un
+ * rail `sticky`. Es lo que convierte una lista en una sección que vende: quien
+ * está leyendo el video 08 tiene el botón de inscribirse a la altura de los
+ * ojos, sin volver arriba ni esperar al final.
+ *
+ * Va a la IZQUIERDA a propósito, al revés que el de preguntas frecuentes. Las
+ * dos secciones usan el mismo recurso; espejadas, no se leen como la misma
+ * plantilla puesta dos veces.
  *
  * ⚠️ `TemarioAcordeon.tsx` NO se ha borrado. El día que el cliente pase el
  * guion de cada video y `lecciones` deje de estar vacío, el acordeón vuelve a
- * ser el componente correcto y esta rejilla, no.
- *
- * ─── "PRÓXIMAMENTE" SE FUE DE AQUÍ ─────────────────────────────────────────
- *
- * El bloque de `proximosCursos` vive ahora al final de la sección de preguntas.
- * Es su sitio: "¿y después de Fundamentos, qué?" es literalmente una pregunta
- * frecuente, y ahí no le roba atención al curso que sí se vende. En medio del
- * temario hacía justo lo que el config prohíbe — anunciar algo que todavía no
- * existe en el mismo bloque donde se demuestra lo que sí existe.
+ * ser el componente correcto y esta lista, no.
  *
  * ─── SE FUE LA LÍNEA DE «QUÉ LOGRAS» ───────────────────────────────────────
  *
  * Cada fila mostraba además `logras`, unas 25 palabras por video: 250 palabras
- * en total. En cuatro columnas no caben, y sobre todo REPITEN: la sección 03 es
- * entera "qué sabrás hacer al terminar", con seis resultados escritos para eso.
- * Aquí basta el título del video, que es el dato que el visitante viene a
- * buscar. `logras` sigue en el config, intacto.
+ * en total, y REPETIDAS: la sección 03 es entera "qué sabrás hacer al
+ * terminar". Aquí basta el título del video, que es el dato que el visitante
+ * viene a buscar. `logras` sigue en el config, intacto.
  */
 
 /** Un icono por cada extra, emparejado por posición con `copy.temario.extras`. */
@@ -66,74 +74,151 @@ const ICONOS_EXTRAS: NombreIcono[] = ["certificado", "infinito", "actualizar"];
  * mismo: una característica confirmada vende, y un hueco por rellenar es un
  * recordatorio para quien edita el sitio. Mezclados en la misma lista, un
  * `[COMPLETAR:]` acaba publicado sin que nadie lo note.
+ *
+ * Y por eso este bloque solo se pinta en DESARROLLO. Es una nota de obra: el
+ * cliente no tiene por qué enterarse de que la página está a medias mientras
+ * decide si compra. Cuando se rellenen en el config, desaparece del todo.
  */
 const pendientes = curso.formato.incluye.filter(tienePendiente);
+
+const cuantos = construirTxt((l) =>
+  interpolar(copy.temario.cuantos[l], { n: temario.length }),
+);
+
+const todosConQuiz = construirTxt((l) =>
+  interpolar(copy.temario.todosConQuiz[l], { n: temario.length }),
+);
 ---
 
+{/* ─── EL REPARTO ─────────────────────────────────────────────────────────────
+    Rail a la izquierda (título + recuento + los dos botones, `sticky`) y la
+    ruta de diez a la derecha. El `<h2>` va primero en el marcado y es también
+    lo primero visualmente, así que aquí no hace falta `order`. */}
 <Section id="temario" tono="muted" ariaLabel={copy.temario.aria}>
-  <SectionHeading
-    align="start"
-    titulo={copy.temario.titulo}
-    vars={{ n: temario.length }}
-    entradilla={copy.temario.entradilla}
-  />
-
-  {/* 4 columnas · 10 videos = 4 + 4 + 2.
-      ES FLEX Y NO GRID, y ese es todo el motivo: con `grid-cols-4` la última
-      fila se pega a la izquierda y deja dos huecos a la derecha, que se leen
-      como si faltaran dos videos. `flex-wrap` + `justify-center` centra la
-      última fila, así que el 4+4+2 queda equilibrado.
-      Los anchos llevan restado su parte del hueco: con `gap-4` (16 px) y cuatro
-      columnas hay 3 huecos que repartir entre 4 tarjetas, o sea 12 px cada una;
-      con dos columnas, 8 px. */}
-  <ol class="mt-10 flex flex-wrap justify-center gap-4">
-    {
-      temario.map((m, i) => (
-        <Reveal
-          as="li"
-          delay={Math.min(i, 5) * 0.04}
-          class="w-full sm:w-[calc(50%-0.5rem)] lg:w-[calc(25%-0.75rem)]"
-        >
-          <article class="flex h-full flex-col rounded-2xl border border-line bg-surface p-5">
-            <span
-              aria-hidden="true"
-              class="text-2xl font-extrabold leading-none tracking-tight text-secondary-600"
-            >
-              {String(m.numero).padStart(2, "0")}
+  <div class="grid gap-10 lg:grid-cols-[22rem_minmax(0,1fr)] lg:gap-x-16 xl:gap-x-20">
+    <aside>
+      <div class="lg:sticky lg:top-10">
+        <Reveal>
+          <p class="inline-flex items-center gap-2 rounded-full border border-secondary-200 bg-secondary-50 px-3 py-1 text-xs font-bold tracking-wide text-secondary-700 uppercase">
+            <span aria-hidden="true" class="marca-linea">
+              <span class="size-1.5 rounded-full bg-secondary-500"></span>
             </span>
+            <T v={cuantos} />
+          </p>
 
-            <h3 class="mt-3 flex-1 text-base font-bold text-balance text-ink">
-              <T v={m.titulo} />
-            </h3>
+          <h2 class="mt-4 text-3xl font-extrabold text-balance text-ink sm:text-4xl">
+            <T v={copy.temario.titulo} vars={{ n: temario.length }} />
+          </h2>
 
-            {/* Video + Quiz. Van en cada tarjeta porque la promesa del curso es
-                justo esa: los diez llevan quiz, y de ahí sale la certificación. */}
-            <div class="mt-4 flex flex-wrap items-center gap-1.5">
-              <span class="inline-flex items-center gap-1 rounded-full bg-surface-muted px-2 py-1 text-[0.7rem] font-bold text-ink-muted">
-                <Icono nombre="play" class="size-3" grosor={1} />
-                <T v={copy.temarioBadges.video} />
-              </span>
-              {curso.formato.conQuiz && (
-                <span class="inline-flex items-center gap-1 rounded-full bg-secondary-100 px-2 py-1 text-[0.7rem] font-bold text-secondary-700">
-                  <Icono nombre="check" class="size-3" grosor={3} />
-                  <T v={copy.temarioBadges.quiz} />
+          <p class="mt-4 text-base text-pretty text-ink-muted">
+            <T v={copy.temario.entradilla} vars={{ n: temario.length }} />
+          </p>
+
+          {/* Lo que antes eran veinte distintivos repartidos por las tarjetas. */}
+          {
+            curso.formato.conQuiz && (
+              <p class="mt-4 flex items-start gap-2.5 text-sm font-medium text-ink">
+                <span aria-hidden="true" class="marca-linea shrink-0 text-secondary-600">
+                  <Icono nombre="check" class="size-4" grosor={3} />
                 </span>
-              )}
-            </div>
-          </article>
+                <T v={todosConQuiz} />
+              </p>
+            )
+          }
+
+          {/* ─── LAS DOS SALIDAS, A LA ALTURA DE LOS OJOS ────────────────────
+              Estaban al final de la sección, debajo de los diez videos: había
+              que terminar de leer la lista entera para encontrar dónde pulsar.
+              En el rail `sticky` acompañan durante toda la lectura.
+
+              El segundo botón era un `mailto:` con el asunto puesto. Ahora
+              llama: abrir el cliente de correo es una fricción que en móvil
+              muchas veces ni funciona, y una duda sobre el temario se contesta
+              en dos minutos por teléfono. Solo aparece si hay número.
+
+              La línea "Eso es todo lo que incluye Fundamentos" NO va aquí: en
+              escritorio el rail queda al lado de la lista y se lee después,
+              pero en móvil todo se apila y esa frase caería ANTES de los diez
+              videos. Es una frase de cierre; cerrar algo que aún no se ha
+              enseñado no significa nada. Vive al final de la sección. */}
+
+          {/* En el rail van APILADOS y a todo el ancho, no en fila. En una
+              columna de 22rem, dos botones lado a lado dejan 10rem a cada uno y
+              "Inscribirme al curso" se parte en dos renglones dentro de la
+              píldora. Apilados caben enteros y el orden de arriba abajo es el
+              orden de compromiso. */}
+          <div class="mt-4 flex flex-col gap-3 sm:flex-row lg:flex-col">
+            <Button
+              href={cta.primario.href}
+              variant="primary"
+              trackId="temario"
+              class="w-full sm:w-auto lg:w-full"
+            >
+              <T v={cta.primario.texto} />
+            </Button>
+
+            {
+              contacto.telefono && (
+                <Button
+                  href={`tel:${contacto.telefono}`}
+                  variant="secondary"
+                  trackId="temario-llamada"
+                  class="w-full sm:w-auto lg:w-full"
+                >
+                  <Icono nombre="telefono" class="size-4 shrink-0" grosor={2} />
+                  <T v={copy.instructor.llamame} />
+                </Button>
+              )
+            }
+          </div>
         </Reveal>
-      ))
-    }
-  </ol>
+      </div>
+    </aside>
+
+    {/* ─── LA RUTA ────────────────────────────────────────────────────────────
+        `<ol>` de verdad, no una rejilla de tarjetas: el orden es el contenido.
+
+        Cada fila es número + título en una línea. El número va en un círculo
+        teal con `tabular-nums` para que el 01 y el 10 ocupen exactamente lo
+        mismo y la columna de títulos quede a plomo.
+
+        El hover no revela nada —no hay nada escondido— pero marca la fila que
+        se está leyendo, que en una lista de diez ayuda a no perder el renglón.
+        Solo con cursor: en táctil no existe. */}
+    <ol class="grid content-start gap-2">
+      {
+        temario.map((m, i) => (
+          <Reveal as="li" delay={Math.min(i, 6) * 0.04}>
+            <article class="flex items-center gap-4 rounded-2xl border border-line bg-surface px-4 py-3.5 transition-colors duration-200 ease-out-soft hover:border-secondary-300 sm:px-5">
+              <span
+                aria-hidden="true"
+                class="grid size-10 shrink-0 place-items-center rounded-full bg-secondary-50 text-sm font-extrabold tabular-nums text-secondary-700 ring-1 ring-secondary-200 ring-inset"
+              >
+                {String(m.numero).padStart(2, "0")}
+              </span>
+
+              <h3 class="text-base font-bold text-pretty text-ink">
+                <T v={m.titulo} />
+              </h3>
+            </article>
+          </Reveal>
+        ))
+      }
+    </ol>
+  </div>
 
   {/* ─── Y ADEMÁS · tres cosas, tres iconos ────────────────────────────────
       Esto era la lista de las seis frases de `formato.incluye` a dos columnas y
       a cuerpo pequeño: 90 palabras que casi nadie lee, y cuatro de las seis ya
-      dichas dos veces más arriba (la franja del hero y la rejilla de diez
-      videos). Ahora son tres iconos grandes y cuatro palabras cada uno. */}
+      dichas dos veces más arriba (la franja del hero y los diez videos). Ahora
+      son tres iconos y cuatro palabras cada uno.
+
+      Va a lo ancho de las dos columnas y no dentro del rail: en el rail lo
+      dejaría más alto que la pantalla en un portátil, y un `sticky` que no cabe
+      deja de pegarse. */}
   <Reveal delay={0.1}>
     <div class="mt-14 border-t border-line pt-10">
-      <h3 class="text-center text-xs font-bold uppercase tracking-[0.16em] text-ink-subtle">
+      <h3 class="text-center text-xs font-bold tracking-[0.16em] text-ink-subtle uppercase">
         <T v={copy.temario.extrasTitulo} />
       </h3>
 
@@ -156,18 +241,24 @@ const pendientes = curso.formato.incluye.filter(tienePendiente);
           ))
         }
       </ul>
+
+      {/* El cierre, en su sitio: después de los diez videos Y de las tres
+          cosas que entran además. Ahora la frase es verdad cuando se lee —ya
+          se ha enseñado todo lo que incluye— y hace de puente a la tira de
+          precio, que es la siguiente pregunta. */}
+      <p class="mx-auto mt-10 max-w-read text-center text-lg font-semibold text-balance text-ink">
+        <T v={copy.temario.cierre} />
+      </p>
     </div>
   </Reveal>
 
-  {/* Los HECHOS que siguen sin decidirse. No son una característica del curso,
-      así que no van con las tres de arriba: van aparte, en ámbar, para que el
-      cliente los vea cada vez que abra la página. Cuando se rellenen en el
-      config, este bloque desaparece solo. */}
+  {/* Los HECHOS que siguen sin decidirse. Ver el comentario de `pendientes`:
+      solo en desarrollo. */}
   {
-    pendientes.length > 0 && (
+    pendientes.length > 0 && import.meta.env.DEV && (
       <Reveal delay={0.15}>
         <div class="mx-auto mt-10 max-w-read rounded-xl border-2 border-dashed border-line-strong bg-surface p-5">
-          <p class="text-xs font-bold uppercase tracking-[0.12em] text-warning-700">
+          <p class="text-xs font-bold tracking-[0.12em] text-warning-700 uppercase">
             ⚠ <T v={copy.temario.pendientesTitulo} />
           </p>
           <ul class="mt-3 grid gap-2 text-sm">
@@ -181,47 +272,6 @@ const pendientes = curso.formato.incluye.filter(tienePendiente);
       </Reveal>
     )
   }
-
-  {/* ─── CIERRE: la invitación y las dos salidas ─────────────────────────────
-      Quien llega aquí ha visto los diez videos y todo lo que entra. Las dos
-      cosas que puede querer hacer son entrar o preguntar, y hasta ahora no
-      tenía dónde pulsar ninguna de las dos: solo había una cinta con un enlace.
-
-      "Tengo una duda" abre el correo con el asunto puesto. Es la única vía de
-      pregunta que existe hoy en el sitio (la misma que ofrece la sección de
-      preguntas); el formulario de la página es el del mini-curso y pedir un
-      email para responder una duda es una fricción que no hace falta. */}
-  <Reveal delay={0.1}>
-    <div class="mx-auto mt-12 max-w-read text-center">
-      <p class="text-lg font-semibold text-balance text-ink">
-        <T v={copy.temario.cierre} />
-      </p>
-
-      <div
-        class="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4"
-      >
-        <Button
-          href={cta.primario.href}
-          variant="primary"
-          size="lg"
-          trackId="temario"
-          class="w-full sm:w-auto"
-        >
-          <T v={cta.primario.texto} />
-        </Button>
-
-        <Button
-          href={`mailto:${contacto.email}?subject=${encodeURIComponent(curso.nombre.es)}`}
-          variant="secondary"
-          size="lg"
-          trackId="temario-duda"
-          class="w-full sm:w-auto"
-        >
-          <T v={copy.temario.preguntar} />
-        </Button>
-      </div>
-    </div>
-  </Reveal>
 
   {/* Puente al precio: el visitante acaba de ver TODO lo que incluye y la
       siguiente pregunta es cuánto vale. */}

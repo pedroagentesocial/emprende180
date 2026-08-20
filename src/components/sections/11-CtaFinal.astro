@@ -83,116 +83,149 @@ const lang = resolverIdiomaServidor(
 
 ---
 
+{/* ─── LAS DOS SALIDAS, UNA AL LADO DE OTRA ───────────────────────────────────
+    Esto era una sola columna centrada de 1.353 px de alto sobre 1.440 de ancho:
+    el titular partido en tres renglones cortos, el precio flotando debajo, la
+    tira envuelta en tres líneas desiguales y, después de un filete, el
+    formulario. Mucho azul vacío a los lados y una sección que había que
+    recorrer entera para ver que ofrecía dos cosas.
+
+    Ahora son dos columnas: comprar a la izquierda, el mini-curso gratis a la
+    derecha. Es lo que la sección siempre dijo que hacía —"se le dan las DOS
+    salidas"— pero puestas donde se ven las dos a la vez, en vez de una debajo
+    de la otra separadas por un filete.
+
+    Y el titular deja de ir centrado en una medida estrecha: alineado a la
+    izquierda en su media columna, cae en renglones enteros en vez de partirse
+    en "Conviértete / en Embajador / Emprende180". */}
 <Section id="empezar" tono="inverse" ariaLabel={copy.cierre.aria}>
-  <div class="mx-auto max-w-3xl text-center">
-    <Reveal>
-      <h2 class="text-4xl font-extrabold text-balance text-ink-inverse sm:text-5xl">
-        <T v={curso.promesa} />
-      </h2>
-
-      {/* SE FUE `promesaApoyo`. Son cinco líneas que el visitante ya ha leído
-          palabra por palabra en el hero: repetirlas en el cierre no cierra
-          nada, alarga. Lo que sí hace falta aquí es el PRECIO, que hasta ahora
-          no aparecía en toda la sección donde se decide pagarlo. */}
-      <p class="mt-6 text-5xl font-extrabold tracking-tight text-ink-inverse sm:text-6xl">
-        <T v={precioActual} />
-      </p>
-      {
-        textoCuotas && (
-          <p class="mt-2 text-base font-medium text-secondary-200">
-            <T v={textoCuotas} />
-          </p>
-        )
-      }
-    </Reveal>
-
+  <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start lg:gap-x-16 xl:gap-x-20">
     <!-- Salida 1: comprar -->
-    <Reveal delay={0.1}>
-      {/* La cabecera de este archivo decía: "si algún día hay fecha de cierre
-          REAL, este es el sitio donde tiene sentido". Ya la hay, y sale del
-          mismo `precio.urgencia.fechaCierre` que las tiras: no hay una segunda
-          fecha que se pueda desincronizar. Sin enlace, porque el botón que
-          lleva a comprar está tres centímetros más abajo. */}
-      <CintaPrecio
-        variante="panel"
-        inverso
-        conEnlace={false}
-        class="mx-auto mt-7 max-w-md"
-      />
+    <div class="text-center lg:text-left">
+      <Reveal>
+        <h2 class="text-4xl font-extrabold text-balance text-ink-inverse sm:text-5xl">
+          <T v={curso.promesa} />
+        </h2>
 
-      <div class="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-        {/* Mientras no haya pasarela, el botón lleva a la sección de precio en
-            lugar de a un href="#" que saltaría al inicio de la página. */}
-        <Button
-          href={checkoutPendiente ? cta.primario.href : curso.precio.urlCheckout}
-          variant="primary"
-          size="lg"
-          sobre="oscuro"
-          trackId="cierre"
-          class="w-full sm:w-auto"
-        >
-          <T v={cta.primario.texto} />
-        </Button>
+        {/* SE FUE `promesaApoyo`. Son cinco líneas que el visitante ya ha leído
+            palabra por palabra en el hero: repetirlas en el cierre no cierra
+            nada, alarga. Lo que sí hace falta aquí es el PRECIO, que hasta
+            ahora no aparecía en toda la sección donde se decide pagarlo.
 
-        {/* El botón de llamar, aquí también: quien llega al final y no compra
-            suele tener UNA duda concreta, y una llamada la resuelve en el
-            momento mientras que un correo la enfría. Solo si hay número. */}
-        {
-          contacto.telefono && (
-            <Button
-              href={`tel:${contacto.telefono}`}
-              variant="inverse"
-              size="lg"
-              sobre="oscuro"
-              trackId="cierre-llamada"
-              class="w-full sm:w-auto"
-            >
-              <T v={copy.instructor.llamame} />
-            </Button>
-          )
-        }
-      </div>
-
-      {/* Las tres razones para no dudar, en una línea y con icono. Sustituyen
-          al párrafo suelto de la garantía: dicen lo mismo más lo que faltaba
-          (que el acceso no caduca y que se puede pagar a plazos), y se leen de
-          un vistazo en vez de en una frase. */}
-      <ul class="mt-8 flex flex-wrap items-center justify-center gap-x-7 gap-y-3 text-sm text-secondary-200">
-        {
-          tranquilidad.map((t) => (
-            <li class="flex items-center gap-2">
-              <span aria-hidden="true" class="text-secondary-300">
-                <Icono nombre={t.icono} class="size-5" />
+            La cifra y las mensualidades van en la MISMA línea, alineadas por la
+            base. Apiladas, el "o 3 pagos de $164" quedaba colgando debajo de un
+            número enorme y parecía una nota al pie; al lado, se lee como lo que
+            es: la otra forma de pagar lo mismo. */}
+        <p class="mt-6 flex flex-wrap items-baseline justify-center gap-x-4 gap-y-1 lg:justify-start">
+          <span class="text-5xl font-extrabold tracking-tight text-ink-inverse sm:text-6xl">
+            <T v={precioActual} />
+          </span>
+          {
+            textoCuotas && (
+              <span class="text-base font-medium text-secondary-200">
+                <T v={textoCuotas} />
               </span>
-              <T v={t.texto} />
-            </li>
-          ))
-        }
-      </ul>
+            )
+          }
+        </p>
+      </Reveal>
+
+      <Reveal delay={0.1}>
+        {/* La cabecera de este archivo decía: "si algún día hay fecha de cierre
+            REAL, este es el sitio donde tiene sentido". Ya la hay, y sale del
+            mismo `precio.urgencia.fechaCierre` que las tiras: no hay una
+            segunda fecha que se pueda desincronizar. Sin enlace, porque el
+            botón que lleva a comprar está tres centímetros más abajo.
+
+            `max-w-md` se fue: en media columna ya no hace falta estrecharla, y
+            era lo que la partía en tres renglones desiguales. */}
+        <CintaPrecio
+          variante="panel"
+          inverso
+          conEnlace={false}
+          class="mt-7"
+        />
+
+        <div class="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4 lg:justify-start">
+          {/* Mientras no haya pasarela, el botón lleva a la sección de precio
+              en lugar de a un href="#" que saltaría al inicio de la página. */}
+          <Button
+            href={checkoutPendiente ? cta.primario.href : curso.precio.urlCheckout}
+            variant="primary"
+            size="lg"
+            sobre="oscuro"
+            trackId="cierre"
+            class="w-full sm:w-auto"
+          >
+            <T v={cta.primario.texto} />
+          </Button>
+
+          {/* El botón de llamar, aquí también: quien llega al final y no compra
+              suele tener UNA duda concreta, y una llamada la resuelve en el
+              momento mientras que un correo la enfría. Solo si hay número. */}
+          {
+            contacto.telefono && (
+              <Button
+                href={`tel:${contacto.telefono}`}
+                variant="inverse"
+                size="lg"
+                sobre="oscuro"
+                trackId="cierre-llamada"
+                class="w-full sm:w-auto"
+              >
+                <Icono nombre="telefono" class="size-4 shrink-0" grosor={2} />
+                <T v={copy.instructor.llamame} />
+              </Button>
+            )
+          }
+        </div>
+
+        {/* Las tres razones para no dudar, en una línea y con icono. Sustituyen
+            al párrafo suelto de la garantía: dicen lo mismo más lo que faltaba
+            (que el acceso no caduca y que se puede pagar a plazos), y se leen
+            de un vistazo en vez de en una frase. */}
+        <ul class="mt-8 flex flex-wrap items-center justify-center gap-x-7 gap-y-3 text-sm text-secondary-200 lg:justify-start">
+          {
+            tranquilidad.map((t) => (
+              <li class="flex items-center gap-2">
+                <span aria-hidden="true" class="marca-linea shrink-0 text-secondary-300">
+                  <Icono nombre={t.icono} class="size-5" />
+                </span>
+                <T v={t.texto} />
+              </li>
+            ))
+          }
+        </ul>
+      </Reveal>
+    </div>
+
+    {/* Salida 2: el mini-curso gratis, para quien aún no compra.
+
+        Pasa a ser una TARJETA con su propio fondo. Antes era el mismo azul de
+        la sección separado por un filete, así que las dos salidas parecían una
+        sola cosa muy larga. Con marco propio se lee como la alternativa que es,
+        y se ve a la vez que el botón de comprar en vez de después de él. */}
+    <Reveal delay={0.16} class="lg:sticky lg:top-10">
+      <div class="rounded-3xl border border-primary-800 bg-primary-900/60 p-6 sm:p-8">
+        <p class="text-center text-lg font-semibold text-balance text-ink-inverse">
+          <T v={copy.cierre.dudaTitulo} />
+        </p>
+        <p class="mt-2 text-center text-base text-pretty text-secondary-200">
+          <T v={copy.cierre.dudaTexto} vars={{ formato: leadMagnet.formato }} />
+        </p>
+
+        <div class="mt-7">
+          <LeadForm
+            client:visible lang={lang}
+            origen="cierre"
+            cta={leadMagnet.cta}
+            aviso={leadMagnet.aviso}
+            exitoTitulo={leadMagnet.exito.titulo}
+            exitoTexto={leadMagnet.exito.texto}
+            tono="inverso"
+          />
+        </div>
+      </div>
     </Reveal>
   </div>
-
-  <!-- Salida 2: el email, para quien aún no compra -->
-  <Reveal delay={0.16}>
-    <div class="mx-auto mt-14 max-w-read border-t border-primary-800 pt-12">
-      <p class="text-center text-lg font-semibold text-ink-inverse">
-        <T v={copy.cierre.dudaTitulo} />
-      </p>
-      <p class="mx-auto mt-2 max-w-md text-center text-base text-secondary-200">
-        <T v={copy.cierre.dudaTexto} vars={{ formato: leadMagnet.formato }} />
-      </p>
-
-      <div class="mx-auto mt-7 max-w-md">
-        <LeadForm
-          client:visible lang={lang}
-          origen="cierre"
-          cta={leadMagnet.cta}
-          aviso={leadMagnet.aviso}
-          exitoTitulo={leadMagnet.exito.titulo}
-          exitoTexto={leadMagnet.exito.texto}
-          tono="inverso"
-        />
-      </div>
-    </div>
-  </Reveal>
 </Section>
