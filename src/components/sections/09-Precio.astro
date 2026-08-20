@@ -178,9 +178,13 @@ const lang = resolverIdiomaServidor(
     entradilla={copy.precio.entradilla}
   />
 
-  <div class="mx-auto mt-12 max-w-4xl">
+  {/* `max-w-5xl` y no `4xl`: a 1440 la tarjeta dejaba 270 px de gris muerto a
+      cada lado y las dos columnas iban tan justas que el desglose partía sus
+      títulos en dos renglones. 1.024 px es el ancho al que "El curso completo:
+      los 10 videos, con acceso de por vida" entra en una línea. */}
+  <div class="mx-auto mt-12 max-w-5xl">
     <Reveal>
-      <div class="overflow-hidden rounded-3xl border border-line bg-surface shadow-lg">
+      <div class="overflow-hidden rounded-3xl border border-line bg-surface shadow-xl">
         <!-- `min-w-0` en los dos paneles y no es cosmético: por defecto un item
              de grid tiene `min-width: auto`, así que NO baja de su min-content.
              Con la cuenta atrás dentro, ese min-content era de 381 px y la
@@ -190,10 +194,16 @@ const lang = resolverIdiomaServidor(
              cifra del desglose ("$2,19" en vez de "$2,190"). -->
         <div class="grid md:grid-cols-[1.25fr_1fr]">
           <!-- ── El desglose: lo que sostiene el ancla ────────────────────── -->
-          {/* `justify-center` como el panel de al lado: al pasar el desglose de
-              cuatro párrafos a cuatro barras, esta columna encogió y quedaba un
-              palmo de aire muerto debajo mientras la del precio llegaba abajo
-              del todo. Centrado, las dos columnas se equilibran. */}
+          {/* CENTRADO, Y AHORA CON MOTIVO. El panel de al lado es más alto que
+              el desglose y siempre lo va a ser: lleva precio, insignia, contador,
+              botón, nota y garantía. Alineando el desglose por arriba, todo ese
+              sobrante caía junto al final — 350 px de blanco muerto bajo el
+              "Valor total".
+
+              Centrado se reparte a los dos lados, y con el panel derecho en
+              navy —un bloque macizo de arriba abajo— el desglose centrado
+              contra él se lee como una composición y no como una columna que se
+              quedó corta. */}
           <div
             class="flex min-w-0 flex-col justify-center border-b border-line p-7 sm:p-9 md:border-b-0 md:border-r"
           >
@@ -272,8 +282,30 @@ const lang = resolverIdiomaServidor(
           </div>
 
           <!-- ── El precio y la acción ────────────────────────────────────── -->
-          <div class="flex min-w-0 flex-col justify-center bg-surface-muted p-7 text-center sm:p-9">
-            <p class="text-xs font-bold uppercase tracking-[0.14em] text-secondary-700">
+          {/* EL PANEL SE VA A NAVY.
+
+              Era `bg-surface-muted`: un gris un punto más oscuro que el blanco
+              de al lado. En una tarjeta de precio, el lado donde se paga tiene
+              que ganar la mirada, y dos grises casi iguales no jerarquizan
+              nada — la tarjeta entera se leía plana.
+
+              En navy, el $490 pasa a ser lo primero que se ve de la sección y
+              el botón teal encima del azul es el contraste más alto de toda la
+              página. El desglose se queda en blanco a la izquierda, que es su
+              papel: los datos que sostienen el ancla, no el protagonista.
+
+              El degradado y el halo son sutiles a propósito. Un fondo plano se
+              lee como un bloque de color; con la luz teal arriba a la derecha
+              se lee como una superficie. */}
+          <div
+            class="relative isolate flex min-w-0 flex-col justify-center overflow-hidden bg-primary-950 p-7 text-center sm:p-9"
+          >
+            <span
+              aria-hidden="true"
+              class="pointer-events-none absolute -top-24 -right-16 -z-10 size-64 rounded-full bg-secondary-500/20 blur-3xl"
+            ></span>
+
+            <p class="text-xs font-bold tracking-[0.14em] text-secondary-300 uppercase">
               <T
                 v={esLanzamiento
                   ? copy.precio.lanzamiento.kicker
@@ -286,10 +318,10 @@ const lang = resolverIdiomaServidor(
                 <Fragment>
                   {/* El precio real manda y la referencia va DEBAJO, en futuro:
                       "subirá a", no un tachón que insinúa un pasado que no fue. */}
-                  <p class="mt-3 text-6xl font-extrabold tracking-tight text-ink">
+                  <p class="mt-3 text-6xl font-extrabold tracking-tight text-ink-inverse">
                     <T v={precioActual} />
                   </p>
-                  <p class="mt-1 text-sm font-medium text-ink-muted">
+                  <p class="mt-1 text-sm font-medium text-secondary-200">
                     <T v={copy.precio.lanzamiento.etiquetaPrecio} />
                   </p>
 
@@ -300,24 +332,24 @@ const lang = resolverIdiomaServidor(
                       Ver la nota de `frenteAlDesglose` en el config: compara
                       contra la SUMA, nunca contra un precio anterior. */}
                   {textoFrenteAlDesglose && (
-                    <p class="mt-4 inline-flex self-center rounded-full bg-secondary-100 px-4 py-1.5 text-sm font-bold text-balance text-secondary-700">
+                    <p class="mt-4 inline-flex self-center rounded-full bg-secondary-500 px-4 py-1.5 text-sm font-bold text-balance text-primary-950">
                       <T v={textoFrenteAlDesglose} />
                     </p>
                   )}
 
-                  <p class="mt-3 text-base font-semibold text-balance text-ink">
+                  <p class="mt-3 text-base font-semibold text-balance text-ink-inverse">
                     <T v={textoSubira} />
                   </p>
                 </Fragment>
               ) : (
                 <Fragment>
-                  <p class="mt-3 text-base text-ink-subtle">
+                  <p class="mt-3 text-base text-secondary-300">
                     <span class="line-through"><T v={precioReferencia} /></span>
                   </p>
-                  <p class="text-6xl font-extrabold tracking-tight text-ink">
+                  <p class="text-6xl font-extrabold tracking-tight text-ink-inverse">
                     <T v={precioActual} />
                   </p>
-                  <p class="mt-3 inline-flex self-center rounded-full bg-secondary-100 px-3 py-1 text-sm font-bold text-secondary-700">
+                  <p class="mt-3 inline-flex self-center rounded-full bg-secondary-500 px-3 py-1 text-sm font-bold text-primary-950">
                     <T v={textoAhorro} />
                   </p>
                 </Fragment>
@@ -326,7 +358,7 @@ const lang = resolverIdiomaServidor(
 
             {
               textoCuotas && (
-                <p class="mt-3 text-base font-medium text-ink-muted">
+                <p class="mt-3 text-base font-medium text-secondary-200">
                   <T v={textoCuotas} />
                 </p>
               )
@@ -343,6 +375,7 @@ const lang = resolverIdiomaServidor(
                   alternativa={alternativaContador}
                   etiquetas={copy.precio.contador}
                   lang={lang}
+                  tono="oscuro"
                 />
               )
             }
@@ -378,6 +411,7 @@ const lang = resolverIdiomaServidor(
                 disabled={checkoutPendiente && !contacto.telefono}
                 variant="primary"
                 size="lg"
+                sobre="oscuro"
                 trackId="precio"
                 block
               >
@@ -405,13 +439,13 @@ const lang = resolverIdiomaServidor(
                 caso sí es la única que lo dice. */}
             {
               urgencia && !fechaValida && (
-                <p class="mt-4 text-sm font-medium text-balance text-ink">
+                <p class="mt-4 text-sm font-medium text-balance text-ink-inverse">
                   <T v={urgencia} />
                 </p>
               )
             }
 
-            <p class="mt-3 text-xs text-pretty text-ink-subtle">
+            <p class="mt-3 text-xs text-pretty text-secondary-200">
               <T v={precio.nota} />
             </p>
 
@@ -428,12 +462,12 @@ const lang = resolverIdiomaServidor(
                    puesta donde menos se mira. Ahora es un bloque teal con su
                    icono, justo debajo del botón, que es el instante exacto en
                    que aparece la duda de "¿y si no es para mí?". */
-                <div class="mt-5 rounded-xl bg-secondary-50 p-4 text-center">
-                  <p class="flex items-center justify-center gap-2 text-sm font-bold text-secondary-800">
+                <div class="mt-5 rounded-xl border border-primary-700 bg-primary-900/70 p-4 text-center">
+                  <p class="flex items-center justify-center gap-2 text-sm font-bold text-secondary-300">
                     <Icono nombre="escudo" class="size-5 shrink-0" />
                     <T v={garantia.titulo} />
                   </p>
-                  <p class="mt-1.5 text-xs text-pretty text-ink-muted">
+                  <p class="mt-1.5 text-xs text-pretty text-secondary-200">
                     <T v={garantia.resumen} />
                   </p>
                 </div>

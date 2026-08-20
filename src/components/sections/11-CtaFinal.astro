@@ -103,7 +103,18 @@ const lang = resolverIdiomaServidor(
     <!-- Salida 1: comprar -->
     <div class="text-center lg:text-left">
       <Reveal>
-        <h2 class="text-4xl font-extrabold text-balance text-ink-inverse sm:text-5xl">
+        {/* El distintivo hace dos cosas: da un punto de entrada a la columna
+            —sin él, el titular arrancaba en el aire— y dice dónde está el
+            visitante. "Último paso" después de una página entera es una
+            indicación de sitio, no una frase de venta. */}
+        <p class="inline-flex items-center gap-2 rounded-full border border-primary-700 bg-primary-900/60 px-3 py-1 text-xs font-bold tracking-wide text-secondary-300 uppercase">
+          <span aria-hidden="true" class="marca-linea">
+            <span class="size-1.5 rounded-full bg-secondary-400"></span>
+          </span>
+          <T v={copy.cierre.kicker} />
+        </p>
+
+        <h2 class="mt-4 text-4xl font-extrabold text-balance text-ink-inverse sm:text-5xl">
           <T v={curso.promesa} />
         </h2>
 
@@ -184,12 +195,15 @@ const lang = resolverIdiomaServidor(
             al párrafo suelto de la garantía: dicen lo mismo más lo que faltaba
             (que el acceso no caduca y que se puede pagar a plazos), y se leen
             de un vistazo en vez de en una frase. */}
-        <ul class="mt-8 flex flex-wrap items-center justify-center gap-x-7 gap-y-3 text-sm text-secondary-200 lg:justify-start">
+        {/* Las tres razones, ahora en fichas. Sueltas sobre el azul se leían
+            como un pie de página; con su marco pesan lo que tienen que pesar,
+            que es justo lo que frena en el último momento. */}
+        <ul class="mt-8 flex flex-wrap justify-center gap-2 text-sm lg:justify-start">
           {
             tranquilidad.map((t) => (
-              <li class="flex items-center gap-2">
+              <li class="flex items-center gap-2 rounded-full border border-primary-700 bg-primary-900/50 px-3.5 py-2 text-secondary-200">
                 <span aria-hidden="true" class="marca-linea shrink-0 text-secondary-300">
-                  <Icono nombre={t.icono} class="size-5" />
+                  <Icono nombre={t.icono} class="size-4" />
                 </span>
                 <T v={t.texto} />
               </li>
@@ -206,7 +220,14 @@ const lang = resolverIdiomaServidor(
         sola cosa muy larga. Con marco propio se lee como la alternativa que es,
         y se ve a la vez que el botón de comprar en vez de después de él. */}
     <Reveal delay={0.16} class="lg:sticky lg:top-10">
-      <div class="rounded-3xl border border-primary-800 bg-primary-900/60 p-6 sm:p-8">
+      {/* `isolate` + el halo teal detrás: es el mismo recurso que el panel de
+          precio, y hace que la tarjeta se despegue del azul de la sección en
+          vez de ser un rectángulo un poco más claro. */}
+      <div class="relative isolate overflow-hidden rounded-3xl border border-primary-700 bg-primary-900/70 p-6 shadow-2xl sm:p-8">
+        <span
+          aria-hidden="true"
+          class="pointer-events-none absolute -top-20 -right-16 -z-10 size-56 rounded-full bg-secondary-500/20 blur-3xl"
+        ></span>
         <p class="text-center text-lg font-semibold text-balance text-ink-inverse">
           <T v={copy.cierre.dudaTitulo} />
         </p>

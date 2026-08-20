@@ -45,7 +45,34 @@ interface Props {
   etiquetas: EtiquetasContador;
   /** Idioma resuelto en el servidor. Ver src/i18n/react.ts. */
   lang?: Idioma;
+  /**
+   * Sobre qué fondo se pinta. `"oscuro"` para el panel navy de la sección de
+   * precio: sobre azul, el teal claro del tono claro no llega al 3:1 que pide
+   * la WCAG 1.4.11 para elementos de interfaz, y los dígitos en `text-ink`
+   * sobre `bg-surface` serían tres cajas blancas flotando.
+   */
+  tono?: "claro" | "oscuro";
 }
+
+/** Las clases que cambian entre fondo claro y fondo navy. */
+const TONOS = {
+  claro: {
+    caja: "border-secondary-200 bg-secondary-50",
+    titulo: "text-secondary-700",
+    puntos: "text-secondary-400",
+    celda: "bg-surface shadow-sm",
+    digito: "text-ink",
+    etiqueta: "text-ink-subtle",
+  },
+  oscuro: {
+    caja: "border-primary-700 bg-primary-900/70",
+    titulo: "text-secondary-300",
+    puntos: "text-secondary-400",
+    celda: "bg-primary-950/80 ring-1 ring-inset ring-primary-700",
+    digito: "text-ink-inverse",
+    etiqueta: "text-secondary-300",
+  },
+} as const;
 
 function restante(objetivo: number) {
   const ms = objetivo - Date.now();
@@ -61,8 +88,15 @@ function restante(objetivo: number) {
 
 const dosDigitos = (n: number) => String(n).padStart(2, "0");
 
-export function Contador({ fechaCierre, alternativa, etiquetas, lang }: Props) {
+export function Contador({
+  fechaCierre,
+  alternativa,
+  etiquetas,
+  lang,
+  tono = "claro",
+}: Props) {
   const { t } = useIdioma(lang);
+  const estilo = TONOS[tono];
   const objetivo = new Date(fechaCierre).getTime();
 
   /** `undefined` = todavía no ha montado. `null` = la fecha ya pasó. */
@@ -94,8 +128,10 @@ export function Contador({ fechaCierre, alternativa, etiquetas, lang }: Props) {
     : null;
 
   return (
-    <div className="mt-6 rounded-2xl border border-secondary-200 bg-secondary-50 px-4 py-4">
-      <p className="text-xs font-bold uppercase tracking-[0.12em] text-secondary-700">
+    <div className={`mt-6 rounded-2xl border px-4 py-4 ${estilo.caja}`}>
+      <p
+        className={`text-xs font-bold uppercase tracking-[0.12em] ${estilo.titulo}`}
+      >
         {t(etiquetas.titulo)}
       </p>
 
@@ -130,15 +166,23 @@ export function Contador({ fechaCierre, alternativa, etiquetas, lang }: Props) {
             className="flex min-w-0 flex-1 items-center gap-2 sm:flex-none"
           >
             {i > 0 && (
-              <span className="hidden pb-4 text-2xl font-bold text-secondary-400 sm:block">
+              <span
+                className={`hidden pb-4 text-2xl font-bold sm:block ${estilo.puntos}`}
+              >
                 :
               </span>
             )}
-            <div className="min-w-0 flex-1 rounded-xl bg-surface px-1 py-1.5 text-center shadow-sm sm:min-w-14 sm:flex-none sm:px-2">
-              <span className="block text-xl font-extrabold tabular-nums text-ink sm:text-2xl">
+            <div
+              className={`min-w-0 flex-1 rounded-xl px-1 py-1.5 text-center sm:min-w-14 sm:flex-none sm:px-2 ${estilo.celda}`}
+            >
+              <span
+                className={`block text-xl font-extrabold tabular-nums sm:text-2xl ${estilo.digito}`}
+              >
                 {c.valor}
               </span>
-              <span className="block text-[0.6rem] font-semibold uppercase tracking-wide text-ink-subtle sm:text-[0.65rem]">
+              <span
+                className={`block text-[0.6rem] font-semibold uppercase tracking-wide sm:text-[0.65rem] ${estilo.etiqueta}`}
+              >
                 {t(c.etiqueta)}
               </span>
             </div>

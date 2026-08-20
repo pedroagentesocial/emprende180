@@ -2290,6 +2290,8 @@ export const copy = {
 
   cierre: {
     aria: { es: "Empezar", en: "Get started" },
+    /** Distintivo sobre el titular. Dice dónde está: es el final de la página. */
+    kicker: { es: "Último paso", en: "Last step" },
     dudaTitulo: { es: "¿Todavía no lo tienes claro?", en: "Still not sure?" },
     dudaTexto: {
       es: "Empieza por el mini-curso gratis y decide después. {formato}.",
