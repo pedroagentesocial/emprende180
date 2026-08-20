@@ -1,14 +1,47 @@
 ---
 import { resolverIdiomaServidor } from "@i18n/idioma";
 import T from "@components/i18n/T.astro";
-import { sitio, contacto, legal, copy } from "@config/curso.config";
+import { sitio, contacto, legal, copy, cta } from "@config/curso.config";
 import { construirTxt } from "@i18n/idioma";
 import { interpolar } from "@i18n/formato";
 import { privacidad, terminos } from "@config/legal.config";
 import CookiePreferences from "@components/legal/CookiePreferences";
 import RedesMarca from "@components/layout/RedesMarca.astro";
+import MarcaAgua from "@components/ui/MarcaAgua.astro";
+import Icono from "@components/ui/Icono.astro";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * PIE
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * ─── ERA GRIS Y ESTABA MEDIO VACÍO ─────────────────────────────────────────
+ *
+ * El pie anterior tenía dos bloques: el logo con una frase a la izquierda y una
+ * columna de dos enlaces (correo y WhatsApp) empujada al borde derecho por un
+ * `justify-between`. Entre los dos, 700 px de gris sin nada. Y el teléfono, que
+ * es la vía por la que hoy se puede pagar de verdad, no estaba.
+ *
+ * Ahora son cuatro columnas con nombre: la marca, la página, el contacto y lo
+ * legal. Un pie es el último sitio donde alguien busca algo concreto —"¿cómo
+ * les llamo?", "¿dónde estaba el temario?"— y para eso hace falta que esté.
+ *
+ * ─── Y SE FUE A NAVY ───────────────────────────────────────────────────────
+ *
+ * Venía de `bg-surface-muted`, un gris claro, justo debajo de la sección de
+ * cierre, que es navy. El corte entre los dos partía la página en dos justo al
+ * final. En navy, el cierre y el pie se leen como un solo bloque oscuro que
+ * remata, y el logo puede ir en blanco, que es su versión buena.
+ *
+ * ─── LA MARCA, POR FIN, EN MÁS DE UN SITIO ─────────────────────────────────
+ *
+ * Va el lockup horizontal blanco arriba y el isotipo de marca de agua detrás.
+ * Ver `MarcaAgua.astro`: el `relative isolate` de aquí es lo que hace que la
+ * marca de agua se quede DETRÁS del contenido y no debajo del fondo.
+ */
 
 const anio = new Date().getFullYear();
+
 /* El mensaje prerrellenado de WhatsApp va en el idioma activo: abrir el chat
    con un texto en otro idioma es de las cosas que más cantan. */
 const whatsappUrl = contacto.whatsapp
@@ -22,9 +55,9 @@ const copyright = construirTxt((l) =>
   interpolar(copy.ui.copyright[l], { anio, razonSocial: contacto.razonSocial }),
 );
 
-/* En el footer sí hay espacio vertical, así que va el lockup completo de la
-   guía: bombilla, wordmark y claim. Es la versión oficial, sin recomponer. */
-const logo = sitio.logo;
+/* El lockup horizontal y no el cuadrado: en una fila de pie, la versión alta
+   obligaba a `h-24` y empujaba la columna entera. */
+const logo = sitio.logoHorizontalBlanco;
 
 /* Idioma de ESTA petición. Las islas de React lo necesitan como prop: en
    el servidor no pueden leerlo del DOM, así que sin esto se renderizarían
@@ -33,75 +66,167 @@ const lang = resolverIdiomaServidor(
   Astro.url,
   Astro.request.headers.get("accept-language"),
 );
-
 ---
 
-<footer class="border-t border-line bg-surface-muted">
-  <div class="container-page py-12">
-    <div class="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
+<footer class="relative isolate overflow-hidden border-t border-primary-800 bg-primary-950 text-secondary-200">
+  <MarcaAgua posicion="derecha" class="opacity-[0.06]" />
+
+  <div class="container-page py-14">
+    <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr] lg:gap-8">
+      <!-- ── La marca ──────────────────────────────────────────────────────── -->
       <div>
         <img
           src={logo.src}
           alt={sitio.nombre}
           width={logo.w}
           height={logo.h}
-          class="h-24 w-auto"
+          class="h-12 w-auto"
           loading="lazy"
           decoding="async"
         />
-        <p class="mt-4 max-w-xs text-sm text-ink-muted"><T v={sitio.descripcion} /></p>
-        <RedesMarca class="mt-5" pendingLabel={lang === "es" ? "Próximamente" : "Coming soon"} />
+
+        {/* `max-w-sm` y no `max-w-xs`: en una columna de 1.6fr, 20rem partía la
+            frase en siete renglones cortos. */}
+        <p class="mt-5 max-w-sm text-sm text-pretty">
+          <T v={sitio.descripcion} />
+        </p>
+
+        <p class="mt-6 text-xs font-bold tracking-[0.14em] text-secondary-300 uppercase">
+          <T v={copy.ui.pieRedes} />
+        </p>
+        <RedesMarca
+          class="mt-3"
+          tono="oscuro"
+          pendingLabel={lang === "es" ? "Próximamente" : "Coming soon"}
+        />
       </div>
 
-      <div class="flex flex-col gap-3 text-sm">
-        <a
-          href={`mailto:${contacto.email}`}
-          class="inline-flex min-h-11 items-center text-ink-muted hover:text-ink"
-        >
-          {contacto.email}
-        </a>
-        {
-          whatsappUrl && (
+      <!-- ── La página ─────────────────────────────────────────────────────── -->
+      {/* Los mismos enlaces del menú de arriba. En el pie sí caben los cuatro:
+          quien llega hasta aquí ya ha leído, y volver a una sección concreta es
+          justo lo que va a querer hacer. */}
+      <nav aria-label={copy.ui.pieNavegar[lang]}>
+        <h2 class="text-xs font-bold tracking-[0.14em] text-secondary-300 uppercase">
+          <T v={copy.ui.pieNavegar} />
+        </h2>
+        <ul class="mt-3 grid text-sm">
+          {
+            cta.navegacion.map((n) => (
+              <li>
+                <a
+                  href={n.href}
+                  class="inline-flex min-h-11 items-center transition-colors hover:text-ink-inverse"
+                >
+                  <T v={n.texto} />
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <!-- ── El contacto ───────────────────────────────────────────────────── -->
+      {/* EL TELÉFONO ENTRA EN EL PIE. Mientras no haya pasarela es la única vía
+          por la que se puede pagar, y estaba en la barra flotante, en el cierre
+          y en preguntas — en todas menos en el sitio donde la gente busca un
+          teléfono cuando ya ha decidido. */}
+      <div>
+        <h2 class="text-xs font-bold tracking-[0.14em] text-secondary-300 uppercase">
+          <T v={copy.ui.pieContacto} />
+        </h2>
+        <ul class="mt-3 grid text-sm">
+          {
+            contacto.telefono && (
+              <li>
+                <a
+                  href={`tel:${contacto.telefono}`}
+                  class="inline-flex min-h-11 items-center gap-2 transition-colors hover:text-ink-inverse"
+                >
+                  <span aria-hidden="true" class="marca-linea shrink-0">
+                    <Icono nombre="telefono" class="size-4" grosor={2} />
+                  </span>
+                  {contacto.telefonoVisible}
+                </a>
+              </li>
+            )
+          }
+
+          <li>
             <a
-              href={whatsappUrl.es}
-              data-wa-es={whatsappUrl.es}
-              data-wa-en={whatsappUrl.en}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex min-h-11 items-center text-ink-muted hover:text-ink"
+              href={`mailto:${contacto.email}`}
+              class="inline-flex min-h-11 items-center gap-2 break-all transition-colors hover:text-ink-inverse"
             >
-              WhatsApp
+              <span aria-hidden="true" class="marca-linea shrink-0">
+                <Icono nombre="conversacion" class="size-4" grosor={2} />
+              </span>
+              {contacto.email}
             </a>
-          )
-        }
-      </div>
-    </div>
+          </li>
 
-    <div
-      class="mt-10 flex flex-col gap-4 border-t border-line pt-6 text-sm text-ink-subtle sm:flex-row sm:items-center sm:justify-between"
-    >
-      <p><T v={copyright} /></p>
+          {
+            whatsappUrl && (
+              <li>
+                <a
+                  href={whatsappUrl.es}
+                  data-wa-es={whatsappUrl.es}
+                  data-wa-en={whatsappUrl.en}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex min-h-11 items-center gap-2 transition-colors hover:text-ink-inverse"
+                >
+                  <span aria-hidden="true" class="marca-linea shrink-0">
+                    <Icono nombre="bocadillos" class="size-4" grosor={2} />
+                  </span>
+                  WhatsApp
+                </a>
+              </li>
+            )
+          }
+        </ul>
+      </div>
+
+      <!-- ── Lo legal ──────────────────────────────────────────────────────── -->
       {/* `data-legal` hace que se abran en modal sin salir de la landing. Sin
           JS siguen siendo enlaces normales a páginas reales e indexables. */}
-      <nav aria-label={copy.ui.enlacesLegales.es}
+      <nav
+        aria-label={copy.ui.enlacesLegales.es}
         data-aria-es={copy.ui.enlacesLegales.es}
-        data-aria-en={copy.ui.enlacesLegales.en} class="flex flex-wrap items-center gap-x-6 gap-y-1">
-        <a
-          href={legal.privacidad}
-          data-legal="privacidad"
-          class="inline-flex min-h-11 items-center hover:text-ink"
-        >
-          <T v={privacidad.titulo} />
-        </a>
-        <a
-          href={legal.terminos}
-          data-legal="terminos"
-          class="inline-flex min-h-11 items-center hover:text-ink"
-        >
-          <T v={terminos.titulo} />
-        </a>
-        <CookiePreferences client:visible lang={lang} />
+        data-aria-en={copy.ui.enlacesLegales.en}
+      >
+        <h2 class="text-xs font-bold tracking-[0.14em] text-secondary-300 uppercase">
+          <T v={copy.ui.pieLegal} />
+        </h2>
+        <ul class="mt-3 grid text-sm">
+          <li>
+            <a
+              href={legal.privacidad}
+              data-legal="privacidad"
+              class="inline-flex min-h-11 items-center transition-colors hover:text-ink-inverse"
+            >
+              <T v={privacidad.titulo} />
+            </a>
+          </li>
+          <li>
+            <a
+              href={legal.terminos}
+              data-legal="terminos"
+              class="inline-flex min-h-11 items-center transition-colors hover:text-ink-inverse"
+            >
+              <T v={terminos.titulo} />
+            </a>
+          </li>
+          <li class="flex min-h-11 items-center">
+            <CookiePreferences client:visible lang={lang} />
+          </li>
+        </ul>
       </nav>
+    </div>
+
+    {/* Aquí llegó a haber un isotipo pequeño a la derecha del copyright. Se fue:
+        la marca de agua ya ocupa esa esquina, y dos veces el mismo símbolo en
+        el mismo rincón no es marca, es repetición. */}
+    <div class="mt-12 border-t border-primary-800 pt-6 text-sm text-secondary-200/80">
+      <p><T v={copyright} /></p>
     </div>
   </div>
 </footer>

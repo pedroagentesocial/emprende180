@@ -12,9 +12,28 @@ import { redesMarca } from '@config/curso.config';
 interface Props {
   /** Label shown on a profile that does not exist yet (e.g. "Próximamente"). */
   pendingLabel: string;
+  /** Which background it sits on. `oscuro` for the navy footer. */
+  tono?: 'claro' | 'oscuro';
   class?: string;
 }
-const { pendingLabel, class: className = '' } = Astro.props;
+const { pendingLabel, tono = 'claro', class: className = '' } = Astro.props;
+
+/* `size-11` and not `size-10`: 44px is the WCAG 2.5.8 minimum, and today these
+   render as spans (no profile urls yet) so the touch-target audit skips them.
+   The day a url lands here they become links, and 40px links would fail. */
+const ESTILOS = {
+  claro: {
+    enlace: 'border-line text-ink-muted hover:border-ink hover:text-ink',
+    pendiente: 'border-line text-ink-subtle/60',
+  },
+  oscuro: {
+    enlace:
+      'border-primary-700 text-secondary-200 hover:border-secondary-400 hover:text-ink-inverse',
+    pendiente: 'border-primary-700 text-secondary-200/50',
+  },
+} as const;
+
+const estilo = ESTILOS[tono];
 
 const paths: Record<string, string> = {
   facebook:
@@ -43,7 +62,7 @@ const profiles = redesMarca;
             rel="noopener noreferrer me"
             aria-label={p.label}
             title={p.label}
-            class="grid size-10 place-items-center rounded-full border border-line text-ink-muted transition-colors hover:border-ink hover:text-ink"
+            class={`grid size-11 place-items-center rounded-full border transition-colors ${estilo.enlace}`}
           >
             <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d={paths[p.key]} /></svg>
           </a>
@@ -53,7 +72,7 @@ const profiles = redesMarca;
           <span
             aria-label={`${p.label} — ${pendingLabel}`}
             title={`${p.label} — ${pendingLabel}`}
-            class="grid size-10 cursor-default place-items-center rounded-full border border-dashed border-line text-ink-subtle/60"
+            class={`grid size-11 cursor-default place-items-center rounded-full border border-dashed ${estilo.pendiente}`}
           >
             <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d={paths[p.key]} /></svg>
           </span>

@@ -1525,7 +1525,19 @@ export const contacto = {
     es: "Hola, tengo una duda sobre el curso Emprende180",
     en: "Hi, I have a question about the Emprende180 course",
   },
-  razonSocial: "[COMPLETAR: nombre o razón social]", // SWAP (HECHO)
+  /**
+   * Quién firma el copyright del pie.
+   *
+   * Se rellena con la MARCA, no con una sociedad. "Emprende180" es cierto y es
+   * lo que el visitante reconoce. Poner aquí "Emprende180 LLC" o "S. de R.L."
+   * sin que exista esa sociedad sería inventarse una figura mercantil en el
+   * único sitio de la página donde se hace una afirmación legal.
+   *
+   * ⚠️ SWAP si hay entidad registrada: cámbialo por la razón social exacta tal
+   * como aparece en el registro. Es también la que debería figurar en el aviso
+   * de privacidad y en los términos.
+   */
+  razonSocial: "Emprende180",
 } as const;
 
 /**
@@ -2333,6 +2345,16 @@ export const copy = {
       es: "© {anio} {razonSocial}. Todos los derechos reservados.",
       en: "© {anio} {razonSocial}. All rights reserved.",
     },
+    /* ─── Rótulos del pie ──────────────────────────────────────────────────
+       El pie era el logo, una frase y dos enlaces sueltos empujados al borde
+       derecho: media página de gris vacío en medio. Ahora tiene columnas, y
+       las columnas necesitan nombre. */
+    pieNavegar: { es: "La página", en: "The page" },
+    pieContacto: { es: "Hablar con nosotros", en: "Talk to us" },
+    pieLegal: { es: "Legal", en: "Legal" },
+    pieLlamar: { es: "Llamar", en: "Call" },
+    pieRedes: { es: "Síguenos", en: "Follow us" },
+
     placeholderAqui: { es: "Aquí va", en: "Goes here" },
     placeholderEnProduccion: {
       es: "Placeholder en producción",

@@ -1,0 +1,94 @@
+---
+import { sitio } from "@config/curso.config";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * MARCA DE AGUA — el isotipo, grande y casi apagado, detrás del contenido
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * La marca solo aparecía en dos sitios de toda la página: la barra de arriba y
+ * el pie. Una landing que vende una CERTIFICACIÓN —un sello con un nombre
+ * detrás— no puede enseñar ese nombre dos veces y de pasada.
+ *
+ * Esto lo mete en los bloques oscuros sin convertirlo en un adorno: al 6 % de
+ * opacidad no se "ve", se nota. Da profundidad al fondo plano y deja el sello
+ * en la retina en los tres momentos que importan —la promesa inicial, el
+ * momento de pagar y el cierre— sin robarle un milímetro de atención al texto.
+ *
+ * ⚠️ POR QUÉ NO ES UN `background-image`
+ *
+ * Como CSS no se puede marcar `aria-hidden` ni controlar el `loading`, y sobre
+ * todo: `background-image` no lo lee el `alt`, pero tampoco lo ignora ningún
+ * lector — simplemente no existe, y entonces no hay forma de decir que ESTO no
+ * es contenido. Como `<img aria-hidden loading="lazy">` queda explícito que es
+ * decoración y no entra en el árbol de accesibilidad.
+ *
+ * ⚠️ EL PADRE NECESITA `relative isolate`
+ *
+ * Va en `-z-10`, así que el contenedor tiene que crear su propio contexto de
+ * apilamiento o la marca se colará por debajo del fondo de la sección y no se
+ * verá. `isolate` es exactamente eso.
+ *
+ * ⚠️ NUNCA SOBRE FONDO CLARO con `variante="blanco"`. Sobre `bg-surface` el
+ * isotipo blanco desaparece del todo y el `<img>` sigue descargándose: 17 KB
+ * por nada.
+ */
+
+interface Props {
+  /** Qué archivo. `blanco` para fondos navy; `color` para fondos claros. */
+  variante?: "blanco" | "color";
+  /**
+   * Dónde se ancla. `derecha` la saca por el borde derecho, `izquierda` por el
+   * izquierdo y `centro` la deja detrás del contenido.
+   */
+  posicion?: "derecha" | "izquierda" | "centro";
+  /**
+   * Cuánto ocupa. Es una prop y no una clase suelta porque el alto ya viene
+   * puesto abajo: dos utilidades de `height` en el mismo elemento las resuelve
+   * el orden del CSS generado, no el orden en que se escriban aquí, así que
+   * "pasar `h-56` por `class`" gana o pierde según el día.
+   */
+  tamano?: "grande" | "medio" | "pequeno";
+  /** Clases extra: opacidad o desplazamientos concretos. */
+  class?: string;
+}
+
+const {
+  variante = "blanco",
+  posicion = "derecha",
+  tamano = "grande",
+  class: className = "",
+} = Astro.props;
+
+const TAMANOS = {
+  grande: "h-[min(22rem,60vw)]",
+  medio: "h-[min(15rem,45vw)]",
+  pequeno: "h-[min(9rem,32vw)]",
+} as const;
+
+const img = variante === "blanco" ? sitio.isotipoBlanco : sitio.isotipo;
+
+/* Tamaños en `min()` para que en móvil no se salga: el isotipo es más alto que
+   ancho, así que se mide por alto y se deja que el ancho salga solo. */
+const ANCLAJES = {
+  derecha: "-right-16 -bottom-10 sm:-right-24",
+  izquierda: "-bottom-10 -left-16 sm:-left-24",
+  centro: "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+} as const;
+---
+
+<img
+  src={img.src}
+  alt=""
+  aria-hidden="true"
+  width={img.w}
+  height={img.h}
+  loading="lazy"
+  decoding="async"
+  class:list={[
+    "pointer-events-none absolute -z-10 w-auto select-none",
+    TAMANOS[tamano],
+    ANCLAJES[posicion],
+    className,
+  ]}
+/>

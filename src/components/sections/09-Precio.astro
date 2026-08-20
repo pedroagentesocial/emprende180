@@ -6,6 +6,7 @@ import Reveal from "@components/motion/Reveal.astro";
 import Button from "@components/ui/Button.astro";
 import { Contador } from "@components/motion/Contador";
 import Icono from "@components/ui/Icono.astro";
+import MarcaAgua from "@components/ui/MarcaAgua.astro";
 import { curso, cta, garantia, copy, contacto } from "@config/curso.config";
 import { construirTxt, LOCALES, resolverIdiomaServidor } from "@i18n/idioma";
 import { formatMoney } from "@i18n/formato";
@@ -304,6 +305,10 @@ const lang = resolverIdiomaServidor(
               aria-hidden="true"
               class="pointer-events-none absolute -top-24 -right-16 -z-10 size-64 rounded-full bg-secondary-500/20 blur-3xl"
             ></span>
+
+            {/* El isotipo detrás del precio. Pequeño: el panel es estrecho y
+                está lleno, así que aquí la marca acompaña, no decora. */}
+            <MarcaAgua posicion="izquierda" tamano="pequeno" class="opacity-[0.07]" />
 
             <p class="text-xs font-bold tracking-[0.14em] text-secondary-300 uppercase">
               <T

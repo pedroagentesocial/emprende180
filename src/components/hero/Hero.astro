@@ -4,6 +4,7 @@ import Pill from "@components/ui/Pill.astro";
 import T from "@components/i18n/T.astro";
 import VideoVsl from "@components/hero/VideoVsl.astro";
 import FranjaDatos from "@components/hero/FranjaDatos.astro";
+import MarcaAgua from "@components/ui/MarcaAgua.astro";
 import { curso, cta, cifras, sitio, copy } from "@config/curso.config";
 import { vsl } from "@lib/assets";
 import { construirTxt } from "@i18n/idioma";
@@ -111,6 +112,12 @@ const pruebaSocial = construirTxt((l) =>
     style="background-image:radial-gradient(closest-side, var(--color-secondary-500), transparent)"
   >
   </div>
+
+  {/* El isotipo detrás, a la izquierda y casi apagado. En el hero la marca solo
+      salía en la barra de arriba, a 48 px: la primera pantalla de una landing
+      que vende una certificación con este nombre puede permitirse llevarlo
+      grande, siempre que no compita con el titular. Al 5 % no compite. */}
+  <MarcaAgua posicion="izquierda" tamano="medio" class="opacity-[0.05]" />
 
   <div class="container-page relative flex flex-1 flex-col pb-8 pt-5 sm:pt-12 md:pb-14">
     <div
