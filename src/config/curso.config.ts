@@ -2093,6 +2093,16 @@ export const copy = {
       en: "Still wondering something? Email me at",
     },
     dudaDespues: { es: "y te contesto yo.", en: "and I'll answer myself." },
+    /** Cierre de la sección: la duda que no está en la lista. */
+    quedaDuda: {
+      es: "¿Y si tu duda no está aquí?",
+      en: "And if your question isn't here?",
+    },
+    quedaDudaTexto: {
+      es: "Te contesto yo, no un chatbot ni un formulario. Llámame y lo resolvemos en cinco minutos.",
+      en: "I answer, not a chatbot or a form. Call me and we sort it out in five minutes.",
+    },
+    escribir: { es: "Escríbeme", en: "Email me" },
     avisoPlaceholder: {
       es: "Quedan respuestas con datos por rellenar. El JSON-LD de FAQPage NO se emite hasta que estén completas.",
       en: "Some answers still have facts to fill in. The FAQPage JSON-LD is NOT emitted until they're complete.",

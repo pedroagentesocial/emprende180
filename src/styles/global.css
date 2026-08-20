@@ -259,6 +259,75 @@ html[lang="en"] [data-t="es"] {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   ACORDEÓN NATIVO  (ver src/components/sections/10-Faq.astro)
+   ═══════════════════════════════════════════════════════════════════════════
+   Las preguntas frecuentes son `<details name="faq">`. Sin una línea de
+   JavaScript: el atributo `name` compartido hace que abrir una cierre las
+   demás, que es exactamente lo que hacía la isla de React que había antes.
+
+   LO QUE SE GANA APARTE DE LOS KILOBYTES. El teclado, `aria-expanded`, el rol
+   de botón y el anuncio de "contraído/expandido" en el lector de pantalla los
+   pone el navegador, y los pone bien. Una implementación a mano tiene que
+   acordarse de las cinco cosas; esta no puede olvidarse de ninguna. Y buscar
+   con Ctrl+F encuentra texto dentro de un `<details>` cerrado y lo abre solo —
+   un acordeón de JavaScript no hace eso.
+
+   LA ANIMACIÓN DE ALTURA. Animar hasta `auto` no se podía hacer en CSS durante
+   veinte años. Ahora sí, con dos piezas nuevas:
+
+     · `interpolate-size: allow-keywords` autoriza al navegador a interpolar
+       hacia `auto`.
+     · `::details-content` es el pseudoelemento del contenido desplegable, y
+       `transition-behavior: allow-discrete` permite animar `content-visibility`,
+       que es lo que de verdad esconde el panel.
+
+   Donde no estén soportadas, el panel abre y cierra de golpe: sigue
+   funcionando, solo que sin transición. Es degradación, no rotura.
+
+   `prefers-reduced-motion` lo deja instantáneo a propósito.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@supports (interpolate-size: allow-keywords) {
+  :root {
+    interpolate-size: allow-keywords;
+  }
+}
+
+[data-faq]::details-content {
+  block-size: 0;
+  overflow: hidden;
+  transition:
+    block-size 340ms var(--ease-out-soft),
+    content-visibility 340ms allow-discrete;
+}
+
+[data-faq][open]::details-content {
+  block-size: auto;
+}
+
+/* El "+" gira 45° y se convierte en "×". Un solo icono para los dos estados:
+   cambiarlo por otro distinto haría parpadear el dibujo al abrir. */
+[data-faq] [data-faq-icono] {
+  transition: rotate 340ms var(--ease-out-soft);
+}
+
+[data-faq][open] [data-faq-icono] {
+  rotate: 45deg;
+}
+
+/* Safari sigue pintando el triángulo por defecto sin esto. */
+[data-faq] summary::-webkit-details-marker {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-faq]::details-content,
+  [data-faq] [data-faq-icono] {
+    transition: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    BANDA EN MOVIMIENTO  (ver src/components/motion/BandaTestimonios.astro)
    ═══════════════════════════════════════════════════════════════════════════
    Una fila de tarjetas que cruza la pantalla de lado a lado sin parar.

@@ -3,24 +3,58 @@ import T from "@components/i18n/T.astro";
 import Section from "@components/ui/Section.astro";
 import SectionHeading from "@components/ui/SectionHeading.astro";
 import Reveal from "@components/motion/Reveal.astro";
-import Accordion from "@components/ui/Accordion";
+import Button from "@components/ui/Button.astro";
+import Icono from "@components/ui/Icono.astro";
 import { faqs, contacto, copy, proximosCursos } from "@config/curso.config";
-import { resolverIdiomaServidor } from "@i18n/idioma";
-import { faltaPorRellenar } from "@lib/pendientes";
-import { LOCALES } from "@i18n/idioma";
+import { resolverIdiomaServidor, LOCALES } from "@i18n/idioma";
+import { faltaPorRellenar, resaltarPendientes } from "@lib/pendientes";
 
 /**
- * 10 · FAQ — la última duda.
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 10 · FAQ — la última duda
+ * ═══════════════════════════════════════════════════════════════════════════
  *
- * No es documentación: cada pregunta tiene que corresponder a un motivo real
- * por el que alguien NO compra (tiempo, dinero, nivel, país, acceso, soporte).
- * Si una pregunta no desactiva una objeción, sobra.
+ * No es documentación: cada pregunta corresponde a un motivo real por el que
+ * alguien NO compra (tiempo, dinero, nivel, país, acceso, soporte). Si una
+ * pregunta no desactiva una objeción, sobra.
  *
  * Va después del precio porque las objeciones que quedan vivas a estas alturas
  * son justo las que nacen al ver la cifra.
  *
- * El JSON-LD de tipo FAQPage se emite solo cuando las respuestas son reales:
- * marcar como FAQ un texto placeholder es pedirle a Google que indexe basura.
+ * ─── SE FUE LA ISLA DE REACT ───────────────────────────────────────────────
+ *
+ * El acordeón era un componente de React con estado, `aria-expanded` a mano y
+ * altura animada con Motion. Ahora son `<details name="faq">`: el atributo
+ * `name` compartido hace que abrir una cierre las demás, que es exactamente lo
+ * que hacía la isla, y lo hace el navegador.
+ *
+ * Se gana más que los kilobytes. El teclado, el rol de botón y el anuncio de
+ * "contraído/expandido" los pone el navegador y los pone bien: una
+ * implementación a mano tiene que acordarse de las cinco cosas, y esta no puede
+ * olvidarse de ninguna. Y hay algo que un acordeón de JavaScript no puede
+ * hacer: buscar con Ctrl+F encuentra el texto dentro de un `<details>` cerrado
+ * y lo abre solo.
+ *
+ * La animación de altura vive en global.css, con `interpolate-size` y
+ * `::details-content`. Donde no estén soportadas, abre y cierra de golpe.
+ *
+ * ─── LA PRIMERA VA ABIERTA ─────────────────────────────────────────────────
+ *
+ * Antes arrancaban las trece cerradas: una columna de barras grises que no
+ * enseñaba ni una respuesta, y que obligaba a pulsar para descubrir si esto
+ * contesta de verdad o son cuatro líneas de relleno. Con la primera abierta se
+ * ve el TONO de las respuestas sin hacer nada, y las demás se leen sabiendo que
+ * merece la pena abrirlas.
+ *
+ * Va la primera y no otra porque `faqs[0]` es la objeción más común: "no tengo
+ * experiencia en el sector". Si algún día se reordena la lista, el que quede
+ * primero será el que se enseñe, y así debe ser.
+ *
+ * ─── POR QUÉ `resaltar` SE HACE AQUÍ Y NO CON `<T>` ────────────────────────
+ *
+ * `<T resaltar>` pinta con `set:html` dentro de un `<span>`. Aquí la respuesta
+ * es un párrafo completo, así que el marcado se genera directo sobre el `<p>`
+ * para no meter un inline donde va un bloque.
  */
 
 const lang = resolverIdiomaServidor(
@@ -47,15 +81,113 @@ const schemaFaq = hayPlaceholders
 ---
 
 <Section id="faq" tono="muted" ritmo="compacto" ariaLabel={copy.faq.aria}>
-  <SectionHeading
-    align="start"
-    class="mx-auto"
-    titulo={copy.faq.titulo}
-  />
+  <SectionHeading align="start" class="mx-auto" titulo={copy.faq.titulo} />
 
   <div class="mx-auto mt-10 max-w-read">
-    <Reveal>
-      <Accordion client:visible lang={lang} items={faqs} />
+    {/* `gap-2.5` en vez de filetes pegados: cada pregunta es una tarjeta suelta
+        y el aire entre ellas es lo que hace que trece no parezcan un muro. */}
+    <div class="grid gap-2.5">
+      {
+        faqs.map((f, i) => (
+          <Reveal delay={Math.min(i, 6) * 0.03}>
+            <details
+              data-faq
+              name="faq"
+              open={i === 0}
+              class="group rounded-2xl border border-line bg-surface transition-colors duration-200 ease-out-soft open:border-secondary-300 open:bg-secondary-50/40 hover:border-line-strong open:hover:border-secondary-300"
+            >
+              {/* `list-none` + el `::-webkit-details-marker` de global.css:
+                  entre los dos quitan el triángulo por defecto en todos los
+                  navegadores. */}
+              <summary class="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus sm:px-6 sm:py-5">
+                <h3 class="text-base font-semibold text-balance text-ink sm:text-lg">
+                  <T v={f.pregunta} />
+                </h3>
+
+                {/* El "+" gira 45° y se convierte en "×". Ver global.css. */}
+                <span
+                  aria-hidden="true"
+                  data-faq-icono
+                  class="grid size-8 shrink-0 place-items-center rounded-full bg-surface-muted text-ink-muted group-open:bg-secondary-500 group-open:text-ink-inverse"
+                >
+                  <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke-width="2.5">
+                    <path
+                      d="M12 5v14M5 12h14"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                </span>
+              </summary>
+
+              <div class="px-5 pb-5 sm:px-6 sm:pb-6">
+                <p
+                  class="border-t border-line pt-4 text-base text-pretty text-ink-muted"
+                  data-t="es"
+                  lang="es"
+                  set:html={resaltarPendientes(f.respuesta.es)}
+                />
+                <p
+                  class="border-t border-line pt-4 text-base text-pretty text-ink-muted"
+                  data-t="en"
+                  lang="en"
+                  set:html={resaltarPendientes(f.respuesta.en)}
+                />
+              </div>
+            </details>
+          </Reveal>
+        ))
+      }
+    </div>
+
+    {/* ─── LA DUDA QUE NO ESTÁ EN LA LISTA ──────────────────────────────────
+        Era una línea de texto con el correo subrayado en medio. Ahora es un
+        bloque con dos botones, y el de llamar va primero: quien llega al final
+        de trece preguntas y sigue con una duda tiene UNA concreta, y una
+        llamada la resuelve en el momento mientras que un correo la enfría un
+        día entero.
+
+        El de llamar solo existe si hay número en `contacto.telefono`. */}
+    <Reveal delay={0.1}>
+      <div class="mt-10 rounded-2xl border border-line bg-surface p-6 text-center sm:p-8">
+        <p class="text-lg font-bold text-balance text-ink">
+          <T v={copy.faq.quedaDuda} />
+        </p>
+        <p class="mx-auto mt-2 max-w-md text-base text-pretty text-ink-muted">
+          <T v={copy.faq.quedaDudaTexto} />
+        </p>
+
+        <div class="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+          {
+            contacto.telefono && (
+              <Button
+                href={`tel:${contacto.telefono}`}
+                variant="primary"
+                size="lg"
+                trackId="faq-llamada"
+                class="w-full sm:w-auto"
+              >
+                <Icono nombre="telefono" class="size-4 shrink-0" grosor={2} />
+                <T v={copy.instructor.llamame} />
+              </Button>
+            )
+          }
+
+          <Button
+            href={`mailto:${contacto.email}`}
+            variant="secondary"
+            size="lg"
+            trackId="faq-email"
+            class="w-full sm:w-auto"
+          >
+            <T v={copy.faq.escribir} />
+          </Button>
+        </div>
+
+        {/* El correo, escrito. Un `mailto:` no dice a dónde va hasta que se
+            pulsa, y hay quien prefiere copiarlo y escribir desde su cuenta. */}
+        <p class="mt-4 text-sm text-ink-subtle">{contacto.email}</p>
+      </div>
     </Reveal>
 
     {/* ─── Y DESPUÉS DE FUNDAMENTOS ──────────────────────────────────────────
@@ -64,12 +196,10 @@ const schemaFaq = hayPlaceholders
         "¿y después, qué?" es literalmente una pregunta frecuente, y en una
         sección de trámite no le roba atención al curso que sí se vende.
 
-        Sigue apagado y sin CTA, como manda el comentario de `proximosCursos`.
-        Y en dos líneas, no en dos tarjetas: la insignia, el título y la
-        entradilla decían "Próximamente" tres veces. */}
+        Sigue apagado y sin CTA, como manda el comentario de `proximosCursos`. */}
     {
       proximosCursos.length > 0 && (
-        <Reveal delay={0.08}>
+        <Reveal delay={0.12}>
           <div class="mt-10 border-t border-line pt-8">
             <h3 class="text-base font-bold text-ink">
               <T v={copy.proximos.titulo} />
@@ -95,19 +225,6 @@ const schemaFaq = hayPlaceholders
         </Reveal>
       )
     }
-
-    <Reveal delay={0.1}>
-      <p class="mt-8 text-center text-base text-ink-muted">
-        <T v={copy.faq.dudaAntes} />{" "}
-        <a
-          href={`mailto:${contacto.email}`}
-          class="font-semibold text-ink-brand underline underline-offset-4 hover:text-secondary-800"
-        >
-          {contacto.email}
-        </a>{" "}
-        <T v={copy.faq.dudaDespues} />
-      </p>
-    </Reveal>
 
     {
       hayPlaceholders && (
