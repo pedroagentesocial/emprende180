@@ -1,5 +1,6 @@
 import { defineMiddleware } from "astro:middleware";
 import { alumnoActual } from "@lib/acceso";
+import { puedeEntrarAlPanel } from "@lib/permisos";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -43,8 +44,12 @@ export const onRequest = defineMiddleware(async (contexto, siguiente) => {
   }
 
   /* Un alumno que llega a `/admin` NO recibe un 403 con explicación: recibe lo
-     mismo que si la ruta no existiera. Un 403 confirma que el panel está ahí. */
-  if (esAdmin && alumno.rol !== "admin") {
+     mismo que si la ruta no existiera. Un 403 confirma que el panel está ahí.
+
+     La comprobación sale de `@lib/permisos` y no de un `rol !== "admin"` escrito
+     aquí: cuando exista el rol de agente, esta línea no se toca. Ver la nota de
+     ese archivo. */
+  if (esAdmin && !puedeEntrarAlPanel(alumno)) {
     return new Response(null, { status: 404 });
   }
 

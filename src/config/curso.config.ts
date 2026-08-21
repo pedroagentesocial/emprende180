@@ -1426,6 +1426,40 @@ export const cifras = {
  * Así que si algún día alguien piensa en "poner el curso también aquí mientras
  * tanto": eso es lo que había, y por eso ya no está.
  */
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * CÓMO SE LE ENTREGA EL ACCESO A UN ALUMNO
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Aquí no pasa dinero: el agente cobra fuera y luego hay que abrirle la puerta a
+ * esa persona. Eso se hace en `/admin`, dando de alta su correo. El sistema le
+ * manda un enlace, el alumno elige su contraseña y a partir de ahí entra como en
+ * cualquier sitio.
+ */
+export const entregaAcceso = {
+  /**
+   * ENSEÑAR EL ENLACE EN EL PANEL, para copiarlo y mandarlo a mano.
+   *
+   * ─── POR QUÉ ESTÁ APAGADO ─────────────────────────────────────────────────
+   *
+   * Hoy el enlace va SOLO por correo, que es lo que se decidió. Esto queda
+   * montado y apagado porque la duda es razonable y va a volver: la venta es por
+   * teléfono, con el agente hablando con la persona en ese momento, y esperar a
+   * que abra el buzón mete una espera justo donde no la hay. Con esto en `true`,
+   * el panel enseña el enlace con un botón de copiar y el agente lo pega en el
+   * WhatsApp que ya tiene abierto.
+   *
+   * ─── LO QUE HAY QUE SABER ANTES DE ENCENDERLO ────────────────────────────
+   *
+   * El enlace es una llave: quien lo tenga entra en esa cuenta hasta que caduque.
+   * Por correo va al buzón de su dueño y nada más. Enseñado en pantalla, viaja
+   * por donde lo mande quien lo copió, y un enlace pegado en un grupo de WhatsApp
+   * por error es una cuenta regalada. No es un motivo para no hacerlo —el plazo
+   * corto lo acota— pero sí para que sea una decisión y no un descuido.
+   */
+  mostrarEnlaceEnPanel: false,
+} as const;
+
 export const plataformas = {
   crm: {
     /** SWAP: la URL del CRM. Vacío → tarjeta apagada, sin botón. */
