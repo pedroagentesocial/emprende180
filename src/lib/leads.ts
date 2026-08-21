@@ -109,3 +109,80 @@ export async function suscribirASecuencia(lead: LeadGuardado): Promise<void> {
   void lead;
   return;
 }
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * WEBHOOK — el lead entra en GoHighLevel
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * `GHL_WEBHOOK_URL` es la URL de un "Inbound Webhook" de GHL. Sin ella, esto no
+ * hace nada y la captura sigue funcionando igual: el correo de aviso y el log
+ * son independientes de esto.
+ *
+ * ⚠️ ESTO NO PUEDE TUMBAR LA CAPTURA, NUNCA. Cuando se llama, el lead YA está
+ * guardado y el aviso ya ha salido. Si GHL devuelve un 500, o tarda, o cambia
+ * la URL sin avisar, lo que no puede pasar es que la persona que acaba de dejar
+ * su correo vea un error: se registra el fallo y se sigue. Perder un lead por
+ * un problema ajeno no es una opción.
+ *
+ * ⚠️ Y POR ESO HAY UN `AbortSignal.timeout`. Sin él, un webhook que no responde
+ * deja la función serverless colgada hasta que la mata la plataforma, y el
+ * visitante mirando una rueda que gira. Ocho segundos y a otra cosa.
+ *
+ * ⚠️ LO QUE VIAJA AQUÍ ES UN DATO PERSONAL. Nombre, correo, IP y de dónde vino.
+ * Si esto se activa, el aviso de privacidad tiene que nombrar a GoHighLevel
+ * como encargado del tratamiento: es un tercero que recibe datos identificables
+ * y hay que declararlo.
+ *
+ * Los nombres de campo son los que GHL reconoce de serie (`first_name`, `email`,
+ * `tags`…): así el lead entra ya mapeado en vez de aparecer como un objeto
+ * suelto que hay que casar a mano en cada automatización.
+ */
+export async function enviarAWebhook(lead: LeadGuardado): Promise<void> {
+  const url = import.meta.env.GHL_WEBHOOK_URL;
+  if (!url) return;
+
+  /* El nombre llega en un solo campo, y GHL espera nombre y apellido por
+     separado. Se parte por el primer espacio: quien escribe "María" se queda
+     sin apellido, que es correcto, y quien escribe "María López Pérez" tiene
+     "López Pérez" de apellido, que también. */
+  const [nombre, ...resto] = lead.nombre.trim().split(/\s+/);
+
+  const cuerpo = {
+    first_name: nombre ?? lead.nombre,
+    last_name: resto.join(" ") || undefined,
+    name: lead.nombre,
+    email: lead.email,
+    /* De dónde salió, para poder medir qué formulario de la página convierte
+       sin tener que mirar el referer a mano. */
+    source: `emprende180.com · ${lead.origen}`,
+    tags: ["emprende180", "mini-curso-7-dias", `origen:${lead.origen}`],
+    /* Campos propios. GHL los recoge como custom fields. */
+    idioma: lead.idioma,
+    referer: lead.referer ?? "directo",
+    capturado_en: lead.capturadoEn,
+    /* La IP y el momento son la prueba del consentimiento. Si algún día alguien
+       reclama que nunca se apuntó, esto es lo que lo responde. */
+    ip_consentimiento: lead.ip,
+  };
+
+  try {
+    const respuesta = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(cuerpo),
+      signal: AbortSignal.timeout(8000),
+    });
+
+    if (!respuesta.ok) {
+      /* El cuerpo de la respuesta se recorta: un error de GHL puede devolver
+         una página HTML entera y no hace falta llenar el log con ella. */
+      const texto = (await respuesta.text().catch(() => "")).slice(0, 300);
+      console.error(
+        `[leads] El webhook de GHL respondió ${respuesta.status}: ${texto}`,
+      );
+    }
+  } catch (error) {
+    console.error("[leads] No se pudo llamar al webhook de GHL:", error);
+  }
+}

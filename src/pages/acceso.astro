@@ -9,7 +9,14 @@ import MarcaAgua from "@components/ui/MarcaAgua.astro";
 import FormAcceso from "@components/alumno/FormAcceso";
 import { sitio, contacto, copy } from "@config/curso.config";
 import { construirTxt, resolverIdiomaServidor } from "@i18n/idioma";
-import { alumnoActual, rutaInterna } from "@lib/acceso";
+import {
+  alumnoActual,
+  entrarConClave,
+  mandarEnlaceAcceso,
+  rutaInterna,
+} from "@lib/acceso";
+import { CORREO_ACCESO } from "@lib/correoAcceso";
+import { consumir, ipDe } from "@lib/rateLimit";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -49,6 +56,67 @@ export const prerender = false;
 /* Ya identificado: al tablero. Antes de pintar nada. */
 if (await alumnoActual(Astro.cookies)) return Astro.redirect("/alumno", 302);
 
+/* ─── EL FORMULARIO TAMBIÉN FUNCIONA SIN JAVASCRIPT ────────────────────────
+ *
+ * ⚠️ ESTO EMPEZÓ SIENDO UN FALLO DE SEGURIDAD, NO UNA MEJORA.
+ *
+ * El formulario era solo una isla de React que interceptaba el envío. Mientras
+ * la isla no ha hidratado —red lenta, un error de JS, el script bloqueado— el
+ * `<form>` seguía siendo un formulario normal SIN `method`, así que enviarlo
+ * hacía un GET y la contraseña acababa EN LA URL: en la barra de direcciones,
+ * en el historial y en la cabecera `Referer` de la siguiente petición.
+ *
+ * Ahora el formulario es `method="POST"` contra esta misma página y se procesa
+ * aquí. La isla lo sigue interceptando para dar errores sin recargar, pero si
+ * no llega, el envío es un POST correcto y no se filtra nada. Es lo mismo que
+ * ya hacían el panel de altas y la pantalla de contraseña.
+ */
+let errorPost: "credenciales" | "limite" | "email" | null = null;
+let enviadoPost = false;
+
+if (Astro.request.method === "POST") {
+  const datos = await Astro.request.formData();
+  const modo = String(datos.get("modo") ?? "entrar");
+  const email = String(datos.get("email") ?? "").trim().toLowerCase();
+  const ip = ipDe(Astro.request, Astro.clientAddress);
+
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(email)) {
+    errorPost = "email";
+  } else if (modo === "recuperar") {
+    if (!consumir(`acceso:${ip}`, 15, 10 * 60 * 1000).permitido) {
+      /* El límite NO se le cuenta al visitante como error: decir "has pedido
+         demasiados" para ese correo confirmaría que existe. Se le enseña el
+         mismo "ya te lo hemos mandado" que a todo el mundo. */
+      enviadoPost = true;
+    } else {
+      const idiomaPeticion = resolverIdiomaServidor(
+        Astro.url,
+        Astro.request.headers.get("accept-language"),
+      );
+      await mandarEnlaceAcceso(email, idiomaPeticion, Astro.url, CORREO_ACCESO);
+      enviadoPost = true;
+    }
+  } else if (!consumir(`entrar-ip:${ip}`, 20, 10 * 60 * 1000).permitido) {
+    errorPost = "limite";
+  } else if (!consumir(`entrar-email:${email}`, 10, 15 * 60 * 1000).permitido) {
+    errorPost = "limite";
+  } else {
+    const alumno = await entrarConClave(
+      email,
+      String(datos.get("clave") ?? ""),
+      Astro.cookies,
+      Astro.request.headers.get("user-agent"),
+    );
+    if (alumno) {
+      return Astro.redirect(
+        rutaInterna(String(datos.get("destino") ?? "")),
+        303,
+      );
+    }
+    errorPost = "credenciales";
+  }
+}
+
 const tituloPagina = construirTxt(
   (l) => `${copy.acceso.titulo[l]} · ${sitio.nombre}`,
 );
@@ -66,6 +134,22 @@ const lang = resolverIdiomaServidor(
   Astro.url,
   Astro.request.headers.get("accept-language"),
 );
+
+/* `?recuperar=1` arranca el formulario en modo recuperación. Es lo que hace que
+   el enlace de "he olvidado mi contraseña" siga funcionando sin JavaScript.
+   Tras un POST de recuperación se conserva el modo, para que el mensaje de
+   "ya te lo hemos mandado" no aparezca sobre el formulario de entrar. */
+/* El POST vuelve a esta misma página, y tiene que volver en el MISMO idioma:
+   sin arrastrar `?lang=`, quien está leyendo en español recibe el error en
+   inglés. Solo se conserva ese parámetro; los demás (`error`, `salida`) son
+   respuestas y no tienen por qué sobrevivir a un envío. */
+const langUrl = Astro.url.searchParams.get("lang");
+const accionForm = langUrl ? `/acceso?lang=${encodeURIComponent(langUrl)}` : "/acceso";
+
+const modoInicial =
+  Astro.url.searchParams.get("recuperar") === "1" || enviadoPost
+    ? ("recuperar" as const)
+    : ("entrar" as const);
 ---
 
 <BaseLayout
@@ -121,8 +205,43 @@ const lang = resolverIdiomaServidor(
           )
         }
 
+        {/* Lo que responde el POST sin JavaScript. Con la isla hidratada estos
+            mensajes los pinta ella sin recargar; esto es lo que se ve cuando
+            no ha llegado. */}
+        {
+          errorPost && (
+            <p
+              role="alert"
+              class="mb-5 rounded-xl border border-error-500 bg-error-50 px-4 py-3 text-sm font-medium text-error-700"
+            >
+              <T
+                v={
+                  errorPost === "limite"
+                    ? copy.acceso.formErrorLimite
+                    : errorPost === "email"
+                      ? copy.acceso.formErrorEmail
+                      : copy.acceso.formErrorCredenciales
+                }
+              />
+            </p>
+          )
+        }
+        {
+          enviadoPost && (
+            <p class="mb-5 rounded-xl border border-secondary-300 bg-secondary-50 px-4 py-3 text-sm text-pretty text-ink">
+              <T v={copy.acceso.formEnviado} />
+            </p>
+          )
+        }
+
         <div class="rounded-3xl border border-line bg-surface p-6 shadow-sm sm:p-8">
-          <FormAcceso client:load lang={lang} destino={destino} />
+          <FormAcceso
+            client:load
+            lang={lang}
+            destino={destino}
+            modoInicial={modoInicial}
+            accion={accionForm}
+          />
         </div>
       </div>
 

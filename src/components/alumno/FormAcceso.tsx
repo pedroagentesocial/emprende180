@@ -31,6 +31,15 @@ interface Props {
   lang?: Idioma;
   /** A dónde volver después de entrar. Lo pone el middleware. */
   destino?: string;
+  /** Con qué modo arranca. Lo decide el servidor por `?recuperar=1`. */
+  modoInicial?: "entrar" | "recuperar";
+  /**
+   * A dónde envía el formulario sin JavaScript. Lo calcula el servidor para
+   * poder arrastrar el `?lang=`: sin él, la respuesta al POST se renderiza en
+   * el idioma del navegador y quien estaba leyendo en español recibe el error
+   * en inglés.
+   */
+  accion?: string;
 }
 
 type Modo = "entrar" | "recuperar";
@@ -38,9 +47,14 @@ type Estado = "listo" | "trabajando" | "enviado";
 
 const ES_EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/;
 
-export function FormAcceso({ lang, destino }: Props) {
+export function FormAcceso({
+  lang,
+  destino,
+  modoInicial = "entrar",
+  accion = "/acceso",
+}: Props) {
   const { t } = useIdioma(lang);
-  const [modo, setModo] = useState<Modo>("entrar");
+  const [modo, setModo] = useState<Modo>(modoInicial);
   const [email, setEmail] = useState("");
   const [clave, setClave] = useState("");
   const [estado, setEstado] = useState<Estado>("listo");
@@ -124,8 +138,35 @@ export function FormAcceso({ lang, destino }: Props) {
 
   const recuperando = modo === "recuperar";
 
+  /* El cambio de modo es un ENLACE de verdad a la misma página, no un botón.
+     Con la isla viva, `onClick` cancela la navegación y solo cambia el estado.
+     Sin ella, el enlace navega y el servidor arranca en el modo pedido — que es
+     la diferencia entre que alguien sin JavaScript pueda recuperar su
+     contraseña o se quede fuera para siempre. */
+  const unir = (extra?: string) => {
+    const url = new URL(accion, "http://x");
+    if (extra) url.searchParams.set("recuperar", "1");
+    else url.searchParams.delete("recuperar");
+    return url.pathname + (url.search || "");
+  };
+  const hrefModo = recuperando ? unir() : unir("1");
+
   return (
-    <form onSubmit={alEnviar} noValidate className="text-left">
+    /* ⚠️ `method="POST"` y `action` NO son decorativos aunque este componente
+       intercepte el envío. Mientras la isla no ha hidratado, el navegador usa
+       lo que diga el marcado: sin ellos hacía un GET y la contraseña acababa
+       EN LA URL. Con ellos, el peor caso es una recarga que funciona.
+       El servidor procesa este POST en `src/pages/acceso.astro`. */
+    <form
+      method="POST"
+      action={accion}
+      onSubmit={alEnviar}
+      noValidate
+      className="text-left"
+    >
+      {/* Le dice al servidor qué botón se pulsó cuando no hay JavaScript. */}
+      <input type="hidden" name="modo" value={modo} />
+      {destino && <input type="hidden" name="destino" value={destino} />}
       {recuperando && (
         <p className="mb-5 text-sm text-pretty text-ink-muted">
           {t(copy.acceso.olvideTexto)}
@@ -198,19 +239,17 @@ export function FormAcceso({ lang, destino }: Props) {
         )}
       </button>
 
-      {/* El cambio de modo es un <button> y no un enlace: no navega a ningún
-          sitio, solo cambia lo que se ve. Un enlace que no lleva a una URL
-          miente al teclado y al lector de pantalla. */}
-      <button
-        type="button"
-        onClick={() => {
+      <a
+        href={hrefModo}
+        onClick={(e) => {
+          e.preventDefault();
           setModo(recuperando ? "entrar" : "recuperar");
           setError(null);
         }}
-        className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full text-sm font-semibold text-ink-brand underline underline-offset-4 hover:text-secondary-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full text-center text-sm font-semibold text-ink-brand underline underline-offset-4 hover:text-secondary-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
       >
         {t(recuperando ? copy.acceso.volverAEntrar : copy.acceso.olvide)}
-      </button>
+      </a>
     </form>
   );
 }

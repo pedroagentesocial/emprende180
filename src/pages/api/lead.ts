@@ -10,7 +10,12 @@ import {
   type LeadResponse,
 } from "@lib/schema";
 import { consumir, esDuplicadoReciente, ipDe } from "@lib/rateLimit";
-import { guardarLead, suscribirASecuencia, type LeadGuardado } from "@lib/leads";
+import {
+  guardarLead,
+  suscribirASecuencia,
+  enviarAWebhook,
+  type LeadGuardado,
+} from "@lib/leads";
 import { leadMagnet, contacto, sitio } from "@config/curso.config";
 import type { Idioma } from "@i18n/idioma";
 
@@ -199,6 +204,14 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   // Nunca puede tumbar la captura: se registra el fallo y se sigue.
   suscribirASecuencia(guardado).catch((error) =>
     console.error("[lead] Fallo al suscribir a la secuencia:", error),
+  );
+
+  /* El lead entra en GoHighLevel. Va SIN `await` a propósito: la respuesta al
+     visitante no tiene por qué esperar a que conteste un servidor ajeno, y el
+     lead ya está guardado pase lo que pase con el webhook. Si no hay
+     `GHL_WEBHOOK_URL`, no hace nada. Ver `enviarAWebhook`. */
+  enviarAWebhook(guardado).catch((error) =>
+    console.error("[lead] Fallo al llamar al webhook:", error),
   );
 
   // ── 6 · Notificar ─────────────────────────────────────────────────────────

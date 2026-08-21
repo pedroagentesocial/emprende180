@@ -1977,11 +1977,20 @@ export const copy = {
       en: "Too many attempts. Wait a few minutes and try again.",
     },
     /* ─── Olvidé la contraseña ──────────────────────────────────────────── */
-    olvide: { es: "He olvidado mi contraseña", en: "I forgot my password" },
+    /**
+     * Cubre los DOS casos, y por eso no dice solo "he olvidado mi contraseña":
+     * quien entra por primera vez nunca tuvo una, y leer "olvidé" cuando nunca
+     * la pusiste hace dudar de si estás en el sitio correcto. El camino es el
+     * mismo —un enlace al correo— y la frase tiene que valer para los dos.
+     */
+    olvide: {
+      es: "Es mi primera vez o he olvidado mi contraseña",
+      en: "It's my first time, or I forgot my password",
+    },
     olvideTitulo: { es: "Recupera tu acceso", en: "Recover your access" },
     olvideTexto: {
-      es: "Escribe tu correo y te mandamos un enlace para poner una contraseña nueva.",
-      en: "Enter your email and we'll send you a link to set a new password.",
+      es: "Escribe tu correo y te mandamos un enlace para poner tu contraseña. Sirve igual si es la primera vez que entras.",
+      en: "Enter your email and we'll send you a link to set your password. Works the same if it's your first time.",
     },
     volverAEntrar: { es: "Volver a entrar", en: "Back to sign in" },
     formBoton: { es: "Mandarme el enlace", en: "Send me the link" },

@@ -209,6 +209,92 @@ export const rolDe = (email: string): Rol =>
   esAdminPorConfig(email) ? "admin" : "alumno";
 
 /**
+ * Manda el enlace de acceso a ese correo, si procede.
+ *
+ * Vive aquí y no dentro de la ruta de API porque hay DOS sitios que necesitan
+ * hacer exactamente esto: el endpoint JSON que usa la isla de React y el POST
+ * del formulario cuando el JavaScript no ha llegado. Dos copias de una decisión
+ * de seguridad es una copia de más — la que se acaba olvidando de actualizar.
+ *
+ * ⚠️ NO DICE si el correo existe. Devuelve lo mismo en los dos casos, y quien
+ * llama tampoco puede distinguirlos: `enlaceDev` solo se rellena en desarrollo.
+ */
+export async function mandarEnlaceAcceso(
+  email: string,
+  idioma: "es" | "en",
+  origen: URL,
+  correo: {
+    asunto: (lang: "es" | "en") => string;
+    cuerpo: (lang: "es" | "en", url: string) => string;
+    responderA: string;
+  },
+): Promise<{ enlaceDev: string | null }> {
+  const r = repo();
+
+  // Límite por EMAIL: el de IP no protege al dueño del buzón, que es quien
+  // recibiría los correos si alguien decide usar esto para molestarle.
+  const haceUnaHora = new Date(Date.now() - 3_600_000);
+  if ((await r.contarPeticiones(email, haceUnaHora)) >= MAX_PETICIONES_HORA) {
+    console.warn(`[acceso] Demasiadas peticiones para ${email}`);
+    return { enlaceDev: null };
+  }
+  await r.registrarPeticion(email);
+
+  let alumno = await r.alumnoPorEmail(email);
+
+  // Arranque: el primer admin no tiene panel donde darse de alta.
+  if (!alumno && esAdminPorConfig(email)) {
+    alumno = await r.crearAlumno({ email, nombre: null, rol: rolDe(email), idioma });
+    console.log(`[acceso] Admin creado desde ADMIN_EMAILS: ${email}`);
+  }
+
+  if (!alumno || !alumno.activo) {
+    console.log(`[acceso] Petición para un email sin alta activa: ${email}`);
+    return { enlaceDev: null };
+  }
+
+  const enlace = await crearEnlaceAcceso(alumno, origen);
+
+  const apiKey = import.meta.env.RESEND_API_KEY;
+  const from = import.meta.env.NOTIFY_EMAIL_FROM;
+
+  /* Sin credenciales de correo el enlace se escribe en la consola, y en
+     desarrollo se devuelve además a quien llamó: es lo que permite probar el
+     circuito entero sin montar un buzón. `import.meta.env.DEV` lo sustituye
+     Vite por `false` al compilar, así que esta rama no existe en producción. */
+  if (!apiKey || !from) {
+    console.warn(
+      `[acceso] MODO DEMO — sin RESEND_API_KEY. Enlace para ${email}:\n  ${enlace}`,
+    );
+    return { enlaceDev: import.meta.env.DEV ? enlace : null };
+  }
+
+  try {
+    const respuesta = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from,
+        to: [alumno.email],
+        reply_to: correo.responderA,
+        subject: correo.asunto(alumno.idioma),
+        text: correo.cuerpo(alumno.idioma, enlace),
+      }),
+    });
+    if (!respuesta.ok) {
+      console.error("[acceso] Resend rechazó el envío:", await respuesta.text());
+    }
+  } catch (error) {
+    console.error("[acceso] Error al contactar con Resend:", error);
+  }
+
+  return { enlaceDev: null };
+}
+
+/**
  * Depura el `?destino=` con el que se vuelve después de entrar.
  *
  * ⚠️ ESTO EVITA UN REDIRECTOR ABIERTO. Sin filtrar, `?destino=https://otro`
