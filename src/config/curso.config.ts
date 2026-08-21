@@ -1297,45 +1297,33 @@ export const leadMagnet = {
  * ─────────────────────────────────────────────────────────────────────────────
  */
 export const testimonios: Testimonio[] = [
-  /* ─── EL ORDEN NO ES EL QUE LLEGÓ ───────────────────────────────────────────
-     Miguel va primero porque es el único que cuenta un ANTES ("no sabía cómo
-     iniciar una conversación sin sentir que estaba vendiendo"), y ese antes es
-     literalmente la objeción número uno de esta página: la vergüenza a pedir.
-     Daniela va segunda por lo mismo, con la otra mitad del argumento
-     (prospectar no es vender, es confianza).
+  /* ─── EL ORDEN ES EL QUE PIDIÓ EL CLIENTE ───────────────────────────────────
+     Estuvieron un rato con Miguel Torres delante, porque es el único que cuenta
+     un ANTES ("no sabía cómo iniciar una conversación sin sentir que estaba
+     tratando de venderle algo") y ese antes es la objeción número uno de la
+     página. Se volvió al orden original a petición de Pedro.
 
-     La banda se mueve en bucle, así que técnicamente todos se ven; pero el
-     primero es el que está en pantalla cuando alguien llega a la sección, y ese
-     hueco se lo lleva el que mejor responde a la duda que trae el lector. */
+     Queda dicho por si algún día alguien mira esta lista y se pregunta por qué
+     el testimonio que mejor responde a la duda del lector está el sexto. La
+     banda va en bucle, así que los seis se ven; lo que se decide aquí es cuál
+     está en pantalla en el instante en que alguien llega a la sección.
+
+     ─── SIN `resultado` ──────────────────────────────────────────────────────
+     La pastilla teal de la tarjeta (`resultado`) se quitó, también a petición
+     de Pedro. Sigue existiendo en el tipo y en `BandaTestimonios`: es opcional,
+     y cuando llegue un testimonio con un resultado de verdad —una cifra o un
+     plazo que la persona haya dicho— basta con añadirle el campo y su tarjeta
+     lo pinta. Lo que NO se hace es rellenarlo con algo que el alumno no dijo. */
   {
-    nombre: "Miguel Torres",
-    contexto: { es: "Texas", en: "Texas" },
-    cita: {
-      es: "Antes no sabía cómo iniciar una conversación con un posible prospecto sin sentir que estaba tratando de venderle algo. En Emprende180 aprendí a crear conexiones de una manera más natural y profesional. Ha sido muy útil y lo recomiendo al 100%.",
-      en: "Before, I had no idea how to start a conversation with a possible prospect without feeling like I was trying to sell them something. At Emprende180 I learned to build connections in a way that's more natural and more professional. It's been really useful and I recommend it 100%.",
-    },
-    foto: null, // SWAP: "/imagenes/testimonios/miguel-torres.webp"
-    estrellas: 5,
-    fuente: "directo",
-    resultado: {
-      es: "Empieza conversaciones sin sentir que vende",
-      en: "Starts conversations without feeling salesy",
-    },
-  },
-  {
-    nombre: "Daniela Martínez",
+    nombre: "María González",
     contexto: { es: "Utah", en: "Utah" },
     cita: {
-      es: "Ha sido una excelente experiencia. Aprendí que prospectar no se trata solamente de vender, sino de crear confianza y mantener una buena relación con las personas. Emprende180 me dio herramientas que ahora puedo aplicar con mucha más seguridad.",
-      en: "It's been an excellent experience. I learned that prospecting isn't only about selling: it's about building trust and keeping a good relationship with people. Emprende180 gave me tools I can now use with a lot more confidence.",
+      es: "Emprende180 me ayudó a entender mejor cómo acercarme a las personas, crear relaciones y generar nuevas oportunidades. Aprendí estrategias que puedo aplicar todos los días. Lo recomiendo para quienes quieren crecer y aprender a prospectar de una manera más profesional.",
+      en: "Emprende180 helped me understand how to approach people, build relationships and create new opportunities. I learned strategies I can put to use every day. I recommend it to anyone who wants to grow and learn to prospect more professionally.",
     },
-    foto: null, // SWAP: "/imagenes/testimonios/daniela-martinez.webp"
+    foto: null, // SWAP: "/imagenes/testimonios/maria-gonzalez.webp"
     estrellas: 5,
     fuente: "directo",
-    resultado: {
-      es: "Prospecta con más seguridad",
-      en: "Prospects with more confidence",
-    },
   },
   {
     nombre: "Carlos Ramírez",
@@ -1347,25 +1335,17 @@ export const testimonios: Testimonio[] = [
     foto: null, // SWAP: "/imagenes/testimonios/carlos-ramirez.webp"
     estrellas: 5,
     fuente: "directo",
-    resultado: {
-      es: "Sus contactos, ordenados y con seguimiento",
-      en: "His contacts, organized and followed up",
-    },
   },
   {
-    nombre: "María González",
+    nombre: "Daniela Martínez",
     contexto: { es: "Utah", en: "Utah" },
     cita: {
-      es: "Emprende180 me ayudó a entender mejor cómo acercarme a las personas, crear relaciones y generar nuevas oportunidades. Aprendí estrategias que puedo aplicar todos los días. Lo recomiendo para quienes quieren crecer y aprender a prospectar de una manera más profesional.",
-      en: "Emprende180 helped me understand how to approach people, build relationships and create new opportunities. I learned strategies I can put to use every day. I recommend it to anyone who wants to grow and learn to prospect more professionally.",
+      es: "Ha sido una excelente experiencia. Aprendí que prospectar no se trata solamente de vender, sino de crear confianza y mantener una buena relación con las personas. Emprende180 me dio herramientas que ahora puedo aplicar con mucha más seguridad.",
+      en: "It's been an excellent experience. I learned that prospecting isn't only about selling: it's about building trust and keeping a good relationship with people. Emprende180 gave me tools I can now use with a lot more confidence.",
     },
-    foto: null, // SWAP: "/imagenes/testimonios/maria-gonzalez.webp"
+    foto: null, // SWAP: "/imagenes/testimonios/daniela-martinez.webp"
     estrellas: 5,
     fuente: "directo",
-    resultado: {
-      es: "Estrategias que usa todos los días",
-      en: "Strategies she uses every day",
-    },
   },
   {
     nombre: "José Hernández",
@@ -1377,10 +1357,6 @@ export const testimonios: Testimonio[] = [
     foto: null, // SWAP: "/imagenes/testimonios/jose-hernandez.webp"
     estrellas: 5,
     fuente: "directo",
-    resultado: {
-      es: "Se mantiene presente con sus contactos",
-      en: "Stays present with his contacts",
-    },
   },
   {
     nombre: "Sofía Rodríguez",
@@ -1392,10 +1368,17 @@ export const testimonios: Testimonio[] = [
     foto: null, // SWAP: "/imagenes/testimonios/sofia-rodriguez.webp"
     estrellas: 5,
     fuente: "directo",
-    resultado: {
-      es: "Sus redes, ahora para conectar",
-      en: "Her social media, now for connecting",
+  },
+  {
+    nombre: "Miguel Torres",
+    contexto: { es: "Texas", en: "Texas" },
+    cita: {
+      es: "Antes no sabía cómo iniciar una conversación con un posible prospecto sin sentir que estaba tratando de venderle algo. En Emprende180 aprendí a crear conexiones de una manera más natural y profesional. Ha sido muy útil y lo recomiendo al 100%.",
+      en: "Before, I had no idea how to start a conversation with a possible prospect without feeling like I was trying to sell them something. At Emprende180 I learned to build connections in a way that's more natural and more professional. It's been really useful and I recommend it 100%.",
     },
+    foto: null, // SWAP: "/imagenes/testimonios/miguel-torres.webp"
+    estrellas: 5,
+    fuente: "directo",
   },
 ];
 
