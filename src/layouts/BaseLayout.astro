@@ -222,7 +222,14 @@ const precioFormateado = {
            `?lang=` en la URL gana: sirve para compartir el enlace ya traducido.
         2. Marca el documento para que el CSS pueda ocultar los bloques de
            entrada al scroll.
-        Los dos van aquí porque al final del <body> ya sería tarde. */}
+        3. Marca el documento para que el CSS pueda plegar los detalles en
+           táctil. Va aquí y no en el script del final del <body> por lo mismo
+           que el anterior: si se aplicara después del primer pintado, en un
+           teléfono se vería la página con los cinco párrafos desplegados y un
+           instante después encogiéndose de golpe. Y va SIN condición de media
+           query: la clase solo autoriza, es el CSS quien decide en qué
+           pantallas pliega algo.
+        Los tres van aquí porque al final del <body> ya sería tarde. */}
     <script is:inline define:vars={{ CLAVE_IDIOMA, titulos, descripciones }}>
       (function () {
         var raiz = document.documentElement;
@@ -250,6 +257,8 @@ const precioFormateado = {
         if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
           raiz.classList.add("js-reveal");
         }
+
+        raiz.classList.add("js-detalle");
       })();
     </script>
 
@@ -344,6 +353,56 @@ const precioFormateado = {
           if (!e.matches) return;
           obs.disconnect();
           document.querySelectorAll("[data-reveal]").forEach(mostrar);
+        });
+      })();
+    </script>
+
+    {/* ─────────────────────────────────────────────────────────────────────
+        DETALLE QUE SE DESPLIEGA AL TOCAR  (ver `[data-revelar]` en global.css)
+
+        UN SOLO LISTENER DELEGADO para toda la página, y no uno por bloque. En
+        la portada hay quince `[data-revelar]`: quince listeners es quince veces
+        el mismo trabajo, y además obligaría a recorrer el DOM al arrancar justo
+        cuando el hilo principal tiene cosas mejores que hacer. Delegado, el
+        coste al cargar es cero y solo se paga cuando alguien toca.
+
+        El `id` del detalle se asigna aquí, en el primer toque, y no en el
+        marcado: las tres secciones pintan sus bloques dentro de un `.map()` y
+        obligarlas a inventar identificadores únicos sería acoplar el contenido
+        a este mecanismo. `aria-controls` necesita un id; el visitante, no.
+        ───────────────────────────────────────────────────────────────────── */}
+    <script is:inline>
+      (function () {
+        var n = 0;
+
+        document.addEventListener("click", function (e) {
+          var boton =
+            e.target instanceof Element
+              ? e.target.closest("[data-detalle-toggle]")
+              : null;
+          if (!boton) return;
+
+          var bloque = boton.closest("[data-revelar]");
+          var detalle = bloque && bloque.querySelector("[data-detalle]");
+          if (!bloque || !detalle) return;
+
+          if (!detalle.id) detalle.id = "detalle-" + ++n;
+          boton.setAttribute("aria-controls", detalle.id);
+
+          var abierto = bloque.hasAttribute("data-abierto");
+          if (abierto) bloque.removeAttribute("data-abierto");
+          else bloque.setAttribute("data-abierto", "");
+
+          boton.setAttribute("aria-expanded", String(!abierto));
+
+          /* Los dos rótulos existen en el DOM y se alternan con `hidden`. No se
+             reescribe el texto: cada rótulo son DOS nodos, uno por idioma, y
+             machacarlos con textContent dejaría el botón sin traducir en cuanto
+             alguien cambiara de idioma. */
+          var mas = boton.querySelector("[data-detalle-mas]");
+          var menos = boton.querySelector("[data-detalle-menos]");
+          if (mas) mas.classList.toggle("hidden", !abierto);
+          if (menos) menos.classList.toggle("hidden", abierto);
         });
       })();
     </script>

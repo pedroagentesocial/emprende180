@@ -396,35 +396,57 @@ html[lang="en"] [data-t="es"] {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   DETALLE QUE APARECE AL PASAR EL CURSOR
+   DETALLE QUE SE DESPLIEGA — con el cursor en escritorio, con el dedo en móvil
    ═══════════════════════════════════════════════════════════════════════════
    Un bloque `[data-revelar]` contiene un titular siempre visible y un
-   `[data-detalle]` que solo se despliega al pasar el ratón por encima.
+   `[data-detalle]` que se despliega bajo demanda.
 
    LA REGLA QUE HACE QUE ESTO SEA LEGÍTIMO Y NO UNA TRAMPA: el titular tiene que
-   sostenerse SOLO. El detalle amplía, nunca completa. Si hay que pasar el ratón
-   para entender de qué va el punto, la información está escondida, y esconder
-   información esencial detrás de un gesto que la mitad de los visitantes no
-   puede hacer es un error, no una decisión de diseño.
+   sostenerse SOLO. El detalle amplía, nunca completa. Quien no despliega nada
+   se lleva el argumento entero; lo que se pierde es la letra pequeña.
 
-   POR ESO SE COLAPSA SOLO DONDE HAY RATÓN DE VERDAD. La media query
-   `(hover: hover) and (pointer: fine)` deja fuera móviles, tabletas y cualquier
-   entrada táctil: ahí el detalle se ve SIEMPRE, sin nada que descubrir. Es lo
-   contrario de lo habitual —que es colapsarlo en móvil "porque no cabe"— y es a
-   propósito: el 73 % de esta audiencia entra desde el celular.
+   ─── ANTES SE VEÍA SIEMPRE EN MÓVIL, Y ESO ERA EL PROBLEMA ─────────────────
 
-   Se despliega también con `:focus-within`, para quien navega con teclado.
+   La versión anterior colapsaba SOLO donde hay ratón: en táctil el detalle
+   estaba desplegado de fábrica, para no esconder nada detrás de un gesto
+   imposible. El razonamiento era bueno y la consecuencia no. En la pantalla más
+   estrecha, que es por donde entra el 73 % de esta audiencia, la sección 02
+   pasaba a cinco párrafos seguidos, la 03 a seis y el desglose del precio a
+   cuatro: cada rejilla que en escritorio se escanea en dos segundos era un muro.
 
-   El truco de la altura es `grid-template-rows: 0fr → 1fr`: anima el alto sin
-   que nadie tenga que saber cuánto mide el texto, así que funciona igual con
-   dos líneas que con cinco y en los dos idiomas. `max-height` con un número
-   inventado se rompe en cuanto la traducción es más larga.
+   Un teléfono no tiene cursor, pero tiene TOQUE. Así que ahora el detalle se
+   pliega también ahí y aparece un botón "Ver más" que dice que hay algo debajo.
+   No es esconder: es la misma información a un toque, y anunciada.
+
+   ─── LOS DOS MECANISMOS NO COEXISTEN NUNCA ────────────────────────────────
+
+   `(hover: hover) and (pointer: fine)` y `(hover: none), (pointer: coarse)` son
+   complementarios exactos: `pointer` tiene un solo valor por dispositivo, así
+   que ninguna pantalla puede caer en las dos ni quedarse fuera de las dos. Un
+   portátil táctil declara `hover: hover` + `pointer: fine` y se comporta como
+   escritorio, que es lo correcto: ahí el cursor es la entrada principal.
+
+   ─── SIN JAVASCRIPT NO SE PLIEGA NADA EN TÁCTIL ───────────────────────────
+
+   El plegado táctil cuelga de `.js-detalle`, una clase que pone el script de
+   <head> de BaseLayout, exactamente igual que `.js-reveal`. Si el JS falla, el
+   botón no se pinta y el detalle se ve entero: se vuelve al comportamiento de
+   antes en vez de dejar texto inalcanzable. En escritorio no hace falta esa red,
+   porque `:hover` no depende de ningún script.
+
+   ─── LA ALTURA ────────────────────────────────────────────────────────────
+
+   `grid-template-rows: 0fr → 1fr` anima el alto sin que nadie tenga que saber
+   cuánto mide el texto: funciona igual con dos líneas que con cinco y en los dos
+   idiomas. `max-height` con un número inventado se rompe en cuanto la traducción
+   es más larga.
 
    El detalle NO lleva `display:none` ni `aria-hidden`: sigue en el árbol de
-   accesibilidad y un lector de pantalla lo lee, igual que lo lee quien entra
-   desde el móvil.
+   accesibilidad y un lector de pantalla lo encuentra esté plegado o no.
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/* El estado plegado, idéntico en los dos mundos. Se declara una vez y cada
+   media query decide a quién se lo aplica. */
 @media (hover: hover) and (pointer: fine) {
   [data-detalle] {
     display: grid;
@@ -446,14 +468,64 @@ html[lang="en"] [data-t="es"] {
   }
 }
 
-/* La pista de "pasa el cursor" solo tiene sentido si hay cursor. */
-[data-pista-hover] {
+@media (hover: none), (pointer: coarse) {
+  .js-detalle [data-detalle] {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition:
+      grid-template-rows 380ms var(--ease-out-soft),
+      opacity 240ms var(--ease-out-soft);
+  }
+
+  .js-detalle [data-detalle] > * {
+    overflow: hidden;
+  }
+
+  /* `data-abierto` lo pone y lo quita el listener delegado de BaseLayout. */
+  .js-detalle [data-revelar][data-abierto] [data-detalle] {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+}
+
+/* ─── LOS DOS MANDOS, CADA UNO EN SU PANTALLA ──────────────────────────────
+   `[data-pista-hover]` es la línea "pasa el cursor por cada uno" de la cabecera
+   de la rejilla; `[data-detalle-toggle]` es el botón "Ver más" de cada bloque.
+   Los dos nacen ocultos y cada uno aparece donde sirve, así que no hay ninguna
+   pantalla en la que se vean los dos ni ninguna en la que no se vea ninguno. */
+[data-pista-hover],
+[data-detalle-toggle] {
   display: none;
 }
 
 @media (hover: hover) and (pointer: fine) {
   [data-pista-hover] {
     display: block;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .js-detalle [data-detalle-toggle] {
+    display: inline-flex;
+  }
+}
+
+/* El galón mira hacia abajo cuando está plegado y hacia arriba cuando no. Un
+   solo dibujo para los dos estados: cambiarlo por otro haría parpadear el icono
+   justo en el fotograma en que el texto empieza a bajar. */
+[data-detalle-chevron] {
+  transition: rotate 380ms var(--ease-out-soft);
+}
+
+[data-revelar][data-abierto] [data-detalle-chevron] {
+  rotate: 180deg;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-detalle],
+  [data-detalle-chevron] {
+    transition: none;
   }
 }
 

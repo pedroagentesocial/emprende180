@@ -1,0 +1,96 @@
+---
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import { copy } from "@config/curso.config";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * "VER MÁS" — el gemelo táctil del detalle que se abre al pasar el cursor
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Va dentro de un bloque `[data-revelar]` y despliega su `[data-detalle]`.
+ *
+ * ─── POR QUÉ EXISTE ────────────────────────────────────────────────────────
+ *
+ * Hasta ahora el detalle se plegaba SOLO donde hay ratón, y en móvil se veía
+ * siempre. El razonamiento era bueno —no esconder información detrás de un
+ * gesto que no existe en un teléfono— pero la consecuencia no: en la pantalla
+ * más estrecha, donde entra el 73 % de esta audiencia, la sección 02 pasaba a
+ * cinco párrafos seguidos, la 03 a seis y el desglose de precio a cuatro. Cada
+ * rejilla que en escritorio se escanea en dos segundos era un muro de texto.
+ *
+ * El gesto que sí existe en un teléfono es TOCAR. Así que el detalle se pliega
+ * también ahí, pero con un mando visible que dice que hay algo debajo. No es
+ * esconder: es la misma información a un toque de distancia, anunciada.
+ *
+ * ─── LAS TRES COSAS QUE LO HACEN SEGURO ────────────────────────────────────
+ *
+ * 1. SIN JAVASCRIPT NO SE PLIEGA NADA. El estado plegado cuelga de la clase
+ *    `.js-detalle`, que pone el script de <head> de `BaseLayout`, igual que
+ *    `.js-reveal`. Si el JS falla, este botón no se pinta (nace en
+ *    `display:none`) y el detalle se ve entero, como hasta ahora.
+ *
+ * 2. NO APARECE DONDE HAY CURSOR. La misma media query que decide si el
+ *    detalle se abre al pasar el ratón decide si este botón existe:
+ *    `(hover: hover) and (pointer: fine)` y su complemento exacto,
+ *    `(hover: none), (pointer: coarse)`. Nunca se ven los dos mecanismos a la
+ *    vez. Ver global.css.
+ *
+ * 3. ES UN <button> DE VERDAD, con `aria-expanded` y `aria-controls`. El teclado,
+ *    el rol y el anuncio de "contraído/expandido" salen de ahí. El `id` del
+ *    detalle lo asigna el script, para que el marcado de cada sección no tenga
+ *    que inventarse identificadores únicos dentro de un `.map()`.
+ *
+ * ─── LA REGLA DE CONTENIDO NO CAMBIA ───────────────────────────────────────
+ *
+ * El titular tiene que sostenerse SOLO; el detalle amplía, nunca completa. Eso
+ * era cierto cuando el detalle solo se escondía en escritorio y ahora tiene que
+ * serlo el doble: quien no toca nada se lleva el argumento entero.
+ */
+interface Props {
+  /**
+   * Sobre qué fondo se apoya. `oscuro` para las tarjetas navy de la sección 03:
+   * el teal de acción sobre azul no llega al 4.5:1, y el claro sí.
+   */
+  tono?: "claro" | "oscuro";
+  class?: string;
+}
+
+const { tono = "claro", class: className = "" } = Astro.props;
+
+const tonos = {
+  claro: "text-ink-brand hover:text-secondary-800 focus-visible:outline-focus",
+  oscuro:
+    "text-secondary-300 hover:text-ink-inverse focus-visible:outline-focus-inverse",
+} as const;
+---
+
+{/* `min-h-11` = 44 px, el mínimo táctil del proyecto. Sin acolchado lateral y
+    con `-ml-1 pl-1`, el rótulo queda a plomo con el texto que tiene encima: un
+    botón que sangra un píxel rompe la columna de toda la tarjeta. */}
+<button
+  type="button"
+  data-detalle-toggle
+  aria-expanded="false"
+  class:list={[
+    "-ml-1 inline-flex min-h-11 items-center gap-1.5 rounded-lg pl-1 pr-2 text-sm font-semibold",
+    "transition-colors duration-200 ease-out-soft",
+    "focus-visible:outline-2 focus-visible:outline-offset-2",
+    tonos[tono],
+    className,
+  ]}
+>
+  {/* Los dos rótulos viven en el DOM y se alternan con `hidden`, que es lo
+      mismo que hace el botón de pausa de la banda. Reescribir el texto con
+      JavaScript rompería el mecanismo bilingüe de `<T>`: cada rótulo son en
+      realidad dos nodos, uno por idioma, y el CSS oculta el que no toca. */}
+  <span data-detalle-mas><T v={copy.ui.verMas} /></span>
+  <span data-detalle-menos class="hidden"><T v={copy.ui.verMenos} /></span>
+
+  <Icono
+    nombre="chevron"
+    class="size-4 shrink-0"
+    grosor={2.5}
+    data-detalle-chevron
+  />
+</button>

@@ -101,6 +101,26 @@ export interface Testimonio {
   /** Ruta en /public/imagenes/testimonios/. `null` → se muestran las iniciales. */
   foto: string | null;
   resultado?: Txt;
+  /**
+   * Estrellas de la reseña, 1 a 5. `undefined` → la tarjeta no pinta ninguna.
+   *
+   * NO se inventa: es la puntuación que la persona puso de verdad en la
+   * plataforma. Una tarjeta con cinco estrellas sobre una reseña que no las
+   * tenía es una reseña alterada, y eso vale lo mismo que inventarla entera.
+   */
+  estrellas?: 1 | 2 | 3 | 4 | 5;
+  /**
+   * De dónde sale la reseña.
+   *
+   * `"google"` pinta la insignia de Google en la tarjeta. Solo se pone cuando la
+   * reseña ESTÁ PUBLICADA EN GOOGLE y `url` apunta a ella: la insignia de un
+   * tercero es una credencial prestada, y ponerla sobre un texto que Google no
+   * ha visto nunca es la parte que convierte un testimonio flojo en un problema
+   * legal. Para una reseña recogida por email o por WhatsApp, `"directo"`.
+   */
+  fuente?: "google" | "directo";
+  /** Enlace a la reseña publicada. Obligatorio si `fuente === "google"`. */
+  url?: string;
 }
 
 export interface Faq {
@@ -2207,6 +2227,29 @@ export const copy = {
     etiquetaAlumnos: { es: "Alumnos", en: "Students" },
     etiquetaValoracion: { es: "Valoración", en: "Rating" },
     etiquetaNumValoraciones: { es: "Valoraciones", en: "Reviews" },
+
+    /* ─── Reseñas ────────────────────────────────────────────────────────────
+       `notaDeCinco` lo usa `Estrellas.astro` y es lo que hace que la fila de
+       estrellas no sea la única forma de saber la puntuación: quien la escucha
+       con un lector de pantalla, o quien no distingue el ámbar del gris, lee la
+       cifra. Por eso va SIEMPRE, no solo cuando cabe. */
+    notaDeCinco: { es: "{nota} de 5", en: "{nota} out of 5" },
+    /* La insignia solo se pinta sobre reseñas realmente publicadas en Google y
+       con enlace. Ver `MarcaGoogle.astro`. */
+    enGoogle: { es: "Reseña en Google", en: "Review on Google" },
+    verEnGoogle: { es: "Ver en Google", en: "See on Google" },
+    resumenGoogle: {
+      es: "{nota} de 5 en {n} reseñas de Google",
+      en: "{nota} out of 5 from {n} Google reviews",
+    },
+    /* La misma frase sin nombrar la plataforma. La usa el resumen cuando las
+       reseñas se recogieron en directo: decir "de Google" sobre citas que
+       llegaron por WhatsApp es la parte que convierte un testimonio en un
+       problema, aunque la cita sea verdad. */
+    resumenDirecto: {
+      es: "{nota} de 5 en {n} valoraciones",
+      en: "{nota} out of 5 from {n} reviews",
+    },
     avisoPlaceholder: {
       es: "Testimonios pendientes. No se ha inventado ninguno a propósito: pídeselos a alumnos reales, con permiso por escrito. En el comentario de `testimonios` tienes qué preguntar y qué recolectar.",
       en: "Testimonials pending. None were invented, deliberately: ask real students, with written permission. The comment on `testimonios` tells you what to ask for.",
@@ -2545,6 +2588,12 @@ export const copy = {
     acceso: { es: "Acceso de por vida", en: "Lifetime access" },
     cuotas: { es: "O {cuotas} mensualidades", en: "Or {cuotas} monthly payments" },
     etiqueta: { es: "Anuncios del curso", en: "Course announcements" },
+    /* El mando de parada de la tira. Rótulos propios y no los de la banda de
+       testimonios: "Pausar los testimonios" encima de una tira de precios es
+       justo el tipo de etiqueta reciclada que deja a quien la escucha sin saber
+       qué acaba de parar. */
+    pausar: { es: "Pausar los anuncios", en: "Pause the announcements" },
+    reanudar: { es: "Reanudar los anuncios", en: "Resume the announcements" },
   },
 
   cintasIntermedias: {
@@ -2665,6 +2714,18 @@ export const copy = {
       es: "Pasa el cursor por cada uno para ver el detalle",
       en: "Hover over any of them for the detail",
     },
+    /**
+     * Los dos rótulos del botón que despliega ese mismo detalle EN TÁCTIL.
+     *
+     * Son la contrapartida de `pistaHover`: uno existe donde hay cursor y el
+     * otro donde hay dedo, nunca los dos a la vez. Ver `BotonDetalle.astro`.
+     *
+     * "Ver más" y no "Leer más": lo que se despliega son dos líneas, y "leer"
+     * promete un artículo. La diferencia se nota cuando alguien decide si
+     * merece la pena tocar.
+     */
+    verMas: { es: "Ver más", en: "Show more" },
+    verMenos: { es: "Ver menos", en: "Show less" },
     copyright: {
       es: "© {anio} {razonSocial}. Todos los derechos reservados.",
       en: "© {anio} {razonSocial}. All rights reserved.",

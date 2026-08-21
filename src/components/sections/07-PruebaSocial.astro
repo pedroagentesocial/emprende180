@@ -4,6 +4,8 @@ import Section from "@components/ui/Section.astro";
 import SectionHeading from "@components/ui/SectionHeading.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import BandaTestimonios from "@components/motion/BandaTestimonios.astro";
+import Estrellas from "@components/ui/Estrellas.astro";
+import MarcaGoogle from "@components/ui/MarcaGoogle.astro";
 import { testimonios, cifras, copy, curso, garantia } from "@config/curso.config";
 /* En su propio módulo, y no dentro de `curso.config`, para que Rollup pueda
    descartarlo entero del build de producción: allí `import.meta.env.DEV` se
@@ -13,7 +15,7 @@ import { testimonios, cifras, copy, curso, garantia } from "@config/curso.config
 import { testimoniosMuestra } from "@config/testimonios.muestra";
 import { construirTxt } from "@i18n/idioma";
 import { faltaPorRellenar } from "@lib/pendientes";
-import { formatNumber, formatMoney, interpolar } from "@i18n/formato";
+import { formatNumber, formatMoney, formatNota, interpolar } from "@i18n/formato";
 
 /**
  * 07 · PRUEBA SOCIAL — «¿le funciona a gente como yo?»
@@ -72,12 +74,65 @@ const lista = hayReales
     ? testimoniosMuestra
     : [];
 
+/**
+ * ¿Se está enseñando la muestra de maquetación en vez de reseñas reales?
+ *
+ * Importa para el resumen de puntuación: `cifras` está a cero hasta que haya
+ * datos verificables, así que sin esto la vista previa en desarrollo enseñaría
+ * la banda pero con "0 de 5 en 0 reseñas" encima, que es justo lo que impide
+ * juzgar el diseño. Con la muestra, la nota y el recuento salen de las propias
+ * tarjetas.
+ *
+ * `import.meta.env.DEV` se pliega a `false` al compilar, así que en producción
+ * esta rama entera desaparece del bundle.
+ */
+const conMuestra = !hayReales && import.meta.env.DEV;
+
+/** Nota media y recuento: de `cifras` si son reales, de la muestra si no. */
+const estrelladas = lista.filter((t) => typeof t.estrellas === "number");
+const notaMedia = conMuestra
+  ? estrelladas.reduce((s, t) => s + (t.estrellas ?? 0), 0) /
+    (estrelladas.length || 1)
+  : cifras.valoracionMedia;
+const numResenas = conMuestra ? lista.length : cifras.numeroValoraciones;
+
+/* El resumen se pinta cuando hay cifras verificables o cuando se está viendo la
+   muestra en desarrollo. Nunca con `cifras` a cero en producción. */
+const hayResumen = (cifras.sonReales || conMuestra) && numResenas > 0;
+
 /* Los números también se localizan: el separador de miles lo decide el locale,
    no un `toLocaleString("es")` fijo que dejaba la cifra en español aunque la
    página estuviera en inglés. */
 const numAlumnos = construirTxt((l) => formatNumber(cifras.alumnos, l));
-const numValoraciones = construirTxt((l) =>
-  formatNumber(cifras.numeroValoraciones, l),
+
+/**
+ * ¿Se puede pintar la insignia de Google en el resumen?
+ *
+ * Solo si TODAS las reseñas que se están enseñando salen de Google Y llevan el
+ * enlace a la reseña publicada. Basta con que una no lo cumpla para que el
+ * resumen deje de decir "reseñas de Google": la insignia habla de la lista
+ * entera, así que o vale para todas o miente sobre alguna.
+ *
+ * `lista.length > 0` va en la condición porque `every()` sobre un array vacío
+ * devuelve `true`, y eso pondría el logotipo de Google encima de cero reseñas.
+ */
+const todasEnGoogle =
+  lista.length > 0 && lista.every((t) => t.fuente === "google" && !!t.url);
+
+/** "4.8 de 5 en 37 reseñas de Google" */
+const resumenReseñas = construirTxt((l) =>
+  interpolar(copy.pruebaSocial.resumenGoogle[l], {
+    nota: formatNota(notaMedia, l),
+    n: formatNumber(numResenas, l),
+  }),
+);
+
+/** La misma frase sin nombrar a Google, para reseñas recogidas en directo. */
+const resumenSinFuente = construirTxt((l) =>
+  interpolar(copy.pruebaSocial.resumenDirecto[l], {
+    nota: formatNota(notaMedia, l),
+    n: formatNumber(numResenas, l),
+  }),
 );
 
 /* ── Estado "todavía no hay testimonios" ───────────────────────────────────
@@ -115,35 +170,54 @@ const puntos = fundador.puntos.map((p) => ({
           <SectionHeading align="center" class="mx-auto" titulo={copy.pruebaSocial.titulo} />
         </div>
 
-        {cifras.sonReales && (
+        {/* ─── EL RESUMEN DE LA PUNTUACIÓN ───────────────────────────────────
+            Va antes de la banda porque responde la pregunta de la sección de un
+            vistazo: cuántos, qué nota y dónde se puede comprobar. Quien no lea
+            ni una cita se lleva eso.
+
+            LA NOTA VA ESCRITA, no solo dibujada. Las estrellas son el atajo
+            visual; la cifra al lado es lo que lee un lector de pantalla y lo que
+            hace que la fila ámbar no tenga que pasar ningún umbral de contraste
+            para que la sección se entienda.
+
+            LA INSIGNIA DE GOOGLE SOLO SI LAS RESEÑAS SON DE GOOGLE Y TIENEN
+            ENLACE. `resenasGoogle` lo comprueba arriba, testimonio a testimonio.
+            Sobre citas recogidas por WhatsApp la insignia sería una credencial
+            prestada que nadie puede ir a verificar; ver `MarcaGoogle.astro`. */}
+        {hayResumen && (
           <Reveal class="container-page block">
-            <dl class="mx-auto mt-10 grid max-w-2xl grid-cols-2 gap-6 sm:grid-cols-3">
-              <div class="text-center">
-                <dt class="text-sm text-ink-muted">
+            <div class="mx-auto mt-10 flex max-w-2xl flex-col items-center gap-4 rounded-2xl border border-line bg-surface px-6 py-6 sm:flex-row sm:justify-center sm:gap-7 sm:py-5">
+              <div class="flex flex-col items-center gap-1.5 sm:items-start">
+                <Estrellas valor={notaMedia} tamano="md" sinTexto />
+                <p class="text-sm text-pretty text-ink-muted">
+                  {todasEnGoogle ? (
+                    <T v={resumenReseñas} />
+                  ) : (
+                    <T v={resumenSinFuente} />
+                  )}
+                </p>
+              </div>
+
+              {todasEnGoogle && (
+                <MarcaGoogle class="size-8 shrink-0 sm:order-first" />
+              )}
+
+              {cifras.sonReales && cifras.alumnos > 0 && (
+                <span
+                  aria-hidden="true"
+                  class="h-px w-16 bg-line sm:h-10 sm:w-px"
+                />
+              )}
+
+              {cifras.sonReales && cifras.alumnos > 0 && (
+                <p class="text-center text-sm text-ink-muted sm:text-left">
+                  <span class="font-bold text-ink">
+                    <T v={numAlumnos} />
+                  </span>{" "}
                   <T v={copy.pruebaSocial.etiquetaAlumnos} />
-                </dt>
-                <dd class="text-3xl font-extrabold text-ink">
-                  <T v={numAlumnos} />
-                </dd>
-              </div>
-              <div class="text-center">
-                <dt class="text-sm text-ink-muted">
-                  <T v={copy.pruebaSocial.etiquetaValoracion} />
-                </dt>
-                <dd class="text-3xl font-extrabold text-ink">
-                  {cifras.valoracionMedia}
-                  <span class="text-lg text-ink-subtle">/5</span>
-                </dd>
-              </div>
-              <div class="col-span-2 text-center sm:col-span-1">
-                <dt class="text-sm text-ink-muted">
-                  <T v={copy.pruebaSocial.etiquetaNumValoraciones} />
-                </dt>
-                <dd class="text-3xl font-extrabold text-ink">
-                  <T v={numValoraciones} />
-                </dd>
-              </div>
-            </dl>
+                </p>
+              )}
+            </div>
           </Reveal>
         )}
 

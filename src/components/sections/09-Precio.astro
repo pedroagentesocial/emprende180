@@ -4,6 +4,7 @@ import Section from "@components/ui/Section.astro";
 import SectionHeading from "@components/ui/SectionHeading.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Button from "@components/ui/Button.astro";
+import BotonDetalle from "@components/ui/BotonDetalle.astro";
 import { Contador } from "@components/motion/Contador";
 import Icono from "@components/ui/Icono.astro";
 import MarcaAgua from "@components/ui/MarcaAgua.astro";
@@ -42,8 +43,8 @@ import { formatMoney } from "@i18n/formato";
  * ver el precio. Se leían enteros pocos y se saltaban muchos.
  *
  * Ahora cada fila es título + cifra + una BARRA a escala de su parte de los
- * 3.990, y la justificación se despliega al pasar el cursor (en táctil se ve
- * siempre; ver `[data-revelar]` en global.css).
+ * 3.990, y la justificación se despliega al pasar el cursor o, en táctil, al
+ * tocar "Ver más" (ver `[data-revelar]` en global.css y `BotonDetalle.astro`).
  *
  * La barra no es adorno: el ancla se sostiene porque el visitante puede
  * recorrer la suma, y una barra hace ese recorrido de un vistazo — se VE que el
@@ -256,6 +257,9 @@ const lang = resolverIdiomaServidor(
                         </p>
                       </div>
                     </div>
+
+                    {/* Solo en táctil. Ver `BotonDetalle.astro`. */}
+                    <BotonDetalle class="mt-0.5" />
                   </li>
                 ))
               }

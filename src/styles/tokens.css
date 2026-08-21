@@ -165,6 +165,28 @@
   --color-cta: var(--color-secondary-600); /* blanco encima: 4.69:1 */
   --color-cta-hover: var(--color-secondary-700); /* blanco encima: 6.75:1 */
 
+  /* ─── ESTRELLAS DE RESEÑA ──────────────────────────────────────────────────
+     El ámbar de `warning` reutilizado, y no un dorado nuevo.
+
+     Una estrella de reseña tiene que ser ÁMBAR: es una convención que el
+     visitante ya trae aprendida de Google, Amazon y Booking, exactamente igual
+     que el rojo de un error. Pintarlas de teal "porque es el color de la marca"
+     las convertiría en un adorno más de la página, y el trabajo de esa fila es
+     leerse como una puntuación en el primer vistazo.
+
+     Se apunta a la rampa que ya existe en lugar de añadir una sexta: es el
+     mismo ámbar, y tener dos casi iguales es la forma más rápida de que dentro
+     de un año haya dos dorados distintos en la misma pantalla.
+
+     La vacía es `neutral-300` y no `line`: tiene que leerse como "esta estrella
+     no cuenta" sin desaparecer del todo, porque la forma de las cinco es lo que
+     dice sobre cuánto está puntuado. Da 1.9:1 contra el blanco — por debajo de
+     lo que WCAG pide para un control, y da igual: la nota va SIEMPRE escrita al
+     lado en texto ("4,8 de 5"), así que las estrellas no son la única forma de
+     saberla. Ver `Estrellas.astro`. */
+  --color-estrella: var(--color-warning-500); /* #D98A0B */
+  --color-estrella-vacia: var(--color-neutral-300);
+
   /* ─── VELOS SOBRE VÍDEO ────────────────────────────────────────────────────
      El hero pone texto blanco encima de un vídeo, y un vídeo no tiene un color:
      tiene todos. El contraste no se puede "mirar", hay que garantizarlo, así

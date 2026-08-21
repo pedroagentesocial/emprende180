@@ -1,6 +1,8 @@
 ---
 import T from "@components/i18n/T.astro";
 import Icono from "@components/ui/Icono.astro";
+import Estrellas from "@components/ui/Estrellas.astro";
+import MarcaGoogle from "@components/ui/MarcaGoogle.astro";
 import { copy } from "@config/curso.config";
 import type { Testimonio } from "@config/curso.config";
 import { resolverIdiomaServidor } from "@i18n/idioma";
@@ -108,14 +110,50 @@ const iniciales = (nombre: string) =>
               data-banda-clon={copia === 1 ? "" : undefined}
             >
               <figure class="flex h-full flex-col rounded-2xl border border-line bg-surface p-6">
+                {/* ─── LA LÍNEA DE CREDIBILIDAD ────────────────────────────
+                    Estrellas a la izquierda, de dónde sale la reseña a la
+                    derecha. Va ARRIBA del todo porque es lo que decide si se
+                    lee la cita: en una banda en movimiento, una fila de
+                    estrellas se reconoce sin leer nada.
+
+                    La nota va `sinTexto` aquí y solo aquí: el resumen de la
+                    cabecera de la sección ya la dice escrita, y repetir "5 de
+                    5" en cada una de las tarjetas sería ruido. La versión
+                    accesible de la puntuación vive en ese resumen.
+
+                    (Los comentarios van AQUÍ arriba y no dentro de cada
+                    `{cond && (…)}`: un comentario JSX dentro de una expresión
+                    rompe el parser de Astro.) */}
+                {(t.estrellas || t.fuente === "google") && (
+                  <div class="mb-4 flex items-center justify-between gap-3">
+                    {t.estrellas ? (
+                      <Estrellas valor={t.estrellas} sinTexto />
+                    ) : (
+                      <span />
+                    )}
+
+                    {t.fuente === "google" && t.url && (
+                      <a
+                        href={t.url}
+                        target="_blank"
+                        rel="noopener noreferrer nofollow"
+                        data-track="testimonio-google"
+                        aria-label={copy.pruebaSocial.verEnGoogle[lang]}
+                        data-aria-es={copy.pruebaSocial.verEnGoogle.es}
+                        data-aria-en={copy.pruebaSocial.verEnGoogle.en}
+                        class="inline-flex min-h-11 shrink-0 items-center gap-1.5 text-xs font-semibold text-ink-subtle transition-colors duration-200 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                      >
+                        <MarcaGoogle class="size-4" />
+                        <span><T v={copy.pruebaSocial.enGoogle} /></span>
+                      </a>
+                    )}
+                  </div>
+                )}
+
                 {/* El distintivo del resultado va a `text-sm` y no a `text-xs`:
                     es la frase por la que existe la tarjeta, y a 12 px dentro
                     de una banda que se mueve, en un teléfono, no da tiempo a
-                    leerla.
-
-                    (Y el comentario va AQUÍ y no dentro del `{t.resultado &&
-                    (…)}` de abajo: un comentario JSX dentro de una expresión
-                    rompe el parser de Astro.) */}
+                    leerla. */}
                 {t.resultado && (
                   <p class="mb-4 inline-flex self-start rounded-full bg-secondary-100 px-3 py-1 text-sm font-bold text-secondary-700">
                     <T v={t.resultado} resaltar />
@@ -138,7 +176,7 @@ const iniciales = (nombre: string) =>
                   ) : (
                     <span
                       aria-hidden="true"
-                      class="grid size-11 shrink-0 place-items-center rounded-full bg-surface-sunken text-sm font-bold text-ink-muted"
+                      class="grid size-11 shrink-0 place-items-center rounded-full bg-secondary-100 text-sm font-bold text-secondary-700"
                     >
                       {iniciales(t.nombre)}
                     </span>
@@ -181,49 +219,10 @@ const iniciales = (nombre: string) =>
 </div>
 
 <script>
-  /**
-   * Pausa y reanuda la banda.
-   *
-   * Cambia un atributo del contenedor y el CSS hace el resto
-   * (`animation-play-state`). No se toca el DOM de la pista: parar una
-   * animación CSS por atributo la deja EXACTAMENTE donde estaba, mientras que
-   * cualquier cosa que altere el marcado la reiniciaría desde el principio.
-   */
-  function montarBanda(banda: HTMLElement) {
-    const boton = banda.querySelector<HTMLButtonElement>("[data-banda-pausa]");
-    if (!boton) return;
+  /* El mando de parada vive en `@lib/banda`, compartido con las tiras de
+     anuncios: es una sola implementación para las dos cosas que se mueven
+     solas, y es lo que hace que la página cumpla la WCAG 2.2.2. */
+  import { montarBandas } from "@lib/banda";
 
-    const iconoPausa = boton.querySelector<SVGElement>("[data-icono-pausa]");
-    const iconoPlay = boton.querySelector<SVGElement>("[data-icono-play]");
-
-    const pintar = () => {
-      const pausada = banda.dataset.pausada === "true";
-      const idioma = document.documentElement.lang === "en" ? "en" : "es";
-      const clave = pausada
-        ? idioma === "en"
-          ? "etiquetaReanudarEn"
-          : "etiquetaReanudarEs"
-        : idioma === "en"
-          ? "etiquetaPausarEn"
-          : "etiquetaPausarEs";
-
-      const etiqueta = boton.dataset[clave];
-      if (etiqueta) boton.setAttribute("aria-label", etiqueta);
-      boton.setAttribute("aria-pressed", String(pausada));
-      iconoPausa?.classList.toggle("hidden", pausada);
-      iconoPlay?.classList.toggle("hidden", !pausada);
-    };
-
-    boton.addEventListener("click", () => {
-      banda.dataset.pausada = banda.dataset.pausada === "true" ? "false" : "true";
-      pintar();
-    });
-
-    /* Al cambiar de idioma sin recargar hay que reescribir el `aria-label`: lo
-       pone JavaScript, así que el truco de CSS de `<T>` no lo alcanza. */
-    window.addEventListener("e180:idioma", pintar);
-    pintar();
-  }
-
-  document.querySelectorAll<HTMLElement>("[data-banda]").forEach(montarBanda);
+  montarBandas();
 </script>

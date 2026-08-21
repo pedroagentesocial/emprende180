@@ -4,6 +4,7 @@ import Section from "@components/ui/Section.astro";
 import SectionHeading from "@components/ui/SectionHeading.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Button from "@components/ui/Button.astro";
+import BotonDetalle from "@components/ui/BotonDetalle.astro";
 import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
 import { fondoResultado } from "@lib/assets";
 import { curso, cta, copy } from "@config/curso.config";
@@ -23,18 +24,17 @@ import { curso, cta, copy } from "@config/curso.config";
  * titulares, que es exactamente lo que pide un bloque "skimmeable en 5
  * segundos".
  *
- * ─── EL DETALLE, AL PASAR EL CURSOR ────────────────────────────────────────
+ * ─── EL DETALLE, BAJO DEMANDA ──────────────────────────────────────────────
  *
  * Mismo mecanismo que la rejilla de la sección 02: el titular se ve siempre y
- * el párrafo se despliega al pasar el ratón. Y por el mismo motivo, que aquí es
- * todavía más claro: los seis `titulo` de `transformaciones` ya son frases
- * completas y autosuficientes ("Reconocerás una oportunidad cuando la tengas
- * delante"). El `detalle` dice de qué video sale y con qué empieza: amplía, no
- * completa. Quien no pasa el ratón no se pierde el argumento, solo la letra
- * pequeña.
+ * el párrafo se despliega al pasar el ratón (o al tocar "Ver más", en táctil).
+ * Y por el mismo motivo, que aquí es todavía más claro: los seis `titulo` de
+ * `transformaciones` ya son frases completas y autosuficientes ("Reconocerás
+ * una oportunidad cuando la tengas delante"). El `detalle` dice de qué video
+ * sale y con qué empieza: amplía, no completa. Quien no despliega nada no se
+ * pierde el argumento, solo la letra pequeña.
  *
- * En móvil y en táctil el detalle se ve SIEMPRE. Ver `[data-revelar]` en
- * global.css.
+ * Ver `[data-revelar]` en global.css y `BotonDetalle.astro`.
  *
  * ─── ICONOS EN LUGAR DE NUMERALES ──────────────────────────────────────────
  *
@@ -207,6 +207,10 @@ const ICONOS: NombreIcono[] = [
                       </p>
                     </div>
                   </div>
+
+                  {/* `tono="oscuro"`: sobre el navy de la tarjeta, el teal de
+                      acción no llega al 4.5:1 y el claro sí. */}
+                  <BotonDetalle tono="oscuro" class="mt-1" />
                 </article>
               </Reveal>
             );

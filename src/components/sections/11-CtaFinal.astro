@@ -208,10 +208,21 @@ const lang = resolverIdiomaServidor(
         {/* Las tres razones, ahora en fichas. Sueltas sobre el azul se leían
             como un pie de página; con su marco pesan lo que tienen que pesar,
             que es justo lo que frena en el último momento. */}
+        {/* `items-start` en cada ficha y no `items-center`: la ficha lleva
+            dentro un `marca-linea`, cuyo trabajo es centrar el icono en la
+            PRIMERA línea del texto. Con `items-center` esa caja de una
+            interlínea se centraba a su vez en la ficha entera, así que en cuanto
+            la frase pasaba a dos renglones —cosa que en un teléfono estrecho
+            pasa— el icono acababa entre los dos. Con una sola línea las dos
+            alineaciones dan el mismo píxel, así que aquí no se pierde nada.
+
+            (Y el comentario va AQUÍ y no dentro del `.map()`: un comentario JSX
+            suelto al lado del nodo raíz que devuelve una expresión rompe el
+            parser de Astro. Mismo caso que la nota de `BandaTestimonios`.) */}
         <ul class="mt-8 flex flex-wrap justify-center gap-2 text-sm lg:justify-start">
           {
             tranquilidad.map((t) => (
-              <li class="flex items-center gap-2 rounded-full border border-primary-700 bg-primary-900/50 px-3.5 py-2 text-secondary-200">
+              <li class="flex items-start gap-2 rounded-full border border-primary-700 bg-primary-900/50 px-3.5 py-2 text-secondary-200">
                 <span aria-hidden="true" class="marca-linea shrink-0 text-secondary-300">
                   <Icono nombre={t.icono} class="size-4" />
                 </span>

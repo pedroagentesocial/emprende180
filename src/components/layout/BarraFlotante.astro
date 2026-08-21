@@ -64,11 +64,26 @@ const lang = resolverIdiomaServidor(
         botones no queda ancho para ninguno de los dos, y los botones son los
         que convierten. `min-w-0` para que pueda encogerse en vez de empujar. */}
     <div class="hidden min-w-0 flex-1 lg:block">
-      <CintaAnuncio class="rounded-full !bg-primary-900 !py-2" />
+      {/* `compacta`: aquí la tira mide 40 px de alto y el mando de 44 no cabe.
+          Ver la nota de la prop en `CintaAnuncio.astro`. */}
+      <CintaAnuncio compacta class="rounded-full !bg-primary-900 !py-2" />
     </div>
 
-    {/* Las acciones. `ml-auto` para que se peguen a la derecha cuando el
-        teletipo no está (por debajo de `lg`, donde ocupan la barra entera). */}
+    {/* ─── LAS ACCIONES ──────────────────────────────────────────────────────
+        Por debajo de `lg` el teletipo no está y estas tres son lo único que hay
+        en la barra. Aun así llevaban `justify-end`, así que se apelotonaban
+        contra el borde derecho y dejaban un hueco muerto a la izquierda: en un
+        teléfono, una franja fija de ancho completo con todo su contenido pegado
+        a un lado se lee como algo que se descolocó, no como una barra.
+
+        El reparto lo arregla el BOTÓN, no el contenedor: el CTA crece hasta
+        llenar lo que sobra (ver `flex-1` abajo). Así los dos iconos se quedan a
+        la izquierda, el botón ocupa el resto y de paso gana el objetivo táctil
+        más grande de la pantalla, que es justo lo que tiene que tener el único
+        elemento que convierte.
+
+        De `lg` para arriba vuelve `flex-none`: ahí manda el teletipo y las
+        acciones tienen que medir lo suyo para no comerle el sitio. */}
     <div class="flex flex-1 items-center justify-end gap-2 sm:gap-3 lg:flex-none">
       {
         contacto.telefono && (
@@ -99,11 +114,14 @@ const lang = resolverIdiomaServidor(
         </span>
       </a>
 
-      {/* La acción principal. Teal, como en toda la página. */}
+      {/* La acción principal. Teal, como en toda la página.
+
+          `flex-1` por debajo de `lg`: es el que absorbe el ancho sobrante y deja
+          la barra repartida de borde a borde. Ver la nota del contenedor. */}
       <a
         href={cta.primario.href}
         data-track="barra-comprar"
-        class="inline-flex min-h-11 min-w-0 items-center justify-center rounded-full bg-cta px-4 text-sm font-semibold text-ink-inverse shadow-cta transition-colors duration-200 hover:bg-cta-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse motion-safe:active:scale-[0.98] sm:px-6"
+        class="inline-flex min-h-11 min-w-0 flex-1 items-center justify-center rounded-full bg-cta px-4 text-sm font-semibold text-ink-inverse shadow-cta transition-colors duration-200 hover:bg-cta-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse motion-safe:active:scale-[0.98] sm:px-6 lg:flex-none"
       >
         <span class="truncate">
           <T v={cta.primario.texto} />

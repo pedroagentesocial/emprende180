@@ -5,9 +5,28 @@ import type { Testimonio } from "./curso.config";
  * MUESTRA DE MAQUETACIÓN — NO SON ALUMNOS REALES Y NO SE PUBLICAN
  * ─────────────────────────────────────────────────────────────────────────────
  *
- * Estos seis existen para UNA cosa: poder ver y ajustar el carrusel (el
+ * Estos seis existen para UNA cosa: poder ver y ajustar la banda (el
  * movimiento, el alto de las tarjetas, qué pasa con una cita larga y una corta,
  * cómo se ve en móvil) sin tener que esperar a tener Embajadores formados.
+ *
+ * ⚠️ LAS ESTRELLAS DE AQUÍ TAMBIÉN SON MAQUETA. Están para poder ver cómo queda
+ * la fila ámbar y cuánto ocupa, no para sugerir que existan esas puntuaciones.
+ * Es la misma regla que el resto del archivo: esto solo se renderiza en
+ * `npm run dev` y Rollup lo saca entero del bundle de producción. Copiar estas
+ * seis entradas a `testimonios` en `curso.config.ts` las publicaría, y reseñas
+ * inventadas es lo que la FTC multa por unidad desde 2024 (16 CFR 465).
+ *
+ * ─── VAN COMO `fuente: "directo"` ──────────────────────────────────────────
+ *
+ * O sea: reseñas recogidas por email o WhatsApp, sin insignia de Google y con
+ * el resumen diciendo "4,8 de 5 en 6 valoraciones" a secas. Es lo que toca
+ * mientras las reseñas se pidan a mano, que es como se van a conseguir las
+ * primeras.
+ *
+ * `fuente: "google"` existe y funciona, pero exige que la reseña ESTÉ publicada
+ * en Google y que `url` apunte a ella. La insignia de un tercero solo vale algo
+ * porque se puede ir a comprobar; sin enlace que abrir es una credencial
+ * prestada. Ver `MarcaGoogle.astro`.
  *
  * Solo se renderizan con `import.meta.env.DEV`, es decir en `npm run dev`.
  * En el sitio publicado NO aparecen nunca: ahí se muestra el bloque honesto
@@ -48,6 +67,8 @@ export const testimoniosMuestra: Testimonio[] = [
       en: "I've spent twelve years behind a chair listening to people tell me their lives, and it never occurred to me there was anything there. Video 6 gave me the exact words to ask. The first time my voice shook and it still worked.",
     },
     foto: null,
+    estrellas: 5,
+    fuente: "directo",
   },
   {
     nombre: "Andrés Peña",
@@ -64,6 +85,8 @@ export const testimoniosMuestra: Testimonio[] = [
       en: "Wrecked cars come into my shop every week and all I ever saw was the damage. After video 5 I started actually hearing what people told me while they waited. In a month I spotted four situations that would have gone right past me before.",
     },
     foto: null,
+    estrellas: 5,
+    fuente: "directo",
   },
   {
     nombre: "Valeria Ortiz",
@@ -80,6 +103,8 @@ export const testimoniosMuestra: Testimonio[] = [
       en: "My people were in phone notes, in WhatsApp and in my head, which is to say nowhere. With video 7 I put 60 contacts into the CRM in one afternoon. The point wasn't entering them: it was seeing for the first time who I hadn't spoken to in eight months.",
     },
     foto: null,
+    estrellas: 4,
+    fuente: "directo",
   },
   {
     nombre: "Rodrigo Salazar",
@@ -96,6 +121,8 @@ export const testimoniosMuestra: Testimonio[] = [
       en: "I hate chasing people. Video 8 isn't about posting more, it's about posting something that makes people message you. I changed how I told things and within two weeks three people wrote to me who I never would have reached out to.",
     },
     foto: null,
+    estrellas: 5,
+    fuente: "directo",
   },
   {
     nombre: "Camila Fuentes",
@@ -112,6 +139,8 @@ export const testimoniosMuestra: Testimonio[] = [
       en: "I came in not really understanding what this was and honestly a bit suspicious. The first three videos made clear who does what and what was NOT mine to do. Knowing where my part ends is what made me go for it.",
     },
     foto: null,
+    estrellas: 5,
+    fuente: "directo",
   },
   {
     nombre: "Javier Morales",
@@ -128,5 +157,7 @@ export const testimoniosMuestra: Testimonio[] = [
       en: "I'd signed up before for things that sounded good and three weeks later I had no idea what to do next. Here video 10 makes you write the plan down: who you call each week and how you know it's working. It's the only thing that's kept me going past month one.",
     },
     foto: null,
+    estrellas: 5,
+    fuente: "directo",
   },
 ];

@@ -189,15 +189,39 @@ const todosConQuiz = construirTxt((l) =>
       {
         temario.map((m, i) => (
           <Reveal as="li" delay={Math.min(i, 6) * 0.04}>
-            <article class="flex items-center gap-4 rounded-2xl border border-line bg-surface px-4 py-3.5 transition-colors duration-200 ease-out-soft hover:border-secondary-300 sm:px-5">
-              <span
-                aria-hidden="true"
-                class="grid size-10 shrink-0 place-items-center rounded-full bg-secondary-50 text-sm font-extrabold tabular-nums text-secondary-700 ring-1 ring-secondary-200 ring-inset"
-              >
-                {String(m.numero).padStart(2, "0")}
+            {/* ─── EL NÚMERO VA A LA PRIMERA LÍNEA, NO AL CENTRO DEL BLOQUE ──
+                Estaba con `items-center`, y en escritorio daba igual porque los
+                diez títulos entran en una línea. En un teléfono no: "Cómo se
+                generan oportunidades con contactos y referidos" ocupa tres
+                renglones, y con el círculo centrado sobre el bloque entero
+                quedaba a la altura del segundo. Diez filas con el número a
+                alturas distintas y la columna de títulos a plomo se leen como
+                una lista descuadrada.
+
+                `marca-linea` lo centra en la PRIMERA línea del título mida lo
+                que mida, sin ningún `mt-` a ojo que se rompa al cambiar de
+                idioma. El `text-base` sube a la FILA porque la caja hereda la
+                interlínea de su padre; ver la nota en global.css.
+
+                LA FACTURA, DICHA: con `items-center` la fila medía lo que el
+                círculo (40 px) más el acolchado, o sea 68 px, aunque el título
+                ocupara una línea de 26. Ahora la altura sale del TEXTO, que es
+                de donde tiene que salir, y el acolchado sube de 3.5 a 4 para que
+                el círculo no quede pegado al borde. En escritorio, donde los
+                diez títulos entran en una línea, cada fila pierde unos 10 px: la
+                lista queda más compacta, que en diez elementos que se escanean
+                es mejor, no peor. En móvil no cambia nada, porque ahí los
+                títulos ya ocupaban dos y tres renglones. */}
+            <article class="flex items-start gap-4 rounded-2xl border border-line bg-surface px-4 py-4 text-base transition-colors duration-200 ease-out-soft hover:border-secondary-300 sm:px-5">
+              <span aria-hidden="true" class="marca-linea">
+                <span
+                  class="grid size-10 place-items-center rounded-full bg-secondary-50 text-sm font-extrabold tabular-nums text-secondary-700 ring-1 ring-secondary-200 ring-inset"
+                >
+                  {String(m.numero).padStart(2, "0")}
+                </span>
               </span>
 
-              <h3 class="text-base font-bold text-pretty text-ink">
+              <h3 class="font-bold text-pretty text-ink">
                 <T v={m.titulo} />
               </h3>
             </article>

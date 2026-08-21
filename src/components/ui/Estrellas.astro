@@ -1,0 +1,139 @@
+---
+import T from "@components/i18n/T.astro";
+import { construirTxt } from "@i18n/idioma";
+import { copy } from "@config/curso.config";
+import { interpolar, formatNota } from "@i18n/formato";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * FILA DE ESTRELLAS DE UNA RESEÑA
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * ─── POR QUÉ NO ES UN ★ DE TEXTO ───────────────────────────────────────────
+ *
+ * Cada sistema operativo pinta ese carácter a su manera —en Windows sale fino y
+ * azulado, en Android macizo— así que la misma fila cambia de aspecto según
+ * quién la mire. Y un lector de pantalla lee "estrella negra" cinco veces
+ * seguidas, que no informa de nada. Aquí es un SVG y la nota va escrita.
+ *
+ * ─── CÓMO SE PINTA UNA ESTRELLA A MEDIAS ───────────────────────────────────
+ *
+ * Para la media agregada (4,8) hace falta cortar la quinta estrella por el 80 %.
+ * Se hace con DOS filas superpuestas: la de abajo son cinco estrellas apagadas y
+ * la de arriba, cinco encendidas dentro de una caja `overflow-hidden` cuyo ancho
+ * es el porcentaje de la nota.
+ *
+ * La alternativa habitual es un `<linearGradient>` por estrella, y se descartó
+ * por una razón concreta: el degradado necesita un `id`, esta fila se pinta once
+ * veces en la misma página y dos SVG con el mismo `id` hacen que el navegador
+ * resuelva TODAS las referencias contra el primero. La segunda fila heredaría el
+ * corte de la primera. Se puede sortear con un contador, pero el frontmatter de
+ * un componente Astro se ejecuta una vez POR INSTANCIA y no hay dónde guardarlo
+ * sin inventarse un módulo aparte. Dos capas y un `width` no tienen ese problema.
+ *
+ * ─── LAS ESTRELLAS VAN PEGADAS, Y ES OBLIGATORIO ───────────────────────────
+ *
+ * Sin `gap`. El aire entre ellas lo pone el propio lienzo de 24×24, que trae la
+ * estrella con margen dentro.
+ *
+ * Con `gap` el corte deja de ser exacto: cuatro de cinco no serían el 80 % del
+ * ancho, sino (4·16 + 4·2)/(5·16 + 4·2) = 81,8 %, y ese 1,8 % son casi dos
+ * píxeles de la quinta estrella encendidos en una nota de 4,0 redonda. Se ve.
+ * Pegadas, el porcentaje y la nota son la misma cuenta.
+ *
+ * ─── ACCESIBILIDAD ─────────────────────────────────────────────────────────
+ *
+ * Los dibujos van `aria-hidden` y la nota va escrita al lado ("4,8 de 5"). Eso
+ * es además lo que hace que el color apagado de la estrella vacía no sea un
+ * problema de contraste: la puntuación no depende de distinguirlo.
+ */
+interface Props {
+  /** Nota de 0 a 5. Admite decimales para la media agregada. */
+  valor: number;
+  /** Tamaño del dibujo. `sm` dentro de una tarjeta, `md` para la nota grande. */
+  tamano?: "sm" | "md";
+  /** Oculta la nota escrita, para cuando ya está escrita al lado más grande. */
+  sinTexto?: boolean;
+  /** Sobre fondo navy. Solo cambia el color del texto de la nota. */
+  inverso?: boolean;
+  class?: string;
+}
+
+const {
+  valor,
+  tamano = "sm",
+  sinTexto = false,
+  inverso = false,
+  class: className = "",
+} = Astro.props;
+
+/* Acotado a [0, 5]: una nota de 6 encendería una estrella que no existe y una
+   negativa daría un ancho negativo. */
+const nota = Math.max(0, Math.min(5, valor));
+const porcentaje = `${(nota / 5) * 100}%`;
+
+/** La nota escrita y localizada: en español el decimal va con coma. */
+const notaTxt = construirTxt((l) =>
+  interpolar(copy.pruebaSocial.notaDeCinco[l], { nota: formatNota(nota, l) }),
+);
+
+const tamanos = { sm: "size-4", md: "size-5" } as const;
+
+/* El lienzo trae la estrella con su propio margen, así que las cinco pueden ir
+   pegadas sin tocarse. Ver la nota de arriba. */
+const ESTRELLA =
+  "M12 3.1l2.72 5.51 6.08.89-4.4 4.29 1.04 6.05L12 16.98l-5.44 2.86 1.04-6.05-4.4-4.29 6.08-.89L12 3.1Z";
+---
+
+<span class:list={["inline-flex items-center gap-1.5", className]}>
+  {/* `w-max` para que la capa de arriba se corte contra el ancho REAL de las
+      cinco estrellas y no contra el del contenedor que la envuelva. */}
+  <span aria-hidden="true" class="relative inline-flex w-max shrink-0">
+    <span class="flex">
+      {
+        [0, 1, 2, 3, 4].map(() => (
+          <svg
+            viewBox="0 0 24 24"
+            class:list={[tamanos[tamano], "shrink-0"]}
+            style="color:var(--color-estrella-vacia)"
+          >
+            <path d={ESTRELLA} fill="currentColor" />
+          </svg>
+        ))
+      }
+    </span>
+
+    {/* La capa encendida, recortada al porcentaje de la nota. Las estrellas de
+        dentro llevan `shrink-0` para que se salgan de la caja en vez de
+        encogerse: lo que tiene que cortarse es la fila, no cada dibujo. */}
+    <span
+      class="absolute inset-y-0 left-0 flex overflow-hidden"
+      style={`width:${porcentaje}`}
+    >
+      {
+        [0, 1, 2, 3, 4].map(() => (
+          <svg
+            viewBox="0 0 24 24"
+            class:list={[tamanos[tamano], "shrink-0"]}
+            style="color:var(--color-estrella)"
+          >
+            <path d={ESTRELLA} fill="currentColor" />
+          </svg>
+        ))
+      }
+    </span>
+  </span>
+
+  {
+    !sinTexto && (
+      <span
+        class:list={[
+          "text-sm font-bold tabular-nums",
+          inverso ? "text-secondary-100" : "text-ink",
+        ]}
+      >
+        <T v={notaTxt} />
+      </span>
+    )
+  }
+</span>

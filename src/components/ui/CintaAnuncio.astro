@@ -1,7 +1,13 @@
 ---
 import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
 import { curso, copy, garantia } from "@config/curso.config";
-import { construirTxt, LOCALES, type Txt } from "@i18n/idioma";
+import {
+  construirTxt,
+  LOCALES,
+  resolverIdiomaServidor,
+  type Txt,
+} from "@i18n/idioma";
 import { formatMoney, interpolar } from "@i18n/formato";
 
 /**
@@ -29,12 +35,24 @@ import { formatMoney, interpolar } from "@i18n/formato";
  * La lista se pinta dos veces y la pista se desplaza un -50 % exacto: el
  * fotograma en que reinicia es idéntico al de salida y no se ve la costura.
  *
- * ─── SIN BOTÓN DE PAUSA, Y AQUÍ SÍ SE PUEDE ────────────────────────────────
+ * ─── AHORA SÍ LLEVA BOTÓN DE PAUSA ─────────────────────────────────────────
  *
- * La banda de testimonios lleva botón porque son párrafos que hay que leer y
- * pararlos es la única forma. Esto son seis frases de cuatro palabras que se
- * repiten en bucle: si una se pasa, vuelve. Aun así se para al pasar el cursor
- * o al tabular dentro, y `prefers-reduced-motion` la deja quieta y legible.
+ * Aquí decía que no hacía falta: que son seis frases cortas en bucle y que si
+ * una se pasa, vuelve. Estaba mal, y el fallo era de móvil.
+ *
+ * La tira se paraba con `:hover` y con `:focus-within`. En un teléfono no
+ * existe ninguna de las dos: no hay cursor que pasar y nadie tabula. Así que en
+ * la pantalla por la que entra el 73 % de esta audiencia había TRES tiras de
+ * texto desplazándose sin parar y ninguna manera de detenerlas. La WCAG 2.2.2
+ * (nivel A) pide exactamente lo contrario, y no es un tecnicismo: una frase que
+ * se mueve no la lee quien lee despacio, quien tiene dislexia o quien va en el
+ * autobús. Que las frases sean cortas no arregla nada — se repiten en bucle, o
+ * sea que el movimiento no termina nunca.
+ *
+ * El mando es el MISMO que el de la banda de testimonios (`@lib/banda`), y eso
+ * importa: un solo comportamiento de "parar lo que se mueve", con un solo sitio
+ * donde arreglarlo. `prefers-reduced-motion` sigue apagándola entera antes de
+ * que el botón haga falta.
  *
  * ─── TODO SALE DEL CONFIG ──────────────────────────────────────────────────
  *
@@ -43,10 +61,18 @@ import { formatMoney, interpolar } from "@i18n/formato";
  * a `null`, las dos que hablan del plazo desaparecen solas y quedan las otras.
  */
 interface Props {
+  /**
+   * Versión estrecha, para la barra flotante: la tira va dentro de una píldora
+   * de 40 px y el mando de 44 px no cabe. Ahí baja a 32, que sigue por encima
+   * del mínimo de 24 px que pide la WCAG 2.5.8. Es la única excepción al
+   * objetivo táctil de 44 px del proyecto, y solo aplica de `lg` para arriba,
+   * que es donde vive esa barra con teletipo.
+   */
+  compacta?: boolean;
   class?: string;
 }
 
-const { class: className = "" } = Astro.props;
+const { compacta = false, class: className = "" } = Astro.props;
 
 const { precio } = curso;
 const { fechaCierre, tipo } = precio.urgencia;
@@ -92,22 +118,35 @@ const anuncios: { texto: Txt; dias?: boolean }[] = [
 
 /** Velocidad constante: cinco segundos por anuncio. */
 const duracion = `${anuncios.length * 5}s`;
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
 ---
 
 <div
   data-banda
-  class:list={["overflow-hidden bg-primary-900 py-3.5", className]}
+  data-pausada="false"
+  class:list={["relative overflow-hidden bg-primary-900 py-3.5", className]}
   data-cierre={conPlazo ? fechaCierre : undefined}
   data-dias-es={a.dias.es}
   data-dias-en={a.dias.en}
   data-hoy-es={a.ultimoDia.es}
   data-hoy-en={a.ultimoDia.en}
 >
+  {/* El hueco del mando se reserva al FINAL DE LA PISTA y no con un `padding`
+      del contenedor: la pista se desplaza por debajo, así que cualquier
+      acolchado del padre lo cruzaría el texto igual. Con la reserva dentro, el
+      último anuncio nunca llega a meterse debajo del botón. */}
   <ul
     data-banda-pista
-    class="flex w-max items-center gap-8 sm:gap-12"
+    class:list={[
+      "flex w-max items-center gap-8 sm:gap-12",
+      compacta ? "pr-12" : "pr-16 sm:pr-20",
+    ]}
     style={`--duracion:${duracion}`}
-    aria-label={copy.anuncios.etiqueta.es}
+    aria-label={copy.anuncios.etiqueta[lang]}
     data-aria-es={copy.anuncios.etiqueta.es}
     data-aria-en={copy.anuncios.etiqueta.en}
   >
@@ -137,9 +176,61 @@ const duracion = `${anuncios.length * 5}s`;
       )
     }
   </ul>
+
+  {/* ─── EL MANDO DE PARADA · WCAG 2.2.2, NIVEL A ──────────────────────────
+      Ver la nota de la cabecera: sin esto, en un teléfono no había forma de
+      detener la tira. El velo de detrás es un degradado del MISMO navy de la
+      tira, no una caja: un rectángulo opaco se leería como un botón pegado
+      encima, y el degradado hace que el texto se desvanezca antes de llegar.
+
+      `pointer-events-none` en el velo, o se comería los clics del botón. */}
+  <div
+    aria-hidden="true"
+    class:list={[
+      "pointer-events-none absolute inset-y-0 right-0 z-10",
+      compacta ? "w-16" : "w-20 sm:w-28",
+    ]}
+    style="background-image:linear-gradient(to right, transparent, var(--color-primary-900) 60%)"
+  >
+  </div>
+
+  <button
+    type="button"
+    data-banda-pausa
+    aria-pressed="false"
+    aria-label={copy.anuncios.pausar[lang]}
+    data-aria-es={copy.anuncios.pausar.es}
+    data-aria-en={copy.anuncios.pausar.en}
+    data-etiqueta-pausar-es={copy.anuncios.pausar.es}
+    data-etiqueta-pausar-en={copy.anuncios.pausar.en}
+    data-etiqueta-reanudar-es={copy.anuncios.reanudar.es}
+    data-etiqueta-reanudar-en={copy.anuncios.reanudar.en}
+    class:list={[
+      "absolute top-1/2 z-20 inline-grid -translate-y-1/2 place-items-center rounded-full",
+      "border border-primary-700 bg-primary-950/80 text-secondary-200",
+      "transition-colors duration-200 hover:border-secondary-400 hover:text-ink-inverse",
+      "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse",
+      compacta ? "right-1.5 size-8" : "right-3 size-11 sm:right-4",
+    ]}
+  >
+    <Icono
+      nombre="pausa"
+      class:list={[compacta ? "size-3.5" : "size-4"]}
+      grosor={2}
+      data-icono-pausa
+    />
+    <Icono
+      nombre="play"
+      class:list={["hidden", compacta ? "size-3.5" : "size-4"]}
+      grosor={1}
+      data-icono-play
+    />
+  </button>
 </div>
 
 <script>
+  import { montarBandas } from "@lib/banda";
+
   /**
    * Rellena los días que faltan en las tiras.
    *
@@ -179,4 +270,8 @@ const duracion = `${anuncios.length * 5}s`;
 
   pintarDiasAnuncio();
   window.addEventListener("e180:idioma", pintarDiasAnuncio);
+
+  /* El mando de parada, compartido con la banda de testimonios. Es idempotente,
+     así que da igual que los dos componentes lo llamen en la misma página. */
+  montarBandas();
 </script>

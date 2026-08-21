@@ -59,6 +59,27 @@ export function formatNumber(n: number, idioma: Idioma): string {
 }
 
 /**
+ * La nota de una reseña: un decimal como mucho, y ninguno si es redonda.
+ *
+ * "4.8" y "5", nunca "4.80" ni "5.0". Un cero decimal de relleno en una
+ * puntuación se lee como precisión falsa, y encima descuadra la columna cuando
+ * hay varias notas juntas.
+ *
+ * OJO CON EL SEPARADOR: el proyecto va en `es-US`, no en `es-ES`, así que el
+ * decimal es un PUNTO también en español. Es lo correcto para esta audiencia —
+ * hispanohablantes en Estados Unidos, que es de donde son todos los ejemplos y
+ * en cuya moneda están los precios—, y por eso el locale sale de `LOCALES` y no
+ * se escribe a mano en cada componente: hacerlo a mano fue exactamente cómo
+ * aparecieron dos "es-MX" sueltos que había que acordarse de cambiar aquí.
+ */
+export function formatNota(n: number, idioma: Idioma): string {
+  return new Intl.NumberFormat(LOCALES[idioma], {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 1,
+  }).format(n);
+}
+
+/**
  * Sustituye `{clave}` por su valor. Para el copy con huecos.
  *
  * Los huecos van con nombre y no por posición porque el orden de las palabras
