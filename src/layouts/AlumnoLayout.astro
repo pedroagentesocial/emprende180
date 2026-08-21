@@ -25,9 +25,16 @@ import type { Alumno } from "@lib/datos";
  * Se queda el pie de la landing: los enlaces legales y el teléfono tienen que
  * seguir estando a mano también aquí dentro.
  *
- * Todo el área va en navy, como el cierre y el pie. No es un capricho: separa
- * de un vistazo "estoy dentro de mi curso" de "estoy en la página que me lo
- * vendió", sin necesidad de leer nada.
+ * ─── EL ÁREA VA EN CLARO ───────────────────────────────────────────────────
+ *
+ * Empezó en navy, para separar de un vistazo "estoy dentro" de "estoy en la
+ * página que me lo vendió". Se cambió, y con motivo: la landing se recorre una
+ * vez, pero aquí se pasan horas leyendo, viendo videos y contestando quizzes.
+ * Para leer y trabajar, el fondo claro cansa menos y el texto largo se sostiene
+ * mejor; el navy es de escaparate, no de mesa de estudio.
+ *
+ * Lo que separa un sitio del otro ya no es el color de fondo sino la BARRA:
+ * la de la landing lleva "Inscribirme al curso", esta lleva tu nombre y "salir".
  */
 
 interface Props {
@@ -50,17 +57,17 @@ const saludo = alumno.nombre
     )
   : copy.acceso.tablero.saludoSinNombre;
 
-const logo = sitio.logoHorizontalBlanco;
+const logo = sitio.logoHorizontal;
 ---
 
 <BaseLayout titulo={tituloPagina} descripcion={copy.acceso.entradilla} noindex>
-  <header class="relative border-b border-primary-800 bg-primary-950">
+  <header class="relative border-b border-line bg-surface">
     <div
       class="container-page flex h-[var(--header-h)] items-center justify-between gap-3 lg:h-[var(--header-h-lg)]"
     >
       <a
         href="/alumno"
-        class="flex min-h-11 shrink-0 items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+        class="flex min-h-11 shrink-0 items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
       >
         <img
           src={logo.src}
@@ -76,7 +83,7 @@ const logo = sitio.logoHorizontalBlanco;
       <div class="flex shrink-0 items-center gap-2 sm:gap-3">
         {/* El saludo se esconde en móvil: quien está dentro ya sabe quién es, y
             a 320 px esos caracteres se los quita al botón de salir. */}
-        <span class="max-sm:sr-only text-sm font-medium text-secondary-200">
+        <span class="max-sm:sr-only text-sm font-medium text-ink-muted">
           <T v={saludo} />
         </span>
 
@@ -84,7 +91,7 @@ const logo = sitio.logoHorizontalBlanco;
           alumno.rol === "admin" && (
             <a
               href="/admin"
-              class="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-semibold text-secondary-200 transition-colors hover:bg-primary-900 hover:text-ink-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+              class="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-semibold text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
             >
               <Icono nombre="lista" class="size-4 shrink-0" grosor={2} />
               <span class="max-sm:sr-only">
@@ -98,7 +105,7 @@ const logo = sitio.logoHorizontalBlanco;
         <form method="POST" action="/api/salir">
           <button
             type="submit"
-            class="inline-flex min-h-11 items-center gap-2 rounded-full border border-primary-700 px-3.5 text-sm font-semibold text-secondary-200 transition-colors hover:border-secondary-400 hover:text-ink-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+            class="inline-flex min-h-11 items-center gap-2 rounded-full border border-line-strong px-3.5 text-sm font-semibold text-ink-muted transition-colors hover:border-ink hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           >
             <T v={copy.acceso.tablero.salir} />
           </button>
@@ -109,9 +116,9 @@ const logo = sitio.logoHorizontalBlanco;
 
   <main
     id="contenido"
-    class="relative isolate min-h-[60svh] overflow-hidden bg-primary-950 section-y"
+    class="relative isolate min-h-[60svh] overflow-hidden bg-surface-muted section-y"
   >
-    <MarcaAgua posicion="derecha" class="opacity-[0.05]" />
+    <MarcaAgua variante="color" posicion="derecha" class="opacity-[0.04]" />
     <div class="container-page">
       <slot />
     </div>

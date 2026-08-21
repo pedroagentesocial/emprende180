@@ -163,10 +163,10 @@ const celda = "px-4 py-3 text-sm";
 
 <AlumnoLayout titulo={copy.acceso.panel.titulo} alumno={admin}>
   <div class="mx-auto max-w-4xl">
-    <h1 class="text-3xl font-extrabold text-ink-inverse sm:text-4xl">
+    <h1 class="text-3xl font-extrabold text-ink sm:text-4xl">
       <T v={copy.acceso.panel.titulo} />
     </h1>
-    <p class="mt-3 max-w-xl text-base text-pretty text-secondary-200">
+    <p class="mt-3 max-w-xl text-base text-pretty text-ink-muted">
       <T v={copy.acceso.panel.entradilla} />
     </p>
 
@@ -188,8 +188,8 @@ const celda = "px-4 py-3 text-sm";
           class:list={[
             "mt-6 rounded-xl border px-4 py-3 text-sm text-pretty",
             aviso.tipo === "ok"
-              ? "border-secondary-400/40 bg-secondary-500/10 text-secondary-100"
-              : "border-error-500/50 bg-error-500/10 text-error-50",
+              ? "border-secondary-300 bg-secondary-50 text-ink"
+              : "border-error-500 bg-error-50 text-error-700",
           ]}
         >
           {aviso.texto}
@@ -199,12 +199,13 @@ const celda = "px-4 py-3 text-sm";
 
     {/* ─── Alta ─────────────────────────────────────────────────────────── */}
     <form
+      id="form-alta"
       method="POST"
-      class="mt-8 rounded-2xl border border-primary-800 bg-primary-900/50 p-6"
+      class="mt-8 rounded-2xl border border-line bg-surface p-6"
     >
       <input type="hidden" name="accion" value="alta" />
 
-      <h2 class="text-lg font-bold text-ink-inverse">
+      <h2 class="text-lg font-bold text-ink">
         <T v={copy.acceso.panel.nuevoTitulo} />
       </h2>
 
@@ -212,7 +213,7 @@ const celda = "px-4 py-3 text-sm";
         <div>
           <label
             for="admin-email"
-            class="block text-sm font-semibold text-secondary-200"
+            class="block text-sm font-semibold text-ink-muted"
           >
             <T v={copy.acceso.panel.campoEmail} />
           </label>
@@ -223,14 +224,14 @@ const celda = "px-4 py-3 text-sm";
             required
             autocomplete="off"
             placeholder="maria@email.com"
-            class="mt-2 min-h-12 w-full rounded-xl border border-primary-700 bg-primary-950/60 px-4 py-3 text-base text-ink-inverse placeholder:text-primary-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+            class="mt-2 min-h-12 w-full rounded-xl border border-line-strong bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           />
         </div>
 
         <div>
           <label
             for="admin-nombre"
-            class="block text-sm font-semibold text-secondary-200"
+            class="block text-sm font-semibold text-ink-muted"
           >
             <T v={copy.acceso.panel.campoNombre} />
           </label>
@@ -240,7 +241,7 @@ const celda = "px-4 py-3 text-sm";
             type="text"
             autocomplete="off"
             placeholder="María"
-            class="mt-2 min-h-12 w-full rounded-xl border border-primary-700 bg-primary-950/60 px-4 py-3 text-base text-ink-inverse placeholder:text-primary-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+            class="mt-2 min-h-12 w-full rounded-xl border border-line-strong bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           />
         </div>
       </div>
@@ -253,7 +254,7 @@ const celda = "px-4 py-3 text-sm";
           type="submit"
           name="enviar"
           value="1"
-          class="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-secondary-500 px-6 text-sm font-bold text-primary-950 transition-colors hover:bg-secondary-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+          class="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-secondary-500 px-6 text-sm font-bold text-primary-950 transition-colors hover:bg-secondary-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
         >
           <Icono nombre="conversacion" class="size-4 shrink-0" grosor={2} />
           <T v={copy.acceso.panel.altaYEnviar} />
@@ -263,7 +264,7 @@ const celda = "px-4 py-3 text-sm";
           type="submit"
           name="enviar"
           value="0"
-          class="inline-flex min-h-12 items-center justify-center rounded-full border border-primary-700 px-6 text-sm font-bold text-secondary-200 transition-colors hover:border-secondary-400 hover:text-ink-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+          class="inline-flex min-h-12 items-center justify-center rounded-full border border-line-strong px-6 text-sm font-bold text-ink-muted transition-colors hover:border-secondary-400 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
         >
           <T v={copy.acceso.panel.alta} />
         </button>
@@ -274,17 +275,17 @@ const celda = "px-4 py-3 text-sm";
     <div class="mt-10">
       {
         alumnos.length === 0 ? (
-          <p class="text-base text-secondary-200">
+          <p class="text-base text-ink-muted">
             <T v={copy.acceso.panel.vacio} />
           </p>
         ) : (
           /* `overflow-x-auto` en el envoltorio y no en la tabla: una tabla con
              cuatro columnas no cabe en 320 px y lo correcto es que se deslice
              ella sola, no que la página entera tenga scroll horizontal. */
-          <div class="overflow-x-auto rounded-2xl border border-primary-800">
+          <div class="overflow-x-auto rounded-2xl border border-line">
             <table class="w-full min-w-[38rem] border-collapse text-left">
               <thead class="bg-primary-900/60">
-                <tr class="text-xs font-bold tracking-wide text-secondary-300 uppercase">
+                <tr class="text-xs font-bold tracking-wide text-ink-subtle uppercase">
                   <th scope="col" class={celda}>
                     <T v={copy.acceso.panel.columnaAlumno} />
                   </th>
@@ -302,14 +303,14 @@ const celda = "px-4 py-3 text-sm";
 
               <tbody>
                 {alumnos.map((a) => (
-                  <tr class="border-t border-primary-800">
+                  <tr class="border-t border-line">
                     <td class={celda}>
-                      <span class="block font-semibold text-ink-inverse">
+                      <span class="block font-semibold text-ink">
                         {a.nombre ?? "—"}
                       </span>
-                      <span class="block text-secondary-300">{a.email}</span>
+                      <span class="block text-ink-subtle">{a.email}</span>
                       {a.rol === "admin" && (
-                        <span class="mt-1 inline-flex rounded-full bg-secondary-500/20 px-2 py-0.5 text-xs font-bold text-secondary-200">
+                        <span class="mt-1 inline-flex rounded-full bg-secondary-100 px-2 py-0.5 text-xs font-bold text-ink-muted">
                           admin
                         </span>
                       )}
@@ -320,8 +321,8 @@ const celda = "px-4 py-3 text-sm";
                         class:list={[
                           "inline-flex rounded-full px-2.5 py-1 text-xs font-bold",
                           a.activo
-                            ? "bg-secondary-500/20 text-secondary-200"
-                            : "bg-primary-800 text-secondary-300",
+                            ? "bg-secondary-100 text-secondary-800"
+                            : "bg-surface-muted text-ink-muted",
                         ]}
                       >
                         <T
@@ -334,7 +335,7 @@ const celda = "px-4 py-3 text-sm";
                       </span>
                     </td>
 
-                    <td class={`${celda} text-secondary-300`}>
+                    <td class={`${celda} text-ink-subtle`}>
                       {fecha(a.ultimoAcceso) ?? (
                         <T v={copy.acceso.panel.nunca} />
                       )}
@@ -352,7 +353,7 @@ const celda = "px-4 py-3 text-sm";
                           />
                           <button
                             type="submit"
-                            class="inline-flex min-h-11 items-center rounded-full border border-primary-700 px-3.5 text-xs font-bold text-secondary-200 transition-colors hover:border-secondary-400 hover:text-ink-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+                            class="inline-flex min-h-11 items-center rounded-full border border-line-strong px-3.5 text-xs font-bold text-ink-muted transition-colors hover:border-secondary-400 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                           >
                             <T
                               v={

@@ -1,0 +1,159 @@
+---
+import AlumnoLayout from "@layouts/AlumnoLayout.astro";
+import T from "@components/i18n/T.astro";
+import { copy } from "@config/curso.config";
+import { alumnoActual, cambiarClave, rutaInterna } from "@lib/acceso";
+import { validarClave, MIN_CLAVE } from "@lib/claves";
+import { construirTxt } from "@i18n/idioma";
+import { interpolar } from "@i18n/formato";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * /acceso/clave — poner o cambiar la contraseña
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Es a donde lleva el enlace del correo, y sirve para las dos cosas que en el
+ * fondo son la misma: estrenar cuenta y recuperarla. En los dos casos el alumno
+ * acaba de demostrar que el buzón es suyo, y lo que falta es elegir clave.
+ *
+ * ⚠️ PIDE SESIÓN, NO TOKEN. El token ya se consumió en `/acceso/entrar`, que es
+ * quien abrió la sesión. Si esta página aceptara un token por la URL, habría
+ * dos sitios distintos capaces de canjearlo y dos sitios que mantener a salvo.
+ *
+ * ⚠️ NO ESTÁ BAJO EL MIDDLEWARE. `/acceso/*` es zona pública —ahí vive el
+ * formulario de entrada—, así que la comprobación de sesión la hace esta página
+ * por su cuenta. Es la única excepción del proyecto y por eso está escrita
+ * aquí, en grande, en vez de escondida entre las líneas.
+ *
+ * ⚠️ SIN JAVASCRIPT. `<form method="POST">` a sí misma. La pantalla en la que
+ * alguien elige su contraseña es el peor sitio posible para depender de que
+ * cargue un script.
+ */
+export const prerender = false;
+
+const alumno = await alumnoActual(Astro.cookies);
+
+/* Sin sesión no hay nada que hacer aquí: a la puerta, conservando a dónde iba
+   para volver después de identificarse. */
+if (!alumno) {
+  return Astro.redirect("/acceso?destino=%2Facceso%2Fclave", 302);
+}
+
+let error: "corta" | "larga" | "distintas" | null = null;
+
+if (Astro.request.method === "POST") {
+  const datos = await Astro.request.formData();
+  const clave = String(datos.get("clave") ?? "");
+  const repetida = String(datos.get("repetida") ?? "");
+
+  error = validarClave(clave);
+  if (!error && clave !== repetida) error = "distintas";
+
+  if (!error) {
+    await cambiarClave(
+      alumno,
+      clave,
+      Astro.cookies,
+      Astro.request.headers.get("user-agent"),
+    );
+    return Astro.redirect(rutaInterna(Astro.url.searchParams.get("destino")), 303);
+  }
+}
+
+/* El título cambia según haya contraseña o no: "ponte una" a quien estrena la
+   cuenta y "cámbiala" a quien viene de recuperarla. */
+const titulo = alumno.tieneClave
+  ? copy.acceso.clave.tituloCambio
+  : copy.acceso.clave.tituloNueva;
+
+const texto = construirTxt((l) =>
+  interpolar(copy.acceso.clave.textoNueva[l], { min: MIN_CLAVE }),
+);
+
+const mensajeError =
+  error === "corta"
+    ? construirTxt((l) =>
+        interpolar(copy.acceso.clave.errorCorta[l], { min: MIN_CLAVE }),
+      )
+    : error === "larga"
+      ? copy.acceso.clave.errorLarga
+      : error === "distintas"
+        ? copy.acceso.clave.errorDistintas
+        : null;
+
+const campo =
+  "mt-2 min-h-12 w-full rounded-xl border border-line-strong bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+---
+
+<AlumnoLayout titulo={copy.acceso.clave.aria} alumno={alumno}>
+  <div class="mx-auto max-w-md">
+    <h1 class="text-3xl font-extrabold text-balance text-ink sm:text-4xl">
+      <T v={titulo} />
+    </h1>
+
+    <p class="mt-4 text-base text-pretty text-ink-muted">
+      <T v={texto} />
+    </p>
+
+    {/* `id` propio: en esta página hay otro `<form method="POST">` —el de salir,
+        en la cabecera del área— y sin un identificador no hay forma de
+        referirse a este en concreto. */}
+    <form
+      id="form-clave"
+      method="POST"
+      class="mt-8 rounded-2xl border border-line bg-surface p-6 shadow-sm sm:p-7"
+    >
+      {
+        mensajeError && (
+          <p
+            role="alert"
+            class="mb-5 rounded-xl border border-error-500/50 bg-error-50 px-4 py-3 text-sm font-medium text-error-700"
+          >
+            <T v={mensajeError} />
+          </p>
+        )
+      }
+
+      <div>
+        <label for="clave" class="block text-sm font-semibold text-ink">
+          <T v={copy.acceso.clave.etiqueta} />
+        </label>
+        {/* `new-password` hace que el gestor de contraseñas OFREZCA generar una
+            en vez de rellenar la vieja. Con `current-password` aquí, el
+            navegador insistiría en poner la que se está cambiando. */}
+        <input
+          id="clave"
+          name="clave"
+          type="password"
+          required
+          minlength={MIN_CLAVE}
+          autocomplete="new-password"
+          autofocus
+          class={campo}
+        />
+      </div>
+
+      <div class="mt-4">
+        <label for="repetida" class="block text-sm font-semibold text-ink">
+          <T v={copy.acceso.clave.repetir} />
+        </label>
+        <input
+          id="repetida"
+          name="repetida"
+          type="password"
+          required
+          minlength={MIN_CLAVE}
+          autocomplete="new-password"
+          class={campo}
+        />
+      </div>
+
+      <button
+        type="submit"
+        class="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-primary-700 px-6 text-base font-bold text-ink-inverse transition-colors hover:bg-primary-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      >
+        <T v={copy.acceso.clave.guardar} />
+      </button>
+    </form>
+  </div>
+</AlumnoLayout>

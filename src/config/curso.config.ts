@@ -1964,8 +1964,61 @@ export const copy = {
       en: "Enter the email we registered you with and we'll send you a link to get in. No passwords to remember.",
     },
     formEtiqueta: { es: "Tu correo", en: "Your email" },
+    formClave: { es: "Tu contraseña", en: "Your password" },
+    formEntrar: { es: "Entrar", en: "Sign in" },
+    formEntrando: { es: "Entrando…", en: "Signing in…" },
+    /* Un solo mensaje para los tres fallos posibles. Ver `/api/entrar`. */
+    formErrorCredenciales: {
+      es: "Correo o contraseña incorrectos.",
+      en: "Wrong email or password.",
+    },
+    formErrorLimite: {
+      es: "Demasiados intentos. Espera unos minutos y vuelve a probar.",
+      en: "Too many attempts. Wait a few minutes and try again.",
+    },
+    /* ─── Olvidé la contraseña ──────────────────────────────────────────── */
+    olvide: { es: "He olvidado mi contraseña", en: "I forgot my password" },
+    olvideTitulo: { es: "Recupera tu acceso", en: "Recover your access" },
+    olvideTexto: {
+      es: "Escribe tu correo y te mandamos un enlace para poner una contraseña nueva.",
+      en: "Enter your email and we'll send you a link to set a new password.",
+    },
+    volverAEntrar: { es: "Volver a entrar", en: "Back to sign in" },
     formBoton: { es: "Mandarme el enlace", en: "Send me the link" },
     formEnviando: { es: "Mandando…", en: "Sending…" },
+
+    /* ─── Poner contraseña ──────────────────────────────────────────────── */
+    clave: {
+      aria: { es: "Tu contraseña", en: "Your password" },
+      tituloNueva: { es: "Ponte una contraseña", en: "Set your password" },
+      tituloCambio: { es: "Cambia tu contraseña", en: "Change your password" },
+      textoNueva: {
+        es: "Es la que usarás para entrar a partir de ahora. Mínimo {min} caracteres: lo que importa es que sea larga, no que lleve símbolos raros.",
+        en: "This is what you'll use to sign in from now on. At least {min} characters: what matters is length, not odd symbols.",
+      },
+      etiqueta: { es: "Contraseña nueva", en: "New password" },
+      repetir: { es: "Repítela", en: "Repeat it" },
+      ver: { es: "Ver la contraseña", en: "Show password" },
+      ocultar: { es: "Ocultar la contraseña", en: "Hide password" },
+      guardar: { es: "Guardar y entrar", en: "Save and continue" },
+      guardando: { es: "Guardando…", en: "Saving…" },
+      errorCorta: {
+        es: "Muy corta: mínimo {min} caracteres.",
+        en: "Too short: at least {min} characters.",
+      },
+      errorLarga: { es: "Demasiado larga.", en: "Too long." },
+      errorDistintas: { es: "Las dos no coinciden.", en: "The two don't match." },
+      /* Aviso en el tablero mientras no haya contraseña. */
+      pendienteTitulo: {
+        es: "Te falta ponerte una contraseña",
+        en: "You still need to set a password",
+      },
+      pendienteTexto: {
+        es: "Sin ella tendrás que pedir un enlace por correo cada vez que quieras entrar.",
+        en: "Without one you'll have to request an email link every time you want to sign in.",
+      },
+      pendienteCta: { es: "Ponerla ahora", en: "Set it now" },
+    },
     /* Deliberadamente ambiguo: no confirma si el correo está dado de alta o no.
        Ver la nota de `POST /api/acceso`. */
     formEnviado: {

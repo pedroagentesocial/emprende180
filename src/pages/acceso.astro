@@ -16,10 +16,14 @@ import { alumnoActual, rutaInterna } from "@lib/acceso";
  * /acceso — la puerta del área de alumnos
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * ⚠️ UN SOLO CAMPO, Y NINGUNO DE CONTRASEÑA. Se entra con un enlace que llega
- * al correo. Ver `src/lib/acceso.ts` para el porqué: sin contraseñas no hay
- * hashes que custodiar, ni recuperación que mantener, ni nadie reutilizando
- * aquí la clave de su banco.
+ * ⚠️ CORREO Y CONTRASEÑA, con "he olvidado mi contraseña" en el mismo
+ * formulario y sin cambiar de página: quien pulsa ese enlace ya ha escrito su
+ * correo, y hacerle teclearlo otra vez es fricción justo cuando ya está
+ * frustrado. Ver `FormAcceso.tsx`.
+ *
+ * El enlace que llega al correo NO es la forma normal de entrar: sirve para
+ * estrenar la cuenta y para recuperarla, que en el fondo son el mismo gesto.
+ * Ver `src/lib/acceso.ts`.
  *
  * ─── ESTÁ ESCRITA PARA DOS PERSONAS ────────────────────────────────────────
  *
@@ -71,13 +75,13 @@ const lang = resolverIdiomaServidor(
 >
   <Header />
 
-  <main id="contenido" class="relative isolate overflow-hidden bg-primary-950 section-y">
-    <MarcaAgua posicion="derecha" class="opacity-[0.06]" />
+  <main id="contenido" class="relative isolate overflow-hidden bg-surface-muted section-y">
+    <MarcaAgua variante="color" posicion="derecha" class="opacity-[0.04]" />
 
     <div class="container-page">
       <div class="mx-auto max-w-2xl text-center">
         <p
-          class="inline-flex items-center gap-2 rounded-full border border-primary-700 bg-primary-900/60 px-3 py-1 text-xs font-bold tracking-wide text-secondary-300 uppercase"
+          class="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-xs font-bold tracking-wide text-ink-subtle uppercase"
         >
           <span aria-hidden="true" class="marca-linea">
             <Icono nombre="usuario" class="size-3.5" grosor={2} />
@@ -85,11 +89,11 @@ const lang = resolverIdiomaServidor(
           <T v={copy.acceso.kicker} />
         </p>
 
-        <h1 class="mt-5 text-4xl font-extrabold text-balance text-ink-inverse sm:text-5xl">
+        <h1 class="mt-5 text-4xl font-extrabold text-balance text-ink sm:text-5xl">
           <T v={copy.acceso.formTitulo} />
         </h1>
 
-        <p class="mx-auto mt-5 max-w-md text-lg text-pretty text-secondary-200">
+        <p class="mx-auto mt-5 max-w-md text-lg text-pretty text-ink-muted">
           <T v={copy.acceso.formTexto} />
         </p>
       </div>
@@ -103,7 +107,7 @@ const lang = resolverIdiomaServidor(
           error && (
             <p
               role="alert"
-              class="mb-5 rounded-xl border border-warning-500/50 bg-warning-500/10 px-4 py-3 text-sm text-pretty text-warning-50"
+              class="mb-5 rounded-xl border border-warning-500 bg-warning-50 px-4 py-3 text-sm text-pretty text-ink"
             >
               <T v={copy.acceso.errorCaducado} />
             </p>
@@ -111,13 +115,13 @@ const lang = resolverIdiomaServidor(
         }
         {
           salida && (
-            <p class="mb-5 rounded-xl border border-primary-700 bg-primary-900/60 px-4 py-3 text-center text-sm text-secondary-200">
+            <p class="mb-5 rounded-xl border border-line bg-surface px-4 py-3 text-center text-sm text-ink-muted">
               <T v={copy.acceso.salida} />
             </p>
           )
         }
 
-        <div class="rounded-3xl border border-primary-700 bg-primary-900/70 p-6 shadow-2xl sm:p-8">
+        <div class="rounded-3xl border border-line bg-surface p-6 shadow-sm sm:p-8">
           <FormAcceso client:load lang={lang} destino={destino} />
         </div>
       </div>
@@ -126,19 +130,18 @@ const lang = resolverIdiomaServidor(
           Va debajo, pequeño y sin competir: es el caso menos frecuente de los
           dos, pero dejarlo sin salida convierte esta pantalla en un callejón
           para quien todavía no ha comprado. */}
-      <div class="mx-auto mt-10 max-w-md rounded-2xl border border-primary-800 bg-primary-900/30 p-6 text-center">
-        <h2 class="text-base font-bold text-balance text-ink-inverse">
+      <div class="mx-auto mt-10 max-w-md rounded-2xl border border-line bg-surface-muted p-6 text-center">
+        <h2 class="text-base font-bold text-balance text-ink">
           <T v={copy.acceso.noCompre.titulo} />
         </h2>
-        <p class="mt-2 text-sm text-pretty text-secondary-200">
+        <p class="mt-2 text-sm text-pretty text-ink-muted">
           <T v={copy.acceso.noCompre.texto} />
         </p>
 
         <div class="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Button
             href="/"
-            variant="inverse"
-            sobre="oscuro"
+            variant="secondary"
             trackId="acceso-volver"
             class="w-full sm:w-auto"
           >
@@ -149,8 +152,7 @@ const lang = resolverIdiomaServidor(
             contacto.telefono && (
               <Button
                 href={`tel:${contacto.telefono}`}
-                variant="inverse"
-                sobre="oscuro"
+                variant="secondary"
                 trackId="acceso-llamada"
                 class="w-full sm:w-auto"
               >
@@ -167,9 +169,9 @@ const lang = resolverIdiomaServidor(
           pantalla mientras tanto, y quien no ha comprado necesita saber qué se
           compra. Son las mismas tres promesas de la página de venta, sin una
           de más. */}
-      <div class="mx-auto mt-12 max-w-2xl border-t border-primary-800 pt-10">
+      <div class="mx-auto mt-12 max-w-2xl border-t border-line pt-10">
         <h2
-          class="text-center text-xs font-bold tracking-[0.16em] text-secondary-300 uppercase"
+          class="text-center text-xs font-bold tracking-[0.16em] text-ink-subtle uppercase"
         >
           <T v={copy.acceso.queHabra.titulo} />
         </h2>
@@ -177,8 +179,8 @@ const lang = resolverIdiomaServidor(
         <ul class="mx-auto mt-6 grid max-w-xl gap-3">
           {
             copy.acceso.queHabra.puntos.map((p) => (
-              <li class="flex items-start gap-3 text-base text-secondary-100">
-                <span aria-hidden="true" class="marca-linea shrink-0 text-secondary-400">
+              <li class="flex items-start gap-3 text-base text-ink">
+                <span aria-hidden="true" class="marca-linea shrink-0 text-secondary-600">
                   <Icono nombre="check" class="size-5" grosor={2.5} />
                 </span>
                 <T v={p} />

@@ -1,21 +1,26 @@
 import type { AstroCookies } from "astro";
 import { repo, normalizarEmail, type Alumno, type Rol } from "@lib/datos";
+import { cifrarClave, verificarClave, quemarTiempo } from "@lib/claves";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
  * ACCESO — enlaces mágicos y sesiones
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * ─── POR QUÉ NO HAY CONTRASEÑAS ────────────────────────────────────────────
+ * ─── DOS PUERTAS PARA LA MISMA CASA ────────────────────────────────────────
  *
- * Porque no hacen falta para entrar y sí obligan a custodiar un secreto ajeno.
- * Con enlace mágico: no hay hashes que filtrar, no hay recuperación que
- * mantener, no hay nadie reutilizando aquí la contraseña de su banco, y quien
- * pierde el acceso a su correo pierde el acceso a la cuenta — que es
- * exactamente lo mismo que pasa con "he olvidado mi contraseña".
+ *   · CORREO Y CONTRASEÑA — el día a día. Lo que la gente espera y lo que no
+ *     obliga a abrir el buzón cada vez que quiere ver un video.
+ *   · ENLACE POR CORREO — estrenar la cuenta y recuperarla. El alumno al que
+ *     dan de alta todavía no tiene contraseña, y el que la olvida necesita
+ *     poner otra. Las dos cosas son el mismo gesto: demostrar que el buzón es
+ *     tuyo y elegir clave.
  *
- * Añadir contraseña opcional más adelante no obliga a rehacer esto: sería una
- * segunda forma de crear la misma sesión.
+ * Las dos acaban en `abrirSesion`, así que a partir de ahí el resto del sistema
+ * no sabe ni le importa por dónde entró nadie.
+ *
+ * ⚠️ La contraseña se guarda como scrypt con sal. Ver `src/lib/claves.ts`: aquí
+ * no hay ni una línea que meta una contraseña en la base tal cual.
  *
  * ─── LAS TRES REGLAS DEL TOKEN ─────────────────────────────────────────────
  *
@@ -73,20 +78,13 @@ export async function crearEnlaceAcceso(alumno: Alumno, origen: URL): Promise<st
   return url.href;
 }
 
-/**
- * Canjea un token por una sesión. Devuelve el alumno o `null`.
- * Al entrar se cierran las sesiones anteriores: quien pide un enlace nuevo
- * porque cree que alguien más tiene acceso espera exactamente eso.
- */
-export async function entrarConToken(
-  token: string,
+/** Abre sesión para un alumno ya identificado y planta la cookie. */
+async function abrirSesion(
+  alumno: Alumno,
   cookies: AstroCookies,
   userAgent: string | null,
-): Promise<Alumno | null> {
+): Promise<void> {
   const r = repo();
-  const alumno = await r.consumirTokenAcceso(await hash(token));
-  if (!alumno) return null;
-
   const sesion = tokenAleatorio();
   const expira = new Date(Date.now() + DIAS_SESION * 86_400_000);
   await r.crearSesion(alumno.id, await hash(sesion), expira, userAgent);
@@ -99,8 +97,80 @@ export async function entrarConToken(
     path: "/",
     expires: expira,
   });
+}
 
+/**
+ * Canjea un token por una sesión. Devuelve el alumno o `null`.
+ *
+ * El enlace del correo es la INVITACIÓN y el RESTABLECIMIENTO: entra y lleva a
+ * ponerse contraseña. No es la forma normal de entrar —eso es el correo y la
+ * contraseña—, sino la de estrenar cuenta y la de recuperarla.
+ */
+export async function entrarConToken(
+  token: string,
+  cookies: AstroCookies,
+  userAgent: string | null,
+): Promise<Alumno | null> {
+  const alumno = await repo().consumirTokenAcceso(await hash(token));
+  if (!alumno) return null;
+  await abrirSesion(alumno, cookies, userAgent);
   return alumno;
+}
+
+/**
+ * Entrar con correo y contraseña.
+ *
+ * ⚠️ DEVUELVE `null` PARA LOS TRES FALLOS POSIBLES —no existe, está de baja, la
+ * contraseña no es— y quien llama solo puede decir "correo o contraseña
+ * incorrectos". Distinguirlos sería regalar un comprobador de clientes:
+ * "contraseña incorrecta" confirma que ese correo compró el curso.
+ *
+ * ⚠️ Y CUANDO NO EXISTE, SE QUEMA EL MISMO TIEMPO. Sin eso, el "no existe"
+ * respondería al instante y el "contraseña mala" tardaría los ~100 ms del
+ * scrypt: cronometrando las respuestas se puede enumerar la lista de alumnos
+ * sin acertar ni una contraseña.
+ */
+export async function entrarConClave(
+  email: string,
+  clave: string,
+  cookies: AstroCookies,
+  userAgent: string | null,
+): Promise<Alumno | null> {
+  const r = repo();
+  const guardado = await r.claveDe(email);
+
+  if (!guardado) {
+    await quemarTiempo(clave);
+    return null;
+  }
+
+  if (!(await verificarClave(clave, guardado))) return null;
+
+  const alumno = await r.alumnoPorEmail(email);
+  if (!alumno?.activo) return null;
+
+  await abrirSesion(alumno, cookies, userAgent);
+  return alumno;
+}
+
+/**
+ * Guarda una contraseña nueva y CIERRA LAS DEMÁS SESIONES.
+ *
+ * Esa segunda parte es la mitad del motivo de existir del restablecimiento:
+ * quien cambia su contraseña porque cree que alguien más entró en su cuenta
+ * espera echarlo, no compartir cuenta con él hasta que caduque su cookie. Se
+ * vuelve a abrir sesión aquí mismo para no echar también a quien la cambió.
+ */
+export async function cambiarClave(
+  alumno: Alumno,
+  clave: string,
+  cookies: AstroCookies,
+  userAgent: string | null,
+): Promise<void> {
+  const r = repo();
+  await r.guardarClave(alumno.id, await cifrarClave(clave));
+  await r.borrarSesionesDe(alumno.id);
+  await abrirSesion(alumno, cookies, userAgent);
 }
 
 /** Quién es quien hace esta petición, o `null`. */

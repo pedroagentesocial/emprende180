@@ -72,15 +72,42 @@ const ETIQUETA = {
       lector de pantalla intente narrar dos divs anidados: la cifra ya está
       escrita al lado en texto, así que lo único que aporta la barra es la
       forma. */}
+  {/* ─── SIN CONTRASEÑA TODAVÍA ────────────────────────────────────────────
+      Solo lo ve quien entró por el enlace del correo y se saltó la pantalla de
+      ponerse contraseña. No se le fuerza —ya ha demostrado que el buzón es
+      suyo, así que tiene derecho a estar aquí—, pero sí se le dice lo que le
+      va a pasar si no lo hace: pedir un enlace cada vez que quiera entrar. */}
+  {
+    !alumno.tieneClave && (
+      <div class="mx-auto mb-8 flex max-w-3xl flex-col gap-4 rounded-2xl border border-warning-500 bg-warning-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p class="text-base font-bold text-balance text-ink">
+            <T v={copy.acceso.clave.pendienteTitulo} />
+          </p>
+          <p class="mt-1 text-sm text-pretty text-ink-muted">
+            <T v={copy.acceso.clave.pendienteTexto} />
+          </p>
+        </div>
+
+        <a
+          href="/acceso/clave"
+          class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-primary-700 px-5 text-sm font-bold text-ink-inverse transition-colors hover:bg-primary-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        >
+          <T v={copy.acceso.clave.pendienteCta} />
+        </a>
+      </div>
+    )
+  }
+
   <div class="mx-auto max-w-3xl">
-    <p class="text-sm font-semibold text-secondary-200">
+    <p class="text-sm font-semibold text-ink-muted">
       <T v={textoAvance} />
     </p>
 
     <div
       role="img"
       aria-label={`${superados}/${total}`}
-      class="mt-3 h-2 overflow-hidden rounded-full bg-primary-800"
+      class="mt-3 h-2 overflow-hidden rounded-full bg-surface-muted"
     >
       <div
         class="h-full rounded-full bg-secondary-500 transition-[width] duration-500 ease-out-soft"
@@ -96,14 +123,14 @@ const ETIQUETA = {
       siguiente ? (
         <a
           href={`/alumno/${siguiente.numero}`}
-          class="group relative isolate block overflow-hidden rounded-3xl border border-secondary-400/40 bg-primary-900/70 p-6 transition-colors hover:border-secondary-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse sm:p-8"
+          class="group relative isolate block overflow-hidden rounded-3xl border border-secondary-300 bg-surface p-6 transition-colors hover:border-secondary-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:p-8"
         >
           <span
             aria-hidden="true"
-            class="pointer-events-none absolute -top-20 -right-16 -z-10 size-56 rounded-full bg-secondary-500/20 blur-3xl"
+            class="pointer-events-none absolute -top-20 -right-16 -z-10 size-56 rounded-full bg-secondary-100 blur-3xl"
           />
 
-          <p class="text-xs font-bold tracking-[0.14em] text-secondary-300 uppercase">
+          <p class="text-xs font-bold tracking-[0.14em] text-ink-subtle uppercase">
             <T
               v={
                 empezando
@@ -121,12 +148,12 @@ const ETIQUETA = {
               {String(siguiente.numero).padStart(2, "0")}
             </span>
 
-            <h2 class="text-xl font-extrabold text-balance text-ink-inverse sm:text-2xl">
+            <h2 class="text-xl font-extrabold text-balance text-ink sm:text-2xl">
               <T v={siguiente.titulo} />
             </h2>
           </div>
 
-          <p class="mt-5 inline-flex items-center gap-2 text-base font-bold text-secondary-300 group-hover:text-secondary-200">
+          <p class="mt-5 inline-flex items-center gap-2 text-base font-bold text-ink-brand group-hover:text-secondary-800">
             <T
               v={empezando ? copy.acceso.tablero.empezar : copy.acceso.tablero.continuar}
             />
@@ -137,22 +164,22 @@ const ETIQUETA = {
         /* Los diez superados. La certificación se emite a mano, así que lo que
            se dice aquí es exactamente eso: ni un botón de descarga que no
            existe, ni un plazo que no se puede cumplir. */
-        <div class="rounded-3xl border border-secondary-400/40 bg-secondary-500/10 p-6 text-center sm:p-8">
+        <div class="rounded-3xl border border-secondary-300 bg-secondary-50 p-6 text-center sm:p-8">
           <Icono
             nombre="certificado"
-            class="mx-auto size-12 text-secondary-300"
+            class="mx-auto size-12 text-secondary-600"
             grosor={1.5}
           />
-          <h2 class="mt-4 text-xl font-extrabold text-balance text-ink-inverse sm:text-2xl">
+          <h2 class="mt-4 text-xl font-extrabold text-balance text-ink sm:text-2xl">
             <T v={copy.acceso.tablero.completadoTitulo} />
           </h2>
-          <p class="mx-auto mt-3 max-w-md text-base text-pretty text-secondary-200">
+          <p class="mx-auto mt-3 max-w-md text-base text-pretty text-ink-muted">
             <T v={copy.acceso.tablero.completadoTexto} />
           </p>
           {contacto.telefono && (
             <a
               href={`tel:${contacto.telefono}`}
-              class="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full border border-secondary-400 px-5 text-sm font-bold text-secondary-200 transition-colors hover:bg-secondary-500 hover:text-primary-950"
+              class="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full border border-secondary-400 px-5 text-sm font-bold text-secondary-800 transition-colors hover:bg-secondary-500 hover:text-primary-950"
             >
               <Icono nombre="telefono" class="size-4 shrink-0" grosor={2} />
               {contacto.telefonoVisible}
@@ -177,10 +204,10 @@ const ETIQUETA = {
             <a
               href={`/alumno/${m.numero}`}
               class:list={[
-                "flex items-center gap-4 rounded-2xl border px-4 py-3.5 transition-colors duration-200 ease-out-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse sm:px-5",
+                "flex items-center gap-4 rounded-2xl border px-4 py-3.5 transition-colors duration-200 ease-out-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:px-5",
                 estado === "superado"
-                  ? "border-secondary-400/40 bg-secondary-500/10 hover:border-secondary-400"
-                  : "border-primary-800 bg-primary-900/40 hover:border-primary-700",
+                  ? "border-secondary-300 bg-secondary-50 hover:border-secondary-400"
+                  : "border-line bg-surface hover:border-line-strong",
               ]}
             >
               <span
@@ -189,7 +216,7 @@ const ETIQUETA = {
                   "grid size-10 shrink-0 place-items-center rounded-full text-sm font-extrabold tabular-nums",
                   estado === "superado"
                     ? "bg-secondary-500 text-primary-950"
-                    : "bg-primary-800 text-secondary-200 ring-1 ring-primary-700 ring-inset",
+                    : "bg-surface-muted text-ink-muted ring-1 ring-line-strong ring-inset",
                 ]}
               >
                 {estado === "superado" ? (
@@ -200,10 +227,10 @@ const ETIQUETA = {
               </span>
 
               <span class="min-w-0 flex-1">
-                <span class="block text-base font-bold text-pretty text-ink-inverse">
+                <span class="block text-base font-bold text-pretty text-ink">
                   <T v={m.titulo} />
                 </span>
-                <span class="mt-0.5 block text-sm text-secondary-300">
+                <span class="mt-0.5 block text-sm text-ink-subtle">
                   <T v={ETIQUETA[estado]} />
                 </span>
               </span>

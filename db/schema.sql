@@ -11,9 +11,15 @@
 -- Es idempotente: se puede volver a ejecutar sin romper nada.
 
 -- ─── Alumnos ────────────────────────────────────────────────────────────────
--- El email es la identidad. No hay contraseña, y no es un descuido: se entra
--- por enlace mágico, así que aquí no hay ningún hash que custodiar ni que se
--- pueda filtrar. Ver `src/lib/acceso.ts`.
+-- El email es la identidad; la contraseña, la llave del día a día.
+--
+-- `clave_hash` es NULL mientras el alumno no se haya puesto contraseña, que es
+-- justo lo que pasa entre que se le da de alta y abre el correo de invitación.
+-- Ese nulo no es un hueco por rellenar: es un estado con significado, y lo que
+-- hace que la pantalla de "ponte una contraseña" sepa cuándo tiene que salir.
+--
+-- ⚠️ Lo que hay aquí NO es la contraseña: es un scrypt con su sal. Ver
+-- `src/lib/claves.ts`.
 CREATE TABLE IF NOT EXISTS alumnos (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   -- Siempre en minúsculas y sin espacios: lo normaliza la aplicación antes de
@@ -29,9 +35,14 @@ CREATE TABLE IF NOT EXISTS alumnos (
   -- Baja sin borrar: se conserva el progreso por si vuelve, y se conserva el
   -- rastro de que existió. Un DELETE aquí se llevaría por delante su historial.
   activo        boolean NOT NULL DEFAULT true,
+  clave_hash    text,
   alta_en       timestamptz NOT NULL DEFAULT now(),
   ultimo_acceso timestamptz
 );
+
+-- Para bases creadas antes de que existieran las contraseñas. `IF NOT EXISTS`
+-- mantiene este archivo aplicable tantas veces como haga falta.
+ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS clave_hash text;
 
 -- ─── Tokens de acceso (enlaces mágicos) ─────────────────────────────────────
 -- ⚠️ Se guarda el HASH del token, nunca el token. Quien lea esta tabla —una

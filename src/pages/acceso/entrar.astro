@@ -38,10 +38,21 @@ const alumno = token
 
 /* El destino se calcula ANTES del `return` y no dentro de él: el análisis de
    tipos de Astro no mira lo que hay dentro del argumento de un `return` de
-   nivel superior, y todo lo usado ahí se reportaba como código muerto. */
-const destino = alumno
-  ? rutaInterna(Astro.url.searchParams.get("destino"))
-  : "/acceso?error=caducado";
+   nivel superior, y todo lo usado ahí se reportaba como código muerto.
+ *
+ * EL ENLACE LLEVA A PONER CONTRASEÑA, no al tablero. Es lo que tienen en común
+ * las dos únicas razones por las que alguien recibe uno: acaba de estrenar
+ * cuenta y todavía no tiene clave, o la ha olvidado y quiere otra. Llevarlo al
+ * tablero dejaría a medias justamente lo que había venido a hacer.
+ *
+ * El `?destino=` original se arrastra para que, después de elegir contraseña,
+ * acabe donde iba. */
+const siguiente = Astro.url.searchParams.get("destino");
+const aClave = siguiente
+  ? `/acceso/clave?destino=${encodeURIComponent(rutaInterna(siguiente))}`
+  : "/acceso/clave";
+
+const destino = alumno ? aClave : "/acceso?error=caducado";
 
 return Astro.redirect(destino, 302);
 ---

@@ -82,17 +82,17 @@ const hayQuiz = (modulo.lecciones?.length ?? 0) > 0;
   <div class="mx-auto max-w-3xl">
     <a
       href="/alumno"
-      class="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-secondary-300 hover:text-ink-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+      class="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-ink-subtle hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
     >
       <span aria-hidden="true">←</span>
       <T v={copy.acceso.leccion.volver} />
     </a>
 
-    <p class="mt-6 text-xs font-bold tracking-[0.14em] text-secondary-300 uppercase">
+    <p class="mt-6 text-xs font-bold tracking-[0.14em] text-ink-subtle uppercase">
       <T v={rotulo} />
     </p>
 
-    <h1 class="mt-3 text-3xl font-extrabold text-balance text-ink-inverse sm:text-4xl">
+    <h1 class="mt-3 text-3xl font-extrabold text-balance text-ink sm:text-4xl">
       <T v={modulo.titulo} />
     </h1>
 
@@ -100,15 +100,15 @@ const hayQuiz = (modulo.lecciones?.length ?? 0) > 0;
         `aspect-video` para que el hueco mida exactamente lo mismo con video y
         sin él: el día que se enchufe la plataforma, la página no da un salto. */}
     <div
-      class="mt-8 grid aspect-video place-items-center overflow-hidden rounded-2xl border border-primary-800 bg-primary-900/60 p-6 text-center"
+      class="mt-8 grid aspect-video place-items-center overflow-hidden rounded-2xl border border-line bg-surface p-6 text-center"
     >
       <div>
         <Icono
           nombre="play"
-          class="mx-auto size-12 text-secondary-400/60"
+          class="mx-auto size-12 text-ink-subtle"
           grosor={1.5}
         />
-        <p class="mx-auto mt-4 max-w-sm text-base text-pretty text-secondary-200">
+        <p class="mx-auto mt-4 max-w-sm text-base text-pretty text-ink-muted">
           <T v={copy.acceso.leccion.sinVideo} />
         </p>
       </div>
@@ -118,8 +118,8 @@ const hayQuiz = (modulo.lecciones?.length ?? 0) > 0;
         `logras` ya estaba escrito en el config y en la página de venta no cabía.
         Aquí es donde sirve: es lo que el alumno tiene que poder hacer al
         terminarlo, o sea el criterio para saber si lo ha entendido. */}
-    <div class="mt-8 rounded-2xl border border-primary-800 bg-primary-900/40 p-6">
-      <p class="text-base text-pretty text-secondary-100">
+    <div class="mt-8 rounded-2xl border border-line bg-surface p-6">
+      <p class="text-base text-pretty text-ink">
         <T v={modulo.logras} />
       </p>
     </div>
@@ -128,15 +128,15 @@ const hayQuiz = (modulo.lecciones?.length ?? 0) > 0;
     <div class="mt-6">
       {
         estado?.vistoEn ? (
-          <p class="inline-flex items-center gap-2 text-sm font-bold text-secondary-300">
+          <p class="inline-flex items-center gap-2 text-sm font-bold text-ink-subtle">
             <Icono nombre="check" class="size-5 shrink-0" grosor={3} />
             <T v={copy.acceso.leccion.vistoYa} />
           </p>
         ) : (
-          <form method="POST">
+          <form id="form-visto" method="POST">
             <button
               type="submit"
-              class="inline-flex min-h-11 items-center gap-2 rounded-full border border-primary-700 px-5 text-sm font-bold text-secondary-200 transition-colors hover:border-secondary-400 hover:text-ink-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+              class="inline-flex min-h-11 items-center gap-2 rounded-full border border-line-strong px-5 text-sm font-bold text-ink-muted transition-colors hover:border-secondary-400 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
             >
               <Icono nombre="check" class="size-4 shrink-0" grosor={2.5} />
               <T v={copy.acceso.leccion.marcarVisto} />
@@ -147,14 +147,14 @@ const hayQuiz = (modulo.lecciones?.length ?? 0) > 0;
     </div>
 
     {/* ─── El quiz ─────────────────────────────────────────────────────────── */}
-    <div class="mt-10 border-t border-primary-800 pt-8">
-      <h2 class="text-lg font-bold text-ink-inverse">
+    <div class="mt-10 border-t border-line pt-8">
+      <h2 class="text-lg font-bold text-ink">
         <T v={copy.acceso.leccion.quizTitulo} />
       </h2>
 
       {
         !hayQuiz && (
-          <p class="mt-3 text-base text-pretty text-secondary-200">
+          <p class="mt-3 text-base text-pretty text-ink-muted">
             <T v={copy.acceso.leccion.sinQuiz} />
           </p>
         )
@@ -164,12 +164,12 @@ const hayQuiz = (modulo.lecciones?.length ?? 0) > 0;
     {/* ─── Ir y venir ──────────────────────────────────────────────────────
         Los dos extremos de la ruta no llevan a ningún sitio, así que el botón
         que sobra no se pinta apagado: no se pinta. */}
-    <nav class="mt-10 flex items-center justify-between gap-4 border-t border-primary-800 pt-6">
+    <nav class="mt-10 flex items-center justify-between gap-4 border-t border-line pt-6">
       {
         anterior ? (
           <a
             href={`/alumno/${anterior.numero}`}
-            class="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-secondary-300 hover:text-ink-inverse"
+            class="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-ink-subtle hover:text-ink"
           >
             <span aria-hidden="true">←</span>
             <T v={copy.acceso.leccion.anterior} />
@@ -183,7 +183,7 @@ const hayQuiz = (modulo.lecciones?.length ?? 0) > 0;
         siguiente && (
           <a
             href={`/alumno/${siguiente.numero}`}
-            class="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-secondary-300 hover:text-ink-inverse"
+            class="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-ink-subtle hover:text-ink"
           >
             <T v={copy.acceso.leccion.siguiente} />
             <span aria-hidden="true">→</span>

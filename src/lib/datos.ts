@@ -40,6 +40,15 @@ export interface Alumno {
   activo: boolean;
   altaEn: Date;
   ultimoAcceso: Date | null;
+  /**
+   * `true` si ya se ha puesto contraseña.
+   *
+   * ⚠️ AQUÍ NO VIAJA EL HASH, Y ES DELIBERADO. Este objeto acaba en
+   * `Astro.locals` y de ahí puede colarse en cualquier plantilla; un booleano
+   * no se puede filtrar por accidente. El hash solo lo lee `verificarAcceso`,
+   * que es la única función que lo necesita.
+   */
+  tieneClave: boolean;
 }
 
 export interface Progreso {
@@ -55,6 +64,15 @@ export interface Repo {
 
   alumnoPorEmail(email: string): Promise<Alumno | null>;
   alumnoPorId(id: string): Promise<Alumno | null>;
+  /**
+   * El hash de la contraseña de ese email, y nada más.
+   *
+   * Separado de `alumnoPorEmail` a propósito: el único sitio que necesita el
+   * hash es la comprobación de la contraseña, y cuanto menos circule, menos
+   * sitios hay desde los que se pueda escapar.
+   */
+  claveDe(email: string): Promise<string | null>;
+  guardarClave(alumnoId: string, hash: string): Promise<void>;
   listarAlumnos(): Promise<Alumno[]>;
   crearAlumno(datos: {
     email: string;
@@ -110,6 +128,7 @@ function repoPostgres(url: string): Repo {
     activo: f.activo as boolean,
     altaEn: f.alta_en as Date,
     ultimoAcceso: (f.ultimo_acceso as Date) ?? null,
+    tieneClave: Boolean(f.clave_hash),
   });
 
   return {
@@ -124,6 +143,17 @@ function repoPostgres(url: string): Repo {
     async alumnoPorId(id) {
       const [f] = await sql`SELECT * FROM alumnos WHERE id = ${id} LIMIT 1`;
       return f ? aAlumno(f) : null;
+    },
+
+    async claveDe(email) {
+      const [f] = await sql`
+        SELECT clave_hash FROM alumnos
+        WHERE email = ${normalizarEmail(email)} AND activo = true LIMIT 1`;
+      return (f?.clave_hash as string) ?? null;
+    },
+
+    async guardarClave(alumnoId, hash) {
+      await sql`UPDATE alumnos SET clave_hash = ${hash} WHERE id = ${alumnoId}`;
     },
 
     async listarAlumnos() {
@@ -240,6 +270,10 @@ function repoPostgres(url: string): Repo {
 
 function repoMemoria(): Repo {
   const alumnos = new Map<string, Alumno>();
+  /* El hash vive aparte del alumno, igual que en Postgres vive en una columna
+     que `alumnoPorEmail` no devuelve: si estuviera dentro del objeto, acabaría
+     viajando a `Astro.locals` y de ahí a cualquier plantilla. */
+  const claves = new Map<string, string>();
   const tokens = new Map<string, { alumnoId: string; expira: Date; usado: boolean }>();
   const sesiones = new Map<string, { alumnoId: string; expira: Date }>();
   const progreso = new Map<string, Progreso>();
@@ -261,6 +295,7 @@ function repoMemoria(): Repo {
     activo: true,
     altaEn: new Date(),
     ultimoAcceso: null,
+    tieneClave: false,
   };
   alumnos.set(semilla.email, semilla);
 
@@ -275,6 +310,16 @@ function repoMemoria(): Repo {
     async alumnoPorId(id) {
       return porId(id);
     },
+    async claveDe(email) {
+      const e = normalizarEmail(email);
+      return alumnos.get(e)?.activo ? (claves.get(e) ?? null) : null;
+    },
+    async guardarClave(alumnoId, hash) {
+      const a = porId(alumnoId);
+      if (!a) return;
+      claves.set(a.email, hash);
+      alumnos.set(a.email, { ...a, tieneClave: true });
+    },
     async listarAlumnos() {
       return [...alumnos.values()].sort((a, b) => +b.altaEn - +a.altaEn);
     },
@@ -288,6 +333,7 @@ function repoMemoria(): Repo {
         activo: true,
         altaEn: new Date(),
         ultimoAcceso: null,
+        tieneClave: false,
       };
       alumnos.set(a.email, a);
       return a;
