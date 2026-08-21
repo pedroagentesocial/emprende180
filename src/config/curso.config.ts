@@ -1957,6 +1957,118 @@ export const copy = {
         en: "While the area isn't open yet, I'll give you access myself. Call me or write and we'll sort it the same day.",
       },
     },
+    /* ─── El formulario de entrada ──────────────────────────────────────── */
+    formTitulo: { es: "Entra a tu curso", en: "Get into your course" },
+    formTexto: {
+      es: "Escribe el correo con el que te dimos de alta y te mandamos un enlace para entrar. Sin contraseñas que recordar.",
+      en: "Enter the email we registered you with and we'll send you a link to get in. No passwords to remember.",
+    },
+    formEtiqueta: { es: "Tu correo", en: "Your email" },
+    formBoton: { es: "Mandarme el enlace", en: "Send me the link" },
+    formEnviando: { es: "Mandando…", en: "Sending…" },
+    /* Deliberadamente ambiguo: no confirma si el correo está dado de alta o no.
+       Ver la nota de `POST /api/acceso`. */
+    formEnviado: {
+      es: "Si ese correo está dado de alta, acabamos de mandarte el enlace. Caduca en 20 minutos.",
+      en: "If that email is registered, we've just sent you the link. It expires in 20 minutes.",
+    },
+    formErrorEmail: { es: "Revisa el correo.", en: "Check the email address." },
+    formErrorGeneral: {
+      es: "No hemos podido mandarlo. Inténtalo otra vez o llámame.",
+      en: "We couldn't send it. Try again or give me a call.",
+    },
+    /** Cuando el enlace ya se usó o caducó. */
+    errorCaducado: {
+      es: "Ese enlace ya no vale: o se ha usado o han pasado los 20 minutos. Pide otro, tarda un segundo.",
+      en: "That link is no longer valid: either it's been used or the 20 minutes passed. Ask for another one, it takes a second.",
+    },
+    salida: { es: "Has salido de tu cuenta.", en: "You've been signed out." },
+
+    /* ─── El tablero ────────────────────────────────────────────────────── */
+    tablero: {
+      aria: { es: "Tu curso", en: "Your course" },
+      saludo: { es: "Hola, {nombre}", en: "Hi {nombre}" },
+      saludoSinNombre: { es: "Hola", en: "Hi" },
+      salir: { es: "Salir", en: "Sign out" },
+      panel: { es: "Panel", en: "Admin" },
+      /** Barra de avance. `{hechos}` de `{total}`. */
+      avance: {
+        es: "{hechos} de {total} videos superados",
+        en: "{hechos} of {total} videos passed",
+      },
+      /** Lo que toca ahora. Es la única decisión que el alumno no tiene que tomar. */
+      siguienteTitulo: { es: "Sigue por aquí", en: "Pick up here" },
+      empezarTitulo: { es: "Empieza por aquí", en: "Start here" },
+      continuar: { es: "Continuar", en: "Continue" },
+      empezar: { es: "Empezar", en: "Start" },
+      verVideo: { es: "Ver el video", en: "Watch the video" },
+      repasar: { es: "Repasar", en: "Review" },
+      /** Estados de cada fila. */
+      estadoSuperado: { es: "Superado", en: "Passed" },
+      estadoEnCurso: { es: "Empezado", en: "Started" },
+      estadoPendiente: { es: "Pendiente", en: "Not started" },
+      /** Cuando están los diez. */
+      completadoTitulo: {
+        es: "Has superado los diez. Tu certificación está en camino.",
+        en: "You've passed all ten. Your certification is on its way.",
+      },
+      completadoTexto: {
+        es: "Te la emitimos a mano, así que tarda un poco. Si en unos días no la tienes, llámame.",
+        en: "We issue it by hand, so it takes a little while. If it hasn't arrived in a few days, call me.",
+      },
+    },
+
+    /* ─── La pantalla de un video ───────────────────────────────────────── */
+    leccion: {
+      volver: { es: "Volver al tablero", en: "Back to the dashboard" },
+      video: { es: "Video {n} de {total}", en: "Video {n} of {total}" },
+      anterior: { es: "Anterior", en: "Previous" },
+      siguiente: { es: "Siguiente", en: "Next" },
+      marcarVisto: { es: "Marcar como visto", en: "Mark as watched" },
+      vistoYa: { es: "Visto", en: "Watched" },
+      /** Cuando todavía no hay archivo de video para esa lección. */
+      sinVideo: {
+        es: "Este video todavía no está subido. En cuanto esté, aparece aquí sin que tengas que hacer nada.",
+        en: "This video isn't uploaded yet. As soon as it is, it shows up here with nothing for you to do.",
+      },
+      /** El quiz, cuando aún no tiene preguntas cargadas. */
+      quizTitulo: { es: "Quiz de validación", en: "Validation quiz" },
+      sinQuiz: {
+        es: "Las preguntas de este quiz todavía no están cargadas.",
+        en: "This quiz's questions aren't loaded yet.",
+      },
+    },
+
+    /* ─── El panel de administración ────────────────────────────────────── */
+    panel: {
+      titulo: { es: "Alumnos", en: "Students" },
+      entradilla: {
+        es: "Das de alta un correo y esa persona ya puede entrar pidiendo su enlace. No hay contraseñas que mandar ni que reiniciar.",
+        en: "Register an email and that person can get in by requesting their link. There are no passwords to send or reset.",
+      },
+      nuevoTitulo: { es: "Dar de alta", en: "Add a student" },
+      campoEmail: { es: "Correo", en: "Email" },
+      campoNombre: { es: "Nombre (opcional)", en: "Name (optional)" },
+      alta: { es: "Dar de alta", en: "Add" },
+      /** Marcar el alta como hecha manda el enlace de entrada al alumno. */
+      altaYEnviar: { es: "Dar de alta y mandarle el enlace", en: "Add and send them the link" },
+      columnaAlumno: { es: "Alumno", en: "Student" },
+      columnaEstado: { es: "Estado", en: "Status" },
+      columnaAlta: { es: "Alta", en: "Added" },
+      columnaAcceso: { es: "Último acceso", en: "Last access" },
+      activo: { es: "Activo", en: "Active" },
+      inactivo: { es: "Dado de baja", en: "Deactivated" },
+      nunca: { es: "Nunca ha entrado", en: "Never signed in" },
+      darBaja: { es: "Dar de baja", en: "Deactivate" },
+      reactivar: { es: "Reactivar", en: "Reactivate" },
+      vacio: { es: "Todavía no hay ningún alumno.", en: "No students yet." },
+      /** Aviso cuando el área corre sin base de datos. */
+      sinBase: {
+        es: "Estás en modo desarrollo SIN base de datos: los alumnos que des de alta se pierden al reiniciar. Define DATABASE_URL para que sea de verdad.",
+        en: "You're in development mode WITHOUT a database: any student you add is lost on restart. Set DATABASE_URL to make it real.",
+      },
+    },
+
     /** Para quien llegó aquí por error. */
     noCompre: {
       titulo: { es: "Todavía no lo he comprado", en: "I haven't bought it yet" },

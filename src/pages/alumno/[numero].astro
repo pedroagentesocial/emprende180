@@ -1,0 +1,195 @@
+---
+import AlumnoLayout from "@layouts/AlumnoLayout.astro";
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import { temario, copy } from "@config/curso.config";
+import { repo } from "@lib/datos";
+import { construirTxt } from "@i18n/idioma";
+import { interpolar } from "@i18n/formato";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * /alumno/[numero] — la pantalla de un video
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * ─── EL VIDEO NO SE SIRVE DESDE AQUÍ, Y ESO ES DELIBERADO ──────────────────
+ *
+ * El reproductor es un hueco con una fuente. Hoy no hay ninguna, así que dice
+ * que el video todavía no está subido; el día que lo haya, entra por ese mismo
+ * hueco sin tocar esta página.
+ *
+ * ⚠️ LO QUE NO SE PUEDE HACER NUNCA: poner los MP4 en `/public`. Un archivo en
+ * `/public` es una URL pública y adivinable — `/video/01.mp4` —, sin sesión y
+ * sin caducidad. Cualquier alumno podría pasar el enlace y el curso estaría
+ * fuera el mismo día. El video tiene que venir de una plataforma que firme la
+ * reproducción y caduque (Mux, Cloudflare Stream, Bunny) o, como mínimo, de un
+ * almacenamiento privado con URL firmada generada aquí, en el servidor, para
+ * esta sesión.
+ *
+ * ─── EL QUIZ ───────────────────────────────────────────────────────────────
+ *
+ * `temario[n].lecciones` está vacío a propósito (ver el comentario de `temario`
+ * en el config): las preguntas de cada quiz son CONTENIDO del curso y no se
+ * pueden inventar. La pantalla del quiz existe y sabe qué hacer; mientras no
+ * haya preguntas, lo dice en vez de fingir un examen.
+ *
+ * ─── MARCAR COMO VISTO ─────────────────────────────────────────────────────
+ *
+ * Es un POST con un `<form>` normal, sin JavaScript. Funciona con el móvil en
+ * mitad del metro y con el JS bloqueado, y el progreso de alguien que pagó no
+ * es algo que deba depender de que cargue un script.
+ */
+export const prerender = false;
+
+const alumno = Astro.locals.alumno!;
+
+const numero = Number(Astro.params.numero);
+const modulo = temario.find((m) => m.numero === numero);
+
+/* Un número que no existe es un 404 y no una redirección al tablero: si alguien
+   llega a `/alumno/99`, lo correcto es decir que no está, no fingir que sí. */
+if (!modulo) return new Response(null, { status: 404 });
+
+const r = repo();
+
+/* POST = "marcar como visto". El mismo endpoint que la página, para no crear
+   una ruta de API por una casilla. Responde con redirección para que recargar
+   no vuelva a enviar el formulario. */
+if (Astro.request.method === "POST") {
+  await r.marcarVisto(alumno.id, numero);
+  /* Se conserva la query —`?lang=es` sobre todo— al redirigir. Sin eso, quien
+     está leyendo en español marca un video y vuelve con la página resuelta en
+     el idioma del navegador. */
+  return Astro.redirect(`/alumno/${numero}${Astro.url.search}`, 303);
+}
+
+const progreso = await r.progresoDe(alumno.id);
+const estado = progreso.find((p) => p.numero === numero);
+
+const total = temario.length;
+const anterior = temario.find((m) => m.numero === numero - 1) ?? null;
+const siguiente = temario.find((m) => m.numero === numero + 1) ?? null;
+
+const rotulo = construirTxt((l) =>
+  interpolar(copy.acceso.leccion.video[l], { n: numero, total }),
+);
+
+/* Las preguntas del quiz, cuando existan. Hoy `lecciones` está vacío. */
+const hayQuiz = (modulo.lecciones?.length ?? 0) > 0;
+---
+
+<AlumnoLayout titulo={modulo.titulo} alumno={alumno}>
+  <div class="mx-auto max-w-3xl">
+    <a
+      href="/alumno"
+      class="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-secondary-300 hover:text-ink-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+    >
+      <span aria-hidden="true">←</span>
+      <T v={copy.acceso.leccion.volver} />
+    </a>
+
+    <p class="mt-6 text-xs font-bold tracking-[0.14em] text-secondary-300 uppercase">
+      <T v={rotulo} />
+    </p>
+
+    <h1 class="mt-3 text-3xl font-extrabold text-balance text-ink-inverse sm:text-4xl">
+      <T v={modulo.titulo} />
+    </h1>
+
+    {/* ─── El hueco del video ─────────────────────────────────────────────
+        `aspect-video` para que el hueco mida exactamente lo mismo con video y
+        sin él: el día que se enchufe la plataforma, la página no da un salto. */}
+    <div
+      class="mt-8 grid aspect-video place-items-center overflow-hidden rounded-2xl border border-primary-800 bg-primary-900/60 p-6 text-center"
+    >
+      <div>
+        <Icono
+          nombre="play"
+          class="mx-auto size-12 text-secondary-400/60"
+          grosor={1.5}
+        />
+        <p class="mx-auto mt-4 max-w-sm text-base text-pretty text-secondary-200">
+          <T v={copy.acceso.leccion.sinVideo} />
+        </p>
+      </div>
+    </div>
+
+    {/* ─── Qué se lleva de este video ─────────────────────────────────────
+        `logras` ya estaba escrito en el config y en la página de venta no cabía.
+        Aquí es donde sirve: es lo que el alumno tiene que poder hacer al
+        terminarlo, o sea el criterio para saber si lo ha entendido. */}
+    <div class="mt-8 rounded-2xl border border-primary-800 bg-primary-900/40 p-6">
+      <p class="text-base text-pretty text-secondary-100">
+        <T v={modulo.logras} />
+      </p>
+    </div>
+
+    {/* ─── Marcar como visto ──────────────────────────────────────────────── */}
+    <div class="mt-6">
+      {
+        estado?.vistoEn ? (
+          <p class="inline-flex items-center gap-2 text-sm font-bold text-secondary-300">
+            <Icono nombre="check" class="size-5 shrink-0" grosor={3} />
+            <T v={copy.acceso.leccion.vistoYa} />
+          </p>
+        ) : (
+          <form method="POST">
+            <button
+              type="submit"
+              class="inline-flex min-h-11 items-center gap-2 rounded-full border border-primary-700 px-5 text-sm font-bold text-secondary-200 transition-colors hover:border-secondary-400 hover:text-ink-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+            >
+              <Icono nombre="check" class="size-4 shrink-0" grosor={2.5} />
+              <T v={copy.acceso.leccion.marcarVisto} />
+            </button>
+          </form>
+        )
+      }
+    </div>
+
+    {/* ─── El quiz ─────────────────────────────────────────────────────────── */}
+    <div class="mt-10 border-t border-primary-800 pt-8">
+      <h2 class="text-lg font-bold text-ink-inverse">
+        <T v={copy.acceso.leccion.quizTitulo} />
+      </h2>
+
+      {
+        !hayQuiz && (
+          <p class="mt-3 text-base text-pretty text-secondary-200">
+            <T v={copy.acceso.leccion.sinQuiz} />
+          </p>
+        )
+      }
+    </div>
+
+    {/* ─── Ir y venir ──────────────────────────────────────────────────────
+        Los dos extremos de la ruta no llevan a ningún sitio, así que el botón
+        que sobra no se pinta apagado: no se pinta. */}
+    <nav class="mt-10 flex items-center justify-between gap-4 border-t border-primary-800 pt-6">
+      {
+        anterior ? (
+          <a
+            href={`/alumno/${anterior.numero}`}
+            class="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-secondary-300 hover:text-ink-inverse"
+          >
+            <span aria-hidden="true">←</span>
+            <T v={copy.acceso.leccion.anterior} />
+          </a>
+        ) : (
+          <span />
+        )
+      }
+
+      {
+        siguiente && (
+          <a
+            href={`/alumno/${siguiente.numero}`}
+            class="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-secondary-300 hover:text-ink-inverse"
+          >
+            <T v={copy.acceso.leccion.siguiente} />
+            <span aria-hidden="true">→</span>
+          </a>
+        )
+      }
+    </nav>
+  </div>
+</AlumnoLayout>

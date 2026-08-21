@@ -1,0 +1,216 @@
+---
+import AlumnoLayout from "@layouts/AlumnoLayout.astro";
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import { temario, copy, contacto } from "@config/curso.config";
+import { repo } from "@lib/datos";
+import { construirTxt } from "@i18n/idioma";
+import { interpolar } from "@i18n/formato";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * /alumno — el tablero
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Lo primero que ve alguien que acaba de entrar. Tiene UN trabajo: que no tenga
+ * que decidir nada. Por eso lo que manda no es la lista de diez videos, sino la
+ * tarjeta de "sigue por aquí" — el primero sin superar.
+ *
+ * Un tablero que enseña diez tarjetas iguales y espera que el alumno recuerde
+ * por dónde iba es un índice, no un tablero. La lista sigue debajo, para quien
+ * quiera saltar o repasar, pero no es lo primero.
+ *
+ * ⚠️ QUIÉN ES EL ALUMNO NO SE PREGUNTA AQUÍ. Lo resuelve el middleware y lo deja
+ * en `Astro.locals`. Si esta página tuviera que comprobarlo, sería una
+ * comprobación más que se puede olvidar en la siguiente página que se cree.
+ *
+ * El ORDEN IMPORTA de verdad: el temario dice "en el orden en que hay que
+ * hacerlos". Aquí no se bloquea el acceso a un video posterior —tratar a un
+ * adulto que pagó como si fuera a hacer trampa es una forma rara de darle la
+ * bienvenida—, pero lo que se le OFRECE es siempre el siguiente que le toca.
+ */
+export const prerender = false;
+
+const alumno = Astro.locals.alumno!;
+
+const progreso = await repo().progresoDe(alumno.id);
+const porNumero = new Map(progreso.map((p) => [p.numero, p]));
+
+const total = temario.length;
+const superados = progreso.filter((p) => p.quizOkEn).length;
+const porcentaje = total > 0 ? Math.round((superados / total) * 100) : 0;
+
+/* El siguiente que toca: el primero sin superar. Si están los diez, no hay
+   siguiente y la tarjeta se sustituye por la de felicitación. */
+const siguiente = temario.find((m) => !porNumero.get(m.numero)?.quizOkEn) ?? null;
+const empezando = superados === 0;
+
+const textoAvance = construirTxt((l) =>
+  interpolar(copy.acceso.tablero.avance[l], { hechos: superados, total }),
+);
+
+const estadoDe = (numero: number) => {
+  const p = porNumero.get(numero);
+  if (p?.quizOkEn) return "superado" as const;
+  if (p?.vistoEn) return "encurso" as const;
+  return "pendiente" as const;
+};
+
+const ETIQUETA = {
+  superado: copy.acceso.tablero.estadoSuperado,
+  encurso: copy.acceso.tablero.estadoEnCurso,
+  pendiente: copy.acceso.tablero.estadoPendiente,
+} as const;
+---
+
+<AlumnoLayout titulo={copy.acceso.tablero.aria} alumno={alumno}>
+  {/* ─── El avance ────────────────────────────────────────────────────────
+      Una barra y una cifra, arriba del todo. Es la respuesta a la primera
+      pregunta que se hace cualquiera al entrar: "¿por dónde iba?".
+
+      La barra lleva `role="img"` con su `aria-label` en vez de dejar que un
+      lector de pantalla intente narrar dos divs anidados: la cifra ya está
+      escrita al lado en texto, así que lo único que aporta la barra es la
+      forma. */}
+  <div class="mx-auto max-w-3xl">
+    <p class="text-sm font-semibold text-secondary-200">
+      <T v={textoAvance} />
+    </p>
+
+    <div
+      role="img"
+      aria-label={`${superados}/${total}`}
+      class="mt-3 h-2 overflow-hidden rounded-full bg-primary-800"
+    >
+      <div
+        class="h-full rounded-full bg-secondary-500 transition-[width] duration-500 ease-out-soft"
+        style={`width:${porcentaje}%`}
+      >
+      </div>
+    </div>
+  </div>
+
+  {/* ─── Lo que toca ahora ─────────────────────────────────────────────── */}
+  <div class="mx-auto mt-8 max-w-3xl">
+    {
+      siguiente ? (
+        <a
+          href={`/alumno/${siguiente.numero}`}
+          class="group relative isolate block overflow-hidden rounded-3xl border border-secondary-400/40 bg-primary-900/70 p-6 transition-colors hover:border-secondary-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse sm:p-8"
+        >
+          <span
+            aria-hidden="true"
+            class="pointer-events-none absolute -top-20 -right-16 -z-10 size-56 rounded-full bg-secondary-500/20 blur-3xl"
+          />
+
+          <p class="text-xs font-bold tracking-[0.14em] text-secondary-300 uppercase">
+            <T
+              v={
+                empezando
+                  ? copy.acceso.tablero.empezarTitulo
+                  : copy.acceso.tablero.siguienteTitulo
+              }
+            />
+          </p>
+
+          <div class="mt-4 flex items-center gap-4">
+            <span
+              aria-hidden="true"
+              class="grid size-12 shrink-0 place-items-center rounded-full bg-secondary-500 text-base font-extrabold tabular-nums text-primary-950"
+            >
+              {String(siguiente.numero).padStart(2, "0")}
+            </span>
+
+            <h2 class="text-xl font-extrabold text-balance text-ink-inverse sm:text-2xl">
+              <T v={siguiente.titulo} />
+            </h2>
+          </div>
+
+          <p class="mt-5 inline-flex items-center gap-2 text-base font-bold text-secondary-300 group-hover:text-secondary-200">
+            <T
+              v={empezando ? copy.acceso.tablero.empezar : copy.acceso.tablero.continuar}
+            />
+            <Icono nombre="flecha" class="size-4 shrink-0" grosor={2.5} />
+          </p>
+        </a>
+      ) : (
+        /* Los diez superados. La certificación se emite a mano, así que lo que
+           se dice aquí es exactamente eso: ni un botón de descarga que no
+           existe, ni un plazo que no se puede cumplir. */
+        <div class="rounded-3xl border border-secondary-400/40 bg-secondary-500/10 p-6 text-center sm:p-8">
+          <Icono
+            nombre="certificado"
+            class="mx-auto size-12 text-secondary-300"
+            grosor={1.5}
+          />
+          <h2 class="mt-4 text-xl font-extrabold text-balance text-ink-inverse sm:text-2xl">
+            <T v={copy.acceso.tablero.completadoTitulo} />
+          </h2>
+          <p class="mx-auto mt-3 max-w-md text-base text-pretty text-secondary-200">
+            <T v={copy.acceso.tablero.completadoTexto} />
+          </p>
+          {contacto.telefono && (
+            <a
+              href={`tel:${contacto.telefono}`}
+              class="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full border border-secondary-400 px-5 text-sm font-bold text-secondary-200 transition-colors hover:bg-secondary-500 hover:text-primary-950"
+            >
+              <Icono nombre="telefono" class="size-4 shrink-0" grosor={2} />
+              {contacto.telefonoVisible}
+            </a>
+          )}
+        </div>
+      )
+    }
+  </div>
+
+  {/* ─── Los diez ──────────────────────────────────────────────────────────
+      La misma ruta numerada de la página de venta, ahora con estado. Se repite
+      la forma a propósito: quien compró vio esa lista antes de pagar, y
+      encontrarla igual por dentro es la señal más barata de que le han dado lo
+      que le vendieron. */}
+  <ol class="mx-auto mt-10 grid max-w-3xl gap-2">
+    {
+      temario.map((m) => {
+        const estado = estadoDe(m.numero);
+        return (
+          <li>
+            <a
+              href={`/alumno/${m.numero}`}
+              class:list={[
+                "flex items-center gap-4 rounded-2xl border px-4 py-3.5 transition-colors duration-200 ease-out-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse sm:px-5",
+                estado === "superado"
+                  ? "border-secondary-400/40 bg-secondary-500/10 hover:border-secondary-400"
+                  : "border-primary-800 bg-primary-900/40 hover:border-primary-700",
+              ]}
+            >
+              <span
+                aria-hidden="true"
+                class:list={[
+                  "grid size-10 shrink-0 place-items-center rounded-full text-sm font-extrabold tabular-nums",
+                  estado === "superado"
+                    ? "bg-secondary-500 text-primary-950"
+                    : "bg-primary-800 text-secondary-200 ring-1 ring-primary-700 ring-inset",
+                ]}
+              >
+                {estado === "superado" ? (
+                  <Icono nombre="check" class="size-5" grosor={3} />
+                ) : (
+                  String(m.numero).padStart(2, "0")
+                )}
+              </span>
+
+              <span class="min-w-0 flex-1">
+                <span class="block text-base font-bold text-pretty text-ink-inverse">
+                  <T v={m.titulo} />
+                </span>
+                <span class="mt-0.5 block text-sm text-secondary-300">
+                  <T v={ETIQUETA[estado]} />
+                </span>
+              </span>
+            </a>
+          </li>
+        );
+      })
+    }
+  </ol>
+</AlumnoLayout>

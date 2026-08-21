@@ -9,13 +9,40 @@ interface ImportMetaEnv {
   readonly NOTIFY_EMAIL_FROM: string;
   /** Público. ID de medición de GA4. Vacío → sin analítica. */
   readonly PUBLIC_GA4_ID: string;
+  /**
+   * Server-only. Postgres del área de alumnos. Cualquier proveedor sirve.
+   * Sin ella: en desarrollo el área funciona en memoria; en producción, error.
+   */
+  readonly DATABASE_URL: string;
+  /**
+   * Server-only. Emails que entran como admin, separados por comas.
+   * Resuelve el huevo y la gallina del primer administrador: no puede darse de
+   * alta desde un panel al que todavía nadie puede entrar.
+   */
+  readonly ADMIN_EMAILS: string;
 }
 
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
 
+
 declare global {
+  /**
+   * Lo que el middleware deja resuelto para las páginas protegidas.
+   *
+   * ⚠️ Va DENTRO de `declare global`. Este archivo tiene un `export {}` al
+   * final, así que es un módulo: un `declare namespace App` suelto se quedaría
+   * dentro del módulo y `Astro.locals.alumno` no existiría para el resto del
+   * proyecto. Con cuatro errores de tipo, ni más ni menos.
+   */
+  namespace App {
+    interface Locals {
+      /** Lo pone `src/middleware.ts` en las rutas de `/alumno` y `/admin`. */
+      alumno?: import("@lib/datos").Alumno;
+    }
+  }
+
   interface Window {
     /** Inyectado por GA4. Puede no existir: comprobar antes de llamarlo. */
     gtag?: (...args: unknown[]) => void;

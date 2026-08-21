@@ -1,0 +1,121 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import Footer from "@components/layout/Footer.astro";
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import MarcaAgua from "@components/ui/MarcaAgua.astro";
+import { sitio, copy } from "@config/curso.config";
+import { construirTxt, type Txt } from "@i18n/idioma";
+import { interpolar } from "@i18n/formato";
+import type { Alumno } from "@lib/datos";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * ARMAZÓN DEL ÁREA DE ALUMNOS
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Su propia barra, y no la de la landing, porque son dos sitios distintos:
+ *
+ *  · La barra de la landing VENDE — lleva "Inscribirme al curso" y anclas a las
+ *    secciones de venta. Enseñarle eso a alguien que ya pagó es cobrarle dos
+ *    veces con la mirada.
+ *  · Esta identifica y deja salir. Con el logo, el nombre de quien está dentro
+ *    y nada más que pulsar salvo volver al tablero.
+ *
+ * Se queda el pie de la landing: los enlaces legales y el teléfono tienen que
+ * seguir estando a mano también aquí dentro.
+ *
+ * Todo el área va en navy, como el cierre y el pie. No es un capricho: separa
+ * de un vistazo "estoy dentro de mi curso" de "estoy en la página que me lo
+ * vendió", sin necesidad de leer nada.
+ */
+
+interface Props {
+  titulo: Txt;
+  alumno: Alumno;
+}
+
+const { titulo, alumno } = Astro.props;
+
+const tituloPagina = construirTxt((l) => `${titulo[l]} · ${sitio.nombre}`);
+
+/* Aquí NO se resuelve el idioma: todo el texto de este armazón pasa por `<T>`,
+   que pinta los dos y deja que el CSS esconda el que no toca. */
+
+/* El nombre si lo hay; si no, un saludo a secas. Un "Hola, null" o un "Hola,
+   maria@..." es peor que no saludar. */
+const saludo = alumno.nombre
+  ? construirTxt((l) =>
+      interpolar(copy.acceso.tablero.saludo[l], { nombre: alumno.nombre! }),
+    )
+  : copy.acceso.tablero.saludoSinNombre;
+
+const logo = sitio.logoHorizontalBlanco;
+---
+
+<BaseLayout titulo={tituloPagina} descripcion={copy.acceso.entradilla} noindex>
+  <header class="relative border-b border-primary-800 bg-primary-950">
+    <div
+      class="container-page flex h-[var(--header-h)] items-center justify-between gap-3 lg:h-[var(--header-h-lg)]"
+    >
+      <a
+        href="/alumno"
+        class="flex min-h-11 shrink-0 items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+      >
+        <img
+          src={logo.src}
+          alt={sitio.nombre}
+          width={logo.w}
+          height={logo.h}
+          class="h-7 w-auto shrink-0 sm:h-8"
+          fetchpriority="high"
+          decoding="async"
+        />
+      </a>
+
+      <div class="flex shrink-0 items-center gap-2 sm:gap-3">
+        {/* El saludo se esconde en móvil: quien está dentro ya sabe quién es, y
+            a 320 px esos caracteres se los quita al botón de salir. */}
+        <span class="max-sm:sr-only text-sm font-medium text-secondary-200">
+          <T v={saludo} />
+        </span>
+
+        {
+          alumno.rol === "admin" && (
+            <a
+              href="/admin"
+              class="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-semibold text-secondary-200 transition-colors hover:bg-primary-900 hover:text-ink-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+            >
+              <Icono nombre="lista" class="size-4 shrink-0" grosor={2} />
+              <span class="max-sm:sr-only">
+                <T v={copy.acceso.tablero.panel} />
+              </span>
+            </a>
+          )
+        }
+
+        {/* Salir es un POST y no un enlace: ver la nota de `/api/salir`. */}
+        <form method="POST" action="/api/salir">
+          <button
+            type="submit"
+            class="inline-flex min-h-11 items-center gap-2 rounded-full border border-primary-700 px-3.5 text-sm font-semibold text-secondary-200 transition-colors hover:border-secondary-400 hover:text-ink-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+          >
+            <T v={copy.acceso.tablero.salir} />
+          </button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <main
+    id="contenido"
+    class="relative isolate min-h-[60svh] overflow-hidden bg-primary-950 section-y"
+  >
+    <MarcaAgua posicion="derecha" class="opacity-[0.05]" />
+    <div class="container-page">
+      <slot />
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
