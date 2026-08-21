@@ -75,30 +75,35 @@ const lista = hayReales
     : [];
 
 /**
- * ¿Se está enseñando la muestra de maquetación en vez de reseñas reales?
+ * ─── LA NOTA MEDIA SE CUENTA, NO SE ESCRIBE ─────────────────────────────────
  *
- * Importa para el resumen de puntuación: `cifras` está a cero hasta que haya
- * datos verificables, así que sin esto la vista previa en desarrollo enseñaría
- * la banda pero con "0 de 5 en 0 reseñas" encima, que es justo lo que impide
- * juzgar el diseño. Con la muestra, la nota y el recuento salen de las propias
- * tarjetas.
+ * Sale de las `estrellas` de las reseñas que se están enseñando, sumadas y
+ * divididas aquí mismo. Eso importa por dos motivos:
  *
- * `import.meta.env.DEV` se pliega a `false` al compilar, así que en producción
- * esta rama entera desaparece del bundle.
+ *   · NO PUEDE DESCUADRAR. Un "4.9" escrito a mano en `cifras` se queda viejo en
+ *     cuanto alguien añade o quita una reseña, y entonces la cabecera dice una
+ *     cosa y las tarjetas de debajo otra. Aquí la cifra y las tarjetas son el
+ *     mismo dato: quien no se la crea puede contar las estrellas y le sale.
+ *   · ES LA ÚNICA VERSIÓN QUE SE PUEDE SOSTENER. La nota de la cabecera es una
+ *     afirmación sobre lo que opinan los alumnos. Calculada, es verdad por
+ *     construcción; escrita a mano, es una cifra que alguien decidió.
+ *
+ * `cifras.valoracionMedia` sigue existiendo como respaldo para el día en que
+ * haya un agregado de verdad (cientos de valoraciones de las que solo se
+ * publican seis). Mientras las reseñas traigan su puntuación, manda el recuento.
  */
-const conMuestra = !hayReales && import.meta.env.DEV;
-
-/** Nota media y recuento: de `cifras` si son reales, de la muestra si no. */
 const estrelladas = lista.filter((t) => typeof t.estrellas === "number");
-const notaMedia = conMuestra
-  ? estrelladas.reduce((s, t) => s + (t.estrellas ?? 0), 0) /
-    (estrelladas.length || 1)
-  : cifras.valoracionMedia;
-const numResenas = conMuestra ? lista.length : cifras.numeroValoraciones;
+const hayEstrellas = estrelladas.length > 0;
 
-/* El resumen se pinta cuando hay cifras verificables o cuando se está viendo la
-   muestra en desarrollo. Nunca con `cifras` a cero en producción. */
-const hayResumen = (cifras.sonReales || conMuestra) && numResenas > 0;
+const notaMedia = hayEstrellas
+  ? estrelladas.reduce((s, t) => s + (t.estrellas ?? 0), 0) / estrelladas.length
+  : cifras.valoracionMedia;
+
+const numResenas = hayEstrellas ? estrelladas.length : cifras.numeroValoraciones;
+
+/* Con cero reseñas no hay resumen que pintar, y sin estrellas solo se pinta si
+   `cifras` está declarado verificable. Nunca un "0 de 5 en 0". */
+const hayResumen = numResenas > 0 && (hayEstrellas || cifras.sonReales);
 
 /* Los números también se localizan: el separador de miles lo decide el locale,
    no un `toLocaleString("es")` fijo que dejaba la cifra en español aunque la

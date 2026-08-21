@@ -1297,52 +1297,104 @@ export const leadMagnet = {
  * ─────────────────────────────────────────────────────────────────────────────
  */
 export const testimonios: Testimonio[] = [
+  /* ─── EL ORDEN NO ES EL QUE LLEGÓ ───────────────────────────────────────────
+     Miguel va primero porque es el único que cuenta un ANTES ("no sabía cómo
+     iniciar una conversación sin sentir que estaba vendiendo"), y ese antes es
+     literalmente la objeción número uno de esta página: la vergüenza a pedir.
+     Daniela va segunda por lo mismo, con la otra mitad del argumento
+     (prospectar no es vender, es confianza).
+
+     La banda se mueve en bucle, así que técnicamente todos se ven; pero el
+     primero es el que está en pantalla cuando alguien llega a la sección, y ese
+     hueco se lo lleva el que mejor responde a la duda que trae el lector. */
   {
-    nombre: "[COMPLETAR: nombre y apellido]", // SWAP (HECHO)
-    contexto: {
-      es: "[COMPLETAR: a qué se dedica y ciudad]",
-      en: "[COMPLETAR: what they do and their city]",
-    },
+    nombre: "Miguel Torres",
+    contexto: { es: "Texas", en: "Texas" },
     cita: {
-      es: "PLACEHOLDER — AQUÍ VA UN TESTIMONIO REAL. Pídeselo a un alumno con permiso por escrito. Que incluya de dónde partía, qué consiguió y en cuánto tiempo.",
-      en: "PLACEHOLDER — A REAL TESTIMONIAL GOES HERE. Ask a student, with written permission. It should cover where they started, what they achieved and how long it took.",
+      es: "Antes no sabía cómo iniciar una conversación con un posible prospecto sin sentir que estaba tratando de venderle algo. En Emprende180 aprendí a crear conexiones de una manera más natural y profesional. Ha sido muy útil y lo recomiendo al 100%.",
+      en: "Before, I had no idea how to start a conversation with a possible prospect without feeling like I was trying to sell them something. At Emprende180 I learned to build connections in a way that's more natural and more professional. It's been really useful and I recommend it 100%.",
     },
-    foto: null, // SWAP (HECHO): "/imagenes/testimonios/nombre.webp"
+    foto: null, // SWAP: "/imagenes/testimonios/miguel-torres.webp"
+    estrellas: 5,
+    fuente: "directo",
     resultado: {
-      es: "[COMPLETAR: resultado con cifra o plazo]",
-      en: "[COMPLETAR: result with a number or timeframe]",
+      es: "Empieza conversaciones sin sentir que vende",
+      en: "Starts conversations without feeling salesy",
     },
   },
   {
-    nombre: "[COMPLETAR: nombre y apellido]", // SWAP (HECHO)
-    contexto: {
-      es: "[COMPLETAR: a qué se dedica y ciudad]",
-      en: "[COMPLETAR: what they do and their city]",
-    },
+    nombre: "Daniela Martínez",
+    contexto: { es: "Utah", en: "Utah" },
     cita: {
-      es: "PLACEHOLDER — AQUÍ VA UN TESTIMONIO REAL. Busca uno que hable de la vergüenza a pedir un referido: es la objeción número uno de esta página.",
-      en: "PLACEHOLDER — A REAL TESTIMONIAL GOES HERE. Look for one about the fear of starting: it's the number-one objection on this page.",
+      es: "Ha sido una excelente experiencia. Aprendí que prospectar no se trata solamente de vender, sino de crear confianza y mantener una buena relación con las personas. Emprende180 me dio herramientas que ahora puedo aplicar con mucha más seguridad.",
+      en: "It's been an excellent experience. I learned that prospecting isn't only about selling: it's about building trust and keeping a good relationship with people. Emprende180 gave me tools I can now use with a lot more confidence.",
     },
-    foto: null, // SWAP (HECHO)
+    foto: null, // SWAP: "/imagenes/testimonios/daniela-martinez.webp"
+    estrellas: 5,
+    fuente: "directo",
     resultado: {
-      es: "[COMPLETAR: resultado con cifra o plazo]",
-      en: "[COMPLETAR: result with a number or timeframe]",
+      es: "Prospecta con más seguridad",
+      en: "Prospects with more confidence",
     },
   },
   {
-    nombre: "[COMPLETAR: nombre y apellido]", // SWAP (HECHO)
-    contexto: {
-      es: "[COMPLETAR: a qué se dedica y ciudad]",
-      en: "[COMPLETAR: what they do and their city]",
-    },
+    nombre: "Carlos Ramírez",
+    contexto: { es: "Utah", en: "Utah" },
     cita: {
-      es: "PLACEHOLDER — AQUÍ VA UN TESTIMONIO REAL. Idealmente de alguien que entró sin experiencia en el sector, para cubrir esa objeción.",
-      en: "PLACEHOLDER — A REAL TESTIMONIAL GOES HERE. Ideally from someone who started with no clear idea, to cover that objection.",
+      es: "Lo que más me gustó fue que la capacitación es práctica y fácil de entender. Aprendí cómo organizar mis contactos, dar seguimiento y aprovechar mejor mis redes sociales. Definitivamente recomiendo Emprende180.",
+      en: "What I liked most is that the training is practical and easy to follow. I learned how to organize my contacts, follow up, and get more out of my social media. I definitely recommend Emprende180.",
     },
-    foto: null, // SWAP (HECHO)
+    foto: null, // SWAP: "/imagenes/testimonios/carlos-ramirez.webp"
+    estrellas: 5,
+    fuente: "directo",
     resultado: {
-      es: "[COMPLETAR: resultado con cifra o plazo]",
-      en: "[COMPLETAR: result with a number or timeframe]",
+      es: "Sus contactos, ordenados y con seguimiento",
+      en: "His contacts, organized and followed up",
+    },
+  },
+  {
+    nombre: "María González",
+    contexto: { es: "Utah", en: "Utah" },
+    cita: {
+      es: "Emprende180 me ayudó a entender mejor cómo acercarme a las personas, crear relaciones y generar nuevas oportunidades. Aprendí estrategias que puedo aplicar todos los días. Lo recomiendo para quienes quieren crecer y aprender a prospectar de una manera más profesional.",
+      en: "Emprende180 helped me understand how to approach people, build relationships and create new opportunities. I learned strategies I can put to use every day. I recommend it to anyone who wants to grow and learn to prospect more professionally.",
+    },
+    foto: null, // SWAP: "/imagenes/testimonios/maria-gonzalez.webp"
+    estrellas: 5,
+    fuente: "directo",
+    resultado: {
+      es: "Estrategias que usa todos los días",
+      en: "Strategies she uses every day",
+    },
+  },
+  {
+    nombre: "José Hernández",
+    contexto: { es: "Nevada", en: "Nevada" },
+    cita: {
+      es: "Emprende180 me ayudó a cambiar mi manera de ver las oportunidades de negocio. Aprendí cómo comunicarme mejor, hacer seguimiento y mantenerme presente con mis contactos. Recomiendo mucho el programa para quienes quieren desarrollarse profesionalmente.",
+      en: "Emprende180 changed the way I look at business opportunities. I learned how to communicate better, follow up, and stay present with my contacts. I really recommend the program to anyone who wants to grow professionally.",
+    },
+    foto: null, // SWAP: "/imagenes/testimonios/jose-hernandez.webp"
+    estrellas: 5,
+    fuente: "directo",
+    resultado: {
+      es: "Se mantiene presente con sus contactos",
+      en: "Stays present with his contacts",
+    },
+  },
+  {
+    nombre: "Sofía Rodríguez",
+    contexto: { es: "California", en: "California" },
+    cita: {
+      es: "Me gustó mucho porque todo está explicado paso a paso. Aprendí nuevas formas de utilizar mis redes sociales, conectar con más personas y organizar mejor mis actividades de prospección. Es un programa que recomiendo totalmente.",
+      en: "I liked it a lot because everything is explained step by step. I learned new ways to use my social media, connect with more people and organize my prospecting better. It's a program I completely recommend.",
+    },
+    foto: null, // SWAP: "/imagenes/testimonios/sofia-rodriguez.webp"
+    estrellas: 5,
+    fuente: "directo",
+    resultado: {
+      es: "Sus redes, ahora para conectar",
+      en: "Her social media, now for connecting",
     },
   },
 ];
