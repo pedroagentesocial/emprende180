@@ -1,6 +1,7 @@
 ---
 import AlumnoLayout from "@layouts/AlumnoLayout.astro";
 import T from "@components/i18n/T.astro";
+import CampoClave from "@components/alumno/CampoClave.astro";
 import { copy } from "@config/curso.config";
 import { alumnoActual, cambiarClave, rutaInterna } from "@lib/acceso";
 import { validarClave, MIN_CLAVE } from "@lib/claves";
@@ -81,8 +82,6 @@ const mensajeError =
         ? copy.acceso.clave.errorDistintas
         : null;
 
-const campo =
-  "mt-2 min-h-12 w-full rounded-xl border border-line-strong bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
 ---
 
 <AlumnoLayout titulo={copy.acceso.clave.aria} alumno={alumno}>
@@ -114,37 +113,29 @@ const campo =
         )
       }
 
-      <div>
-        <label for="clave" class="block text-sm font-semibold text-ink">
-          <T v={copy.acceso.clave.etiqueta} />
-        </label>
-        {/* `new-password` hace que el gestor de contraseñas OFREZCA generar una
-            en vez de rellenar la vieja. Con `current-password` aquí, el
-            navegador insistiría en poner la que se está cambiando. */}
-        <input
-          id="clave"
-          name="clave"
-          type="password"
-          required
-          minlength={MIN_CLAVE}
-          autocomplete="new-password"
-          autofocus
-          class={campo}
-        />
-      </div>
+      {/* `new-password` hace que el gestor de contraseñas OFREZCA generar una
+          en vez de rellenar la vieja. Con `current-password` aquí, el navegador
+          insistiría en poner la que se está cambiando.
+
+          Los dos campos llevan ojo para verse. Ver `CampoClave.astro`: pedir
+          diez caracteres y no dejar comprobar lo que se ha escrito es lo que
+          hace que la gente lo intente tres veces y se vaya. */}
+      <CampoClave
+        id="clave"
+        name="clave"
+        etiqueta={copy.acceso.clave.etiqueta}
+        autocomplete="new-password"
+        minlength={MIN_CLAVE}
+        autofocus
+      />
 
       <div class="mt-4">
-        <label for="repetida" class="block text-sm font-semibold text-ink">
-          <T v={copy.acceso.clave.repetir} />
-        </label>
-        <input
+        <CampoClave
           id="repetida"
           name="repetida"
-          type="password"
-          required
-          minlength={MIN_CLAVE}
+          etiqueta={copy.acceso.clave.repetir}
           autocomplete="new-password"
-          class={campo}
+          minlength={MIN_CLAVE}
         />
       </div>
 

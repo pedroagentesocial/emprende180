@@ -1,82 +1,88 @@
 ---
 import AlumnoLayout from "@layouts/AlumnoLayout.astro";
 import T from "@components/i18n/T.astro";
-import Icono from "@components/ui/Icono.astro";
-import { temario, copy, contacto } from "@config/curso.config";
-import { repo } from "@lib/datos";
+import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
+import { copy, plataformas } from "@config/curso.config";
 import { construirTxt } from "@i18n/idioma";
 import { interpolar } from "@i18n/formato";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- * /alumno — el tablero
+ * /alumno — el recibidor
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * Lo primero que ve alguien que acaba de entrar. Tiene UN trabajo: que no tenga
- * que decidir nada. Por eso lo que manda no es la lista de diez videos, sino la
- * tarjeta de "sigue por aquí" — el primero sin superar.
+ * Lo primero que ve alguien que acaba de entrar. Saluda y ofrece DOS PUERTAS:
+ * el CRM, donde está su trabajo, y la Academia, donde está su formación.
  *
- * Un tablero que enseña diez tarjetas iguales y espera que el alumno recuerde
- * por dónde iba es un índice, no un tablero. La lista sigue debajo, para quien
- * quiera saltar o repasar, pero no es lo primero.
+ * ─── ANTES ESTO ERA EL ÁREA DE VIDEOS ──────────────────────────────────────
+ *
+ * Y funcionaba, pero dejó de ser lo correcto en cuanto la Academia pasó a vivir
+ * en una plataforma externa: un tablero que enseña el avance de un curso que en
+ * realidad se ve en otro sitio es un espejo que se queda viejo.
+ *
+ * El reproductor de videos con quizzes y avance que había aquí dentro SE BORRÓ
+ * (`/alumno/curso` y `/alumno/[numero]`). Está en el historial de git si algún
+ * día hace falta, pero no se vuelve a poner "mientras tanto": ver la nota de
+ * `plataformas` en el config.
+ *
+ * ⚠️ LO QUE SOBREVIVE A ESE BORRADO es la parte de PROGRESO de la capa de datos
+ * (`progresoDe`, `marcarVisto`, `registrarQuiz`, la tabla `progreso` del
+ * esquema). Ya no la llama nadie. Se dejó porque quitarla toca el contrato del
+ * repo, sus dos implementaciones y el SQL, y eso es una limpieza aparte — pero
+ * es código muerto y conviene que no se quede diez meses.
+ *
+ * ─── POR QUÉ DOS TARJETAS Y NO UN MENÚ ─────────────────────────────────────
+ *
+ * Porque son dos, y a dos cosas no se les pone un menú. Una lista de enlaces
+ * obliga a leer para elegir; dos tarjetas con su icono, su título y una línea de
+ * qué hay dentro se distinguen sin leer del todo, que es lo que hace alguien que
+ * entra con prisa a buscar un teléfono.
+ *
+ * Se reparten el ancho a la mitad y NO se jerarquiza una sobre otra: no hay una
+ * respuesta correcta a "¿a dónde vas hoy?", depende del día.
+ *
+ * ─── LA TARJETA SIN DIRECCIÓN NO ES UN BOTÓN ROTO ──────────────────────────
+ *
+ * Mientras `url` esté vacía y no haya respaldo, la tarjeta se pinta apagada, sin
+ * botón y con un rótulo de "Próximamente". Un botón que lleva a `#` se pulsa, no
+ * pasa nada, y el alumno concluye que el área está rota — que es peor que ver
+ * que algo todavía no está.
  *
  * ⚠️ QUIÉN ES EL ALUMNO NO SE PREGUNTA AQUÍ. Lo resuelve el middleware y lo deja
- * en `Astro.locals`. Si esta página tuviera que comprobarlo, sería una
- * comprobación más que se puede olvidar en la siguiente página que se cree.
- *
- * El ORDEN IMPORTA de verdad: el temario dice "en el orden en que hay que
- * hacerlos". Aquí no se bloquea el acceso a un video posterior —tratar a un
- * adulto que pagó como si fuera a hacer trampa es una forma rara de darle la
- * bienvenida—, pero lo que se le OFRECE es siempre el siguiente que le toca.
+ * en `Astro.locals`.
  */
 export const prerender = false;
 
 const alumno = Astro.locals.alumno!;
 
-const progreso = await repo().progresoDe(alumno.id);
-const porNumero = new Map(progreso.map((p) => [p.numero, p]));
+const t = copy.acceso.tablero;
 
-const total = temario.length;
-const superados = progreso.filter((p) => p.quizOkEn).length;
-const porcentaje = total > 0 ? Math.round((superados / total) * 100) : 0;
+/* El saludo con nombre si lo hay. Un "Hola, null" es peor que no saludar. */
+const saludo = alumno.nombre
+  ? construirTxt((l) => interpolar(t.saludo[l], { nombre: alumno.nombre! }))
+  : t.saludoSinNombre;
 
-/* El siguiente que toca: el primero sin superar. Si están los diez, no hay
-   siguiente y la tarjeta se sustituye por la de felicitación. */
-const siguiente = temario.find((m) => !porNumero.get(m.numero)?.quizOkEn) ?? null;
-const empezando = superados === 0;
-
-const textoAvance = construirTxt((l) =>
-  interpolar(copy.acceso.tablero.avance[l], { hechos: superados, total }),
-);
-
-const estadoDe = (numero: number) => {
-  const p = porNumero.get(numero);
-  if (p?.quizOkEn) return "superado" as const;
-  if (p?.vistoEn) return "encurso" as const;
-  return "pendiente" as const;
-};
-
-const ETIQUETA = {
-  superado: copy.acceso.tablero.estadoSuperado,
-  encurso: copy.acceso.tablero.estadoEnCurso,
-  pendiente: copy.acceso.tablero.estadoPendiente,
-} as const;
+/**
+ * Las dos puertas. Las dos llevan FUERA: el CRM a su herramienta y la Academia a
+ * la plataforma donde vive el curso.
+ *
+ * Sin `url` no hay botón, y no hay respaldo interno a propósito: ver la nota de
+ * `plataformas` en el config. Un rótulo que unas veces lleva a un sitio y otras
+ * a otro no es un enlace, son dos.
+ */
+const puertas = [plataformas.crm, plataformas.academia].map((p) => ({
+  ...p,
+  destino: p.url || null,
+  fuera: !!p.url && p.externo,
+}));
 ---
 
-<AlumnoLayout titulo={copy.acceso.tablero.aria} alumno={alumno}>
-  {/* ─── El avance ────────────────────────────────────────────────────────
-      Una barra y una cifra, arriba del todo. Es la respuesta a la primera
-      pregunta que se hace cualquiera al entrar: "¿por dónde iba?".
-
-      La barra lleva `role="img"` con su `aria-label` en vez de dejar que un
-      lector de pantalla intente narrar dos divs anidados: la cifra ya está
-      escrita al lado en texto, así que lo único que aporta la barra es la
-      forma. */}
+<AlumnoLayout titulo={t.aria} alumno={alumno}>
   {/* ─── SIN CONTRASEÑA TODAVÍA ────────────────────────────────────────────
       Solo lo ve quien entró por el enlace del correo y se saltó la pantalla de
-      ponerse contraseña. No se le fuerza —ya ha demostrado que el buzón es
-      suyo, así que tiene derecho a estar aquí—, pero sí se le dice lo que le
-      va a pasar si no lo hace: pedir un enlace cada vez que quiera entrar. */}
+      ponerse contraseña. No se le fuerza —ya demostró que el buzón es suyo—,
+      pero sí se le dice lo que le pasará si no lo hace: pedir un enlace cada vez
+      que quiera entrar. */}
   {
     !alumno.tieneClave && (
       <div class="mx-auto mb-8 flex max-w-3xl flex-col gap-4 rounded-2xl border border-warning-500 bg-warning-50 p-5 sm:flex-row sm:items-center sm:justify-between">
@@ -99,145 +105,109 @@ const ETIQUETA = {
     )
   }
 
+  {/* ─── La bienvenida ─────────────────────────────────────────────────────
+      El saludo con el nombre grande, y una línea de para qué sirve cada puerta.
+      No hay CTA aquí: las dos tarjetas de abajo SON el CTA, y un tercer botón
+      arriba solo competiría con ellas. */}
   <div class="mx-auto max-w-3xl">
-    <p class="text-sm font-semibold text-ink-muted">
-      <T v={textoAvance} />
+    <p class="text-sm font-semibold text-ink-brand">
+      <T v={saludo} />
     </p>
 
-    <div
-      role="img"
-      aria-label={`${superados}/${total}`}
-      class="mt-3 h-2 overflow-hidden rounded-full bg-surface-muted"
-    >
-      <div
-        class="h-full rounded-full bg-secondary-500 transition-[width] duration-500 ease-out-soft"
-        style={`width:${porcentaje}%`}
-      >
-      </div>
-    </div>
+    <h1 class="mt-2 text-3xl font-extrabold text-balance text-ink sm:text-4xl">
+      <T v={t.bienvenidaTitulo} />
+    </h1>
+
+    <p class="mt-4 max-w-xl text-base text-pretty text-ink-muted sm:text-lg">
+      <T v={t.bienvenidaTexto} />
+    </p>
   </div>
 
-  {/* ─── Lo que toca ahora ─────────────────────────────────────────────── */}
-  <div class="mx-auto mt-8 max-w-3xl">
+  {/* ─── Las dos puertas ───────────────────────────────────────────────────
+      A la mitad cada una desde `sm`. En móvil se apilan, y ahí el orden importa:
+      primero el CRM, que es la herramienta del día a día, y después la Academia,
+      que se visita menos veces pero más rato. */}
+  <ul class="mx-auto mt-10 grid max-w-3xl gap-5 sm:grid-cols-2">
     {
-      siguiente ? (
-        <a
-          href={`/alumno/${siguiente.numero}`}
-          class="group relative isolate block overflow-hidden rounded-3xl border border-secondary-300 bg-surface p-6 transition-colors hover:border-secondary-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:p-8"
-        >
-          <span
-            aria-hidden="true"
-            class="pointer-events-none absolute -top-20 -right-16 -z-10 size-56 rounded-full bg-secondary-100 blur-3xl"
-          />
-
-          <p class="text-xs font-bold tracking-[0.14em] text-ink-subtle uppercase">
-            <T
-              v={
-                empezando
-                  ? copy.acceso.tablero.empezarTitulo
-                  : copy.acceso.tablero.siguienteTitulo
-              }
-            />
-          </p>
-
-          <div class="mt-4 flex items-center gap-4">
+      puertas.map((p) => (
+        <li>
+          {/* La tarjeta ENTERA es el enlace, no solo el botón: en un móvil, un
+              blanco de 300×200 px se acierta siempre y uno de 100×44 no. El
+              "Ir" se queda porque es la señal de que esto es pulsable, pero no
+              es el único sitio donde se puede pulsar. */}
+          <a
+            href={p.destino ?? undefined}
+            target={p.fuera ? "_blank" : undefined}
+            rel={p.fuera ? "noopener noreferrer" : undefined}
+            data-track={`alumno-${p.icono}`}
+            aria-disabled={p.destino ? undefined : "true"}
+            class:list={[
+              "group relative isolate flex h-full flex-col overflow-hidden rounded-3xl border p-6 transition-colors sm:p-7",
+              p.destino
+                ? "border-line bg-surface hover:border-secondary-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                : /* Sin dirección: apagada y no pulsable. `pointer-events-none`
+                     además del `aria-disabled`, porque un <a> sin href sigue
+                     recibiendo el clic aunque no navegue. */
+                  "pointer-events-none border-dashed border-line-strong bg-surface-muted",
+            ]}
+          >
             <span
               aria-hidden="true"
-              class="grid size-12 shrink-0 place-items-center rounded-full bg-secondary-500 text-base font-extrabold tabular-nums text-primary-950"
-            >
-              {String(siguiente.numero).padStart(2, "0")}
-            </span>
-
-            <h2 class="text-xl font-extrabold text-balance text-ink sm:text-2xl">
-              <T v={siguiente.titulo} />
-            </h2>
-          </div>
-
-          <p class="mt-5 inline-flex items-center gap-2 text-base font-bold text-ink-brand group-hover:text-secondary-800">
-            <T
-              v={empezando ? copy.acceso.tablero.empezar : copy.acceso.tablero.continuar}
+              class="pointer-events-none absolute -top-20 -right-16 -z-10 size-56 rounded-full bg-secondary-100 opacity-0 blur-3xl transition-opacity duration-300 group-hover:opacity-100"
             />
-            <Icono nombre="flecha" class="size-4 shrink-0" grosor={2.5} />
-          </p>
-        </a>
-      ) : (
-        /* Los diez superados. La certificación se emite a mano, así que lo que
-           se dice aquí es exactamente eso: ni un botón de descarga que no
-           existe, ni un plazo que no se puede cumplir. */
-        <div class="rounded-3xl border border-secondary-300 bg-secondary-50 p-6 text-center sm:p-8">
-          <Icono
-            nombre="certificado"
-            class="mx-auto size-12 text-secondary-600"
-            grosor={1.5}
-          />
-          <h2 class="mt-4 text-xl font-extrabold text-balance text-ink sm:text-2xl">
-            <T v={copy.acceso.tablero.completadoTitulo} />
-          </h2>
-          <p class="mx-auto mt-3 max-w-md text-base text-pretty text-ink-muted">
-            <T v={copy.acceso.tablero.completadoTexto} />
-          </p>
-          {contacto.telefono && (
-            <a
-              href={`tel:${contacto.telefono}`}
-              class="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full border border-secondary-400 px-5 text-sm font-bold text-secondary-800 transition-colors hover:bg-secondary-500 hover:text-primary-950"
-            >
-              <Icono nombre="telefono" class="size-4 shrink-0" grosor={2} />
-              {contacto.telefonoVisible}
-            </a>
-          )}
-        </div>
-      )
-    }
-  </div>
 
-  {/* ─── Los diez ──────────────────────────────────────────────────────────
-      La misma ruta numerada de la página de venta, ahora con estado. Se repite
-      la forma a propósito: quien compró vio esa lista antes de pagar, y
-      encontrarla igual por dentro es la señal más barata de que le han dado lo
-      que le vendieron. */}
-  <ol class="mx-auto mt-10 grid max-w-3xl gap-2">
-    {
-      temario.map((m) => {
-        const estado = estadoDe(m.numero);
-        return (
-          <li>
-            <a
-              href={`/alumno/${m.numero}`}
+            <span
+              aria-hidden="true"
               class:list={[
-                "flex items-center gap-4 rounded-2xl border px-4 py-3.5 transition-colors duration-200 ease-out-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:px-5",
-                estado === "superado"
-                  ? "border-secondary-300 bg-secondary-50 hover:border-secondary-400"
-                  : "border-line bg-surface hover:border-line-strong",
+                "grid size-12 shrink-0 place-items-center rounded-2xl transition-colors",
+                p.destino
+                  ? "bg-secondary-100 text-secondary-700 group-hover:bg-secondary-500 group-hover:text-primary-950"
+                  : "bg-surface-sunken text-ink-subtle",
               ]}
             >
-              <span
-                aria-hidden="true"
-                class:list={[
-                  "grid size-10 shrink-0 place-items-center rounded-full text-sm font-extrabold tabular-nums",
-                  estado === "superado"
-                    ? "bg-secondary-500 text-primary-950"
-                    : "bg-surface-muted text-ink-muted ring-1 ring-line-strong ring-inset",
-                ]}
-              >
-                {estado === "superado" ? (
-                  <Icono nombre="check" class="size-5" grosor={3} />
-                ) : (
-                  String(m.numero).padStart(2, "0")
+              <Icono nombre={p.icono as NombreIcono} class="size-6" grosor={1.8} />
+            </span>
+
+            <h2
+              class:list={[
+                "mt-5 text-xl font-extrabold text-balance sm:text-2xl",
+                p.destino ? "text-ink" : "text-ink-subtle",
+              ]}
+            >
+              <T v={p.titulo} />
+            </h2>
+
+            {/* `flex-1` para que el botón caiga al fondo en las dos tarjetas
+                aunque un texto ocupe una línea más que el otro. Sin esto los dos
+                "Ir" quedan a alturas distintas y la pareja se descuadra. */}
+            <p
+              class:list={[
+                "mt-2 flex-1 text-base text-pretty",
+                p.destino ? "text-ink-muted" : "text-ink-subtle",
+              ]}
+            >
+              <T v={p.texto} />
+            </p>
+
+            {p.destino ? (
+              <span class="mt-6 inline-flex min-h-11 w-fit items-center gap-2 rounded-full bg-primary-700 px-6 text-sm font-bold text-ink-inverse transition-colors group-hover:bg-primary-800">
+                <T v={t.ir} />
+                <Icono nombre="flecha" class="size-4 shrink-0" grosor={2.5} />
+                {p.fuera && (
+                  <span class="sr-only-focusable">
+                    {" "}
+                    <T v={t.abreFuera} />
+                  </span>
                 )}
               </span>
-
-              <span class="min-w-0 flex-1">
-                <span class="block text-base font-bold text-pretty text-ink">
-                  <T v={m.titulo} />
-                </span>
-                <span class="mt-0.5 block text-sm text-ink-subtle">
-                  <T v={ETIQUETA[estado]} />
-                </span>
+            ) : (
+              <span class="mt-6 inline-flex min-h-11 w-fit items-center rounded-full border border-dashed border-line-strong px-5 text-sm font-bold text-ink-subtle">
+                <T v={t.proximamente} />
               </span>
-            </a>
-          </li>
-        );
-      })
+            )}
+          </a>
+        </li>
+      ))
     }
-  </ol>
+  </ul>
 </AlumnoLayout>

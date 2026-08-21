@@ -1,0 +1,121 @@
+---
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import { copy } from "@config/curso.config";
+import { resolverIdiomaServidor, type Txt } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * CAMPO DE CONTRASEÑA, CON OJO PARA VERLA
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * ─── POR QUÉ EL OJO NO ES UN CAPRICHO ──────────────────────────────────────
+ *
+ * La regla del proyecto es un mínimo de diez caracteres (`MIN_CLAVE`), y está
+ * bien puesta: el NIST dice que lo que importa es la longitud, no los símbolos
+ * raros. Pero escribir diez caracteres A CIEGAS en el teclado de un teléfono es
+ * exactamente donde la gente se equivoca, lo intenta tres veces y se va. El ojo
+ * es lo que hace tolerable esa regla — es la mitad barata de una decisión cuya
+ * mitad cara ya estaba tomada.
+ *
+ * Los textos `ver` / `ocultar` llevaban en el config desde el principio sin que
+ * nadie los usara. Esto es lo que faltaba para gastarlos.
+ *
+ * ─── LO QUE HACE Y LO QUE NO ───────────────────────────────────────────────
+ *
+ * Alterna `type="password"` y `type="text"`. NO guarda nada, no manda nada y no
+ * recuerda el estado entre páginas: al recargar vuelve a estar oculta, que es lo
+ * correcto — nadie quiere que su contraseña se quede a la vista porque hace tres
+ * pantallas le dio a un ojo.
+ *
+ * ─── EL COMPORTAMIENTO NO VIVE AQUÍ ────────────────────────────────────────
+ *
+ * El listener es uno solo, delegado, en `BaseLayout`. Tiene que ser así porque
+ * los campos de contraseña de la página están en dos mundos: esta plantilla de
+ * Astro y la isla de React de `FormAcceso`. Un listener en el documento los
+ * cubre a los dos con la misma lógica; un script por componente serían dos
+ * copias que acaban divergiendo.
+ *
+ * ⚠️ POR ESO EL MARCADO IMPORTA: `aria-controls` tiene que apuntar al `id` del
+ * input, y los dos iconos llevan `data-icono-ver` / `data-icono-oculto`. Si se
+ * cambia aquí, hay que cambiarlo también en `FormAcceso.tsx`.
+ *
+ * ─── ACCESIBILIDAD ─────────────────────────────────────────────────────────
+ *
+ * Es un `<button type="button">` —sin `type`, dentro de un formulario, un botón
+ * ENVÍA— con `aria-pressed` para el estado y un `aria-label` que cambia con él.
+ * `aria-controls` dice a quién afecta. El campo mantiene su `pr-12` para que el
+ * texto largo no pase por debajo del ojo.
+ */
+interface Props {
+  id: string;
+  name: string;
+  etiqueta: Txt;
+  /** `new-password` al ponerla, `current-password` al entrar. */
+  autocomplete: "new-password" | "current-password";
+  minlength?: number;
+  autofocus?: boolean;
+  required?: boolean;
+}
+
+const {
+  id,
+  name,
+  etiqueta,
+  autocomplete,
+  minlength,
+  autofocus = false,
+  required = true,
+} = Astro.props;
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+const c = copy.acceso.clave;
+---
+
+<div>
+  <label for={id} class="block text-sm font-semibold text-ink">
+    <T v={etiqueta} />
+  </label>
+
+  <div class="relative mt-2">
+    {/* `pr-12` reserva el hueco del ojo: sin eso, una contraseña larga pasa por
+        debajo del botón y no se lee justo cuando se ha pulsado para leerla. */}
+    <input
+      id={id}
+      name={name}
+      type="password"
+      required={required}
+      minlength={minlength}
+      autocomplete={autocomplete}
+      autofocus={autofocus}
+      class="min-h-12 w-full rounded-xl border border-line-strong bg-surface px-4 py-3 pr-12 text-base text-ink placeholder:text-ink-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+    />
+
+    <button
+      type="button"
+      data-ver-clave
+      aria-controls={id}
+      aria-pressed="false"
+      aria-label={c.ver[lang]}
+      data-aria-es={c.ver.es}
+      data-aria-en={c.ver.en}
+      data-etiqueta-ver-es={c.ver.es}
+      data-etiqueta-ver-en={c.ver.en}
+      data-etiqueta-ocultar-es={c.ocultar.es}
+      data-etiqueta-ocultar-en={c.ocultar.en}
+      class="absolute inset-y-0 right-0 grid w-12 place-items-center rounded-r-xl text-ink-subtle transition-colors hover:text-ink focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
+    >
+      <Icono nombre="ojo" class="size-5" grosor={1.8} data-icono-ver />
+      <Icono
+        nombre="ojoTachado"
+        class="hidden size-5"
+        grosor={1.8}
+        data-icono-oculto
+      />
+    </button>
+  </div>
+</div>

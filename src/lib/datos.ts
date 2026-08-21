@@ -1,4 +1,7 @@
 import postgres from "postgres";
+/* Solo lo usa la tienda de MEMORIA, para derivar el hash de `DEMO_CLAVE`. La de
+   Postgres nunca cifra nada: recibe el hash ya hecho desde `@lib/acceso`. */
+import { cifrarClave } from "@lib/claves";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -283,21 +286,65 @@ function repoMemoria(): Repo {
   let n = 0;
   const nuevoId = () => `dev-${++n}`;
 
-  /* Un admin de partida para poder abrir el panel en desarrollo sin tener a
-     dónde ir a darse de alta. Solo existe aquí; en Postgres el primer admin lo
-     siembra `ADMIN_EMAILS`. */
-  const semilla: Alumno = {
-    id: nuevoId(),
-    email: "hola@emprende180.com",
-    nombre: "Pedro (desarrollo)",
-    rol: "admin",
-    idioma: "es",
-    activo: true,
-    altaEn: new Date(),
-    ultimoAcceso: null,
-    tieneClave: false,
-  };
-  alumnos.set(semilla.email, semilla);
+  /* ─── ADMINS DE PARTIDA ────────────────────────────────────────────────────
+     Para poder abrir el panel en desarrollo sin tener a dónde ir a darse de
+     alta. Se siembran los de `ADMIN_EMAILS` —los mismos que en Postgres— y, si
+     no hay ninguno, el de siempre. */
+  const emailsAdmin = String(import.meta.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map(normalizarEmail)
+    .filter(Boolean);
+
+  if (!emailsAdmin.length) emailsAdmin.push("hola@emprende180.com");
+
+  /**
+   * ─── LA CONTRASEÑA DE DEMO ────────────────────────────────────────────────
+   *
+   * `DEMO_CLAVE` deja entrar a los admins sembrados con una contraseña fija, sin
+   * pasar por el enlace del correo. Existe para poder ENSEÑAR el área: una demo
+   * en la que hay que ir a buscar un enlace a la consola cada vez que se
+   * reinicia el servidor no se puede enseñar a nadie.
+   *
+   * ⚠️ LAS TRES COSAS QUE HACEN QUE ESTO NO SEA UN AGUJERO:
+   *
+   * 1. VIVE EN `repoMemoria`, y la tienda de memoria SOLO existe cuando no hay
+   *    `DATABASE_URL`. En producción la ausencia de `DATABASE_URL` revienta el
+   *    arranque a propósito (ver `repo()` más abajo), así que este código no se
+   *    puede ejecutar en el sitio publicado ni por error de configuración.
+   * 2. NO TOCA `MIN_CLAVE`. El mínimo de 10 caracteres que pide `validarClave`
+   *    sigue intacto para todo el mundo: eso valida al PONER contraseña, y aquí
+   *    no se pone ninguna, se siembra un hash ya hecho. Bajar el mínimo para que
+   *    "1234" pasara el formulario habría debilitado el registro de todos los
+   *    alumnos reales, para siempre, a cambio de una demo.
+   * 3. NO ESTÁ ENCENDIDA POR DEFECTO. Sin `DEMO_CLAVE` en el `.env`, nada de
+   *    esto ocurre y los admins sembrados nacen sin contraseña, como antes.
+   *
+   * El hash se calcula PEREZOSAMENTE, en `claveDe`, porque `cifrarClave` es
+   * asíncrona y esta función no lo es. Se calcula una vez y se queda cacheado.
+   */
+  const demoClave = import.meta.env.DEMO_CLAVE || null;
+
+  for (const email of emailsAdmin) {
+    const a: Alumno = {
+      id: nuevoId(),
+      email,
+      /* Es lo que sale en el saludo del área ("Hola, Admin") y en la lista del
+         panel. Decía "Pedro (desarrollo)", que se leía como si fuera el nombre
+         de una persona con un paréntesis raro cuando lo que quería decir era
+         "cuenta del entorno de desarrollo". El rol ya lo dice todo. */
+      nombre: "Admin",
+      rol: "admin",
+      idioma: "es",
+      activo: true,
+      altaEn: new Date(),
+      ultimoAcceso: null,
+      /* Con demo encendida la cuenta YA tiene contraseña, y decirlo aquí es lo
+         que evita que el tablero saque el aviso de "ponte una" en una pantalla
+         que se está enseñando. */
+      tieneClave: !!demoClave,
+    };
+    alumnos.set(a.email, a);
+  }
 
   const porId = (id: string) => [...alumnos.values()].find((a) => a.id === id) ?? null;
 
@@ -312,7 +359,21 @@ function repoMemoria(): Repo {
     },
     async claveDe(email) {
       const e = normalizarEmail(email);
-      return alumnos.get(e)?.activo ? (claves.get(e) ?? null) : null;
+      const a = alumnos.get(e);
+      if (!a?.activo) return null;
+
+      const guardada = claves.get(e);
+      if (guardada) return guardada;
+
+      /* Primera vez que se pide la clave de un admin sembrado con demo: se
+         deriva el hash aquí y se queda. Ver la nota de `DEMO_CLAVE` arriba. */
+      if (demoClave && emailsAdmin.includes(e)) {
+        const hash = await cifrarClave(demoClave);
+        claves.set(e, hash);
+        return hash;
+      }
+
+      return null;
     },
     async guardarClave(alumnoId, hash) {
       const a = porId(alumnoId);
@@ -422,7 +483,10 @@ export function repo(): Repo {
   if (import.meta.env.DEV) {
     console.warn(
       "[datos] Sin DATABASE_URL: área de alumnos en MEMORIA. Los datos se " +
-        "pierden al reiniciar y el admin de prueba es hola@emprende180.com. " +
+        "pierden al reiniciar. Los admins de prueba son los de ADMIN_EMAILS " +
+        (import.meta.env.DEMO_CLAVE
+          ? "y entran con la contraseña de DEMO_CLAVE. "
+          : "y entran por el enlace que sale en esta consola. ") +
         "Para la de verdad: crea un Postgres, aplica db/schema.sql y pon " +
         "DATABASE_URL en .env",
     );

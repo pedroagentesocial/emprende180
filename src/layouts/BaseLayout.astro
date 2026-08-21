@@ -407,6 +407,64 @@ const precioFormateado = {
       })();
     </script>
 
+    {/* ─────────────────────────────────────────────────────────────────────
+        VER LA CONTRASEÑA  (`[data-ver-clave]`)
+
+        Un ojo dentro del campo que alterna `type="password"` y `type="text"`.
+        No es un adorno: la regla del proyecto es un mínimo de diez caracteres,
+        y escribir diez caracteres a ciegas en el teclado de un teléfono es
+        justo donde la gente se equivoca, lo intenta tres veces y se va. Poder
+        mirar lo que se ha escrito es lo que hace tolerable esa regla.
+
+        DELEGADO Y EN VANILLA, no en cada componente, porque los tres campos de
+        contraseña de la página viven en sitios distintos: dos en una plantilla
+        de Astro (`/acceso/clave`) y uno dentro de una isla de React
+        (`FormAcceso`). Un listener en el documento los cubre a los tres sin que
+        la isla tenga que enterarse de nada y sin duplicar la lógica.
+
+        EL FOCO VUELVE AL CAMPO y el cursor se recoloca al final: sin eso, tocar
+        el ojo a mitad de escribir te saca del campo y en un móvil encima cierra
+        el teclado. `setSelectionRange` al final para no dejar el cursor donde
+        estaba el clic.
+        ───────────────────────────────────────────────────────────────────── */}
+    <script is:inline>
+      document.addEventListener("click", function (e) {
+        var boton =
+          e.target instanceof Element ? e.target.closest("[data-ver-clave]") : null;
+        if (!boton) return;
+
+        var campo = document.getElementById(boton.getAttribute("aria-controls") || "");
+        if (!campo) return;
+
+        var oculta = campo.type === "password";
+        campo.type = oculta ? "text" : "password";
+        boton.setAttribute("aria-pressed", String(oculta));
+
+        /* El rótulo dice lo que el botón VA A HACER. Se lee del atributo del
+           idioma activo, no de uno fijo: si no, al cambiar de idioma sin
+           recargar el siguiente clic dejaría el `aria-label` en el anterior. */
+        var idioma = document.documentElement.lang === "en" ? "en" : "es";
+        var etiqueta = boton.getAttribute(
+          "data-etiqueta-" + (oculta ? "ocultar" : "ver") + "-" + idioma,
+        );
+        if (etiqueta) boton.setAttribute("aria-label", etiqueta);
+
+        var ojo = boton.querySelector("[data-icono-ver]");
+        var tachado = boton.querySelector("[data-icono-oculto]");
+        if (ojo) ojo.classList.toggle("hidden", oculta);
+        if (tachado) tachado.classList.toggle("hidden", !oculta);
+
+        /* El foco vuelve al campo, con el cursor al final. */
+        var n = campo.value.length;
+        campo.focus();
+        try {
+          campo.setSelectionRange(n, n);
+        } catch (err) {
+          /* Algunos navegadores no lo permiten en `type=password`. Da igual. */
+        }
+      });
+    </script>
+
     <!-- Seguimiento de CTA: un único listener delegado. -->
     <script is:inline>
       document.addEventListener("click", (e) => {

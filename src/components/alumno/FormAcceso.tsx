@@ -57,6 +57,9 @@ export function FormAcceso({
   const [modo, setModo] = useState<Modo>(modoInicial);
   const [email, setEmail] = useState("");
   const [clave, setClave] = useState("");
+  /* El ojo. No se recuerda entre cargas a propósito: nadie quiere que su
+     contraseña se quede a la vista porque hace tres pantallas le dio a un ojo. */
+  const [verClave, setVerClave] = useState(false);
   const [estado, setEstado] = useState<Estado>("listo");
   const [error, setError] = useState<string | null>(null);
 
@@ -198,22 +201,70 @@ export function FormAcceso({
           <label htmlFor="acceso-clave" className={etiqueta}>
             {t(copy.acceso.formClave)}
           </label>
-          <input
-            id="acceso-clave"
-            type="password"
-            name="clave"
-            value={clave}
-            onChange={(e) => {
-              setClave((e.target as HTMLInputElement).value);
-              setError(null);
-            }}
-            required
-            /* `current-password` para que el gestor de contraseñas ofrezca la
-               guardada en vez de proponer una nueva. */
-            autoComplete="current-password"
-            disabled={estado === "trabajando"}
-            className={campo}
-          />
+
+          {/* ─── EL OJO PARA VER LA CONTRASEÑA ───────────────────────────────
+              Mismo gesto que en `/acceso/clave`, pero AQUÍ SE HACE CON ESTADO DE
+              REACT y no con el listener delegado de `BaseLayout`.
+
+              El motivo es concreto: este `<input>` es controlado, así que React
+              vuelve a pintarlo en cada tecla. Un script de fuera que cambiara el
+              `type` del DOM estaría peleándose con el ciclo de render, y esa es
+              la clase de fallo que aparece solo a veces. Con `type` derivado del
+              estado, el render y el botón dicen siempre lo mismo.
+
+              `pr-12` reserva el hueco del botón para que la contraseña larga no
+              pase por debajo justo cuando se ha pulsado para leerla. */}
+          <div className="relative mt-2">
+            <input
+              id="acceso-clave"
+              type={verClave ? "text" : "password"}
+              name="clave"
+              value={clave}
+              onChange={(e) => {
+                setClave((e.target as HTMLInputElement).value);
+                setError(null);
+              }}
+              required
+              /* `current-password` para que el gestor de contraseñas ofrezca la
+                 guardada en vez de proponer una nueva. */
+              autoComplete="current-password"
+              disabled={estado === "trabajando"}
+              className={`${campo} mt-0 pr-12`}
+            />
+
+            <button
+              type="button"
+              onClick={() => setVerClave((v) => !v)}
+              aria-controls="acceso-clave"
+              aria-pressed={verClave}
+              aria-label={t(verClave ? copy.acceso.clave.ocultar : copy.acceso.clave.ver)}
+              className="absolute inset-y-0 right-0 grid w-12 place-items-center rounded-r-xl text-ink-subtle transition-colors hover:text-ink focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.8}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+                className="size-5"
+              >
+                {verClave ? (
+                  <>
+                    <path d="M2.5 12S6 5.8 12 5.8c1.2 0 2.3.25 3.3.65M20 8.9c.9 1.2 1.5 2.3 1.5 3.1 0 0-3.5 6.2-9.5 6.2-1.4 0-2.7-.34-3.8-.85" />
+                    <path d="M9.9 9.9a2.6 2.6 0 0 0 3.7 3.7" />
+                    <path d="M3.5 3.5l17 17" />
+                  </>
+                ) : (
+                  <>
+                    <path d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12Z" />
+                    <circle cx="12" cy="12" r="2.6" />
+                  </>
+                )}
+              </svg>
+            </button>
+          </div>
         </div>
       )}
 

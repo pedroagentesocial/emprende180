@@ -1394,6 +1394,64 @@ export const cifras = {
   numeroValoraciones: 0, // SWAP (HECHO)
 } as const;
 
+// ─── A dónde va el Embajador cuando entra ────────────────────────────────────
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * LOS DESTINOS DEL ÁREA DE ALUMNOS
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * El tablero de `/alumno` es un RECIBIDOR: saluda y ofrece dos puertas. Estas.
+ *
+ * ─── POR QUÉ ESTÁN AQUÍ Y NO ESCRITAS EN LA PLANTILLA ──────────────────────
+ *
+ * Porque son direcciones que van a cambiar sin que cambie el diseño: hoy el CRM
+ * es una herramienta y mañana puede ser otra, y la Academia puede mudarse de
+ * plataforma. Una URL escrita dentro de un `.astro` es una URL que hay que ir a
+ * buscar entre el marcado el día que se rompa.
+ *
+ * ─── `url: ""` NO ROMPE LA TARJETA ─────────────────────────────────────────
+ *
+ * Mientras no haya dirección, la tarjeta se pinta igual pero apagada y sin
+ * botón, con un rótulo de "próximamente". Es a propósito: un botón que lleva a
+ * "#" es peor que no tener botón, porque se pulsa, no pasa nada y el alumno
+ * cree que el área está rota.
+ *
+ * ⚠️ LAS DOS SON ENLACES A FUERA, SIN RESPALDO INTERNO, y eso es una decisión
+ * tomada y no un pendiente. Esta web llegó a tener su propio reproductor de
+ * videos con quizzes y avance; se borró el día que se decidió que el curso vive
+ * en una plataforma externa. Tener los diez videos en dos sitios es tenerlos en
+ * ninguno: la copia local se queda sin actualizar y el alumno que cae en ella ve
+ * un curso viejo sin saberlo.
+ *
+ * Así que si algún día alguien piensa en "poner el curso también aquí mientras
+ * tanto": eso es lo que había, y por eso ya no está.
+ */
+export const plataformas = {
+  crm: {
+    /** SWAP: la URL del CRM. Vacío → tarjeta apagada, sin botón. */
+    url: "",
+    titulo: { es: "CRM", en: "CRM" },
+    texto: {
+      es: "Tus contactos y tus oportunidades, cada una con su estado al día. Es lo que viste en el video 7.",
+      en: "Your contacts and your opportunities, each one with its status current. It's what you saw in video 7.",
+    },
+    icono: "lista",
+    /** `true` si abre fuera del sitio. Añade `target` y `rel`. */
+    externo: true,
+  },
+  academia: {
+    /** SWAP: la URL de la plataforma donde vive el curso. Vacío → apagada. */
+    url: "",
+    titulo: { es: "Academia", en: "Academy" },
+    texto: {
+      es: "Los videos del curso, tus quizzes y tu avance. Todo lo que compraste, en el orden en que hay que verlo.",
+      en: "The course videos, your quizzes and your progress. Everything you bought, in the order you need to watch it.",
+    },
+    icono: "play",
+    externo: true,
+  },
+} as const;
+
 // ─── Garantía ────────────────────────────────────────────────────────────────
 /**
  * Reducción de riesgo. Va ANTES del precio: el miedo aparece justo al ver la
@@ -2108,6 +2166,27 @@ export const copy = {
       saludoSinNombre: { es: "Hola", en: "Hi" },
       salir: { es: "Salir", en: "Sign out" },
       panel: { es: "Panel", en: "Admin" },
+
+      /* ─── EL RECIBIDOR ────────────────────────────────────────────────────
+         El tablero saluda y ofrece dos puertas. La entradilla dice para qué
+         sirve cada una en una línea, para que nadie tenga que abrir las dos
+         para averiguar cuál quería. */
+      bienvenidaTitulo: {
+        es: "Ya estás dentro",
+        en: "You're in",
+      },
+      bienvenidaTexto: {
+        es: "Aquí tienes las dos herramientas de tu trabajo como Embajador: donde viven tus contactos y donde vive tu formación.",
+        en: "Here are the two tools of your work as an Ambassador: where your contacts live, and where your training lives.",
+      },
+      /* Rótulo del botón de cada tarjeta. Corto a propósito: la tarjeta entera
+         ya dice a dónde lleva, así que el botón solo tiene que empujar. */
+      ir: { es: "Ir", en: "Go" },
+      /* Cuando la tarjeta todavía no tiene dirección. Ver `plataformas`. */
+      proximamente: { es: "Próximamente", en: "Coming soon" },
+      /* Aviso de que el enlace abre fuera del sitio. Va al lector de pantalla:
+         que un enlace se lleve a otra pestaña sin avisar desorienta. */
+      abreFuera: { es: "se abre en una pestaña nueva", en: "opens in a new tab" },
       /** Barra de avance. `{hechos}` de `{total}`. */
       avance: {
         es: "{hechos} de {total} videos superados",
