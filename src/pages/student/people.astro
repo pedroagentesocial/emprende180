@@ -8,6 +8,7 @@ import { resolverIdiomaServidor } from "@i18n/idioma";
 import { interpolar } from "@i18n/formato";
 import { repo, normaliseEmail, type Role, type Student } from "@lib/data";
 import { createMagicLink, isAdminByConfig } from "@lib/auth";
+import { avisarAGhl } from "@lib/ghl";
 import {
   canAdminister,
   canAddStudents,
@@ -179,6 +180,12 @@ if (Astro.request.method === "POST") {
         registeredBy: isAdmin ? null : me.id,
       });
 
+      /* ⚠️ SIN `await`, Y ESO ES LA DECISIÓN. GHL es un servidor ajeno: el
+         alumno ya está en nuestra base, y la respuesta del panel no tiene por
+         qué esperar a que conteste. Si falla, queda en el registro y el alta
+         sigue siendo válida. Ver `src/lib/ghl.ts`. */
+      avisarAGhl("alta", created, isAdmin ? null : me).catch(() => {});
+
       const extra = send ? ` ${await deliverLink(created)}` : "";
       notice = {
         type: "ok",
@@ -223,6 +230,13 @@ if (Astro.request.method === "POST") {
       /* Deactivating closes their open sessions. Otherwise they would stay
          inside until the cookie expired: a deactivation has to be immediate. */
       if (!active) await r.deleteSessionsOf(id);
+
+      /* Y GHL se entera, para poder quitarle o devolverle el curso allí. Se
+         relee la ficha para mandarla ya con el estado nuevo. */
+      const actualizado = await r.studentById(id);
+      if (actualizado) {
+        avisarAGhl(active ? "reactivacion" : "baja", actualizado).catch(() => {});
+      }
       notice = {
         type: "ok",
         text: say(
@@ -327,24 +341,6 @@ const views: Record<string, (s: Student) => boolean> = {
 
 const students = everyone.filter(views[view] ?? views.todos!);
 
-const byAgent = isAdmin
-  ? everyone
-      .filter((s) => s.role === "agent")
-      .map((agent) => {
-        const theirs = everyone.filter((s) => s.registeredBy === agent.id);
-        return {
-          agent,
-          total: theirs.length,
-          signedIn: theirs.filter((s) => s.lastSignIn).length,
-        };
-      })
-      .filter((row) => row.total > 0)
-      .sort((a, b) => b.total - a.total)
-  : [];
-
-const house = isAdmin
-  ? everyone.filter((s) => !s.registeredBy && s.role === "student")
-  : [];
 ---
 
 <StudentLayout
@@ -356,9 +352,6 @@ const house = isAdmin
     me={me}
     students={students}
     everyone={everyone}
-    byAgent={byAgent}
-    houseTotal={house.length}
-    houseSignedIn={house.filter((s) => s.lastSignIn).length}
     roleOptions={roleOptions}
     isAdmin={isAdmin}
     view={view}

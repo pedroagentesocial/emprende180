@@ -1,0 +1,179 @@
+---
+import StudentLayout from "@layouts/StudentLayout.astro";
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import { studentCopy } from "@config/studentArea";
+import { repo, type Student } from "@lib/data";
+import { canAdminister } from "@lib/permissions";
+import { resolverIdiomaServidor, LOCALES } from "@i18n/idioma";
+import { interpolar } from "@i18n/formato";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * /student/agents — quién vende, y cuánto de eso llegó a entrar
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Esta tabla vivía al final de la lista de alumnos, después de treinta filas.
+ * Ahí abajo era una nota al pie; aquí es una sección, que es lo que de verdad es:
+ * el registro de quién trajo a quién, y por tanto la base de las comisiones el
+ * día que haya que pagarlas.
+ *
+ * ⚠️ DOS NÚMEROS POR AGENTE, Y EL SEGUNDO ES EL HONESTO. "Ha dado de alta" mide
+ * el trabajo hecho; "han entrado" mide el que sirvió. Un alta que nadie usa
+ * todavía no es una venta que haya funcionado, y separarlos es lo que convierte
+ * esta tabla en algo que se mira más de una vez.
+ *
+ * ⚠️ SOLO EL ADMIN. Un agente vería aquí el trabajo de los demás, que es
+ * exactamente lo que su rol no incluye. Recibe un 404, igual que un alumno.
+ */
+export const prerender = false;
+
+const me = Astro.locals.student!;
+if (!canAdminister(me)) return new Response(null, { status: 404 });
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+const everyone = await repo().listStudents();
+
+/* Cada agente con sus dos números. Se ordenan por altas: quien más ha traído,
+   arriba. */
+const rows = everyone
+  .filter((s) => s.role === "agent")
+  .map((agent) => {
+    const theirs = everyone.filter((s) => s.registeredBy === agent.id);
+    return {
+      agent,
+      total: theirs.length,
+      signedIn: theirs.filter((s) => s.lastSignIn).length,
+    };
+  })
+  .sort((a, b) => b.total - a.total);
+
+/* Las altas de la casa: las que hizo Pedro. Van aparte porque no llevan
+   comisión, y mezcladas con las de un agente falsearían su cuenta. */
+const house = everyone.filter((s) => !s.registeredBy && s.role === "student");
+
+const date = (d: Date | null) =>
+  d
+    ? new Intl.DateTimeFormat(LOCALES[lang], {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }).format(d)
+    : null;
+
+const cell = "px-4 py-3 text-sm";
+const a = studentCopy.admin;
+---
+
+<StudentLayout title={studentCopy.nav.agents} student={me} heading={studentCopy.nav.agents}>
+  <div class="max-w-4xl">
+    <p class="max-w-xl text-base text-pretty text-ink-muted">
+      <T v={a.roleAgentHint} />
+    </p>
+
+    {
+      rows.length === 0 ? (
+        <div class="mt-8 rounded-2xl border border-dashed border-line-strong px-6 py-10 text-center">
+          <span
+            aria-hidden="true"
+            class="mx-auto grid size-12 place-items-center rounded-2xl bg-secondary-100 text-secondary-700"
+          >
+            <Icono nombre="megafono" class="size-6" grosor={1.8} />
+          </span>
+          <p class="mt-4 text-base text-ink-muted">
+            <T v={a.byAgentEmpty} />
+          </p>
+          <a
+            href="/student/people#add-form"
+            class="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-cta px-5 text-sm font-bold text-ink-inverse shadow-cta transition-colors hover:bg-cta-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          >
+            <Icono nombre="mas" class="size-4 shrink-0" grosor={2.4} />
+            <T v={a.quickAdd} />
+          </a>
+        </div>
+      ) : (
+        <div class="mt-8 overflow-x-auto rounded-2xl border border-line">
+          <table class="w-full min-w-[38rem] border-collapse text-left">
+            <thead class="bg-surface-muted">
+              <tr class="text-xs font-bold tracking-wide text-ink-subtle uppercase">
+                <th scope="col" class={cell}>
+                  <T v={a.byAgentColumnAgent} />
+                </th>
+                <th scope="col" class={cell}>
+                  <T v={a.columnLastSignIn} />
+                </th>
+                <th scope="col" class={`${cell} text-right`}>
+                  <T v={a.byAgentColumnTotal} />
+                </th>
+                <th scope="col" class={`${cell} text-right`}>
+                  <T v={a.byAgentColumnIn} />
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {rows.map((row) => (
+                <tr class="border-t border-line">
+                  <td class={cell}>
+                    <span class="block font-semibold text-ink">
+                      {row.agent.name ?? "—"}
+                    </span>
+                    <span class="block text-ink-subtle">{row.agent.email}</span>
+                    {!row.agent.active && (
+                      <span class="mt-1 inline-flex rounded-full bg-surface-muted px-2 py-0.5 text-xs font-bold text-ink-muted">
+                        <T v={a.inactive} />
+                      </span>
+                    )}
+                  </td>
+
+                  <td class={`${cell} text-ink-subtle`}>
+                    {date(row.agent.lastSignIn) ?? <T v={a.never} />}
+                  </td>
+
+                  <td class={`${cell} text-right text-base font-bold tabular-nums text-ink`}>
+                    {row.total}
+                  </td>
+
+                  <td class={`${cell} text-right tabular-nums text-ink-muted`}>
+                    {row.signedIn}
+                  </td>
+                </tr>
+              ))}
+
+              {house.length > 0 && (
+                <tr class="border-t border-line bg-surface-muted/60">
+                  <td class={`${cell} font-semibold text-ink-muted`} colspan="2">
+                    <T v={a.byAgentHouse} />
+                  </td>
+                  <td class={`${cell} text-right text-base font-bold tabular-nums text-ink`}>
+                    {house.length}
+                  </td>
+                  <td class={`${cell} text-right tabular-nums text-ink-muted`}>
+                    {house.filter((s) => s.lastSignIn).length}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )
+    }
+
+    {/* Para dar de alta a un agente se va al mismo sitio donde se da de alta a
+        cualquiera: un segundo formulario aquí sería el mismo formulario dos
+        veces, y el día que cambie uno, el otro se queda viejo. */}
+    <p class="mt-6 text-sm text-ink-muted">
+      <a
+        href="/student/people#add-form"
+        class="inline-flex min-h-11 items-center gap-2 font-semibold text-ink-brand underline underline-offset-4 hover:text-secondary-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      >
+        <Icono nombre="mas" class="size-4 shrink-0" grosor={2.2} />
+        <T v={a.quickAdd} />
+      </a>
+    </p>
+  </div>
+</StudentLayout>

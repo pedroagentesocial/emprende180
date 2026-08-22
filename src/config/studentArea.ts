@@ -229,6 +229,53 @@ export const studentCopy = {
     aria: { es: "Secciones del portal", en: "Portal sections" },
     home: { es: "Inicio", en: "Home" },
     people: { es: "Alumnos", en: "Students" },
+    agents: { es: "Agentes", en: "Agents" },
+    settings: { es: "Ajustes", en: "Settings" },
+  },
+
+  /* ─── Ajustes: el estado de las conexiones ─────────────────────────────────
+     Esta pantalla no configura nada, INFORMA. Los secretos viven en las
+     variables de entorno de Vercel, que es donde tienen que vivir: un panel que
+     deja escribir una clave de API es un panel que tiene que guardarla, y ese es
+     un sitio más del que puede escaparse.
+
+     Lo que hace es contestar la pregunta que se hace todos los días quien monta
+     esto: "¿qué me falta para que funcione?". */
+  settings: {
+    title: { es: "Ajustes", en: "Settings" },
+    intro: {
+      es: "Qué está conectado y qué no. Esta pantalla solo mira: las claves se ponen en las variables de entorno del proyecto, nunca desde aquí.",
+      en: "What's connected and what isn't. This screen only looks: keys go in the project's environment variables, never from here.",
+    },
+    on: { es: "Conectado", en: "Connected" },
+    off: { es: "Sin configurar", en: "Not set up" },
+    varLabel: { es: "Variable", en: "Variable" },
+
+    dbTitle: { es: "Base de datos", en: "Database" },
+    dbText: {
+      es: "Donde viven los alumnos, las sesiones y los enlaces. Sin ella, el portal no arranca en producción: es a propósito, porque una base en memoria detrás de varias instancias no es peor, es incorrecta.",
+      en: "Where students, sessions and links live. Without it the portal refuses to start in production, on purpose: an in-memory store behind several instances isn't worse, it's wrong.",
+    },
+    mailTitle: { es: "Correo (Resend)", en: "Email (Resend)" },
+    mailText: {
+      es: "Manda el enlace de entrada al alumno. Sin esto, el enlace se escribe en la consola del servidor y hay que pasarlo a mano.",
+      en: "Sends the sign-in link to the student. Without it, the link is written to the server console and has to be passed along by hand.",
+    },
+    ghlTitle: { es: "GoHighLevel", en: "GoHighLevel" },
+    ghlText: {
+      es: "Cada alta, baja y reactivación se manda al workflow de GHL para que allí se cree el contacto y se le dé o se le quite el curso. Va sin esperar respuesta: si GHL falla, el alta sigue siendo válida aquí.",
+      en: "Every sign-up, deactivation and reactivation is sent to the GHL workflow so the contact is created there and the course granted or revoked. It doesn't wait for an answer: if GHL fails, the sign-up still stands here.",
+    },
+    captchaTitle: { es: "Captcha (Turnstile)", en: "Captcha (Turnstile)" },
+    captchaText: {
+      es: "Protege el acceso y la petición de enlaces. Al encenderlo, el formulario deja de funcionar sin JavaScript: es un intercambio consciente.",
+      en: "Protects sign-in and link requests. Turning it on stops the form working without JavaScript: a deliberate trade.",
+    },
+    crmTitle: { es: "Las dos puertas del alumno", en: "The student's two doors" },
+    crmText: {
+      es: "Las direcciones del CRM y de la Academia. Mientras estén vacías, las dos tarjetas del portal salen apagadas con un 'Próximamente' en vez de un botón que no lleva a ningún sitio.",
+      en: "The CRM and Academy addresses. While they're empty, both cards show a muted 'coming soon' instead of a button that leads nowhere.",
+    },
   },
 
   /* ─── The dashboard ────────────────────────────────────────────────────── */

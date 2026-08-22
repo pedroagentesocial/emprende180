@@ -4,7 +4,7 @@ import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
 import { studentCopy } from "@config/studentArea";
 import { plataformas } from "@config/curso.config";
 import type { Student } from "@lib/data";
-import { canOpenStaffPanel, seesCourseDoors } from "@lib/permissions";
+import { canAdminister, canOpenStaffPanel, seesCourseDoors } from "@lib/permissions";
 import type { Txt } from "@i18n/idioma";
 
 /**
@@ -56,6 +56,16 @@ const entries: Entry[] = [
   ...(canOpenStaffPanel(student)
     ? ([
         { href: "/student/people", label: studentCopy.nav.people, icon: "personas" },
+      ] satisfies Entry[])
+    : []),
+
+  /* Los dos apartados que solo tienen sentido con la lista entera delante:
+     quién vende y qué hay conectado. Un agente no los ve, y sus rutas le
+     contestan 404 aunque escriba la dirección. */
+  ...(canAdminister(student)
+    ? ([
+        { href: "/student/agents", label: studentCopy.nav.agents, icon: "megafono" },
+        { href: "/student/settings", label: studentCopy.nav.settings, icon: "escudo" },
       ] satisfies Entry[])
     : []),
 

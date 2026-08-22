@@ -42,9 +42,6 @@ interface Props {
   students: Student[];
   /** Everybody they may see, for the counts and for resolving names. */
   everyone: Student[];
-  byAgent: { agent: Student; total: number; signedIn: number }[];
-  houseTotal: number;
-  houseSignedIn: number;
   /** Roles this person may hand out. One option means no selector. */
   roleOptions: Role[];
   isAdmin: boolean;
@@ -62,9 +59,6 @@ const {
   me,
   students,
   everyone,
-  byAgent,
-  houseTotal,
-  houseSignedIn,
   roleOptions,
   isAdmin,
   view,
@@ -579,77 +573,6 @@ const cell = "px-4 py-3 text-sm";
       )
     }
   </div>
-
-  {/* ─── Altas por agente ───────────────────────────────────────────────────
-      Solo el admin, y solo cuando hay agentes con altas. Dos números: cuántos
-      dio de alta y cuántos de esos han entrado. El segundo es el honesto: un
-      alta que nadie usa todavía no es una venta que haya funcionado. */}
-  {
-    isAdmin && (
-      <div class="mt-12">
-        <h3 class="flex items-center gap-2.5 text-lg font-bold text-ink">
-          <span aria-hidden="true" class="marca-linea text-secondary-600">
-            <Icono nombre="megafono" class="size-5" grosor={1.9} />
-          </span>
-          <T v={studentCopy.admin.byAgentTitle} />
-        </h3>
-
-        {byAgent.length === 0 ? (
-          <p class="mt-3 text-sm text-ink-muted">
-            <T v={studentCopy.admin.byAgentEmpty} />
-          </p>
-        ) : (
-          <div class="mt-4 overflow-x-auto rounded-2xl border border-line">
-            <table class="w-full min-w-[30rem] border-collapse text-left">
-              <thead class="bg-surface-muted">
-                <tr class="text-xs font-bold tracking-wide text-ink-subtle uppercase">
-                  <th scope="col" class={cell}>
-                    <T v={studentCopy.admin.byAgentColumnAgent} />
-                  </th>
-                  <th scope="col" class={`${cell} text-right`}>
-                    <T v={studentCopy.admin.byAgentColumnTotal} />
-                  </th>
-                  <th scope="col" class={`${cell} text-right`}>
-                    <T v={studentCopy.admin.byAgentColumnIn} />
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {byAgent.map((row) => (
-                  <tr class="border-t border-line">
-                    <td class={cell}>
-                      <span class="block font-semibold text-ink">
-                        {row.agent.name ?? "—"}
-                      </span>
-                      <span class="block text-ink-subtle">{row.agent.email}</span>
-                    </td>
-                    <td class={`${cell} text-right tabular-nums text-ink`}>{row.total}</td>
-                    <td class={`${cell} text-right tabular-nums text-ink-muted`}>
-                      {row.signedIn}
-                    </td>
-                  </tr>
-                ))}
-
-                {/* Las altas que hiciste tú. Van al final y sin nombre de agente
-                    porque no llevan comisión: son de la casa. */}
-                {houseTotal > 0 && (
-                  <tr class="border-t border-line bg-surface-muted/50">
-                    <td class={`${cell} font-semibold text-ink-muted`}>
-                      <T v={studentCopy.admin.byAgentHouse} />
-                    </td>
-                    <td class={`${cell} text-right tabular-nums text-ink`}>{houseTotal}</td>
-                    <td class={`${cell} text-right tabular-nums text-ink-muted`}>
-                      {houseSignedIn}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    )
-  }
 </div>
 
 {/* El botón de copiar. Va aquí y no en un componente aparte porque es lo único

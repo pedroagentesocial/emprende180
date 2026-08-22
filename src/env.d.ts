@@ -38,6 +38,16 @@ interface ImportMetaEnv {
    * Cloudflare Turnstile. BOTH or neither: with only one of them the captcha
    * stays off on purpose. See `src/lib/captcha.ts`.
    */
+  /**
+   * Server-only. The "Inbound Webhook" of the GHL workflow that handles
+   * students: it receives every sign-up, deactivation and reactivation from the
+   * portal. Empty → nothing is sent. See `src/lib/ghl.ts`.
+   *
+   * It is NOT the same one as `GHL_WEBHOOK_URL`: that one takes the landing's
+   * leads, which are strangers who left an email. These are people who paid.
+   * Two audiences, two workflows.
+   */
+  readonly GHL_ALUMNOS_WEBHOOK_URL: string;
   readonly TURNSTILE_SITE_KEY: string;
   readonly TURNSTILE_SECRET_KEY: string;
 }
