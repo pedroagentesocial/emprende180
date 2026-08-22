@@ -1,0 +1,371 @@
+---
+import StudentLayout from "@layouts/StudentLayout.astro";
+import T from "@components/i18n/T.astro";
+import StaffRoster from "@components/student/StaffRoster.astro";
+import { contacto, sitio, entregaAcceso } from "@config/curso.config";
+import { studentCopy } from "@config/studentArea";
+import { resolverIdiomaServidor } from "@i18n/idioma";
+import { interpolar } from "@i18n/formato";
+import { repo, normaliseEmail, type Role, type Student } from "@lib/data";
+import { createMagicLink, isAdminByConfig } from "@lib/auth";
+import {
+  canAdminister,
+  canAddStudents,
+  canDeactivate,
+  canManageStudent,
+  canChangeRole,
+  canOpenStaffPanel,
+  assignableRoles,
+  visibleStudentsFilter,
+} from "@lib/permissions";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * /student/people — the roster, and the four actions on it
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * A section of the portal, reached from its sidebar. NOT a panel behind another
+ * door: there is no `/admin`, and an agent opens this same page and finds less
+ * in it — their own people, no roles, no deactivations.
+ *
+ * ⚠️ THE ROLE CHECK IS HERE AND NOT IN THE MIDDLEWARE. The middleware protects
+ * the whole `/student` prefix with "do you have a session"; who may see WHAT
+ * inside is each page's business, and keeping it that way is what stopped the
+ * door from having to know about roles at all. A plain student gets a 404, not
+ * a 403: a 403 would confirm that this section exists.
+ *
+ * ⚠️ THE PERMISSIONS ARE ENFORCED ON THE POST, NOT ON THE PAINT. Not drawing a
+ * button is a courtesy: a form is a POST and a POST can be sent by hand with
+ * anything inside. Every branch below re-asks `@lib/permissions` about what
+ * ARRIVED.
+ *
+ * ⚠️ NO JAVASCRIPT for anything that matters: plain POSTs to this same route and
+ * filters that are links. The only script is the clipboard helper in the roster.
+ *
+ * ⚠️ THE POST REDIRECTS (303). Without it, reloading after a sign-up would
+ * re-send the form and show a duplicate-email error over a sign-up that worked.
+ */
+export const prerender = false;
+
+const me = Astro.locals.student!;
+
+/* Un alumno raso no tiene nada que hacer aquí, y se le responde lo mismo que si
+   la ruta no existiera. */
+if (!canOpenStaffPanel(me)) return new Response(null, { status: 404 });
+
+/** One-shot cookie that carries the sign-up link across the redirect. */
+const LINK_COOKIE = "e180_alta_enlace";
+
+const r = repo();
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+/** The notices are bilingual; this picks the language of the request. */
+const say = (text: { es: string; en: string }, values?: Record<string, string>) =>
+  values ? interpolar(text[lang], values) : text[lang];
+
+/** What this person may do. Asked once, used everywhere below. */
+const isStaff = canOpenStaffPanel(me);
+const isAdmin = canAdminister(me);
+const canAdd = canAddStudents(me);
+const roleOptions = assignableRoles(me);
+
+const roleLabel: Record<Role, { es: string; en: string }> = {
+  student: studentCopy.admin.roleStudent,
+  agent: studentCopy.admin.roleAgent,
+  admin: studentCopy.admin.roleAdmin,
+};
+
+let notice: { type: "ok" | "error"; text: string } | null = null;
+let linkToCopy: string | null = null;
+
+/**
+ * Sends somebody their sign-in link, by email if Resend is configured and to the
+ * console otherwise. Returns the sentence to append to the notice.
+ *
+ * It is a function because TWO actions need it — registering with "send the
+ * link", and resending it later — and the second one exists precisely because
+ * "it never arrived" is the support call that happens every week.
+ */
+async function deliverLink(target: Student): Promise<string> {
+  const link = await createMagicLink(target, Astro.url);
+  if (entregaAcceso.mostrarEnlaceEnPanel) linkToCopy = link;
+
+  const apiKey = import.meta.env.RESEND_API_KEY;
+  const from = import.meta.env.NOTIFY_EMAIL_FROM;
+
+  if (!apiKey || !from) {
+    console.warn(`[portal] DEMO MODE — link for ${target.email}:\n  ${link}`);
+    return say(studentCopy.admin.noticeLinkInConsole);
+  }
+
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from,
+        to: [target.email],
+        reply_to: contacto.email,
+        subject: `Ya tienes acceso a ${sitio.nombre}`,
+        text: [
+          `Ya estás dentro. Entra desde aquí:`,
+          ``,
+          link,
+          ``,
+          `El enlace caduca en 20 minutos. Si se te pasa, pide otro en`,
+          `${new URL("/login", Astro.url).href}`,
+          ``,
+          `— ${sitio.nombre}`,
+        ].join("\n"),
+      }),
+    });
+    if (!response.ok) console.error("[portal] Resend:", await response.text());
+    return say(
+      response.ok
+        ? studentCopy.admin.noticeLinkSent
+        : studentCopy.admin.noticeLinkFailed,
+    );
+  } catch (e) {
+    console.error("[portal] Resend:", e);
+    return say(studentCopy.admin.noticeLinkFailed);
+  }
+}
+
+if (Astro.request.method === "POST") {
+  const form = await Astro.request.formData();
+  const action = String(form.get("action") ?? "");
+
+  if (action === "add") {
+    const email = normaliseEmail(String(form.get("email") ?? ""));
+    const name = String(form.get("name") ?? "").trim() || null;
+    const send = form.get("send") === "1";
+    const wanted = String(form.get("role") ?? "student") as Role;
+
+    /* ⚠️ THE ROLE THAT ARRIVES IS CHECKED AGAINST WHAT THIS PERSON MAY HAND
+       OUT. An agent posting `role=admin` by hand gets nothing: the value has to
+       be in their own list. `isAdminByConfig` still wins over everything, so an
+       address listed in ADMIN_EMAILS can't be registered as a plain student and
+       silently demoted. */
+    const role: Role = isAdminByConfig(email)
+      ? "admin"
+      : roleOptions.includes(wanted)
+        ? wanted
+        : "student";
+
+    if (!canAdd) {
+      notice = { type: "error", text: say(studentCopy.admin.noticeNotAllowed) };
+    } else if (!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(email)) {
+      notice = { type: "error", text: say(studentCopy.admin.noticeInvalidEmail) };
+    } else if (await r.studentByEmail(email)) {
+      notice = {
+        type: "error",
+        text: say(studentCopy.admin.noticeAlreadyExists, { email }),
+      };
+    } else {
+      const created = await r.createStudent({
+        email,
+        name,
+        role,
+        language: lang,
+        /* Who registered them. An admin registering somebody leaves it empty —
+           they are the house, not an agent with a commission. */
+        registeredBy: isAdmin ? null : me.id,
+      });
+
+      const extra = send ? ` ${await deliverLink(created)}` : "";
+      notice = {
+        type: "ok",
+        text: `${say(studentCopy.admin.noticeAdded, { email })}${extra}`,
+      };
+    }
+  }
+
+  if (action === "resend") {
+    const id = String(form.get("id") ?? "");
+    const target = await r.studentById(id);
+
+    /* ⚠️ THE PERMISSION IS ASKED ABOUT THE ROW THAT ARRIVED, not about the rows
+       that were painted. An agent sending somebody else's id gets the same
+       answer as if it didn't exist. */
+    if (!target || !canManageStudent(me, target)) {
+      notice = { type: "error", text: say(studentCopy.admin.noticeNotAllowed) };
+    } else {
+      await deliverLink(target);
+      notice = {
+        type: "ok",
+        text: say(studentCopy.admin.noticeResent, { email: target.email }),
+      };
+    }
+  }
+
+  if (action === "active") {
+    const id = String(form.get("id") ?? "");
+    const active = form.get("active") === "1";
+
+    /* Deactivating is a refund, and a refund is money: admin only. See the note
+       in `@lib/permissions`. */
+    if (!canDeactivate(me)) {
+      notice = { type: "error", text: say(studentCopy.admin.noticeNotAllowed) };
+    } else if (id === me.id) {
+      /* An admin can't deactivate themselves. It isn't a business rule: it stops
+         the last administrator from locking the door from the inside, leaving
+         nobody able to reactivate anybody. */
+      notice = { type: "error", text: say(studentCopy.admin.noticeNotYourself) };
+    } else {
+      await r.setActive(id, active);
+      /* Deactivating closes their open sessions. Otherwise they would stay
+         inside until the cookie expired: a deactivation has to be immediate. */
+      if (!active) await r.deleteSessionsOf(id);
+      notice = {
+        type: "ok",
+        text: say(
+          active
+            ? studentCopy.admin.noticeReactivated
+            : studentCopy.admin.noticeDeactivated,
+        ),
+      };
+    }
+  }
+
+  if (action === "role") {
+    const id = String(form.get("id") ?? "");
+    const wanted = String(form.get("role") ?? "") as Role;
+    const target = await r.studentById(id);
+
+    if (
+      !target ||
+      !roleOptions.includes(wanted) ||
+      !canChangeRole(me, target, isAdminByConfig(target.email))
+    ) {
+      notice = { type: "error", text: say(studentCopy.admin.noticeNotAllowed) };
+    } else {
+      await r.setRole(target.id, wanted);
+      /* ⚠️ CHANGING A ROLE CLOSES THEIR SESSIONS, and it is not politeness. The
+         role travels inside the session the middleware resolves on every
+         request, so somebody demoted mid-session would keep their tools until
+         the cookie expired. Signing them out makes the change immediate, which
+         is the only useful kind of permission change. */
+      await r.deleteSessionsOf(target.id);
+      notice = {
+        type: "ok",
+        text: say(studentCopy.admin.noticeRoleChanged, {
+          email: target.email,
+          role: roleLabel[wanted][lang].toLowerCase(),
+        }),
+      };
+    }
+  }
+
+  /* ⚠️ THE LINK CANNOT GO IN THE URL, THE NOTICE CAN.
+     A URL stays in the browser history, in the server logs and in the `Referer`
+     header of the next request. The notice is a sentence; the access link is a
+     KEY that opens that person's account. So the notice travels in `?m=` and the
+     link in a one-shot cookie, which this same page reads and deletes as it
+     renders. */
+  if (linkToCopy) {
+    Astro.cookies.set(LINK_COOKIE, linkToCopy, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: !import.meta.env.DEV,
+      path: "/student",
+      maxAge: 60,
+    });
+  }
+
+
+  /* Redirect with the notice in the URL so a reload re-sends nothing. The
+     filters travel too, so acting on a filtered list doesn't throw you back to
+     the top of everything. */
+  const target = new URL("/student/people", Astro.url);
+  for (const keep of ["q", "ver"]) {
+    const value = Astro.url.searchParams.get(keep);
+    if (value) target.searchParams.set(keep, value);
+  }
+  if (notice) {
+    target.searchParams.set("t", notice.type);
+    target.searchParams.set("m", notice.text);
+  }
+  return Astro.redirect(target.pathname + target.search, 303);
+}
+
+const typeParam = Astro.url.searchParams.get("t");
+const messageParam = Astro.url.searchParams.get("m");
+if (messageParam && (typeParam === "ok" || typeParam === "error")) {
+  notice = { type: typeParam, text: messageParam };
+}
+
+/* The link from the sign-up just made, if any. It is DELETED as it is read:
+   reloading doesn't show it again, which is what you expect from something that
+   only makes sense in the moment. */
+const recentLink = Astro.cookies.get(LINK_COOKIE)?.value ?? null;
+if (recentLink) Astro.cookies.delete(LINK_COOKIE, { path: "/student" });
+
+// ─── The data ────────────────────────────────────────────────────────────────
+
+const search = (Astro.url.searchParams.get("q") ?? "").trim();
+const view = Astro.url.searchParams.get("ver") ?? "todos";
+
+const everyone = await r.listStudents({
+  ...(visibleStudentsFilter(me) ?? {}),
+  ...(search ? { search } : {}),
+});
+
+const views: Record<string, (s: Student) => boolean> = {
+  todos: () => true,
+  dentro: (s) => !!s.lastSignIn && s.active,
+  "sin-entrar": (s) => !s.lastSignIn && s.active,
+  agentes: (s) => s.role === "agent",
+  baja: (s) => !s.active,
+};
+
+const students = everyone.filter(views[view] ?? views.todos!);
+
+const byAgent = isAdmin
+  ? everyone
+      .filter((s) => s.role === "agent")
+      .map((agent) => {
+        const theirs = everyone.filter((s) => s.registeredBy === agent.id);
+        return {
+          agent,
+          total: theirs.length,
+          signedIn: theirs.filter((s) => s.lastSignIn).length,
+        };
+      })
+      .filter((row) => row.total > 0)
+      .sort((a, b) => b.total - a.total)
+  : [];
+
+const house = isAdmin
+  ? everyone.filter((s) => !s.registeredBy && s.role === "student")
+  : [];
+---
+
+<StudentLayout
+  title={studentCopy.admin.title}
+  student={me}
+  heading={studentCopy.admin.title}
+>
+  <StaffRoster
+    me={me}
+    students={students}
+    everyone={everyone}
+    byAgent={byAgent}
+    houseTotal={house.length}
+    houseSignedIn={house.filter((s) => s.lastSignIn).length}
+    roleOptions={roleOptions}
+    isAdmin={isAdmin}
+    view={view}
+    search={search}
+    lang={lang}
+    recentLink={recentLink}
+    notice={notice}
+    persistent={r.persistent}
+  />
+</StudentLayout>

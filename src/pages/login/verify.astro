@@ -1,0 +1,59 @@
+---
+import { signInWithToken, internalPath } from "@lib/auth";
+
+/**
+ * /login/verify?t=… — exchanges the magic link for a session.
+ *
+ * It paints nothing: it checks, creates the session and redirects. An
+ * in-between "signing you in…" screen would only add a flicker.
+ *
+ * ⚠️ THE TOKEN TRAVELS IN THE URL, and that forces two things, both done here:
+ *
+ *  1. The token is SINGLE USE and expires in 20 minutes. The URL can end up in
+ *     the history, in a `Referer` or in a shared address bar, and none of that
+ *     can be enough to get in twice.
+ *  2. After it is exchanged, we redirect to a URL WITHOUT the token. That way
+ *     the address bar isn't left holding a secret and nobody copies it by
+ *     accident when sharing "the page I was on".
+ *
+ * ⚠️ ONE SINGLE `return`, AND IT ISN'T STYLE. In Astro's frontmatter, type
+ * analysis stops following code after a top-level `return`: with two early
+ * exits, the variables used at the end were reported as unused. A single exit
+ * path doesn't invite that.
+ *
+ * No token and an expired token lead to the same place on purpose: telling the
+ * two apart would only tell whoever is probing what kind of failure they got.
+ */
+export const prerender = false;
+
+const token = Astro.url.searchParams.get("t");
+
+const student = token
+  ? await signInWithToken(
+      token,
+      Astro.cookies,
+      Astro.request.headers.get("user-agent"),
+    )
+  : null;
+
+/* The destination is computed BEFORE the `return` and not inside it: Astro's
+ * type analysis doesn't look inside the argument of a top-level `return`, and
+ * everything used there was reported as dead code.
+ *
+ * THE LINK LEADS TO SETTING A PASSWORD, not to the dashboard. That is what the
+ * only two reasons anybody receives one have in common: they have just started
+ * an account and have no password yet, or they forgot it and want another one.
+ * Sending them to the dashboard would leave half-done exactly what they came to
+ * do.
+ *
+ * The original `?next=` is carried along so that, after choosing a password,
+ * they end up where they were headed. */
+const requested = Astro.url.searchParams.get("next");
+const toPassword = requested
+  ? `/login/password?next=${encodeURIComponent(internalPath(requested))}`
+  : "/login/password";
+
+const destination = student ? toPassword : "/login?error=expired";
+
+return Astro.redirect(destination, 302);
+---

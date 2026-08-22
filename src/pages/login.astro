@@ -1,0 +1,443 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import Header from "@components/layout/Header.astro";
+import Footer from "@components/layout/Footer.astro";
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import MarcaAgua from "@components/ui/MarcaAgua.astro";
+import LoginForm from "@components/student/LoginForm";
+import { sitio, contacto, copy } from "@config/curso.config";
+import { studentCopy } from "@config/studentArea";
+import { construirTxt, resolverIdiomaServidor } from "@i18n/idioma";
+import {
+  currentStudent,
+  signInWithPassword,
+  sendMagicLink,
+  internalPath,
+} from "@lib/auth";
+import { LOGIN_EMAIL } from "@lib/loginEmail";
+import { consume, clientIp } from "@lib/rateLimit";
+import { captchaSiteKey, verifyCaptcha, CAPTCHA_FIELD } from "@lib/captcha";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * /login — the door to the student area
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * ⚠️ EMAIL AND PASSWORD, with "I forgot my password" inside the same form and
+ * without changing page: whoever presses that link has already typed their
+ * email, and making them type it again is friction at exactly the moment they
+ * are already annoyed. See `LoginForm.tsx`.
+ *
+ * The emailed link is NOT the normal way in: it's for starting the account and
+ * for recovering it, which are the same gesture underneath. See `src/lib/auth.ts`.
+ *
+ * ─── THE LAYOUT: TWO COLUMNS, ONE SCREEN ───────────────────────────────────
+ *
+ * This page used to be a single centred column: title, form, "I haven't bought
+ * it", what's inside. Everything stacked, so getting in meant scrolling past
+ * arguments written for somebody who ISN'T signing in.
+ *
+ * Now the screen is split by intent:
+ *
+ *   · RIGHT — the card. The only elevated, bordered, teal-carrying object on
+ *     the page. Whoever came to sign in doesn't have to look for it.
+ *   · LEFT  — everything else, in reading order: what this is, what's behind
+ *     the door, and one quiet line for whoever pressed the wrong button.
+ *
+ * ⚠️ THE ORDER FLIPS ON MOBILE, AND IT IS NOT THE OBVIOUS FLIP. It isn't
+ * "card first" — a form with no heading above it looks like a page that failed
+ * to load. It is: heading, card, then the rest. The grid places the two left
+ * blocks in rows 1 and 2 of the first column, so the DOM order (heading, card,
+ * rest) is already the phone order and no `order` juggling is needed on the
+ * one axis that matters, the reading one.
+ *
+ * ⚠️ THE CARD HOLDS THE FORM AND NOTHING ELSE. No heading repeating the h1 two
+ * inches to its left, no reassurances, no third link. Everything a form asks
+ * for that isn't a field is one more thing to read before typing.
+ *
+ * ─── IF THEY ARE ALREADY IN, THEY DON'T GET SHOWN THE DOOR ─────────────────
+ *
+ * With a session open this redirects to the dashboard. Showing a sign-in form to
+ * somebody who is already inside is the fastest way to make them think their
+ * session dropped.
+ *
+ * ─── `noindex` ─────────────────────────────────────────────────────────────
+ *
+ * A sign-in screen has no business in a search engine: it gives nothing to the
+ * person searching, and it gives a crawler a list of doors.
+ */
+export const prerender = false;
+
+/* Already identified: to the dashboard. Before anything is painted. */
+if (await currentStudent(Astro.cookies)) return Astro.redirect("/student", 302);
+
+/* ─── THE FORM ALSO WORKS WITHOUT JAVASCRIPT ──────────────────────────────
+ *
+ * ⚠️ THIS STARTED AS A SECURITY BUG, NOT AS AN IMPROVEMENT.
+ *
+ * The form used to be only a React island intercepting the submit. While the
+ * island hadn't hydrated — slow network, a JS error, the script blocked — the
+ * `<form>` was still a plain form with NO `method`, so submitting it did a GET
+ * and the password ended up IN THE URL: in the address bar, in the history, and
+ * in the `Referer` header of the next request.
+ *
+ * Now the form is `method="POST"` against this same page and is processed here.
+ * The island still intercepts it to show errors without a reload, but if it
+ * never arrives, the submit is a proper POST and nothing leaks. It is the same
+ * thing the admin panel and the password screen already did.
+ */
+let postError: "credentials" | "limit" | "email" | "captcha" | null = null;
+let postSent = false;
+
+if (Astro.request.method === "POST") {
+  const form = await Astro.request.formData();
+  const mode = String(form.get("mode") ?? "signin");
+  const email = String(form.get("email") ?? "").trim().toLowerCase();
+  const ip = clientIp(Astro.request, Astro.clientAddress);
+
+  /* ⚠️ THE CAPTCHA IS CHECKED HERE TOO, on the no-JavaScript path. If only the
+     API routes checked it, this POST would be the unlocked door next to the
+     locked one, and the easiest to find: it is written in the markup itself.
+     With Turnstile switched off, `verifyCaptcha` answers `true` and nothing
+     about this page changes. */
+  const captchaOk = await verifyCaptcha(String(form.get(CAPTCHA_FIELD) ?? ""), ip);
+
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(email)) {
+    postError = "email";
+  } else if (!captchaOk) {
+    postError = "captcha";
+  } else if (mode === "reset") {
+    if (!consume(`magic-link:${ip}`, 15, 10 * 60 * 1000).allowed) {
+      /* The limit is NOT reported to the visitor as an error: saying "you have
+         asked too many times" for that address would confirm it exists. They get
+         the same "we've sent it" as everybody else. */
+      postSent = true;
+    } else {
+      const requestLanguage = resolverIdiomaServidor(
+        Astro.url,
+        Astro.request.headers.get("accept-language"),
+      );
+      await sendMagicLink(email, requestLanguage, Astro.url, LOGIN_EMAIL);
+      postSent = true;
+    }
+  } else if (!consume(`login-ip:${ip}`, 20, 10 * 60 * 1000).allowed) {
+    postError = "limit";
+  } else if (!consume(`login-email:${email}`, 10, 15 * 60 * 1000).allowed) {
+    postError = "limit";
+  } else {
+    const student = await signInWithPassword(
+      email,
+      String(form.get("password") ?? ""),
+      Astro.cookies,
+      Astro.request.headers.get("user-agent"),
+    );
+    if (student) {
+      return Astro.redirect(internalPath(String(form.get("next") ?? "")), 303);
+    }
+    postError = "credentials";
+  }
+}
+
+const pageTitle = construirTxt((l) => `${studentCopy.title[l]} · ${sitio.nombre}`);
+
+/* Messages arriving through the URL from `/login/verify` and `/api/logout`. */
+const error = Astro.url.searchParams.get("error");
+const signedOut = Astro.url.searchParams.get("signedout") === "1";
+
+/* `next` travels to the form so the visitor goes back where they were headed. It
+   goes through the same filter as `/login/verify` — `internalPath` — because it
+   ends up inside the link we email, and no other domain's URL can slip in there. */
+const next = internalPath(Astro.url.searchParams.get("next"));
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+/* `?reset=1` starts the form in recovery mode. That is what keeps the "I forgot
+   my password" link working without JavaScript. After a recovery POST the mode
+   is kept, so the "we've sent it" message doesn't appear above the sign-in form. */
+/* The POST comes back to this same page, and it has to come back in the SAME
+   language: without carrying `?lang=`, somebody reading in Spanish gets the
+   error in English. Only that parameter is preserved; the others (`error`,
+   `signedout`) are answers and have no reason to survive a submit. */
+const langParam = Astro.url.searchParams.get("lang");
+const formAction = langParam
+  ? `/login?lang=${encodeURIComponent(langParam)}`
+  : "/login";
+
+const initialMode =
+  Astro.url.searchParams.get("reset") === "1" || postSent
+    ? ("reset" as const)
+    : ("signin" as const);
+
+/* Any notice at all? It decides whether the card gets a gap above it, so an
+   empty slot doesn't push the card off centre on a normal visit. */
+const hasNotice = !!error || signedOut || !!postError || postSent;
+
+/* La clave pública del captcha, o `null` si Turnstile está apagado. Decide dos
+   cosas: si la isla pinta el widget y si esta página carga el script. */
+const claveCaptcha = captchaSiteKey();
+
+/* El logotipo horizontal de la marca, para la columna izquierda. */
+const logo = sitio.logoHorizontal;
+---
+<BaseLayout titulo={pageTitle} descripcion={studentCopy.intro} noindex>
+  {/* Barra mínima: logotipo e idioma. Ver la nota de `variante` en Header. */}
+  <Header variante="minimo" />
+
+  {/* ⚠️ `flex-1` ES LO QUE ARREGLA LAS PANTALLAS ALTAS. El cuerpo es una
+      columna de alto mínimo la ventana (ver `global.css`), así que este `main`
+      se queda con todo el hueco que sobra entre la barra y el pie, y centra lo
+      suyo dentro. En un monitor en vertical eso reparte el aire arriba y abajo
+      en vez de dejar el pie a media pantalla con un vacío debajo. */}
+  <main
+    id="contenido"
+    class="relative isolate flex flex-1 items-center overflow-hidden bg-surface-muted py-[clamp(2.5rem,6svh,5rem)]"
+  >
+    {/* La marca de agua se ancla a la izquierda, detrás del texto. Estaba a la
+        derecha, que es justo donde ahora vive la card: un logotipo asomando por
+        detrás de un formulario es ruido exactamente donde alguien teclea su
+        contraseña. */}
+    <MarcaAgua
+      variante="color"
+      posicion="izquierda"
+      tamano="grande"
+      class="opacity-[0.05]"
+    />
+
+    <div class="container-page w-full">
+      {/* ─── LA REJILLA ──────────────────────────────────────────────────────
+          Dos mitades IGUALES desde `lg` (`grid-cols-2`), no una columna ancha y
+          otra estrecha: las dos partes de esta pantalla pesan lo mismo. La
+          izquierda dice qué es esto, la derecha deja entrar.
+
+          `lg:min-h` menos el alto del header es lo que hace que todo caiga en
+          una pantalla: header más esta sección llenan el alto exacto de la
+          ventana, y el pie empieza por debajo del pliegue, que es donde va un
+          pie.
+
+          Las filas de la izquierda se reparten con `content-center` para que el
+          bloque entero quede a la altura de la card. */}
+      <div
+        class="grid gap-x-10 gap-y-10 sm:gap-y-12 xl:grid-cols-2 xl:grid-rows-[auto_auto] xl:items-center xl:gap-x-14 xl:gap-y-8 2xl:gap-x-20"
+      >
+        {/* ─── Izquierda, fila 1: la marca y qué es esto ────────────────── */}
+        <div class="mx-auto w-full max-w-lg xl:mx-0 xl:col-start-1 xl:row-start-1 xl:self-end">
+          {/* ⚠️ EL LOGOTIPO SOLO EN DOS COLUMNAS. Por debajo de `xl` la barra de
+              arriba ya lleva el suyo a cuatro dedos de aquí, y dos veces la
+              misma marca en la misma pantalla no es marca, es un descuido. */}
+          <img
+            src={logo.src}
+            alt={sitio.nombre}
+            width={logo.w}
+            height={logo.h}
+            class="mb-8 hidden h-10 w-auto xl:block"
+            fetchpriority="high"
+            decoding="async"
+          />
+
+          <h1 class="text-4xl font-extrabold tracking-tight text-balance text-ink sm:text-5xl">
+            <T v={studentCopy.portalTitle} />
+          </h1>
+
+          <p class="mt-4 max-w-md text-lg text-pretty text-ink-muted">
+            <T v={studentCopy.portalText} />
+          </p>
+        </div>
+
+        {/* ─── Derecha: la card ────────────────────────────────────────────
+            Ocupa las dos filas y se centra contra ellas, así que el formulario
+            queda ópticamente a la altura del hueco entre el titular y la lista
+            en vez de clavado arriba de su columna. */}
+        <div
+          class="mx-auto w-full max-w-lg xl:mx-0 xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:max-w-[27rem] xl:justify-self-end xl:self-center"
+        >
+          {/* Los avisos van ENCIMA de la card y no dentro: quien vuelve con un
+              enlace caducado necesita saber por qué antes de teclear otra vez su
+              correo, y un mensaje que empuja los campos hacia abajo al aparecer
+              es un formulario que se mueve mientras lo usas. */}
+          {
+            hasNotice && (
+              <div class="mb-4 grid gap-3">
+                {error && (
+                  <p
+                    role="alert"
+                    class="rounded-2xl border border-warning-500 bg-warning-50 px-4 py-3 text-sm text-pretty text-ink"
+                  >
+                    <T v={studentCopy.errorExpired} />
+                  </p>
+                )}
+
+                {signedOut && (
+                  <p
+                    id="aviso-salida"
+                    role="status"
+                    class="flex items-center gap-2.5 rounded-2xl border border-secondary-300 bg-secondary-50 px-4 py-3 text-sm text-ink transition-opacity duration-[var(--duration-slow)] ease-[var(--ease-out-soft)]"
+                  >
+                    <span aria-hidden="true" class="marca-linea text-secondary-600">
+                      <Icono nombre="check" class="size-4" grosor={2.5} />
+                    </span>
+                    <T v={studentCopy.signedOut} />
+                  </p>
+                )}
+
+                {/* Lo que responde el POST sin JavaScript. Con la isla hidratada
+                    estos mensajes los pinta ella sin recargar. */}
+                {postError && (
+                  <p
+                    role="alert"
+                    class="rounded-2xl border border-error-500 bg-error-50 px-4 py-3 text-sm font-medium text-error-700"
+                  >
+                    <T
+                      v={
+                        postError === "limit"
+                          ? studentCopy.errorLimit
+                          : postError === "email"
+                            ? studentCopy.errorEmail
+                            : postError === "captcha"
+                              ? studentCopy.errorCaptcha
+                              : studentCopy.errorCredentials
+                      }
+                    />
+                  </p>
+                )}
+
+                {postSent && (
+                  <p class="rounded-2xl border border-secondary-300 bg-secondary-50 px-4 py-3 text-sm text-pretty text-ink">
+                    <T v={studentCopy.linkSent} />
+                  </p>
+                )}
+              </div>
+            )
+          }
+
+          <div class="rounded-3xl border border-line bg-surface p-6 shadow-[var(--shadow-xl)] sm:p-8">
+            <LoginForm
+              client:load
+              lang={lang}
+              next={next}
+              initialMode={initialMode}
+              action={formAction}
+              captchaSiteKey={claveCaptcha}
+            />
+          </div>
+        </div>
+
+        {/* ─── Izquierda, fila 2: qué hay al otro lado de la puerta ──────────
+            Filetes en vez de cajas. Tres líneas cortas con una raya entre ellas
+            se leen como un objeto; tres tarjetas con borde se leerían como tres,
+            y competirían con la única card de la pantalla que importa. */}
+        <div class="mx-auto w-full max-w-lg xl:mx-0 xl:col-start-1 xl:row-start-2 xl:self-start">
+          <h2 class="text-sm font-bold text-ink">
+            <T v={studentCopy.whatsInside.title} />
+          </h2>
+
+          <ul class="mt-1 divide-y divide-line border-b border-line">
+            {
+              studentCopy.whatsInside.points.map((p) => (
+                <li class="flex items-start gap-3 py-3 text-base text-pretty text-ink-muted">
+                  <span aria-hidden="true" class="marca-linea shrink-0 text-secondary-600">
+                    <Icono nombre="check" class="size-4" grosor={2.5} />
+                  </span>
+                  <T v={p} />
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+
+      {/* ─── Para quien se equivocó de puerta ─────────────────────────────────
+          FUERA de la rejilla y debajo de las dos columnas, en una línea. Es el
+          visitante menos frecuente de esta pantalla: dentro de la columna
+          izquierda tiraba de la mirada al mismo nivel que lo que hay dentro del
+          portal, y colgando de la card habría parecido parte del formulario.
+          Aquí abajo está disponible sin pedir turno. */}
+      <p
+        class="mt-10 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 border-t border-line pt-6 text-sm text-ink-subtle sm:mt-12"
+      >
+        <T v={studentCopy.notACustomer.line} />
+        <a
+          href="/"
+          data-track="acceso-volver"
+          class="inline-flex min-h-11 items-center font-semibold text-ink-brand underline underline-offset-4 hover:text-secondary-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        >
+          <T v={studentCopy.notACustomer.cta} />
+        </a>
+
+        {
+          contacto.telefono && (
+            <>
+              <span aria-hidden="true" class="text-line-strong">
+                ·
+              </span>
+              <a
+                href={`tel:${contacto.telefono}`}
+                data-track="acceso-llamada"
+                class="inline-flex min-h-11 items-center gap-1.5 font-semibold text-ink-brand underline underline-offset-4 hover:text-secondary-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              >
+                <span aria-hidden="true" class="marca-linea">
+                  <Icono nombre="telefono" class="size-4" grosor={2} />
+                </span>
+                <T v={copy.instructor.llamame} />
+              </a>
+            </>
+          )
+        }
+      </p>
+    </div>
+  </main>
+
+  <Footer />
+
+  {/* ─── EL AVISO DE SALIDA ES UN MENSAJE, NO UN ESTADO ──────────────────────
+      Llega en `?signedout=1`, y ese parámetro se queda en la URL: recargar, o
+      volver a esta pantalla desde el historial, repetía "has salido de tu
+      cuenta" a alguien que llevaba diez minutos ahí. Un aviso que sigue
+      apareciendo deja de leerse como un aviso.
+
+      Dos cosas, en este orden:
+       1. Se limpia la URL con `replaceState`, sin recargar y sin dejar entrada
+          nueva en el historial. A partir de ahí, F5 ya no lo trae de vuelta.
+       2. Se desvanece a los seis segundos, que es de sobra para leer seis
+          palabras. Se quita del flujo al terminar para que el formulario suba a
+          su sitio en vez de dejar un hueco.
+
+      Sin JavaScript no pasa ninguna de las dos y el aviso se queda ahí, que es
+      exactamente el comportamiento de antes: nada se rompe, solo no mejora. */}
+  <script is:inline>
+    (function () {
+      var aviso = document.getElementById("aviso-salida");
+      if (!aviso) return;
+
+      if (window.history.replaceState) {
+        var url = new URL(window.location.href);
+        url.searchParams.delete("signedout");
+        window.history.replaceState({}, "", url.pathname + url.search);
+      }
+
+      setTimeout(function () {
+        aviso.style.opacity = "0";
+        setTimeout(function () {
+          aviso.remove();
+        }, 450);
+      }, 6000);
+    })();
+  </script>
+
+  {/* El script del captcha, solo si Turnstile está encendido. `async` y sin
+      `onload`: la isla lo espera por su cuenta (ver `LoginForm`), así que ni
+      bloquea el pintado ni obliga a esta página a saber cuándo llegó. */}
+  {
+    claveCaptcha && (
+      <script
+        is:inline
+        async
+        defer
+        src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+      />
+    )
+  }
+</BaseLayout>

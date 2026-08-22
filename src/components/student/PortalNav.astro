@@ -1,0 +1,199 @@
+---
+import T from "@components/i18n/T.astro";
+import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
+import { studentCopy } from "@config/studentArea";
+import { plataformas } from "@config/curso.config";
+import type { Student } from "@lib/data";
+import { canOpenStaffPanel, seesCourseDoors } from "@lib/permissions";
+import type { Txt } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * THE PORTAL'S NAVIGATION
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * One list of destinations, built from the role, painted twice: down the left
+ * side on a desktop and as a scrolling row under the bar on a phone. Twice in
+ * the markup, once in the code — a second copy of "what can this person reach"
+ * is the copy that ends up out of step.
+ *
+ * ⚠️ WHAT IS NOT HERE IS AS DELIBERATE AS WHAT IS. An agent gets no CRM and no
+ * Academy: see `seesCourseDoors` in `@lib/permissions`. A plain student gets no
+ * roster. Neither is hidden with CSS — the entry never exists, so there is
+ * nothing to find in the markup either.
+ *
+ * The external ones carry `target="_blank"` and their little "opens outside"
+ * note for screen readers: a link that jumps to another tab without warning
+ * disorients whoever can't see it happen.
+ */
+
+interface Props {
+  student: Student;
+  /** The current path, to mark the entry you are on. */
+  path: string;
+  /**
+   * `sidebar` is the desktop column, `inline` the row inside the top bar for
+   * whoever has no column, and `bar` the scrolling row on a phone.
+   */
+  variant: "sidebar" | "inline" | "bar";
+}
+
+const { student, path, variant } = Astro.props;
+
+interface Entry {
+  href: string;
+  label: Txt;
+  icon: NombreIcono;
+  /** `true` when it leaves the portal. */
+  outside?: boolean;
+  /** Not pressable yet: the config has no address for it. */
+  pending?: boolean;
+}
+
+const entries: Entry[] = [
+  { href: "/student", label: studentCopy.nav.home, icon: "casa" },
+
+  ...(canOpenStaffPanel(student)
+    ? ([
+        { href: "/student/people", label: studentCopy.nav.people, icon: "personas" },
+      ] satisfies Entry[])
+    : []),
+
+  ...(seesCourseDoors(student)
+    ? ([
+        {
+          href: plataformas.crm.url || "#",
+          label: plataformas.crm.titulo,
+          icon: "lista",
+          outside: !!plataformas.crm.url,
+          pending: !plataformas.crm.url,
+        },
+        {
+          href: plataformas.academia.url || "#",
+          label: plataformas.academia.titulo,
+          icon: "play",
+          outside: !!plataformas.academia.url,
+          pending: !plataformas.academia.url,
+        },
+      ] satisfies Entry[])
+    : []),
+];
+
+/** `/student/people` also matches `/student/people?ver=…`. */
+const isCurrent = (href: string) =>
+  href === "/student" ? path === "/student" : path.startsWith(href);
+
+const base =
+  "inline-flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+---
+
+{
+  variant === "inline" ? (
+    /* Dentro de la barra de arriba. Misma lista, en horizontal y sin adornos:
+       aquí no hay sitio para contadores ni puntitos. */
+    <nav
+      aria-label={studentCopy.nav.aria[student.language]}
+      class="flex items-center gap-1"
+    >
+      {entries.map((entry) => (
+        <a
+          href={entry.pending ? undefined : entry.href}
+          target={entry.outside ? "_blank" : undefined}
+          rel={entry.outside ? "noopener noreferrer" : undefined}
+          aria-current={isCurrent(entry.href) ? "page" : undefined}
+          aria-disabled={entry.pending ? "true" : undefined}
+          class:list={[
+            base,
+            "whitespace-nowrap",
+            entry.pending
+              ? "pointer-events-none text-ink-subtle"
+              : isCurrent(entry.href)
+                ? "bg-primary-800 text-ink-inverse"
+                : "text-ink-muted hover:bg-surface-muted hover:text-ink",
+          ]}
+        >
+          <Icono nombre={entry.icon} class="size-4 shrink-0" grosor={1.9} />
+          <T v={entry.label} />
+          {entry.outside && (
+            <Icono
+              nombre="flecha"
+              class="size-3 shrink-0 -rotate-45 opacity-60"
+              grosor={2.5}
+            />
+          )}
+        </a>
+      ))}
+    </nav>
+  ) : variant === "sidebar" ? (
+    <nav aria-label={studentCopy.nav.aria[student.language]} class="grid gap-1">
+      {entries.map((entry) => (
+        <a
+          href={entry.pending ? undefined : entry.href}
+          target={entry.outside ? "_blank" : undefined}
+          rel={entry.outside ? "noopener noreferrer" : undefined}
+          aria-current={isCurrent(entry.href) ? "page" : undefined}
+          aria-disabled={entry.pending ? "true" : undefined}
+          class:list={[
+            base,
+            entry.pending
+              ? "pointer-events-none text-ink-subtle"
+              : isCurrent(entry.href)
+                ? "bg-primary-800 text-ink-inverse"
+                : "text-ink-muted hover:bg-surface-muted hover:text-ink",
+          ]}
+        >
+          <Icono nombre={entry.icon} class="size-5 shrink-0" grosor={1.9} />
+          <T v={entry.label} />
+
+          {/* Lo que todavía no tiene dirección se atenúa y deja de ser pulsable,
+              pero NO lleva rótulo aquí: "CRM · Próximamente" no cabe en una
+              columna de 14rem y sacaba una barra de desplazamiento horizontal.
+              El rótulo está donde se lee entero, en su tarjeta. */}
+          {entry.pending && (
+            <span aria-hidden="true" class="ml-auto size-1.5 rounded-full bg-line-strong" />
+          )}
+
+          {entry.outside && (
+            <span aria-hidden="true" class="ml-auto text-ink-subtle">
+              <Icono nombre="flecha" class="size-3.5 -rotate-45" grosor={2.5} />
+            </span>
+          )}
+        </a>
+      ))}
+    </nav>
+  ) : (
+    /* La fila del móvil. Se desliza si no cabe, sin JavaScript y sin menú
+       desplegable: un cajón lateral necesita un script, y esta barra tiene como
+       mucho cuatro entradas. */
+    <nav
+      aria-label={studentCopy.nav.aria[student.language]}
+      class="-mx-5 overflow-x-auto border-b border-line bg-surface px-5 lg:hidden"
+    >
+      <ul class="flex w-max gap-1 py-2">
+        {entries.map((entry) => (
+          <li>
+            <a
+              href={entry.pending ? undefined : entry.href}
+              target={entry.outside ? "_blank" : undefined}
+              rel={entry.outside ? "noopener noreferrer" : undefined}
+              aria-current={isCurrent(entry.href) ? "page" : undefined}
+              aria-disabled={entry.pending ? "true" : undefined}
+              class:list={[
+                base,
+                "whitespace-nowrap",
+                entry.pending
+                  ? "pointer-events-none text-ink-subtle"
+                  : isCurrent(entry.href)
+                    ? "bg-primary-800 text-ink-inverse"
+                    : "text-ink-muted hover:bg-surface-muted hover:text-ink",
+              ]}
+            >
+              <Icono nombre={entry.icon} class="size-4 shrink-0" grosor={1.9} />
+              <T v={entry.label} />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}

@@ -1,32 +1,45 @@
 /// <reference types="astro/client" />
 
 interface ImportMetaEnv {
-  /** Server-only. Clave de Resend para el envío de emails. */
+  /** Server-only. Resend key, used to send email. */
   readonly RESEND_API_KEY: string;
-  /** Server-only. Destinatario del aviso de nuevo lead. */
+  /** Server-only. Recipient of the new-lead notification. */
   readonly NOTIFY_EMAIL_TO: string;
-  /** Server-only. Remitente verificado en Resend. */
+  /** Server-only. Sender address, verified in Resend. */
   readonly NOTIFY_EMAIL_FROM: string;
   /**
-   * Server-only. "Inbound Webhook" de GoHighLevel. Cada lead capturado se
-   * manda ahí además del correo de aviso. Vacío → no se llama a nadie.
-   * ⚠️ Si se activa, el aviso de privacidad debe nombrar a GoHighLevel como
-   * encargado del tratamiento: recibe datos identificables.
+   * Server-only. GoHighLevel "Inbound Webhook". Every captured lead is sent
+   * there as well as by notification email. Empty → nobody is called.
+   * ⚠️ If it is switched on, the privacy notice has to name GoHighLevel as a
+   * data processor: it receives identifiable data.
    */
   readonly GHL_WEBHOOK_URL: string;
-  /** Público. ID de medición de GA4. Vacío → sin analítica. */
+  /** Public. GA4 measurement ID. Empty → no analytics. */
   readonly PUBLIC_GA4_ID: string;
   /**
-   * Server-only. Postgres del área de alumnos. Cualquier proveedor sirve.
-   * Sin ella: en desarrollo el área funciona en memoria; en producción, error.
+   * Server-only. Postgres for the student area. Any provider will do.
+   * Without it: in development the area runs in memory; in production it fails
+   * at startup, on purpose.
    */
   readonly DATABASE_URL: string;
   /**
-   * Server-only. Emails que entran como admin, separados por comas.
-   * Resuelve el huevo y la gallina del primer administrador: no puede darse de
-   * alta desde un panel al que todavía nadie puede entrar.
+   * Server-only. Comma-separated emails that get in as admin.
+   * Solves the first-administrator chicken and egg: they cannot register from a
+   * panel that nobody can get into yet.
    */
   readonly ADMIN_EMAILS: string;
+  /**
+   * Development only. Fixed password for the seeded admins when there is no
+   * database. See the note in `src/lib/data.ts`: it cannot run in production,
+   * because production without `DATABASE_URL` refuses to start.
+   */
+  readonly DEMO_CLAVE: string;
+  /**
+   * Cloudflare Turnstile. BOTH or neither: with only one of them the captcha
+   * stays off on purpose. See `src/lib/captcha.ts`.
+   */
+  readonly TURNSTILE_SITE_KEY: string;
+  readonly TURNSTILE_SECRET_KEY: string;
 }
 
 interface ImportMeta {
@@ -36,24 +49,41 @@ interface ImportMeta {
 
 declare global {
   /**
-   * Lo que el middleware deja resuelto para las páginas protegidas.
+   * What the middleware leaves resolved for the protected pages.
    *
-   * ⚠️ Va DENTRO de `declare global`. Este archivo tiene un `export {}` al
-   * final, así que es un módulo: un `declare namespace App` suelto se quedaría
-   * dentro del módulo y `Astro.locals.alumno` no existiría para el resto del
-   * proyecto. Con cuatro errores de tipo, ni más ni menos.
+   * ⚠️ It goes INSIDE `declare global`. This file has an `export {}` at the end,
+   * so it is a module: a loose `declare namespace App` would stay inside the
+   * module and `Astro.locals.student` wouldn't exist for the rest of the
+   * project. Four type errors, no more and no less.
    */
   namespace App {
     interface Locals {
-      /** Lo pone `src/middleware.ts` en las rutas de `/alumno` y `/admin`. */
-      alumno?: import("@lib/datos").Alumno;
+      /** Set by `src/middleware.ts` on the `/student` and `/admin` routes. */
+      student?: import("@lib/data").Student;
     }
   }
 
   interface Window {
-    /** Inyectado por GA4. Puede no existir: comprobar antes de llamarlo. */
+    /** Injected by GA4. It may not exist: check before calling it. */
     gtag?: (...args: unknown[]) => void;
     dataLayer?: unknown[];
+    /**
+     * Injected by Cloudflare Turnstile, and only on `/login` and only when the
+     * captcha is switched on. Always check before calling: on every other page,
+     * and with the captcha off, this is `undefined`.
+     */
+    turnstile?: {
+      render(
+        element: HTMLElement,
+        options: {
+          sitekey: string;
+          callback?: (token: string) => void;
+          "expired-callback"?: () => void;
+          "error-callback"?: () => void;
+        },
+      ): string;
+      reset(widgetId?: string): void;
+    };
   }
 }
 

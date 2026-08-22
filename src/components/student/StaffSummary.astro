@@ -1,0 +1,255 @@
+---
+import T from "@components/i18n/T.astro";
+import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
+import { studentCopy } from "@config/studentArea";
+import { interpolar } from "@i18n/formato";
+import { LOCALES, type Idioma, type Txt } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * THE STAFF SUMMARY — what the portal's home says to whoever sells
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Two things, in this order:
+ *
+ *  1. WHAT NEEDS ME. People who paid and never came in. It is the only thing in
+ *     this portal that costs money if it is ignored: they paid, they can't get
+ *     in, and the next thing they do is ask for a refund. It appears only when
+ *     the number isn't zero — a screen that always shows a warning teaches
+ *     people not to read warnings.
+ *  2. WHERE WE ARE. Four or five counts in a row, each one a LINK into the
+ *     roster already filtered. A number that doesn't lead anywhere gets read
+ *     once and never again.
+ *
+ * ⚠️ NO INVENTED NUMBERS. No revenue, no conversion, no chart. The money is
+ * taken by phone, outside this system: any figure about it would be a guess
+ * printed in a box that looks like a fact. What is counted is what the database
+ * actually knows — who exists, who got in, who registered whom.
+ *
+ * ⚠️ AND NO BIG-NUMBER TILES. Four boxes with a giant figure inside is the
+ * dashboard cliché that says nothing. These are chips: small, in one line, and
+ * useful because they filter.
+ */
+
+interface Props {
+  counts: {
+    all: number;
+    signedIn: number;
+    neverIn: number;
+    agents: number;
+    inactive: number;
+    /** Altas en los últimos 30 días. */
+    lastMonth: number;
+  };
+  /** La fecha del alta más reciente, o `null` si no hay ninguna. */
+  latest: Date | null;
+  isAdmin: boolean;
+  lang: Idioma;
+}
+
+const { counts, latest, isAdmin, lang } = Astro.props;
+
+const fecha = (d: Date) =>
+  new Intl.DateTimeFormat(LOCALES[lang], {
+    day: "numeric",
+    month: "long",
+  }).format(d);
+
+/* Las tres frases. Van con el número en grande DENTRO de la frase, no en una
+   caja aparte: un número sin su frase al lado es un número que hay que ir a
+   descifrar a otro sitio. */
+const stats: { n: string; text: Txt; values?: Record<string, string> }[] = [
+  { n: String(counts.lastMonth), text: studentCopy.admin.statMonth },
+  {
+    n: String(counts.signedIn),
+    text: studentCopy.admin.statActivation,
+    values: { total: String(counts.all) },
+  },
+  latest
+    ? { n: "", text: studentCopy.admin.statLast, values: { fecha: fecha(latest) } }
+    : {
+        n: "",
+        text: isAdmin
+          ? studentCopy.admin.statLastNeverAdmin
+          : studentCopy.admin.statLastNever,
+        values: undefined,
+      },
+];
+
+const say = (text: Txt, values?: Record<string, string>) =>
+  values ? interpolar(text[lang], values) : text[lang];
+
+interface Chip {
+  key: string;
+  label: Txt;
+  n: number;
+  icon: NombreIcono;
+}
+
+/* Cada pastilla lleva su icono y no por adorno: son cuatro o cinco cuentas
+   seguidas con la misma forma, y el icono es lo que permite volver a la que
+   buscabas sin leerlas todas otra vez. */
+const chips: Chip[] = [
+  { key: "todos", label: studentCopy.admin.summaryAll, n: counts.all, icon: "personas" },
+  { key: "dentro", label: studentCopy.admin.summaryIn, n: counts.signedIn, icon: "check" },
+  {
+    key: "sin-entrar",
+    label: studentCopy.admin.summaryNeverIn,
+    n: counts.neverIn,
+    icon: "reloj",
+  },
+  ...(isAdmin
+    ? ([
+        {
+          key: "agentes",
+          label:
+            counts.agents === 1
+              ? studentCopy.admin.summaryAgentOne
+              : studentCopy.admin.summaryAgents,
+          n: counts.agents,
+          icon: "megafono",
+        },
+      ] satisfies Chip[])
+    : []),
+  { key: "baja", label: studentCopy.admin.summaryInactive, n: counts.inactive, icon: "cruz" },
+];
+
+const href = (key: string) =>
+  key === "todos" ? "/student/people" : `/student/people?ver=${key}`;
+---
+
+<section class="mt-12">
+  <h2 class="flex items-center gap-2.5 text-lg font-bold text-ink">
+    <span aria-hidden="true" class="marca-linea text-secondary-600">
+      <Icono nombre="personas" class="size-5" grosor={1.9} />
+    </span>
+    <T v={studentCopy.admin.title} />
+  </h2>
+
+  {
+    counts.neverIn > 0 && (
+      <div class="mt-4 flex flex-col gap-3 rounded-2xl border border-warning-500 bg-warning-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex gap-3">
+          <span
+            aria-hidden="true"
+            class="mt-0.5 hidden size-9 shrink-0 place-items-center rounded-xl bg-warning-500/20 text-warning-700 sm:grid"
+          >
+            <Icono nombre="reloj" class="size-5" grosor={1.9} />
+          </span>
+          <div>
+            <p class="text-base font-bold text-balance text-ink">
+              {counts.neverIn === 1
+                ? say(studentCopy.admin.attentionTitleOne)
+                : say(studentCopy.admin.attentionTitle, { n: String(counts.neverIn) })}
+            </p>
+            <p class="mt-1 max-w-xl text-sm text-pretty text-ink-muted">
+              <T v={studentCopy.admin.attentionText} />
+            </p>
+          </div>
+        </div>
+
+        <a
+          href="/student/people?ver=sin-entrar"
+          class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-primary-800 px-5 text-sm font-bold text-ink-inverse transition-colors hover:bg-primary-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        >
+          <T v={studentCopy.admin.attentionCta} />
+        </a>
+      </div>
+    )
+  }
+
+  {/* ─── Las tres frases ─────────────────────────────────────────────────────
+      Separadas por filetes y no en tarjetas: tres cajas con un número gigante
+      dentro es el cliché de panel que este proyecto tiene prohibido, y además
+      obliga a leer la etiqueta pequeña para saber qué cuenta cada una. */}
+  <dl class="mt-6 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-3">
+    {
+      stats.map((stat) => (
+        <div class="flex flex-col justify-center bg-surface px-5 py-4">
+          <dd class="text-base text-pretty text-ink">
+            {stat.n && (
+              <span class="mr-1.5 text-2xl font-extrabold tabular-nums text-ink">
+                {stat.n}
+              </span>
+            )}
+            <span class="text-ink-muted">
+              {stat.values
+                ? interpolar(stat.text[lang], stat.values)
+                : stat.text[lang]}
+            </span>
+          </dd>
+        </div>
+      ))
+    }
+  </dl>
+
+  <ul class="mt-4 flex flex-wrap gap-2">
+    {
+      chips.map((chip) => (
+        <li>
+          <a
+            href={href(chip.key)}
+            class="inline-flex min-h-11 items-center gap-2 rounded-full border border-line-strong bg-surface px-4 text-sm font-semibold text-ink-muted transition-[color,border-color,transform] duration-[var(--duration-fast)] ease-[var(--ease-out-soft)] hover:-translate-y-0.5 hover:border-secondary-400 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          >
+            <Icono nombre={chip.icon} class="size-4 shrink-0" grosor={2} />
+            <span class="tabular-nums">{chip.n}</span>
+            <T v={chip.label} />
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+
+  {/* ─── Los atajos ─────────────────────────────────────────────────────────
+      Lo que se hace desde el inicio sin tener que buscarlo. Son enlaces a
+      sitios que ya existen, no funciones nuevas: un panel se mide por los pasos
+      que ahorra, no por los botones que enseña.
+
+      El primero es el único sólido y en teal, porque dar de alta es la acción
+      del día; los demás son de contorno. Tres botones iguales no son tres
+      opciones, son tres cosas que hay que leer. */}
+  <div class="mt-6 flex flex-wrap gap-3">
+    <a
+      href="/student/people#add-form"
+      class="inline-flex min-h-12 items-center gap-2 rounded-full bg-cta px-6 text-sm font-bold text-ink-inverse shadow-cta transition-[background-color,box-shadow,transform] duration-[var(--duration-base)] ease-[var(--ease-out-soft)] hover:-translate-y-0.5 hover:bg-cta-hover hover:shadow-cta-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+    >
+      <Icono nombre="mas" class="size-4 shrink-0" grosor={2.4} />
+      <T v={studentCopy.admin.quickAdd} />
+    </a>
+
+    <a
+      href="/student/people"
+      class="inline-flex min-h-12 items-center gap-2 rounded-full border border-line-strong bg-surface px-5 text-sm font-bold text-ink-muted transition-[color,border-color,transform] duration-[var(--duration-base)] ease-[var(--ease-out-soft)] hover:-translate-y-0.5 hover:border-secondary-400 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+    >
+      <Icono nombre="lista" class="size-4 shrink-0" grosor={2} />
+      <T v={studentCopy.admin.quickAll} />
+    </a>
+
+    {
+      counts.neverIn > 0 && (
+        <a
+          href="/student/people?ver=sin-entrar"
+          class="inline-flex min-h-12 items-center gap-2 rounded-full border border-warning-500 bg-surface px-5 text-sm font-bold text-ink-muted transition-[color,border-color,transform] duration-[var(--duration-base)] ease-[var(--ease-out-soft)] hover:-translate-y-0.5 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        >
+          <Icono nombre="reloj" class="size-4 shrink-0" grosor={2} />
+          <T v={studentCopy.admin.quickWaiting} />
+          <span class="rounded-full bg-warning-50 px-2 py-0.5 text-xs tabular-nums text-warning-700">
+            {counts.neverIn}
+          </span>
+        </a>
+      )
+    }
+
+    {
+      isAdmin && counts.agents > 0 && (
+        <a
+          href="/student/people?ver=agentes"
+          class="inline-flex min-h-12 items-center gap-2 rounded-full border border-line-strong bg-surface px-5 text-sm font-bold text-ink-muted transition-[color,border-color,transform] duration-[var(--duration-base)] ease-[var(--ease-out-soft)] hover:-translate-y-0.5 hover:border-secondary-400 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        >
+          <Icono nombre="megafono" class="size-4 shrink-0" grosor={2} />
+          <T v={studentCopy.admin.quickAgents} />
+        </a>
+      )
+    }
+  </div>
+</section>

@@ -48,12 +48,52 @@ import { resolverIdiomaServidor } from "@i18n/idioma";
  * El CTA del header se oculta en móvil: ya está el CTA fijo inferior, y dos
  * botones idénticos a la vez compiten entre sí.
  */
+interface Props {
+  /**
+   * `completo` es la barra de la landing. `minimo` deja el logotipo y el
+   * selector de idioma, y nada más.
+   *
+   * Lo usa `/login`. Ahí la barra de venta sobra por dos motivos, y el segundo
+   * es el fuerte:
+   *
+   *  1. Quien llega a la pantalla de acceso ya compró. Enseñarle el temario y
+   *     el precio es mandarle de vuelta a decidir algo que ya decidió.
+   *  2. "Inscribirme al curso" es un botón teal, y el de "Entrar" también. El
+   *     sistema de diseño tiene UN color de acción, así que dos botones teal en
+   *     la misma pantalla no son dos llamadas: son una llamada rota en dos.
+   */
+  variante?: "completo" | "minimo";
+}
+
+const { variante = "completo" } = Astro.props;
+const minimo = variante === "minimo";
+
 const logo = sitio.logoHorizontal;
 
 const lang = resolverIdiomaServidor(
   Astro.url,
   Astro.request.headers.get("accept-language"),
 );
+
+/**
+ * ⚠️ LAS ANCLAS SOLO SON ANCLAS EN LA PORTADA.
+ *
+ * Los enlaces de esta barra son `#temario`, `#precio`, `#faq`, y el logotipo era
+ * `#inicio`. En la portada eso está bien. En CUALQUIER otra página —`/login`,
+ * los avisos legales— un `href="#inicio"` no lleva a ninguna parte: el navegador
+ * busca ese id en la página actual, no lo encuentra, y lo único que pasa es que
+ * la URL se queda con la coletilla pegada. De ahí salía
+ * `/login?signedout=1#inicio`, y de ahí que pulsar el logotipo no volviera al
+ * inicio.
+ *
+ * Fuera de la portada se anteponen a `/`, así que navegan a la página y bajan al
+ * sitio. Dentro de ella se quedan como estaban, que es lo que evita una recarga
+ * al pulsar el menú.
+ */
+const enPortada = Astro.url.pathname === "/";
+const enlace = (href: string) =>
+  enPortada || !href.startsWith("#") ? href : `/${href}`;
+const hrefLogo = enPortada ? "#inicio" : "/";
 
 /* El alt del logo lleva el claim, así que también se traduce. Los data-alt-*
    los usa el script del layout para actualizarlo al cambiar de idioma. */
@@ -80,7 +120,7 @@ const logoAlt = {
     {/* shrink-0: sin esto, en móvil el flex del header comprimía el enlace y
         el logo salía deformado (115×32 sobre un arte de 573×120). */}
     <a
-      href="#inicio"
+      href={hrefLogo}
       class="flex min-h-11 shrink-0 items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
     >
       <img
@@ -103,6 +143,8 @@ const logoAlt = {
         ancho de una tablet en vertical. A 1024 sí caben los cuatro bloques.
         Los tres llevan HACIA la compra: temario y preguntas son justo las dos
         objeciones que hacen volver arriba a buscar. */}
+    {
+      !minimo && (
     <nav
       aria-label={copy.ui.menuPrincipal[lang]}
       data-aria-es={copy.ui.menuPrincipal.es}
@@ -112,7 +154,7 @@ const logoAlt = {
       {
         cta.navegacion.map((item) => (
           <a
-            href={item.href}
+            href={enlace(item.href)}
             class="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold text-ink-muted transition-colors duration-200 hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           >
             <T v={item.texto} />
@@ -120,6 +162,8 @@ const logoAlt = {
         ))
       }
     </nav>
+      )
+    }
 
     <div class="flex shrink-0 items-center gap-2 sm:gap-3">
       {/* El selector va SIEMPRE visible, también en móvil: si alguien llega
@@ -140,8 +184,10 @@ const logoAlt = {
           320 px, con logo, selector de idioma y esto, la palabra no cabe sin
           apretar el logo. El `aria-label` lleva el rótulo largo para que quien
           lo escuche no oiga solo "acceso" sin contexto. */}
+      {
+        !minimo && (
       <a
-        href={cta.acceso.href}
+        href={enlace(cta.acceso.href)}
         aria-label={cta.acceso.textoLargo[lang]}
         data-aria-es={cta.acceso.textoLargo.es}
         data-aria-en={cta.acceso.textoLargo.en}
@@ -151,6 +197,8 @@ const logoAlt = {
         <Icono nombre="usuario" class="size-5 shrink-0" grosor={1.8} />
         <span class="max-sm:sr-only"><T v={cta.acceso.texto} /></span>
       </a>
+        )
+      }
 
       {/* `max-md:hidden` y no `hidden md:inline-flex`: la base del botón ya
           trae `inline-flex`, y entre dos utilidades del mismo grupo gana la que
@@ -163,8 +211,10 @@ const logoAlt = {
           franja de 640 a 767 con los DOS CTA a la vez, que es justo lo que el
           comentario de arriba dice que no puede pasar. Ahora el relevo es
           exacto: por debajo de 768 manda la barra fija, por encima el header. */}
+      {
+        !minimo && (
       <Button
-        href={cta.primario.href}
+        href={enlace(cta.primario.href)}
         variant="primary"
         size="md"
         trackId="header"
@@ -172,6 +222,8 @@ const logoAlt = {
       >
         <T v={cta.primario.texto} />
       </Button>
+        )
+      }
     </div>
   </div>
 </header>

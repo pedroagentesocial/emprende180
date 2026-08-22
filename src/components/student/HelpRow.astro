@@ -1,0 +1,151 @@
+---
+import T from "@components/i18n/T.astro";
+import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
+import { contacto } from "@config/curso.config";
+import { studentCopy } from "@config/studentArea";
+import { resolverIdiomaServidor, type Txt } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * AYUDA — las tres salidas del portal del alumno
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Tres cosas distintas le pueden pasar a alguien que ya está dentro, y cada una
+ * quiere una salida distinta:
+ *
+ *  1. ALGO NO FUNCIONA. Se llama. Escribir un correo cuando no puedes entrar es
+ *     esperar sin saber si alguien lo leyó.
+ *  2. TENGO UNA DUDA. Se escribe. No corre prisa y se explica mejor por escrito.
+ *  3. ESTO SE PODRÍA HACER MEJOR. También se escribe, pero a otra conversación:
+ *     mezclar una sugerencia con una incidencia hace que se pierdan las dos.
+ *
+ * ⚠️ LOS DOS CORREOS VAN CON ASUNTO PUESTO, y no es un detalle: un correo que
+ * llega con "Sugerencia para el portal" en el asunto se puede archivar, buscar y
+ * contar. Uno que llega sin asunto acaba en el mismo montón que todo lo demás.
+ *
+ * ⚠️ NO SE PROMETE NINGÚN HORARIO NI PLAZO. "Te contestamos en 24 horas" es una
+ * promesa que hay que cumplir todos los días del año; decir a dónde escribir es
+ * verdad siempre. Ver PRODUCT.md: nada inventado.
+ *
+ * ⚠️ LO QUE NO EXISTE, NO SE PINTA. Sin teléfono en el config, la tarjeta de
+ * llamar no aparece — en lugar de un botón que abre un marcador vacío.
+ */
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+const h = studentCopy.help;
+
+/** `mailto` con asunto. `encodeURIComponent` porque el asunto lleva acentos. */
+const mailto = (asunto: Txt) =>
+  `mailto:${contacto.email}?subject=${encodeURIComponent(asunto[lang])}`;
+
+interface Salida {
+  icon: NombreIcono;
+  title: Txt;
+  text: Txt;
+  cta: Txt;
+  href: string;
+  /** Lo que se enseña debajo del botón: el número, el correo. */
+  detail?: string;
+  track: string;
+}
+
+const salidas: Salida[] = [
+  ...(contacto.telefono
+    ? ([
+        {
+          icon: "telefono",
+          title: h.callTitle,
+          text: h.callText,
+          cta: h.callCta,
+          href: `tel:${contacto.telefono}`,
+          /* El número BONITO, no el del `tel:`. El de marcar lleva prefijo y
+             sin espacios porque lo lee el teléfono; el de leer lleva paréntesis
+             y guiones porque lo lee una persona. */
+          detail: contacto.telefonoVisible,
+          track: "portal-ayuda-llamar",
+        },
+      ] satisfies Salida[])
+    : []),
+  {
+    icon: "sobre",
+    title: h.mailTitle,
+    text: h.mailText,
+    cta: h.mailCta,
+    href: mailto(h.mailSubject),
+    detail: contacto.email,
+    track: "portal-ayuda-correo",
+  },
+  {
+    icon: "conversacion",
+    title: h.feedbackTitle,
+    text: h.feedbackText,
+    cta: h.feedbackCta,
+    href: mailto(h.feedbackSubject),
+    track: "portal-ayuda-opinion",
+  },
+];
+---
+
+{/* Arriba una raya y el título: separa "tus accesos" de "y si algo pasa", que
+    son dos cosas distintas y no deben leerse como una lista de cinco. */}
+<section class="mt-14 border-t border-line pt-10">
+  <h2 class="flex items-center gap-2.5 text-lg font-bold text-ink">
+    <span aria-hidden="true" class="marca-linea text-secondary-600">
+      <Icono nombre="escudo" class="size-5" grosor={1.9} />
+    </span>
+    <T v={h.title} />
+  </h2>
+
+  <p class="mt-2 max-w-xl text-base text-pretty text-ink-muted">
+    <T v={h.text} />
+  </p>
+
+  <ul class="mt-6 grid gap-4 sm:grid-cols-3">
+    {
+      salidas.map((s) => (
+        <li>
+          {/* Toda la tarjeta es el enlace, como las puertas de arriba: en un
+              móvil se acierta un blanco grande y no uno de 100×44. Son de
+              contorno y no de color, para que no compitan con ellas. */}
+          <a
+            href={s.href}
+            data-track={s.track}
+            class="group flex h-full flex-col rounded-2xl border border-line bg-surface p-5 transition-[transform,border-color,box-shadow] duration-[var(--duration-base)] ease-[var(--ease-out-soft)] hover:-translate-y-0.5 hover:border-secondary-400 hover:shadow-[var(--shadow-md)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          >
+            <span
+              aria-hidden="true"
+              class="grid size-10 shrink-0 place-items-center rounded-xl bg-secondary-100 text-secondary-700 transition-colors duration-[var(--duration-base)] ease-[var(--ease-out-soft)] group-hover:bg-secondary-500 group-hover:text-primary-950"
+            >
+              <Icono nombre={s.icon} class="size-5" grosor={1.9} />
+            </span>
+
+            <span class="mt-4 block text-base font-bold text-ink">
+              <T v={s.title} />
+            </span>
+
+            <span class="mt-1 block flex-1 text-sm text-pretty text-ink-muted">
+              <T v={s.text} />
+            </span>
+
+            <span class="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-ink-brand">
+              <T v={s.cta} />
+              <Icono
+                nombre="flecha"
+                class="size-3.5 shrink-0 transition-transform duration-[var(--duration-base)] ease-[var(--ease-out-soft)] group-hover:translate-x-1"
+                grosor={2.5}
+              />
+            </span>
+
+            {s.detail && (
+              <span class="mt-1 block text-xs text-ink-subtle">{s.detail}</span>
+            )}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</section>

@@ -40,6 +40,20 @@ import Icono from "@components/ui/Icono.astro";
  * marca de agua se quede DETRÁS del contenido y no debajo del fondo.
  */
 
+/**
+ * ⚠️ MISMO CASO QUE EN EL HEADER: los enlaces de "La página" son anclas de la
+ * portada (`#temario`, `#precio`, `#faq`). En cualquier otra página —el acceso,
+ * los avisos legales— un ancla que no existe no navega: solo deja la coletilla
+ * pegada en la URL. Fuera de la portada se anteponen a `/`.
+ *
+ * Está escrito dos veces, aquí y en `Header.astro`, y es a propósito: son tres
+ * líneas y compartirlas obligaría a un archivo nuevo que solo sabe de esto. Si
+ * aparece un tercer sitio con anclas, entonces sí.
+ */
+const enPortada = Astro.url.pathname === "/";
+const enlace = (href: string) =>
+  enPortada || !href.startsWith("#") ? href : `/${href}`;
+
 const anio = new Date().getFullYear();
 
 /* El mensaje prerrellenado de WhatsApp va en el idioma activo: abrir el chat
@@ -134,7 +148,7 @@ const lang = resolverIdiomaServidor(
             cta.navegacion.map((n) => (
               <li>
                 <a
-                  href={n.href}
+                  href={enlace(n.href)}
                   class="inline-flex min-h-11 items-center transition-colors hover:text-ink-inverse"
                 >
                   <T v={n.texto} />

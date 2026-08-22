@@ -1,116 +1,115 @@
 /**
- * Rate limiting por IP — ventana deslizante en memoria.
+ * Rate limiting per IP — sliding window, in memory.
  *
- * ALCANCE, dicho claro: esto vive en la memoria de UNA instancia de función.
- * Con Fluid Compute las instancias se reutilizan entre peticiones, así que
- * frena de sobra el caso real (un script martilleando el formulario desde una
- * IP), pero NO es un límite global: un atacante repartido entre varias
- * regiones vería su propio contador en cada instancia.
+ * SCOPE, said plainly: this lives in the memory of ONE function instance. With
+ * Fluid Compute instances are reused between requests, so it comfortably stops
+ * the real case (a script hammering the form from one IP), but it is NOT a
+ * global limit: an attacker spread across several regions would see their own
+ * counter in each instance.
  *
- * Es la decisión correcta para lanzar: cero dependencias, cero latencia, cero
- * coste. Cuando el volumen lo justifique, el punto de cambio es una sola
- * función — `consumir()` — y detrás se pone un contador compartido
- * (Upstash Redis desde el Marketplace, o Vercel Runtime Cache). El resto del
- * código no se entera.
+ * It is the right call for launch: zero dependencies, zero latency, zero cost.
+ * When the volume justifies it, the point of change is a single function —
+ * `consume()` — with a shared counter behind it (Upstash Redis from the
+ * Marketplace, or Vercel Runtime Cache). The rest of the code never finds out.
  */
 
-interface Ventana {
-  /** Marcas de tiempo de los intentos dentro de la ventana. */
-  golpes: number[];
-  /** Momento en el que caduca la entrada, para poder barrerla. */
-  expira: number;
+interface Window {
+  /** Timestamps of the attempts inside the window. */
+  hits: number[];
+  /** When the entry expires, so it can be swept. */
+  expires: number;
 }
 
-const registro = new Map<string, Ventana>();
+const registry = new Map<string, Window>();
 
-/** Barrido perezoso: se limpia al usar, sin temporizadores de fondo. */
-function barrer(ahora: number) {
-  if (registro.size < 500) return;
-  for (const [clave, v] of registro) {
-    if (v.expira <= ahora) registro.delete(clave);
+/** Lazy sweep: cleaned on use, with no background timers. */
+function sweep(now: number) {
+  if (registry.size < 500) return;
+  for (const [key, w] of registry) {
+    if (w.expires <= now) registry.delete(key);
   }
 }
 
-export interface ResultadoLimite {
-  permitido: boolean;
-  /** Intentos que quedan en la ventana actual. */
-  restantes: number;
-  /** Segundos hasta que se libere un hueco. Solo útil si `permitido` es false. */
-  reintentarEn: number;
+export interface RateLimitResult {
+  allowed: boolean;
+  /** Attempts left in the current window. */
+  remaining: number;
+  /** Seconds until a slot frees up. Only useful when `allowed` is false. */
+  retryAfter: number;
 }
 
 /**
- * Consume un intento para `clave`.
+ * Consumes one attempt for `key`.
  *
- * @param clave     Identificador del emisor (IP, normalmente).
- * @param maximo    Intentos permitidos dentro de la ventana.
- * @param ventanaMs Tamaño de la ventana en milisegundos.
+ * @param key      Identifier of the sender (an IP, normally).
+ * @param max      Attempts allowed inside the window.
+ * @param windowMs Size of the window in milliseconds.
  */
-export function consumir(
-  clave: string,
-  maximo = 5,
-  ventanaMs = 10 * 60 * 1000,
-): ResultadoLimite {
-  const ahora = Date.now();
-  barrer(ahora);
+export function consume(
+  key: string,
+  max = 5,
+  windowMs = 10 * 60 * 1000,
+): RateLimitResult {
+  const now = Date.now();
+  sweep(now);
 
-  const entrada = registro.get(clave);
-  const golpes = (entrada?.golpes ?? []).filter((t) => ahora - t < ventanaMs);
+  const entry = registry.get(key);
+  const hits = (entry?.hits ?? []).filter((t) => now - t < windowMs);
 
-  if (golpes.length >= maximo) {
-    const masAntiguo = golpes[0]!;
+  if (hits.length >= max) {
+    const oldest = hits[0]!;
     return {
-      permitido: false,
-      restantes: 0,
-      reintentarEn: Math.max(1, Math.ceil((ventanaMs - (ahora - masAntiguo)) / 1000)),
+      allowed: false,
+      remaining: 0,
+      retryAfter: Math.max(1, Math.ceil((windowMs - (now - oldest)) / 1000)),
     };
   }
 
-  golpes.push(ahora);
-  registro.set(clave, { golpes, expira: ahora + ventanaMs });
+  hits.push(now);
+  registry.set(key, { hits, expires: now + windowMs });
 
   return {
-    permitido: true,
-    restantes: maximo - golpes.length,
-    reintentarEn: 0,
+    allowed: true,
+    remaining: max - hits.length,
+    retryAfter: 0,
   };
 }
 
 /**
- * Blindaje de doble envío.
+ * Double-submit shield.
  *
- * El cliente ya bloquea el botón mientras hay una petición en vuelo, pero eso
- * no cubre el doble toque en móvil con red lenta, el reintento del navegador,
- * ni a alguien reenviando a mano. Si el mismo email vuelve dentro de la
- * ventana, se responde éxito sin volver a escribir ni a mandar correos: la
- * operación es idempotente, no un error que el usuario deba entender.
+ * The client already blocks the button while a request is in flight, but that
+ * doesn't cover a double tap on a phone with a slow connection, a browser retry,
+ * or someone re-sending by hand. If the same email comes back inside the window,
+ * success is returned without writing anything or sending more email: the
+ * operation is idempotent, not an error the user has to understand.
  */
-const recientes = new Map<string, number>();
-const VENTANA_DUPLICADO_MS = 2 * 60 * 1000;
+const recent = new Map<string, number>();
+const DUPLICATE_WINDOW_MS = 2 * 60 * 1000;
 
-export function esDuplicadoReciente(email: string): boolean {
-  const ahora = Date.now();
+export function isRecentDuplicate(email: string): boolean {
+  const now = Date.now();
 
-  if (recientes.size > 500) {
-    for (const [k, t] of recientes) {
-      if (ahora - t > VENTANA_DUPLICADO_MS) recientes.delete(k);
+  if (recent.size > 500) {
+    for (const [k, t] of recent) {
+      if (now - t > DUPLICATE_WINDOW_MS) recent.delete(k);
     }
   }
 
-  const visto = recientes.get(email);
-  if (visto !== undefined && ahora - visto < VENTANA_DUPLICADO_MS) return true;
+  const seen = recent.get(email);
+  if (seen !== undefined && now - seen < DUPLICATE_WINDOW_MS) return true;
 
-  recientes.set(email, ahora);
+  recent.set(email, now);
   return false;
 }
 
-/** Extrae la IP del cliente respetando las cabeceras de proxy de Vercel. */
-export function ipDe(request: Request, fallback?: string): string {
-  const cabecera =
+/** Extracts the client IP, respecting Vercel's proxy headers. */
+export function clientIp(request: Request, fallback?: string): string {
+  const header =
     request.headers.get("x-forwarded-for") ??
     request.headers.get("x-real-ip") ??
     "";
-  // `x-forwarded-for` puede traer una cadena de proxies: la primera es el cliente.
-  const primera = cabecera.split(",")[0]?.trim();
-  return primera || fallback || "desconocida";
+  // `x-forwarded-for` can carry a chain of proxies: the first one is the client.
+  const first = header.split(",")[0]?.trim();
+  return first || fallback || "unknown";
 }

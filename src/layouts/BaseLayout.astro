@@ -24,9 +24,8 @@ interface Props {
    * Deja la página fuera del índice de los buscadores.
    *
    * Para páginas que existen porque hacen falta, no porque haya que
-   * encontrarlas: hoy, `/acceso`. Nadie debería aterrizar ahí desde una
-   * búsqueda, y menos leyendo un aviso que quedará caducado en cuanto exista el
-   * login de verdad.
+   * encontrarlas: `/login` y todo el área de alumnos. Nadie debería aterrizar
+   * ahí desde una búsqueda, y a un rastreador no se le da una lista de puertas.
    *
    * Se emite `noindex, follow`: que no se indexe NO significa que los enlaces
    * de dentro dejen de contar.
@@ -179,7 +178,23 @@ const precioFormateado = {
       crossorigin="anonymous"
     />
 
-    <link rel="icon" href="/favicon.png" type="image/png" sizes="512x512" />
+    {/* ─── EL FAVICON ────────────────────────────────────────────────────────
+        Cuatro líneas y las cuatro hacen falta:
+
+         · El `.ico` lo piden SOLOS los navegadores viejos y Windows al anclar
+           la página, aunque no esté declarado. Sin archivo, cada visita deja un
+           404 en los registros. Declararlo además evita que lo pida dos veces.
+         · Los dos PNG son los que usa un navegador de hoy; el de 16 no es el de
+           32 encogido, está generado aparte para que no se emborrone.
+         · El de Apple es la pantalla de inicio de un iPhone.
+
+        Todos son la misma baldosa navy con el isotipo en blanco, y eso es lo
+        que arregla el que había: el isotipo suelto sobre fondo transparente
+        desaparecía en una pestaña en modo oscuro. Ver
+        `scripts/generar-favicon.mjs`. */}
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="icon" href="/favicon-16.png" type="image/png" sizes="16x16" />
     <link rel="apple-touch-icon" href="/identidad/apple-touch-icon.png" />
 
     <!-- Open Graph -->
@@ -418,8 +433,8 @@ const precioFormateado = {
 
         DELEGADO Y EN VANILLA, no en cada componente, porque los tres campos de
         contraseña de la página viven en sitios distintos: dos en una plantilla
-        de Astro (`/acceso/clave`) y uno dentro de una isla de React
-        (`FormAcceso`). Un listener en el documento los cubre a los tres sin que
+        de Astro (`/login/password`) y uno dentro de una isla de React
+        (`LoginForm`). Un listener en el documento los cubre a los tres sin que
         la isla tenga que enterarse de nada y sin duplicar la lógica.
 
         EL FOCO VUELVE AL CAMPO y el cursor se recoloca al final: sin eso, tocar
@@ -430,7 +445,9 @@ const precioFormateado = {
     <script is:inline>
       document.addEventListener("click", function (e) {
         var boton =
-          e.target instanceof Element ? e.target.closest("[data-ver-clave]") : null;
+          e.target instanceof Element
+            ? e.target.closest("[data-toggle-password]")
+            : null;
         if (!boton) return;
 
         var campo = document.getElementById(boton.getAttribute("aria-controls") || "");
@@ -445,12 +462,12 @@ const precioFormateado = {
            recargar el siguiente clic dejaría el `aria-label` en el anterior. */
         var idioma = document.documentElement.lang === "en" ? "en" : "es";
         var etiqueta = boton.getAttribute(
-          "data-etiqueta-" + (oculta ? "ocultar" : "ver") + "-" + idioma,
+          "data-label-" + (oculta ? "hide" : "show") + "-" + idioma,
         );
         if (etiqueta) boton.setAttribute("aria-label", etiqueta);
 
-        var ojo = boton.querySelector("[data-icono-ver]");
-        var tachado = boton.querySelector("[data-icono-oculto]");
+        var ojo = boton.querySelector("[data-icon-show]");
+        var tachado = boton.querySelector("[data-icon-hide]");
         if (ojo) ojo.classList.toggle("hidden", oculta);
         if (tachado) tachado.classList.toggle("hidden", !oculta);
 

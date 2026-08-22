@@ -9,7 +9,7 @@ import {
   MIN_MS_RELLENO,
   type LeadResponse,
 } from "@lib/schema";
-import { consumir, esDuplicadoReciente, ipDe } from "@lib/rateLimit";
+import { consume, isRecentDuplicate, clientIp } from "@lib/rateLimit";
 import {
   guardarLead,
   suscribirASecuencia,
@@ -113,21 +113,21 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   // de una misma IP pública puede haber una oficina entera o media operadora
   // móvil (CGNAT), y bloquear leads legítimos cuesta más caro que dejar pasar
   // unos cuantos intentos de más. Un script hace cientos, no diez.
-  const ip = ipDe(request, clientAddress);
-  const limite = consumir(`lead:${ip}`, 10, 10 * 60 * 1000);
+  const ip = clientIp(request, clientAddress);
+  const limite = consume(`lead:${ip}`, 10, 10 * 60 * 1000);
   /* Idioma provisional para los mensajes de error: el payload aún no está
      validado, pero esto solo decide en qué idioma se redacta el aviso. */
   let lang: Idioma = "es";
 
-  if (!limite.permitido) {
+  if (!limite.allowed) {
     return json(
       {
         ok: false,
         mensaje: mensaje(lang, "demasiadosIntentos"),
-        reintentarEn: limite.reintentarEn,
+        reintentarEn: limite.retryAfter,
       },
       429,
-      { "Retry-After": String(limite.reintentarEn) },
+      { "Retry-After": String(limite.retryAfter) },
     );
   }
 
@@ -172,7 +172,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   // Mismo email dentro de la ventana → ya está capturado. No se vuelve a
   // guardar ni se reenvían correos, pero el usuario ve éxito: para él la
   // operación salió bien las dos veces.
-  if (esDuplicadoReciente(lead.email)) {
+  if (isRecentDuplicate(lead.email)) {
     console.log(`[lead] Envío duplicado ignorado: ${lead.email}`);
     return exito(lead.idioma);
   }

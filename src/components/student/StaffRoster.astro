@@ -1,0 +1,677 @@
+---
+import T from "@components/i18n/T.astro";
+import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
+import { studentCopy } from "@config/studentArea";
+import type { Role, Student } from "@lib/data";
+import {
+  canDeactivate,
+  canManageStudent,
+  canChangeRole,
+} from "@lib/permissions";
+import { isAdminByConfig } from "@lib/auth";
+import { LOCALES, type Idioma, type Txt } from "@i18n/idioma";
+import { interpolar } from "@i18n/formato";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * THE ROSTER — register, find, and act on people
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * The body of `/student/people`: the add form, the search, the table and, for
+ * an admin, the sign-ups-per-agent breakdown. The counts and the "somebody
+ * hasn't come in" warning live on the portal's home (`StaffSummary`), because
+ * that is the screen you land on.
+ *
+ * ⚠️ IT IS STILL THE PORTAL, NOT A PANEL. There is no `/admin`: this is a
+ * section of the same place, reached from the same sidebar, and an agent sees
+ * the same screen with less in it. Pedro doesn't stop being a student when he
+ * administers.
+ *
+ * ─── IT RENDERS, IT DOESN'T DECIDE ─────────────────────────────────────────
+ *
+ * Every permission question is asked again here — `canManageStudent`,
+ * `canDeactivate`, `canChangeRole` — but only to decide what to PAINT. The
+ * decisions that matter are taken where the POST is handled, in the page. A
+ * button that isn't drawn is a courtesy; the rule is the one on the other side.
+ */
+
+interface Props {
+  /** Whoever is looking. */
+  me: Student;
+  /** The rows they may see, already filtered by view and search. */
+  students: Student[];
+  /** Everybody they may see, for the counts and for resolving names. */
+  everyone: Student[];
+  byAgent: { agent: Student; total: number; signedIn: number }[];
+  houseTotal: number;
+  houseSignedIn: number;
+  /** Roles this person may hand out. One option means no selector. */
+  roleOptions: Role[];
+  isAdmin: boolean;
+  view: string;
+  search: string;
+  lang: Idioma;
+  /** The one-shot sign-up link, when the config asks for it to be shown. */
+  recentLink: string | null;
+  notice: { type: "ok" | "error"; text: string } | null;
+  /** `true` when the store is the in-memory one: development without a database. */
+  persistent: boolean;
+}
+
+const {
+  me,
+  students,
+  everyone,
+  byAgent,
+  houseTotal,
+  houseSignedIn,
+  roleOptions,
+  isAdmin,
+  view,
+  search,
+  lang,
+  recentLink,
+  notice,
+  persistent,
+} = Astro.props;
+
+const say = (text: { es: string; en: string }, values?: Record<string, string>) =>
+  values ? interpolar(text[lang], values) : text[lang];
+
+const roleLabel: Record<Role, { es: string; en: string }> = {
+  student: studentCopy.admin.roleStudent,
+  agent: studentCopy.admin.roleAgent,
+  admin: studentCopy.admin.roleAdmin,
+};
+
+const roleHint: Record<Role, { es: string; en: string }> = {
+  student: studentCopy.admin.roleStudentHint,
+  agent: studentCopy.admin.roleAgentHint,
+  admin: studentCopy.admin.roleAdminHint,
+};
+
+/* Who registered each one, for the admin's column. One lookup for the whole
+   table instead of one per row: the agents are already in the list. */
+const nameById = new Map(everyone.map((s) => [s.id, s.name ?? s.email]));
+
+/** A URL for the portal with one filter changed. The filters are plain links. */
+const withParams = (params: Record<string, string | null>) => {
+  const url = new URL("/student/people", Astro.url);
+  if (search) url.searchParams.set("q", search);
+  if (view !== "todos") url.searchParams.set("ver", view);
+  for (const [key, value] of Object.entries(params)) {
+    if (value === null) url.searchParams.delete(key);
+    else url.searchParams.set(key, value);
+  }
+  return `${url.pathname}${url.search}`;
+};
+
+const date = (d: Date | null) =>
+  d
+    ? new Intl.DateTimeFormat(LOCALES[lang], {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }).format(d)
+    : null;
+
+const cell = "px-4 py-3 text-sm";
+
+---
+
+<div>
+  <p class="max-w-xl text-base text-pretty text-ink-muted">
+    <T v={isAdmin ? studentCopy.admin.intro : studentCopy.admin.introAgent} />
+  </p>
+
+  {/* El aviso de "esto no persiste" solo aparece cuando de verdad no persiste.
+      Sin él, alguien daría de alta a diez alumnos en desarrollo y no entendería
+      por qué desaparecen. */}
+  {
+    !persistent && (
+      <p class="mt-6 rounded-xl border border-warning-500 bg-warning-50 px-4 py-3 text-sm text-pretty text-ink">
+        ⚠ <T v={studentCopy.admin.noDatabase} />
+      </p>
+    )
+  }
+
+  {
+    notice && (
+      <p
+        role="status"
+        class:list={[
+          "mt-6 rounded-xl border px-4 py-3 text-sm text-pretty",
+          notice.type === "ok"
+            ? "border-secondary-300 bg-secondary-50 text-ink"
+            : "border-error-500 bg-error-50 text-error-700",
+        ]}
+      >
+        {notice.text}
+      </p>
+    )
+  }
+
+  {/* ─── EL ENLACE, PARA MANDARLO A MANO ─────────────────────────────────────
+      Solo aparece con `entregaAcceso.mostrarEnlaceEnPanel` en `true`, y hoy está
+      en `false`: el enlace va únicamente por correo. Se enseña UNA vez, justo
+      después del alta, y desaparece al recargar: es una llave, no un dato de la
+      ficha. */}
+  {
+    recentLink && (
+      <div class="mt-6 rounded-xl border border-warning-500 bg-warning-50 p-4">
+        <p class="text-sm font-bold text-ink">
+          <T v={studentCopy.admin.linkTitle} />
+        </p>
+        <p class="mt-1 text-sm text-pretty text-ink-muted">
+          <T v={studentCopy.admin.linkText} />
+        </p>
+
+        <div class="mt-3 flex flex-col gap-2 sm:flex-row">
+          <input
+            id="signup-link"
+            type="text"
+            readonly
+            value={recentLink}
+            class="min-h-11 w-full min-w-0 rounded-lg border border-line-strong bg-surface px-3 font-mono text-xs text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          />
+          <button
+            type="button"
+            data-copy="signup-link"
+            data-copied={studentCopy.admin.copied[lang]}
+            class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-lg bg-primary-800 px-4 text-sm font-bold text-ink-inverse transition-colors hover:bg-primary-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          >
+            <T v={studentCopy.admin.copy} />
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  {/* ─── Dar de alta ──────────────────────────────────────────────────────── */}
+  <form
+    id="add-form"
+    method="POST"
+    class="mt-8 rounded-2xl border border-line bg-surface p-6"
+  >
+    <input type="hidden" name="action" value="add" />
+
+    <h3 class="flex items-center gap-2.5 text-lg font-bold text-ink">
+      <span aria-hidden="true" class="marca-linea text-secondary-600">
+        <Icono nombre="mas" class="size-5" grosor={2.2} />
+      </span>
+      <T v={studentCopy.admin.newTitle} />
+    </h3>
+
+    <div class="mt-5 grid gap-4 sm:grid-cols-2">
+      <div>
+        <label for="admin-email" class="block text-sm font-semibold text-ink-muted">
+          <T v={studentCopy.admin.fieldEmail} />
+        </label>
+        <input
+          id="admin-email"
+          name="email"
+          type="email"
+          required
+          autocomplete="off"
+          placeholder="maria@email.com"
+          class="mt-2 min-h-12 w-full rounded-xl border border-line-strong bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-subtle transition-colors focus:border-secondary-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        />
+      </div>
+
+      <div>
+        <label for="admin-name" class="block text-sm font-semibold text-ink-muted">
+          <T v={studentCopy.admin.fieldName} />
+        </label>
+        <input
+          id="admin-name"
+          name="name"
+          type="text"
+          autocomplete="off"
+          placeholder="María"
+          class="mt-2 min-h-12 w-full rounded-xl border border-line-strong bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-subtle transition-colors focus:border-secondary-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        />
+      </div>
+    </div>
+
+    {/* ─── El rol ────────────────────────────────────────────────────────────
+        Solo se pinta para quien puede repartir más de uno, que hoy es el admin.
+        Un agente da de alta alumnos y nada más, así que un selector con una
+        única opción sería una decisión que no tiene que tomar.
+
+        La nota de debajo no es adorno: "agente" y "admin" son dos cantidades de
+        confianza muy distintas, y la diferencia tiene que leerse en el momento
+        de elegir, no en un manual que nadie abre. */}
+    {
+      roleOptions.length > 1 && (
+        <div class="mt-4">
+          <label for="admin-role" class="block text-sm font-semibold text-ink-muted">
+            <T v={studentCopy.admin.fieldRole} />
+          </label>
+          <select
+            id="admin-role"
+            name="role"
+            class="mt-2 min-h-12 w-full rounded-xl border border-line-strong bg-surface px-4 py-3 text-base text-ink transition-colors focus:border-secondary-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:max-w-xs"
+          >
+            {roleOptions.map((option) => (
+              <option value={option} selected={option === "student"}>
+                {roleLabel[option][lang]}
+              </option>
+            ))}
+          </select>
+
+          <ul class="mt-3 grid gap-1.5">
+            {roleOptions.map((option) => (
+              <li class="text-xs text-pretty text-ink-subtle">
+                <span class="font-bold text-ink-muted">{roleLabel[option][lang]}</span> ·{" "}
+                <T v={roleHint[option]} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+
+    {/* Dos botones y un `value` distinto para el mismo campo: dar de alta a
+        secas (para preparar altas antes de cobrar) o dar de alta y mandarle ya
+        el enlace, que es el caso normal. */}
+    <div class="mt-5 flex flex-col gap-3 sm:flex-row">
+      <button
+        type="submit"
+        name="send"
+        value="1"
+        class="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-cta px-6 text-sm font-bold text-ink-inverse shadow-cta transition-colors hover:bg-cta-hover hover:shadow-cta-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      >
+        <Icono nombre="conversacion" class="size-4 shrink-0" grosor={2} />
+        <T v={studentCopy.admin.addAndSend} />
+      </button>
+
+      <button
+        type="submit"
+        name="send"
+        value="0"
+        class="inline-flex min-h-12 items-center justify-center rounded-full border border-line-strong px-6 text-sm font-bold text-ink-muted transition-colors hover:border-secondary-400 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      >
+        <T v={studentCopy.admin.add} />
+      </button>
+    </div>
+  </form>
+
+  {/* ─── Buscar ─────────────────────────────────────────────────────────────
+      Un GET con un campo, sin JavaScript. El filtro activo viaja en un campo
+      oculto para que buscar dentro de "sin entrar" siga siendo "sin entrar". */}
+  <form method="GET" action="/student/people" class="mt-10 flex flex-wrap items-end gap-3">
+    {view !== "todos" && <input type="hidden" name="ver" value={view} />}
+
+    <div class="min-w-0 flex-1">
+      <label for="admin-q" class="block text-sm font-semibold text-ink-muted">
+        <T v={studentCopy.admin.searchLabel} />
+      </label>
+      <div class="relative mt-2">
+        <span
+          aria-hidden="true"
+          class="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-ink-subtle"
+        >
+          <Icono nombre="lupa" class="size-5" grosor={1.9} />
+        </span>
+        <input
+          id="admin-q"
+          name="q"
+          type="search"
+          value={search}
+          placeholder={studentCopy.admin.searchPlaceholder[lang]}
+          class="min-h-12 w-full rounded-xl border border-line-strong bg-surface py-3 pr-4 pl-11 text-base text-ink placeholder:text-ink-subtle transition-colors focus:border-secondary-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        />
+      </div>
+    </div>
+
+    <button
+      type="submit"
+      class="inline-flex min-h-12 items-center justify-center rounded-full border border-line-strong px-5 text-sm font-bold text-ink-muted transition-colors hover:border-secondary-400 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+    >
+      <T v={studentCopy.admin.searchLabel} />
+    </button>
+
+    {
+      (search || view !== "todos") && (
+        <a
+          href="/student/people"
+          class="inline-flex min-h-12 items-center text-sm font-semibold text-ink-brand underline underline-offset-4 hover:text-secondary-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        >
+          <T v={studentCopy.admin.searchClear} />
+        </a>
+      )
+    }
+  </form>
+
+  {/* ─── La lista ───────────────────────────────────────────────────────── */}
+  <div class="mt-5">
+    {
+      students.length === 0 ? (
+        search || view !== "todos" ? (
+          /* Con filtros puestos, "no hay resultados" es toda la respuesta: la
+             lista no está vacía, es que estos filtros no dejan pasar a nadie. */
+          <p class="rounded-2xl border border-dashed border-line-strong px-4 py-8 text-center text-base text-ink-muted">
+            <T v={studentCopy.admin.noResults} />
+          </p>
+        ) : (
+          /* ⚠️ VACÍA DE VERDAD: AQUÍ SE ENSEÑA, NO SE INFORMA. Un agente nuevo
+             abre esto y no tiene a nadie. "No hay alumnos" sería cierto e
+             inútil; lo que necesita saber es qué pasa cuando dé de alta al
+             primero, que es exactamente la pregunta con la que llega. */
+          <div class="rounded-2xl border border-dashed border-line-strong px-6 py-10 text-center">
+            <span
+              aria-hidden="true"
+              class="mx-auto grid size-12 place-items-center rounded-2xl bg-secondary-100 text-secondary-700"
+            >
+              <Icono nombre="personas" class="size-6" grosor={1.8} />
+            </span>
+
+            <p class="mt-4 text-lg font-bold text-ink">
+              <T v={studentCopy.admin.emptyTitle} />
+            </p>
+
+            <ol class="mx-auto mt-5 grid max-w-md gap-3 text-left">
+              {[
+                studentCopy.admin.emptyStep1,
+                studentCopy.admin.emptyStep2,
+                studentCopy.admin.emptyStep3,
+              ].map((step, i) => (
+                <li class="flex items-start gap-3 text-sm text-pretty text-ink-muted">
+                  <span
+                    aria-hidden="true"
+                    class="grid size-6 shrink-0 place-items-center rounded-full bg-surface-muted text-xs font-bold text-ink-muted"
+                  >
+                    {i + 1}
+                  </span>
+                  <T v={step} />
+                </li>
+              ))}
+            </ol>
+          </div>
+        )
+      ) : (
+        /* `overflow-x-auto` en el envoltorio y no en la tabla: cinco columnas no
+           caben en 320 px y lo correcto es que se deslice ella sola, no que la
+           página entera tenga scroll horizontal. */
+        <div class="overflow-x-auto rounded-2xl border border-line">
+          <table class="w-full min-w-[46rem] border-collapse text-left">
+            <thead class="bg-surface-muted">
+              <tr class="text-xs font-bold tracking-wide text-ink-subtle uppercase">
+                <th scope="col" class={cell}>
+                  <T v={studentCopy.admin.columnStudent} />
+                </th>
+                <th scope="col" class={cell}>
+                  <T v={studentCopy.admin.columnStatus} />
+                </th>
+                {isAdmin && (
+                  <th scope="col" class={cell}>
+                    <T v={studentCopy.admin.columnRegisteredBy} />
+                  </th>
+                )}
+                <th scope="col" class={cell}>
+                  <T v={studentCopy.admin.columnLastSignIn} />
+                </th>
+                <th scope="col" class={cell}>
+                  <span class="sr-only">
+                    <T v={studentCopy.admin.actions} />
+                  </span>
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {students.map((s) => (
+                <tr class="border-t border-line">
+                  <td class={cell}>
+                    <span class="block font-semibold text-ink">{s.name ?? "—"}</span>
+                    <span class="block text-ink-subtle">{s.email}</span>
+                    {/* La insignia solo para quien no es alumno raso: una columna
+                        donde todas las filas dicen "alumno" es ruido. */}
+                    {s.role !== "student" && (
+                      <span class="mt-1 inline-flex rounded-full bg-secondary-100 px-2 py-0.5 text-xs font-bold text-ink-muted">
+                        {roleLabel[s.role][lang]}
+                      </span>
+                    )}
+                  </td>
+
+                  {/* ⚠️ TRES ESTADOS Y NO DOS. "Activo" metía en el mismo saco a
+                      quien ya está usando el curso y a quien pagó y sigue fuera,
+                      que es justo la diferencia por la que se abre esta lista.
+                      El punto de color la deja ver sin leer. */}
+                  <td class={cell}>
+                    <span
+                      class:list={[
+                        "inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-xs font-bold",
+                        !s.active
+                          ? "bg-surface-muted text-ink-muted"
+                          : s.lastSignIn
+                            ? "bg-secondary-100 text-secondary-800"
+                            : "bg-warning-50 text-warning-700",
+                      ]}
+                    >
+                      <span
+                        aria-hidden="true"
+                        class:list={[
+                          "size-1.5 rounded-full",
+                          !s.active
+                            ? "bg-ink-subtle"
+                            : s.lastSignIn
+                              ? "bg-secondary-600"
+                              : "bg-warning-500",
+                        ]}
+                      />
+                      <T
+                        v={
+                          !s.active
+                            ? studentCopy.admin.statusInactive
+                            : s.lastSignIn
+                              ? studentCopy.admin.statusIn
+                              : studentCopy.admin.statusWaiting
+                        }
+                      />
+                    </span>
+                  </td>
+
+                  {/* Quién lo vendió. Solo lo ve el admin: la lista de un agente
+                      es suya por definición, así que la respuesta sería su propio
+                      nombre en todas las filas. */}
+                  {isAdmin && (
+                    <td class={`${cell} text-ink-subtle`}>
+                      {s.registeredBy ? (
+                        (nameById.get(s.registeredBy) ?? "—")
+                      ) : (
+                        <T v={studentCopy.admin.registeredByHouse} />
+                      )}
+                    </td>
+                  )}
+
+                  <td class={`${cell} text-ink-subtle`}>
+                    {date(s.lastSignIn) ?? <T v={studentCopy.admin.never} />}
+                  </td>
+
+                  <td class={`${cell} text-right`}>
+                    <div class="flex flex-wrap items-center justify-end gap-2">
+                      {/* Reenviar es la respuesta de soporte del día a día, así
+                          que la tienen los dos roles, cada uno sobre sus filas. */}
+                      {canManageStudent(me, s) && s.active && (
+                        <form method="POST">
+                          <input type="hidden" name="action" value="resend" />
+                          <input type="hidden" name="id" value={s.id} />
+                          <button
+                            type="submit"
+                            class="inline-flex min-h-11 items-center rounded-full border border-line-strong px-3.5 text-xs font-bold text-ink-muted transition-colors hover:border-secondary-400 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                          >
+                            <Icono nombre="sobre" class="mr-1.5 size-3.5" grosor={2} />
+                            <T v={studentCopy.admin.resend} />
+                          </button>
+                        </form>
+                      )}
+
+                      {/* Ascender o devolver a alumno. Un alumno que empieza a
+                          vender es el caso que va a pasar, y sin esto habría que
+                          darlo de alta otra vez con otro correo. */}
+                      {canChangeRole(me, s, isAdminByConfig(s.email)) &&
+                        s.role !== "admin" && (
+                          <form method="POST">
+                            <input type="hidden" name="action" value="role" />
+                            <input type="hidden" name="id" value={s.id} />
+                            <input
+                              type="hidden"
+                              name="role"
+                              value={s.role === "agent" ? "student" : "agent"}
+                            />
+                            <button
+                              type="submit"
+                              class="inline-flex min-h-11 items-center rounded-full border border-line-strong px-3.5 text-xs font-bold text-ink-muted transition-colors hover:border-secondary-400 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                            >
+                              <Icono
+                                nombre={s.role === "agent" ? "usuario" : "megafono"}
+                                class="mr-1.5 size-3.5"
+                                grosor={2}
+                              />
+                              <T
+                                v={
+                                  s.role === "agent"
+                                    ? studentCopy.admin.makeStudent
+                                    : studentCopy.admin.makeAgent
+                                }
+                              />
+                            </button>
+                          </form>
+                        )}
+
+                      {canDeactivate(me) && s.id !== me.id && (
+                        <form method="POST">
+                          <input type="hidden" name="action" value="active" />
+                          <input type="hidden" name="id" value={s.id} />
+                          <input type="hidden" name="active" value={s.active ? "0" : "1"} />
+                          <button
+                            type="submit"
+                            class:list={[
+                              "inline-flex min-h-11 items-center rounded-full border border-line-strong px-3.5 text-xs font-bold text-ink-muted transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
+                              s.active
+                                ? "hover:border-error-500 hover:text-error-700"
+                                : "hover:border-secondary-400 hover:text-ink",
+                            ]}
+                          >
+                            <Icono
+                              nombre={s.active ? "cruz" : "actualizar"}
+                              class="mr-1.5 size-3.5"
+                              grosor={2}
+                            />
+                            <T
+                              v={
+                                s.active
+                                  ? studentCopy.admin.deactivate
+                                  : studentCopy.admin.reactivate
+                              }
+                            />
+                          </button>
+                        </form>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )
+    }
+  </div>
+
+  {/* ─── Altas por agente ───────────────────────────────────────────────────
+      Solo el admin, y solo cuando hay agentes con altas. Dos números: cuántos
+      dio de alta y cuántos de esos han entrado. El segundo es el honesto: un
+      alta que nadie usa todavía no es una venta que haya funcionado. */}
+  {
+    isAdmin && (
+      <div class="mt-12">
+        <h3 class="flex items-center gap-2.5 text-lg font-bold text-ink">
+          <span aria-hidden="true" class="marca-linea text-secondary-600">
+            <Icono nombre="megafono" class="size-5" grosor={1.9} />
+          </span>
+          <T v={studentCopy.admin.byAgentTitle} />
+        </h3>
+
+        {byAgent.length === 0 ? (
+          <p class="mt-3 text-sm text-ink-muted">
+            <T v={studentCopy.admin.byAgentEmpty} />
+          </p>
+        ) : (
+          <div class="mt-4 overflow-x-auto rounded-2xl border border-line">
+            <table class="w-full min-w-[30rem] border-collapse text-left">
+              <thead class="bg-surface-muted">
+                <tr class="text-xs font-bold tracking-wide text-ink-subtle uppercase">
+                  <th scope="col" class={cell}>
+                    <T v={studentCopy.admin.byAgentColumnAgent} />
+                  </th>
+                  <th scope="col" class={`${cell} text-right`}>
+                    <T v={studentCopy.admin.byAgentColumnTotal} />
+                  </th>
+                  <th scope="col" class={`${cell} text-right`}>
+                    <T v={studentCopy.admin.byAgentColumnIn} />
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {byAgent.map((row) => (
+                  <tr class="border-t border-line">
+                    <td class={cell}>
+                      <span class="block font-semibold text-ink">
+                        {row.agent.name ?? "—"}
+                      </span>
+                      <span class="block text-ink-subtle">{row.agent.email}</span>
+                    </td>
+                    <td class={`${cell} text-right tabular-nums text-ink`}>{row.total}</td>
+                    <td class={`${cell} text-right tabular-nums text-ink-muted`}>
+                      {row.signedIn}
+                    </td>
+                  </tr>
+                ))}
+
+                {/* Las altas que hiciste tú. Van al final y sin nombre de agente
+                    porque no llevan comisión: son de la casa. */}
+                {houseTotal > 0 && (
+                  <tr class="border-t border-line bg-surface-muted/50">
+                    <td class={`${cell} font-semibold text-ink-muted`}>
+                      <T v={studentCopy.admin.byAgentHouse} />
+                    </td>
+                    <td class={`${cell} text-right tabular-nums text-ink`}>{houseTotal}</td>
+                    <td class={`${cell} text-right tabular-nums text-ink-muted`}>
+                      {houseSignedIn}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    )
+  }
+</div>
+
+{/* El botón de copiar. Va aquí y no en un componente aparte porque es lo único
+    de este bloque que necesita JavaScript, y son doce líneas. Si no carga, el
+    enlace sigue a la vista y se selecciona a mano. */}
+<script>
+  document.addEventListener("click", async (e) => {
+    const button =
+      e.target instanceof Element ? e.target.closest("[data-copy]") : null;
+    if (!(button instanceof HTMLButtonElement)) return;
+
+    const field = document.getElementById(button.dataset.copy ?? "");
+    if (!(field instanceof HTMLInputElement)) return;
+
+    try {
+      await navigator.clipboard.writeText(field.value);
+      const before = button.textContent;
+      button.textContent = button.dataset.copied ?? "OK";
+      setTimeout(() => (button.textContent = before), 1600);
+    } catch {
+      /* Sin permiso de portapapeles: se selecciona para que baste con Ctrl+C. */
+      field.select();
+    }
+  });
+</script>

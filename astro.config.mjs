@@ -39,6 +39,14 @@ export default defineConfig({
   redirects: {
     "/en": "/?lang=en",
     "/es": "/?lang=es",
+
+    /**
+     * ⚠️ LAS URLs VIEJAS DEL ÁREA DE ALUMNOS (`/acceso`, `/alumno`…) NO ESTÁN
+     * AQUÍ, Y ES A PROPÓSITO. Estas redirecciones PIERDEN la query: probado,
+     * `/acceso/entrar?t=abc` acaba en `/login/verify` sin el token, que es
+     * exactamente el enlace de correo que había que salvar. Se resuelven en
+     * `src/middleware.ts`, que sí puede arrastrar `?t=`.
+     */
   },
   integrations: [react()],
   vite: {

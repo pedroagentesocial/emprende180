@@ -1400,7 +1400,7 @@ export const cifras = {
  * LOS DESTINOS DEL ÁREA DE ALUMNOS
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * El tablero de `/alumno` es un RECIBIDOR: saluda y ofrece dos puertas. Estas.
+ * El tablero de `/student` es un RECIBIDOR: saluda y ofrece dos puertas. Estas.
  *
  * ─── POR QUÉ ESTÁN AQUÍ Y NO ESCRITAS EN LA PLANTILLA ──────────────────────
  *
@@ -1796,20 +1796,16 @@ export const cta = {
    * de compra, porque son dos personas distintas: una viene a decidir y la otra
    * viene a entrar. Mezclarlos obliga a la segunda a buscar.
    *
-   * ⚠️ HOY NO HAY AUTENTICACIÓN. `/acceso` es una página real que explica el
-   * estado y da una vía humana para entrar mientras tanto; NO es un formulario
-   * de login de mentira. Un campo de contraseña que no valida nada es peor que
-   * no tener acceso: pide una credencial y no hace nada con ella.
-   *
-   * SWAP cuando exista el sistema: `href` pasa a apuntar al login real (propio
-   * o del LMS) y `/acceso` se borra o se convierte en la pantalla de entrada.
-   * El header no hay que tocarlo.
+   * Lleva a `/login`, que es el login de verdad: correo y contraseña, con
+   * "es mi primera vez o la he olvidado" en el mismo formulario. Los textos de
+   * esa zona no viven aquí sino en `src/config/studentArea.ts`, porque la
+   * plataforma y la página de venta cambian por motivos distintos.
    */
   acceso: {
     texto: { es: "Acceso", en: "Log in" },
     /** Rótulo largo, para el aria-label y la página. */
     textoLargo: { es: "Acceso de alumnos", en: "Student log in" },
-    href: "/acceso",
+    href: "/login",
   },
 
   /** Cierre de la página. Más directo que los anteriores: ya ha leído todo. */
@@ -2058,255 +2054,6 @@ export const copy = {
     todosConQuiz: {
       es: "Los {n} llevan quiz al final. Se hacen en orden.",
       en: "All {n} end with a quiz. You take them in order.",
-    },
-  },
-
-  /**
-   * ─── PÁGINA `/acceso` ─────────────────────────────────────────────────────
-   *
-   * Lo que lee quien pulsa "Acceso" en el header antes de que exista el
-   * sistema. Está escrita para las DOS personas que van a llegar: la que ya
-   * pagó y quiere entrar, y la que se ha equivocado de botón.
-   *
-   * No promete fecha. "Muy pronto" sin día es honesto; "el 15 de octubre" sin
-   * poder cumplirlo es la misma clase de mentira que un contador falso.
-   */
-  acceso: {
-    titulo: { es: "Acceso de alumnos", en: "Student access" },
-    kicker: { es: "Área de alumnos", en: "Student area" },
-    entradilla: {
-      es: "El área de alumnos está en construcción. Es lo siguiente que estamos montando y, cuando esté, entrarás desde aquí con tu correo.",
-      en: "The student area is being built. It's the next thing we're working on and, once it's ready, you'll sign in here with your email.",
-    },
-    /** Qué habrá dentro. Todo esto ya se promete en la página de venta. */
-    queHabra: {
-      titulo: { es: "Qué vas a encontrar dentro", en: "What you'll find inside" },
-      puntos: [
-        {
-          es: "Los 10 videos del curso, en orden y con acceso de por vida",
-          en: "The 10 course videos, in order and with lifetime access",
-        },
-        {
-          es: "Los 10 quizzes de validación, uno por video",
-          en: "The 10 validation quizzes, one per video",
-        },
-        {
-          es: "Tu Certificación de Embajador Emprende180 al superarlos",
-          en: "Your Emprende180 Ambassador Certification once you pass them",
-        },
-      ] satisfies Txt[],
-    },
-    /** Para quien YA compró y quiere entrar hoy. */
-    yaCompre: {
-      titulo: { es: "Ya compré el curso", en: "I already bought the course" },
-      texto: {
-        es: "Mientras el área no esté abierta, te doy acceso yo. Llámame o escríbeme y lo resolvemos el mismo día.",
-        en: "While the area isn't open yet, I'll give you access myself. Call me or write and we'll sort it the same day.",
-      },
-    },
-    /* ─── El formulario de entrada ──────────────────────────────────────── */
-    formTitulo: { es: "Entra a tu curso", en: "Get into your course" },
-    formTexto: {
-      es: "Escribe el correo con el que te dimos de alta y te mandamos un enlace para entrar. Sin contraseñas que recordar.",
-      en: "Enter the email we registered you with and we'll send you a link to get in. No passwords to remember.",
-    },
-    formEtiqueta: { es: "Tu correo", en: "Your email" },
-    formClave: { es: "Tu contraseña", en: "Your password" },
-    formEntrar: { es: "Entrar", en: "Sign in" },
-    formEntrando: { es: "Entrando…", en: "Signing in…" },
-    /* Un solo mensaje para los tres fallos posibles. Ver `/api/entrar`. */
-    formErrorCredenciales: {
-      es: "Correo o contraseña incorrectos.",
-      en: "Wrong email or password.",
-    },
-    formErrorLimite: {
-      es: "Demasiados intentos. Espera unos minutos y vuelve a probar.",
-      en: "Too many attempts. Wait a few minutes and try again.",
-    },
-    /* ─── Olvidé la contraseña ──────────────────────────────────────────── */
-    /**
-     * Cubre los DOS casos, y por eso no dice solo "he olvidado mi contraseña":
-     * quien entra por primera vez nunca tuvo una, y leer "olvidé" cuando nunca
-     * la pusiste hace dudar de si estás en el sitio correcto. El camino es el
-     * mismo —un enlace al correo— y la frase tiene que valer para los dos.
-     */
-    olvide: {
-      es: "Es mi primera vez o he olvidado mi contraseña",
-      en: "It's my first time, or I forgot my password",
-    },
-    olvideTitulo: { es: "Recupera tu acceso", en: "Recover your access" },
-    olvideTexto: {
-      es: "Escribe tu correo y te mandamos un enlace para poner tu contraseña. Sirve igual si es la primera vez que entras.",
-      en: "Enter your email and we'll send you a link to set your password. Works the same if it's your first time.",
-    },
-    volverAEntrar: { es: "Volver a entrar", en: "Back to sign in" },
-    formBoton: { es: "Mandarme el enlace", en: "Send me the link" },
-    formEnviando: { es: "Mandando…", en: "Sending…" },
-
-    /* ─── Poner contraseña ──────────────────────────────────────────────── */
-    clave: {
-      aria: { es: "Tu contraseña", en: "Your password" },
-      tituloNueva: { es: "Ponte una contraseña", en: "Set your password" },
-      tituloCambio: { es: "Cambia tu contraseña", en: "Change your password" },
-      textoNueva: {
-        es: "Es la que usarás para entrar a partir de ahora. Mínimo {min} caracteres: lo que importa es que sea larga, no que lleve símbolos raros.",
-        en: "This is what you'll use to sign in from now on. At least {min} characters: what matters is length, not odd symbols.",
-      },
-      etiqueta: { es: "Contraseña nueva", en: "New password" },
-      repetir: { es: "Repítela", en: "Repeat it" },
-      ver: { es: "Ver la contraseña", en: "Show password" },
-      ocultar: { es: "Ocultar la contraseña", en: "Hide password" },
-      guardar: { es: "Guardar y entrar", en: "Save and continue" },
-      guardando: { es: "Guardando…", en: "Saving…" },
-      errorCorta: {
-        es: "Muy corta: mínimo {min} caracteres.",
-        en: "Too short: at least {min} characters.",
-      },
-      errorLarga: { es: "Demasiado larga.", en: "Too long." },
-      errorDistintas: { es: "Las dos no coinciden.", en: "The two don't match." },
-      /* Aviso en el tablero mientras no haya contraseña. */
-      pendienteTitulo: {
-        es: "Te falta ponerte una contraseña",
-        en: "You still need to set a password",
-      },
-      pendienteTexto: {
-        es: "Sin ella tendrás que pedir un enlace por correo cada vez que quieras entrar.",
-        en: "Without one you'll have to request an email link every time you want to sign in.",
-      },
-      pendienteCta: { es: "Ponerla ahora", en: "Set it now" },
-    },
-    /* Deliberadamente ambiguo: no confirma si el correo está dado de alta o no.
-       Ver la nota de `POST /api/acceso`. */
-    formEnviado: {
-      es: "Si ese correo está dado de alta, acabamos de mandarte el enlace. Caduca en 20 minutos.",
-      en: "If that email is registered, we've just sent you the link. It expires in 20 minutes.",
-    },
-    formErrorEmail: { es: "Revisa el correo.", en: "Check the email address." },
-    formErrorGeneral: {
-      es: "No hemos podido mandarlo. Inténtalo otra vez o llámame.",
-      en: "We couldn't send it. Try again or give me a call.",
-    },
-    /** Cuando el enlace ya se usó o caducó. */
-    errorCaducado: {
-      es: "Ese enlace ya no vale: o se ha usado o han pasado los 20 minutos. Pide otro, tarda un segundo.",
-      en: "That link is no longer valid: either it's been used or the 20 minutes passed. Ask for another one, it takes a second.",
-    },
-    salida: { es: "Has salido de tu cuenta.", en: "You've been signed out." },
-
-    /* ─── El tablero ────────────────────────────────────────────────────── */
-    tablero: {
-      aria: { es: "Tu curso", en: "Your course" },
-      saludo: { es: "Hola, {nombre}", en: "Hi {nombre}" },
-      saludoSinNombre: { es: "Hola", en: "Hi" },
-      salir: { es: "Salir", en: "Sign out" },
-      panel: { es: "Panel", en: "Admin" },
-
-      /* ─── EL RECIBIDOR ────────────────────────────────────────────────────
-         El tablero saluda y ofrece dos puertas. La entradilla dice para qué
-         sirve cada una en una línea, para que nadie tenga que abrir las dos
-         para averiguar cuál quería. */
-      bienvenidaTitulo: {
-        es: "Ya estás dentro",
-        en: "You're in",
-      },
-      bienvenidaTexto: {
-        es: "Aquí tienes las dos herramientas de tu trabajo como Embajador: donde viven tus contactos y donde vive tu formación.",
-        en: "Here are the two tools of your work as an Ambassador: where your contacts live, and where your training lives.",
-      },
-      /* Rótulo del botón de cada tarjeta. Corto a propósito: la tarjeta entera
-         ya dice a dónde lleva, así que el botón solo tiene que empujar. */
-      ir: { es: "Ir", en: "Go" },
-      /* Cuando la tarjeta todavía no tiene dirección. Ver `plataformas`. */
-      proximamente: { es: "Próximamente", en: "Coming soon" },
-      /* Aviso de que el enlace abre fuera del sitio. Va al lector de pantalla:
-         que un enlace se lleve a otra pestaña sin avisar desorienta. */
-      abreFuera: { es: "se abre en una pestaña nueva", en: "opens in a new tab" },
-      /** Barra de avance. `{hechos}` de `{total}`. */
-      avance: {
-        es: "{hechos} de {total} videos superados",
-        en: "{hechos} of {total} videos passed",
-      },
-      /** Lo que toca ahora. Es la única decisión que el alumno no tiene que tomar. */
-      siguienteTitulo: { es: "Sigue por aquí", en: "Pick up here" },
-      empezarTitulo: { es: "Empieza por aquí", en: "Start here" },
-      continuar: { es: "Continuar", en: "Continue" },
-      empezar: { es: "Empezar", en: "Start" },
-      verVideo: { es: "Ver el video", en: "Watch the video" },
-      repasar: { es: "Repasar", en: "Review" },
-      /** Estados de cada fila. */
-      estadoSuperado: { es: "Superado", en: "Passed" },
-      estadoEnCurso: { es: "Empezado", en: "Started" },
-      estadoPendiente: { es: "Pendiente", en: "Not started" },
-      /** Cuando están los diez. */
-      completadoTitulo: {
-        es: "Has superado los diez. Tu certificación está en camino.",
-        en: "You've passed all ten. Your certification is on its way.",
-      },
-      completadoTexto: {
-        es: "Te la emitimos a mano, así que tarda un poco. Si en unos días no la tienes, llámame.",
-        en: "We issue it by hand, so it takes a little while. If it hasn't arrived in a few days, call me.",
-      },
-    },
-
-    /* ─── La pantalla de un video ───────────────────────────────────────── */
-    leccion: {
-      volver: { es: "Volver al tablero", en: "Back to the dashboard" },
-      video: { es: "Video {n} de {total}", en: "Video {n} of {total}" },
-      anterior: { es: "Anterior", en: "Previous" },
-      siguiente: { es: "Siguiente", en: "Next" },
-      marcarVisto: { es: "Marcar como visto", en: "Mark as watched" },
-      vistoYa: { es: "Visto", en: "Watched" },
-      /** Cuando todavía no hay archivo de video para esa lección. */
-      sinVideo: {
-        es: "Este video todavía no está subido. En cuanto esté, aparece aquí sin que tengas que hacer nada.",
-        en: "This video isn't uploaded yet. As soon as it is, it shows up here with nothing for you to do.",
-      },
-      /** El quiz, cuando aún no tiene preguntas cargadas. */
-      quizTitulo: { es: "Quiz de validación", en: "Validation quiz" },
-      sinQuiz: {
-        es: "Las preguntas de este quiz todavía no están cargadas.",
-        en: "This quiz's questions aren't loaded yet.",
-      },
-    },
-
-    /* ─── El panel de administración ────────────────────────────────────── */
-    panel: {
-      titulo: { es: "Alumnos", en: "Students" },
-      entradilla: {
-        es: "Das de alta un correo y esa persona ya puede entrar pidiendo su enlace. No hay contraseñas que mandar ni que reiniciar.",
-        en: "Register an email and that person can get in by requesting their link. There are no passwords to send or reset.",
-      },
-      nuevoTitulo: { es: "Dar de alta", en: "Add a student" },
-      campoEmail: { es: "Correo", en: "Email" },
-      campoNombre: { es: "Nombre (opcional)", en: "Name (optional)" },
-      alta: { es: "Dar de alta", en: "Add" },
-      /** Marcar el alta como hecha manda el enlace de entrada al alumno. */
-      altaYEnviar: { es: "Dar de alta y mandarle el enlace", en: "Add and send them the link" },
-      columnaAlumno: { es: "Alumno", en: "Student" },
-      columnaEstado: { es: "Estado", en: "Status" },
-      columnaAlta: { es: "Alta", en: "Added" },
-      columnaAcceso: { es: "Último acceso", en: "Last access" },
-      activo: { es: "Activo", en: "Active" },
-      inactivo: { es: "Dado de baja", en: "Deactivated" },
-      nunca: { es: "Nunca ha entrado", en: "Never signed in" },
-      darBaja: { es: "Dar de baja", en: "Deactivate" },
-      reactivar: { es: "Reactivar", en: "Reactivate" },
-      vacio: { es: "Todavía no hay ningún alumno.", en: "No students yet." },
-      /** Aviso cuando el área corre sin base de datos. */
-      sinBase: {
-        es: "Estás en modo desarrollo SIN base de datos: los alumnos que des de alta se pierden al reiniciar. Define DATABASE_URL para que sea de verdad.",
-        en: "You're in development mode WITHOUT a database: any student you add is lost on restart. Set DATABASE_URL to make it real.",
-      },
-    },
-
-    /** Para quien llegó aquí por error. */
-    noCompre: {
-      titulo: { es: "Todavía no lo he comprado", en: "I haven't bought it yet" },
-      texto: {
-        es: "Entonces esto no es para ti todavía. Vuelve a la página y mira qué incluye.",
-        en: "Then this isn't for you yet. Head back to the page and see what's included.",
-      },
-      cta: { es: "Ver el curso", en: "See the course" },
     },
   },
 

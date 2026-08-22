@@ -43,6 +43,24 @@
     /* Aquí NO va `padding-top`. El header está en el flujo y ocupa su sitio él
        solo; reservarle hueco además dejaría una franja en blanco de 64 px encima
        de la barra en todas las páginas. Hizo falta mientras fue `fixed`. */
+
+    /* ─── EL PIE SIEMPRE ABAJO ────────────────────────────────────────────────
+       Columna flexible de alto mínimo la pantalla. En una página larga —la
+       portada— no cambia absolutamente nada: el contenido ya pasa del alto de
+       la ventana y el flex se comporta como el flujo normal.
+
+       Donde SÍ cambia todo es en las páginas cortas y en las pantallas altas.
+       En un monitor en vertical (1080×1920), el acceso dejaba el pie flotando a
+       media altura con el resto en blanco. Con esto, cualquier página puede
+       decirle a su `<main>` que se coma el hueco sobrante (`flex-1`) y el pie
+       cae donde tiene que caer.
+
+       `100svh` y no `100vh`: en un móvil, `vh` cuenta la barra de direcciones
+       que luego se recoge, así que `100vh` deja la página un pelín más alta que
+       la pantalla y aparece un scroll de dos dedos que no lleva a ningún sitio. */
+    display: flex;
+    flex-direction: column;
+    min-height: 100svh;
   }
 
   /* Feedback táctil.

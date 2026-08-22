@@ -1,0 +1,231 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import Footer from "@components/layout/Footer.astro";
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import PortalNav from "@components/student/PortalNav.astro";
+import { sitio } from "@config/curso.config";
+import { studentCopy } from "@config/studentArea";
+import { construirTxt, type Txt } from "@i18n/idioma";
+import type { Role, Student } from "@lib/data";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * THE PORTAL'S SHELL — a column on the left, the work on the right
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * It used to be a bar across the top and one long page underneath. That was
+ * enough while the portal was two cards; it stopped being enough the moment it
+ * grew a roster, filters and a summary, because everything lived in the same
+ * scroll and "where am I" had no answer.
+ *
+ * ─── WHY A SIDEBAR AND NOT MORE TABS ───────────────────────────────────────
+ *
+ * Because the entries are FEW and they are DESTINATIONS, not steps. A permanent
+ * column shows all of them at once, marks the one you are on, and leaves the
+ * top of the content free for the page's own title. It is also where anybody
+ * who has used a tool before goes looking.
+ *
+ * ─── IT DOESN'T COLLAPSE, IT CHANGES SHAPE ─────────────────────────────────
+ *
+ * ⚠️ THERE IS NO BURGER AND NO DRAWER, and that is a decision. A drawer needs
+ * JavaScript to open, focus trapping to be usable with a keyboard, and a way
+ * out for whoever's script never arrives — all for three or four links. Below
+ * `lg` the same list is painted as a row that scrolls sideways. Nothing to
+ * open, nothing to close, nothing that breaks when a script fails.
+ *
+ * ─── WHAT STAYS FROM THE OLD SHELL ─────────────────────────────────────────
+ *
+ * The landing's footer: the legal links and the phone number have to be within
+ * reach in here too. And the `pageshow` guard, which is half of the sign-out
+ * fix — see the note at the bottom.
+ */
+
+interface Props {
+  title: Txt;
+  student: Student;
+  /** Shown at the top of the content column. The page's own name. */
+  heading?: Txt;
+}
+
+const { title, student, heading } = Astro.props;
+
+const pageTitle = construirTxt((l) => `${title[l]} · ${sitio.nombre}`);
+
+/* The language is NOT resolved here: every piece of text in this shell goes
+   through `<T>`, which paints both and lets the CSS hide the one that doesn't
+   apply. */
+
+const logo = sitio.logoHorizontal;
+const path = Astro.url.pathname;
+
+
+const roleLabel: Record<Role, Txt> = {
+  student: studentCopy.admin.roleStudent,
+  agent: studentCopy.admin.roleAgent,
+  admin: studentCopy.admin.roleAdmin,
+};
+
+/* El botón de salir, igual en los dos sitios donde aparece: en el pie de la
+   columna en escritorio y en la barra de arriba en móvil. */
+const signOutClass =
+  "inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-line-strong px-3.5 text-sm font-semibold text-ink-muted transition-colors hover:border-ink hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+---
+
+<BaseLayout titulo={pageTitle} descripcion={studentCopy.intro} noindex>
+  {/* ⚠️ EL PIE VA FUERA DE ESTA FILA, ABAJO Y A TODO EL ANCHO. Estaba dentro de
+      la columna de contenido, así que la franja navy empezaba a la derecha de la
+      barra lateral y se veía cortada por la mitad. Un pie es del sitio entero,
+      no de una columna. */}
+  <div class="flex flex-1 bg-surface-muted">
+    {/* ─── La columna ────────────────────────────────────────────────────────
+        ⚠️ NO LLEGA HASTA ABAJO NI EMPIEZA ARRIBA. Era una losa de alto la
+        ventana pegada al borde: partía la pantalla en dos mitades de las cuales
+        una estaba casi siempre vacía. Ahora es un PANEL que mide lo que mide su
+        contenido y flota sobre el fondo con su borde redondeado.
+
+        LA ENVOLTURA ES LA QUE SE PEGA, y por eso son dos elementos y no uno: el
+        contenedor mide el alto de la ventana, se queda quieto al desplazar
+        (`sticky`) y centra al panel dentro (`items-center`). Intentarlo con un
+        solo elemento —`top-1/2` y un `-translate-y-1/2`— se lleva mal con el
+        `stretch` del flex: el panel se estiraba a lo alto de TODA la página y
+        quedaba una caja blanca vacía.
+
+        El `max-h-full` del panel es su freno: si algún día el menú crece más
+        que la pantalla, se desplaza él solo en vez de desbordar. */}
+    <div class="sticky top-0 hidden h-svh shrink-0 items-center py-6 pl-6 lg:flex">
+    <aside
+      class="flex max-h-full w-56 flex-col overflow-x-hidden overflow-y-auto rounded-3xl border border-line bg-surface shadow-[var(--shadow-sm)]"
+    >
+      <div class="flex h-16 shrink-0 items-center px-5">
+        <a
+          href="/student"
+          class="flex min-h-11 items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        >
+          <img
+            src={logo.src}
+            alt={sitio.nombre}
+            width={logo.w}
+            height={logo.h}
+            class="h-7 w-auto"
+            fetchpriority="high"
+            decoding="async"
+          />
+        </a>
+      </div>
+
+      <div class="px-3 pb-3">
+        <PortalNav student={student} path={path} variant="sidebar" />
+      </div>
+
+      {/* Quién eres y la salida, al fondo. Es donde se busca en cualquier
+          herramienta, y aquí además cumple otra función: el rol se lee en todo
+          momento, así que nadie administra creyendo que mira su propia cuenta. */}
+      <div class="mt-auto shrink-0 border-t border-line p-3">
+        <div class="flex items-center gap-3 px-2 py-2">
+          <span
+            aria-hidden="true"
+            class="grid size-9 shrink-0 place-items-center rounded-full bg-secondary-100 text-secondary-700"
+          >
+            <Icono nombre="usuario" class="size-5" grosor={1.9} />
+          </span>
+          <span class="min-w-0">
+            <span class="block truncate text-sm font-semibold text-ink">
+              {student.name ?? student.email}
+            </span>
+            <span class="block text-xs font-bold text-ink-subtle">
+              <T v={roleLabel[student.role]} />
+            </span>
+          </span>
+        </div>
+
+        <form method="POST" action="/api/logout" class="mt-2">
+          <button type="submit" class={signOutClass}>
+            <T v={studentCopy.dashboard.signOut} />
+          </button>
+        </form>
+      </div>
+    </aside>
+    </div>
+
+    {/* ─── El contenido ────────────────────────────────────────────────────── */}
+    <div class="flex min-w-0 flex-1 flex-col">
+      {/* La barra de arriba. En móvil siempre; en escritorio solo cuando NO hay
+          columna, porque ahí el logotipo y la salida ya viven en ella y
+          repetirlos sería una franja robándole 64 px a cada pantalla. */}
+      <header class="border-b border-line bg-surface lg:hidden">
+        <div
+          class="container-page flex h-[var(--header-h)] items-center justify-between gap-3 lg:h-[var(--header-h-lg)]"
+        >
+          <a
+            href="/student"
+            class="flex min-h-11 shrink-0 items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          >
+            <img
+              src={logo.src}
+              alt={sitio.nombre}
+              width={logo.w}
+              height={logo.h}
+              class="h-7 w-auto shrink-0"
+              fetchpriority="high"
+              decoding="async"
+            />
+          </a>
+
+          <div class="flex items-center gap-3">
+            <form method="POST" action="/api/logout">
+              <button type="submit" class={`${signOutClass} w-auto`}>
+                <T v={studentCopy.dashboard.signOut} />
+              </button>
+            </form>
+          </div>
+        </div>
+      </header>
+
+      <div class="container-page lg:hidden">
+        <PortalNav student={student} path={path} variant="bar" />
+      </div>
+
+      <main
+        id="contenido"
+        class="relative isolate flex-1 py-[clamp(2rem,5svh,3.5rem)] lg:py-8"
+      >
+        <div class="container-page lg:px-8">
+          {
+            heading && (
+              <h1 class="mb-8 text-3xl font-extrabold text-balance text-ink sm:text-4xl">
+                <T v={heading} />
+              </h1>
+            )
+          }
+          <slot />
+        </div>
+      </main>
+
+    </div>
+  </div>
+
+  <Footer />
+
+  {/* ─────────────────────────────────────────────────────────────────────────
+      THE BACK BUTTON AFTER SIGNING OUT
+
+      ⚠️ THIS IS THE SECOND HALF OF THE SIGN-OUT FIX, AND IT IS NOT REDUNDANT.
+
+      `Cache-Control: no-store` (see `@lib/security`) keeps this page out of the
+      HTTP cache, and that is what stops Back from repainting the private area in
+      most cases. But browsers have a SECOND cache — the back/forward cache —
+      that keeps the whole live page in memory, JavaScript state and all, and
+      restores it without asking anybody. Chrome evicts a `no-store` page from it
+      when the cookies change; Safari and Firefox are more generous.
+
+      `pageshow` with `event.persisted` is the one signal that says "this page
+      came back from that cache". Reloading is then a real request, the
+      middleware sees there is no session, and it sends you to sign in.
+      ───────────────────────────────────────────────────────────────────────── */}
+  <script is:inline>
+    window.addEventListener("pageshow", function (event) {
+      if (event.persisted) window.location.reload();
+    });
+  </script>
+</BaseLayout>

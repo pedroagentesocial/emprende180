@@ -1,0 +1,191 @@
+---
+import T from "@components/i18n/T.astro";
+import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
+import { plataformas, sitio } from "@config/curso.config";
+import { studentCopy } from "@config/studentArea";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * LAS DOS PUERTAS — el CRM y la Academia
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Lo único que hay en el portal de un alumno, así que no pueden ser dos
+ * rectángulos con borde y un icono gris. Eran eso: dos cajas idénticas, la
+ * prohibición número dos de este proyecto (ver DESIGN.md), y encima apagadas.
+ *
+ * ─── POR QUÉ CADA UNA LLEVA SU COLOR ───────────────────────────────────────
+ *
+ * Porque son dos sitios distintos y se visitan por motivos distintos: al CRM se
+ * entra todos los días a mirar contactos; a la Academia se entra de vez en
+ * cuando y se está una hora. Dos tarjetas iguales obligan a LEER para
+ * distinguirlas; con el navy y el teal de la marca, la mano ya sabe a cuál va
+ * antes de que el ojo llegue al título.
+ *
+ * No se inventa ningún color: son los dos de la identidad, cada uno entero.
+ * `Committed`, que es la estrategia declarada en DESIGN.md.
+ *
+ * ─── LA ANIMACIÓN, Y HASTA DÓNDE ───────────────────────────────────────────
+ *
+ * Al pasar por encima: la tarjeta sube 4 px, la sombra crece, el isotipo del
+ * fondo gira un poco y la flecha se desplaza. Nada más, y todo con `transform` y
+ * `opacity` —las dos únicas propiedades que el navegador anima sin recalcular la
+ * página— con las curvas de salida del sistema.
+ *
+ * ⚠️ CON `prefers-reduced-motion` NO SE MUEVE NADA. Lo apaga la regla global de
+ * `global.css`, pero el diseño no DEPENDE del movimiento: sin él, las tarjetas
+ * siguen distinguiéndose por color, icono y jerarquía. El movimiento confirma
+ * que algo es pulsable; no es lo que lo dice.
+ *
+ * ─── LA QUE TODAVÍA NO TIENE DIRECCIÓN ─────────────────────────────────────
+ *
+ * Se pinta apagada, en gris, con "Próximamente" y sin sombra ni movimiento. Un
+ * botón que lleva a `#` se pulsa, no pasa nada, y el alumno concluye que el
+ * portal está roto — que es peor que ver que algo aún no está.
+ */
+
+const t = studentCopy.dashboard;
+
+interface Door {
+  data: (typeof plataformas)["crm"] | (typeof plataformas)["academia"];
+  /** El tono de la tarjeta. Los dos de la marca, uno por puerta. */
+  tone: "navy" | "teal";
+  icon: NombreIcono;
+}
+
+const doors: Door[] = [
+  { data: plataformas.crm, tone: "navy", icon: "red" },
+  { data: plataformas.academia, tone: "teal", icon: "play" },
+];
+
+/* Las clases de cada tono, juntas para poder compararlas de un vistazo. Tailwind
+   necesita las cadenas completas en el archivo, así que no se componen a trozos. */
+const tones = {
+  navy: {
+    card: "bg-primary-900 text-ink-inverse hover:shadow-[0_24px_48px_-24px_oklch(0.287_0.0718_253.9/0.55)]",
+    chip: "bg-secondary-500/15 text-secondary-200 group-hover:bg-secondary-500 group-hover:text-primary-950",
+    text: "text-primary-100/85",
+    cta: "bg-secondary-500 text-primary-950 group-hover:bg-secondary-400",
+    /* El mismo color, en tinte, para cuando todavía no hay dirección. Sigue
+       siendo SU tarjeta: la que espera no se convierte en una caja gris. */
+    dim: "border border-primary-900/20 bg-primary-900/[0.06] text-ink",
+    dimChip: "bg-primary-900/10 text-primary-800",
+  },
+  teal: {
+    card: "bg-secondary-600 text-ink-inverse hover:shadow-[0_24px_48px_-24px_oklch(0.548_0.0949_187.2/0.6)]",
+    chip: "bg-primary-950/20 text-ink-inverse group-hover:bg-primary-950 group-hover:text-secondary-200",
+    text: "text-ink-inverse/85",
+    cta: "bg-primary-950 text-ink-inverse group-hover:bg-primary-900",
+    dim: "border border-secondary-600/25 bg-secondary-600/[0.07] text-ink",
+    dimChip: "bg-secondary-600/15 text-secondary-800",
+  },
+} as const;
+
+/* Dos versiones del isotipo: el blanco para las tarjetas de color y el de marca
+   para las apagadas, que son claras. Un isotipo blanco sobre fondo claro no es
+   una marca de agua sutil, es una marca de agua que no está. */
+const isoClaro = sitio.isotipoBlanco;
+const isoColor = sitio.isotipo;
+---
+
+<ul class="mx-auto mt-12 grid max-w-4xl gap-6 sm:grid-cols-2">
+  {
+    doors.map(({ data, tone, icon }) => {
+      const abierta = !!data.url;
+      const fuera = abierta && data.externo;
+      const c = tones[tone];
+
+      return (
+        <li>
+          <a
+            href={data.url || undefined}
+            target={fuera ? "_blank" : undefined}
+            rel={fuera ? "noopener noreferrer" : undefined}
+            data-track={`alumno-${data.icono}`}
+            aria-disabled={abierta ? undefined : "true"}
+            class:list={[
+              "group relative isolate flex h-full min-h-[20rem] flex-col overflow-hidden rounded-[2rem] p-8 sm:p-9",
+              "transition-[transform,box-shadow] duration-[var(--duration-base)] ease-[var(--ease-out-soft)]",
+              "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus",
+              abierta
+                ? `${c.card} shadow-[var(--shadow-lg)] hover:-translate-y-1`
+                : `pointer-events-none ${c.dim}`,
+            ]}
+          >
+            {/* El isotipo de marca, grande y muy tenue, girado. Es lo que hace
+                que la tarjeta se lea como parte de la casa y no como un bloque
+                de color cualquiera. Gira un poco más al pasar por encima. */}
+            <img
+                src={abierta ? isoClaro.src : isoColor.src}
+                alt=""
+                aria-hidden="true"
+                width={isoClaro.w}
+                height={isoClaro.h}
+                loading="lazy"
+                decoding="async"
+                class:list={[
+                  "pointer-events-none absolute -right-12 -bottom-14 -z-10 size-64 rotate-[-8deg]",
+                  "transition-transform duration-[var(--duration-slow)] ease-[var(--ease-out-expo)]",
+                  "group-hover:rotate-[-2deg] group-hover:scale-105",
+                  abierta ? "opacity-[0.08]" : "opacity-[0.06]",
+                ]}
+              />
+
+            <span
+              aria-hidden="true"
+              class:list={[
+                "grid size-16 shrink-0 place-items-center rounded-2xl",
+                "transition-colors duration-[var(--duration-base)] ease-[var(--ease-out-soft)]",
+                abierta ? c.chip : c.dimChip,
+              ]}
+            >
+              <Icono nombre={icon} class="size-8" grosor={1.7} />
+            </span>
+
+            <h3 class="mt-7 text-2xl font-extrabold text-balance sm:text-3xl">
+              <T v={data.titulo} />
+            </h3>
+
+            <p
+              class:list={[
+                "mt-3 flex-1 text-base text-pretty sm:text-lg",
+                abierta ? c.text : "text-ink-muted",
+              ]}
+            >
+              <T v={data.texto} />
+            </p>
+
+            {abierta ? (
+              <span
+                class:list={[
+                  "mt-7 inline-flex min-h-12 w-fit items-center gap-2.5 rounded-full px-6 text-sm font-bold",
+                  "transition-colors duration-[var(--duration-base)] ease-[var(--ease-out-soft)]",
+                  c.cta,
+                ]}
+              >
+                <T v={t.go} />
+                {/* La flecha se desplaza al pasar por encima. Es el gesto que
+                    dice "esto te lleva a otro sitio" sin escribirlo. */}
+                <Icono
+                  nombre="flecha"
+                  class="size-4 shrink-0 transition-transform duration-[var(--duration-base)] ease-[var(--ease-out-soft)] group-hover:translate-x-1"
+                  grosor={2.5}
+                />
+                {fuera && (
+                  <span class="sr-only-focusable">
+                    {" "}
+                    <T v={t.opensOutside} />
+                  </span>
+                )}
+              </span>
+            ) : (
+              <span class="mt-7 inline-flex min-h-12 w-fit items-center gap-2 rounded-full border border-dashed border-current/30 px-5 text-sm font-bold opacity-70">
+                <Icono nombre="reloj" class="size-4 shrink-0" grosor={2} />
+                <T v={t.comingSoon} />
+              </span>
+            )}
+          </a>
+        </li>
+      );
+    })
+  }
+</ul>

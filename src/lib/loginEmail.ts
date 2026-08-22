@@ -2,20 +2,20 @@ import { sitio, contacto } from "@config/curso.config";
 import type { Idioma } from "@i18n/idioma";
 
 /**
- * El texto del correo con el enlace de acceso.
+ * The text of the email carrying the access link.
  *
- * Está en su propio archivo porque lo usan los dos caminos que mandan ese
- * enlace —la ruta de API y el POST del formulario— y porque es texto de
- * SERVIDOR: no tiene por qué viajar en el bundle del navegador como haría si
- * viviera en `curso.config.ts`.
+ * It lives in its own file because both paths that send that link use it — the
+ * API route and the form POST — and because it is SERVER text: there is no
+ * reason for it to travel in the browser bundle, which is what would happen if
+ * it lived in `curso.config.ts`.
  */
-export const CORREO_ACCESO = {
-  responderA: contacto.email,
+export const LOGIN_EMAIL = {
+  replyTo: contacto.email,
 
-  asunto: (lang: Idioma) =>
+  subject: (lang: Idioma) =>
     lang === "en" ? `Your ${sitio.nombre} access` : `Tu acceso a ${sitio.nombre}`,
 
-  cuerpo: (lang: Idioma, url: string) =>
+  body: (lang: Idioma, url: string) =>
     lang === "en"
       ? [
           `Here's your link to set your password and get in:`,
