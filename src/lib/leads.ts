@@ -22,6 +22,16 @@ export interface LeadGuardado extends Lead {
   capturadoEn: string;
   /** Referer, si el navegador lo manda. Sirve para atribuir la campaña. */
   referer: string | null;
+  /**
+   * El código que escribió, tal cual, y el cupón si resultó válido.
+   *
+   * ⚠️ SE GUARDAN LOS DOS. Lo escrito, porque quien llame tiene que ver qué le
+   * dijeron aunque el código estuviera mal copiado; lo válido, porque es lo
+   * único con lo que se puede prometer un precio. Guardar solo el segundo
+   * borraría la pista de una errata que igual hay que honrar.
+   */
+  cuponEscrito: string | null;
+  cuponValido: { codigo: string; descuento: string } | null;
 }
 
 export async function guardarLead(lead: LeadGuardado): Promise<void> {
@@ -34,6 +44,8 @@ export async function guardarLead(lead: LeadGuardado): Promise<void> {
     ip: lead.ip,
     referer: lead.referer,
     userAgent: lead.userAgent.slice(0, 200),
+    cupon: lead.cuponEscrito,
+    cuponValido: lead.cuponValido?.codigo ?? null,
   };
 
   // Log estructurado: es lo que se consulta en producción.
@@ -156,7 +168,14 @@ export async function enviarAWebhook(lead: LeadGuardado): Promise<void> {
     /* De dónde salió, para poder medir qué formulario de la página convierte
        sin tener que mirar el referer a mano. */
     source: `emprende180.com · ${lead.origen}`,
-    tags: ["emprende180", "mini-curso-7-dias", `origen:${lead.origen}`],
+    tags: [
+      "emprende180",
+      "mini-curso-7-dias",
+      `origen:${lead.origen}`,
+      /* Una etiqueta con el cupón: en GHL se puede segmentar y automatizar por
+         etiqueta, que es como se trabaja allí. */
+      ...(lead.cuponValido ? [`cupon:${lead.cuponValido.codigo}`] : []),
+    ],
     /* Campos propios. GHL los recoge como custom fields. */
     idioma: lead.idioma,
     referer: lead.referer ?? "directo",
@@ -164,6 +183,11 @@ export async function enviarAWebhook(lead: LeadGuardado): Promise<void> {
     /* La IP y el momento son la prueba del consentimiento. Si algún día alguien
        reclama que nunca se apuntó, esto es lo que lo responde. */
     ip_consentimiento: lead.ip,
+    /* El cupón viaja a GHL para que aparezca en la ficha del contacto: quien
+       llame ve el precio prometido sin salir del CRM. */
+    cupon: lead.cuponValido?.codigo ?? lead.cuponEscrito ?? undefined,
+    cupon_descuento: lead.cuponValido?.descuento ?? undefined,
+    cupon_valido: lead.cuponEscrito ? !!lead.cuponValido : undefined,
   };
 
   try {

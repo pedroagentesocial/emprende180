@@ -10,6 +10,7 @@ import {
   type LeadResponse,
 } from "@lib/schema";
 import { consume, isRecentDuplicate, clientIp } from "@lib/rateLimit";
+import { comprobarCupon, describirCupon } from "@lib/cupones";
 import {
   guardarLead,
   suscribirASecuencia,
@@ -179,12 +180,21 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 
   // ── 5 · Guardar ───────────────────────────────────────────────────────────
   // Primero persistir. Si Resend falla después, el lead NO se pierde.
+  /* El cupón, comprobado contra la tabla. Nunca lanza y nunca bloquea: ver
+     `src/lib/cupones.ts`. Va con `await` —y no como los webhooks— porque su
+     resultado tiene que viajar dentro del aviso y del payload de GHL. */
+  const cupon = await comprobarCupon(lead.cupon);
+
   const guardado: LeadGuardado = {
     ...lead,
     ip,
     userAgent: request.headers.get("user-agent") ?? "desconocido",
     referer: request.headers.get("referer"),
     capturadoEn: new Date().toISOString(),
+    cuponEscrito: cupon?.escrito ?? null,
+    cuponValido: cupon?.valido
+      ? { codigo: cupon.valido.code, descuento: describirCupon(cupon.valido) }
+      : null,
   };
 
   try {
@@ -248,12 +258,23 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
         to: [to],
         reply_to: lead.email,
         // El aviso interno va siempre en español: lo lees tú, no el lead.
-        subject: `Nuevo lead — mini-curso · ${lead.nombre} · ${lead.origen}`,
+        /* El cupón va EN EL ASUNTO cuando lo hay: quien llama tiene que verlo
+           en la lista del buzón, sin abrir el correo. */
+        subject: cupon?.valido
+          ? `Nuevo lead — mini-curso · ${lead.nombre} · cupón ${cupon.valido.code}`
+          : `Nuevo lead — mini-curso · ${lead.nombre} · ${lead.origen}`,
         text: [
           `Nombre:  ${lead.nombre}`,
           `Email:   ${lead.email}`,
           `Origen:  ${lead.origen}`,
           `Idioma:  ${lead.idioma}`,
+          ...(cupon
+            ? [
+                cupon.valido
+                  ? `Cupón:   ${cupon.valido.code} — ${describirCupon(cupon.valido)} de descuento`
+                  : `Cupón:   "${cupon.escrito}" — NO es válido (caducado, agotado o mal escrito)`,
+              ]
+            : []),
           `Referer: ${guardado.referer ?? "directo"}`,
           `IP:      ${ip}`,
           `Fecha:   ${guardado.capturadoEn}`,

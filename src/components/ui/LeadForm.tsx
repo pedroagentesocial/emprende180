@@ -118,6 +118,7 @@ export function LeadForm({
 
     const candidato = {
       nombre: String(datos.get("nombre") ?? ""),
+      cupon: String(datos.get("cupon") ?? "").trim() || undefined,
       email: String(datos.get("email") ?? ""),
       consentimiento: datos.get("consentimiento") === "on",
       origen,
@@ -223,7 +224,10 @@ export function LeadForm({
   // ── Formulario ────────────────────────────────────────────────────────────
   const enviando = estado === "enviando";
 
-  const claseInput = (campo: CampoLead) =>
+  /* `CampoLead` son los campos que el servidor puede rechazar uno a uno. El
+     cupón no es uno de ellos a propósito: no bloquea el envío, así que nunca
+     lleva error debajo. Por eso el parámetro admite también su nombre. */
+  const claseInput = (campo: CampoLead | "cupon") =>
     [
       // min-h-11 = 44 px táctil · text-base = 16 px, si no iOS hace zoom
       "min-h-11 w-full rounded-lg border px-4 py-3 text-base",
@@ -231,7 +235,7 @@ export function LeadForm({
       inverso
         ? "border-primary-700 bg-primary-950/50 text-ink-inverse placeholder:text-primary-300 focus-visible:outline-focus-inverse"
         : "border-line-strong bg-surface text-ink placeholder:text-ink-subtle focus-visible:outline-focus",
-      errores[campo] ? "border-error-500" : "",
+      campo !== "cupon" && errores[campo] ? "border-error-500" : "",
       "disabled:opacity-60",
     ].join(" ");
 
@@ -322,6 +326,61 @@ export function LeadForm({
           )}
         </div>
       </div>
+
+      {/* ─── EL CÓDIGO DE DESCUENTO ───────────────────────────────────────────
+          Plegado dentro de un `<details>`, y eso es la decisión entera: un campo
+          de cupón a la vista le dice a quien NO tiene ninguno que está pagando
+          de más, y se va a buscarlo a Google en vez de dejar su correo. Quien
+          tiene uno lo busca; quien no, ni lo ve.
+
+          `<details>` nativo: se abre y se cierra sin una línea de JavaScript, y
+          funciona con teclado y con lector de pantalla sin que haya que
+          enseñarle nada.
+
+          El código NO se valida aquí. Lo comprueba el servidor contra la tabla
+          de cupones y, si no vale, el lead entra igual: una errata no puede
+          costar un contacto. Ver `src/lib/cupones.ts`. */}
+      <details className="mt-4">
+        <summary
+          className={[
+            "inline-flex min-h-11 cursor-pointer list-none items-center text-sm font-medium underline underline-offset-4",
+            inverso ? "text-secondary-200" : "text-ink-brand",
+          ].join(" ")}
+        >
+          {t(copy.formulario.cuponEnlace)}
+        </summary>
+
+        <div className="mt-2">
+          <label
+            htmlFor={idDe("cupon")}
+            className={[
+              "mb-1.5 block text-sm font-medium",
+              inverso ? "text-secondary-200" : "text-ink",
+            ].join(" ")}
+          >
+            {t(copy.formulario.cuponEtiqueta)}
+          </label>
+          <input
+            id={idDe("cupon")}
+            name="cupon"
+            type="text"
+            autoComplete="off"
+            autoCapitalize="characters"
+            spellCheck={false}
+            placeholder={t(copy.formulario.cuponPlaceholder)}
+            disabled={enviando}
+            className={claseInput("cupon")}
+          />
+          <p
+            className={[
+              "mt-1.5 text-xs",
+              inverso ? "text-secondary-200/80" : "text-ink-subtle",
+            ].join(" ")}
+          >
+            {t(copy.formulario.cuponAyuda)}
+          </p>
+        </div>
+      </details>
 
       {/* CONSENTIMIENTO DE DATOS.
           Casilla vacía por defecto y obligatoria: bajo RGPD, LGPD, la Ley 1581

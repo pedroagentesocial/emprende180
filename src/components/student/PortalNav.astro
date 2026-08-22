@@ -65,6 +65,7 @@ const entries: Entry[] = [
   ...(canAdminister(student)
     ? ([
         { href: "/student/agents", label: studentCopy.nav.agents, icon: "megafono" },
+        { href: "/student/coupons", label: studentCopy.nav.coupons, icon: "certificado" },
         { href: "/student/settings", label: studentCopy.nav.settings, icon: "escudo" },
       ] satisfies Entry[])
     : []),

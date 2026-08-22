@@ -2644,6 +2644,18 @@ export const copy = {
   },
 
   formulario: {
+    /* ─── EL CÓDIGO DE DESCUENTO ──────────────────────────────────────────
+       Va al FINAL del formulario, plegado tras un enlace, y eso no es timidez:
+       un campo de cupón a la vista de todos le dice a quien no tiene ninguno
+       que está pagando de más, y se va a buscarlo a Google en vez de dejar su
+       correo. Quien tiene uno, lo busca; quien no, ni lo ve. */
+    cuponEnlace: { es: "Tengo un código de descuento", en: "I have a discount code" },
+    cuponEtiqueta: { es: "Código de descuento", en: "Discount code" },
+    cuponPlaceholder: { es: "LAURA20", en: "LAURA20" },
+    cuponAyuda: {
+      es: "Lo comprobamos al llamarte. Si no es válido, te lo decimos entonces.",
+      en: "We check it when we call you. If it isn't valid, we'll tell you then.",
+    },
     nombreEtiqueta: { es: "Tu nombre", en: "Your name" },
     nombrePlaceholder: { es: "María", en: "Maria" },
     emailEtiqueta: { es: "Tu email", en: "Your email" },

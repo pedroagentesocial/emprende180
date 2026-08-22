@@ -79,6 +79,40 @@ export interface Student {
    * is the one function that needs it.
    */
   hasPassword: boolean;
+  /**
+   * El código con el que llegó, si llegó con alguno.
+   *
+   * Texto y no una clave foránea: si algún día se borra el cupón, la ficha tiene
+   * que seguir diciendo con qué promesa entró esta persona.
+   */
+  coupon: string | null;
+}
+
+/**
+ * Un cupón.
+ *
+ * ⚠️ NO DESCUENTA NADA POR SÍ MISMO, porque en este sistema no se cobra. Es una
+ * promesa con nombre: alguien lo escribe en el formulario de la landing y quien
+ * le llame verá qué precio se le prometió. Ver la nota de `cupones` en
+ * `db/schema.sql`.
+ */
+export interface Coupon {
+  id: string;
+  /** Siempre en mayúsculas. Se normaliza al escribir y al buscar. */
+  code: string;
+  description: string | null;
+  kind: "percent" | "amount";
+  value: number;
+  active: boolean;
+  /** `null` = no caduca. */
+  expiresAt: Date | null;
+  /** `null` = sin tope. */
+  maxUses: number | null;
+  /** Cuánta gente lo ha escrito en el formulario. */
+  timesRequested: number;
+  /** De qué agente es, si es de alguno. */
+  agentId: string | null;
+  createdAt: Date;
 }
 
 export interface Progress {
@@ -162,6 +196,31 @@ export interface Repo {
   markWatched(studentId: string, number: number): Promise<void>;
   recordQuizAttempt(studentId: string, number: number, passed: boolean): Promise<void>;
 
+  // ─── Cupones ───────────────────────────────────────────────────────────────
+  listCoupons(): Promise<Coupon[]>;
+  createCoupon(data: {
+    code: string;
+    description: string | null;
+    kind: "percent" | "amount";
+    value: number;
+    expiresAt: Date | null;
+    maxUses: number | null;
+    agentId: string | null;
+    createdBy: string;
+  }): Promise<Coupon>;
+  setCouponActive(id: string, active: boolean): Promise<void>;
+  /**
+   * Busca un cupón USABLE por su código: existe, está activo, no ha caducado y
+   * no ha llegado a su tope. Devuelve `null` para todo lo demás.
+   *
+   * ⚠️ LAS CUATRO CONDICIONES SE COMPRUEBAN AQUÍ Y NO EN LA PÁGINA. Un cupón
+   * caducado que la plantilla olvide comprobar es un descuento que alguien
+   * reclama por teléfono con razón.
+   */
+  findUsableCoupon(code: string): Promise<Coupon | null>;
+  /** Suma uno a "veces que alguien lo escribió". */
+  recordCouponRequest(code: string): Promise<void>;
+
   /** Magic-link requests for that email inside the given window. */
   countRequests(email: string, since: Date): Promise<number>;
   recordRequest(email: string): Promise<void>;
@@ -188,6 +247,38 @@ const ROLE_IN_DB: Record<Role, string> = {
  * the strongest role, or throwing, would turn a typo in one row into either a
  * hole or a sign-in that fails for everybody.
  */
+/**
+ * El código, normalizado: mayúsculas y sin espacios. Se aplica al escribir Y al
+ * buscar, o "laura20" y "LAURA 20" dejan de ser el mismo cupón.
+ *
+ * ⚠️ El patrón es `\s` —espacios—, no `s`. Escrito sin la barra, esto borraba
+ * todas las eses: "MASSIVE" se guardaba como "MAIVE" y nadie podía canjearlo.
+ */
+export const normaliseCode = (code: string) =>
+  code.trim().toUpperCase().replace(/\s+/g, "");
+
+/** El tipo de cupón, como está en la base. Mismo puente que el de los roles. */
+const KIND_IN_DB: Record<Coupon["kind"], string> = {
+  percent: "porcentaje",
+  amount: "importe",
+};
+const kindFromDb = (v: unknown): Coupon["kind"] =>
+  v === "importe" ? "amount" : "percent";
+
+const toCoupon = (f: Record<string, unknown>): Coupon => ({
+  id: f.id as string,
+  code: f.codigo as string,
+  description: (f.descripcion as string) ?? null,
+  kind: kindFromDb(f.tipo),
+  value: Number(f.valor),
+  active: f.activo as boolean,
+  expiresAt: (f.caduca_en as Date) ?? null,
+  maxUses: (f.usos_max as number) ?? null,
+  timesRequested: Number(f.veces_pedido ?? 0),
+  agentId: (f.agente_id as string) ?? null,
+  createdAt: f.creado_en as Date,
+});
+
 const roleFromDb = (value: unknown): Role =>
   value === "admin" ? "admin" : value === "agente" ? "agent" : "student";
 
@@ -214,6 +305,7 @@ function postgresRepo(url: string): Repo {
     previousSignIn: (f.acceso_anterior as Date) ?? null,
     hasPassword: Boolean(f.clave_hash),
     registeredBy: (f.alta_por as string) ?? null,
+    coupon: (f.cupon as string) ?? null,
   });
 
   return {
@@ -366,6 +458,45 @@ function postgresRepo(url: string): Repo {
           quiz_ok_en = COALESCE(progreso.quiz_ok_en, ${passed ? sql`now()` : null})`;
     },
 
+    async listCoupons() {
+      const rows = await sql`SELECT * FROM cupones ORDER BY creado_en DESC`;
+      return rows.map(toCoupon);
+    },
+
+    async createCoupon({ code, description, kind, value, expiresAt, maxUses, agentId, createdBy }) {
+      const [f] = await sql`
+        INSERT INTO cupones (codigo, descripcion, tipo, valor, caduca_en, usos_max, agente_id, creado_por)
+        VALUES (
+          ${normaliseCode(code)}, ${description}, ${KIND_IN_DB[kind]}, ${value},
+          ${expiresAt}, ${maxUses}, ${agentId}, ${createdBy}
+        )
+        RETURNING *`;
+      return toCoupon(f!);
+    },
+
+    async setCouponActive(id, active) {
+      await sql`UPDATE cupones SET activo = ${active} WHERE id = ${id}`;
+    },
+
+    async findUsableCoupon(code) {
+      /* Las cuatro condiciones van en la consulta: un cupón caducado no llega
+         siquiera a la aplicación. */
+      const [f] = await sql`
+        SELECT * FROM cupones
+        WHERE codigo = ${normaliseCode(code)}
+          AND activo = true
+          AND (caduca_en IS NULL OR caduca_en > now())
+          AND (usos_max IS NULL OR veces_pedido < usos_max)
+        LIMIT 1`;
+      return f ? toCoupon(f) : null;
+    },
+
+    async recordCouponRequest(code) {
+      await sql`
+        UPDATE cupones SET veces_pedido = veces_pedido + 1
+        WHERE codigo = ${normaliseCode(code)}`;
+    },
+
     async countRequests(email, since) {
       const [f] = await sql`
         SELECT count(*)::int AS n FROM peticiones_acceso
@@ -391,6 +522,8 @@ function memoryRepo(): Repo {
   const sessions = new Map<string, { studentId: string; expires: Date }>();
   const progress = new Map<string, Progress>();
   const requests: { email: string; at: Date }[] = [];
+  /** Por código normalizado, igual que en Postgres manda el UNIQUE. */
+  const coupons = new Map<string, Coupon>();
 
   const progressKey = (a: string, n: number) => `${a}:${n}`;
   let n = 0;
@@ -454,6 +587,7 @@ function memoryRepo(): Repo {
          screen that is being demoed. */
       hasPassword: !!demoPassword,
       registeredBy: null,
+      coupon: null,
     };
     students.set(s.email, s);
   }
@@ -507,6 +641,7 @@ function memoryRepo(): Repo {
         previousSignIn: lastSignIn ? new Date(Date.now() - 3 * 86_400_000) : null,
         hasPassword: true,
         registeredBy,
+        coupon: null,
       };
       students.set(s.email, s);
       demoEmails.add(s.email);
@@ -582,6 +717,7 @@ function memoryRepo(): Repo {
         previousSignIn: null,
         hasPassword: false,
         registeredBy,
+        coupon: null,
       };
       students.set(s.email, s);
       return s;
@@ -660,6 +796,44 @@ function memoryRepo(): Repo {
         attempts: p.attempts + 1,
         quizPassedAt: p.quizPassedAt ?? (passed ? new Date() : null),
       });
+    },
+
+    async listCoupons() {
+      return [...coupons.values()].sort((a, b) => +b.createdAt - +a.createdAt);
+    },
+    async createCoupon({ code, description, kind, value, expiresAt, maxUses, agentId }) {
+      const c: Coupon = {
+        id: newId(),
+        code: normaliseCode(code),
+        description,
+        kind,
+        value,
+        active: true,
+        expiresAt,
+        maxUses,
+        timesRequested: 0,
+        agentId,
+        createdAt: new Date(),
+      };
+      coupons.set(c.code, c);
+      return c;
+    },
+    async setCouponActive(id, active) {
+      for (const [k, c] of coupons) {
+        if (c.id === id) coupons.set(k, { ...c, active });
+      }
+    },
+    async findUsableCoupon(code) {
+      const c = coupons.get(normaliseCode(code));
+      if (!c || !c.active) return null;
+      if (c.expiresAt && c.expiresAt <= new Date()) return null;
+      if (c.maxUses !== null && c.timesRequested >= c.maxUses) return null;
+      return c;
+    },
+    async recordCouponRequest(code) {
+      const k = normaliseCode(code);
+      const c = coupons.get(k);
+      if (c) coupons.set(k, { ...c, timesRequested: c.timesRequested + 1 });
     },
 
     async countRequests(email, since) {

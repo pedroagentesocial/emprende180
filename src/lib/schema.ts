@@ -93,6 +93,16 @@ export const crearLeadSchema = (lang: Idioma = "es") => {
   /** Qué formulario de la página generó el lead. Para saber cuál convierte. */
   origen: z.enum(ORIGENES).default("lead-magnet"),
 
+  /**
+   * Código de descuento, si lo trae.
+   *
+   * ⚠️ OPCIONAL Y NUNCA BLOQUEANTE. Un código mal escrito no puede costar un
+   * lead: se acepta lo que sea, se comprueba después contra la tabla de cupones
+   * y el resultado se anota. Validarlo aquí con un `.refine` convertiría una
+   * errata en un formulario que no deja enviar. Ver `/api/lead`.
+   */
+  cupon: z.string().trim().max(40).optional(),
+
   /** Consentimiento explícito. Obligatorio (RGPD). */
   consentimiento: z
     .boolean()

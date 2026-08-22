@@ -230,7 +230,71 @@ export const studentCopy = {
     home: { es: "Inicio", en: "Home" },
     people: { es: "Alumnos", en: "Students" },
     agents: { es: "Agentes", en: "Agents" },
+    coupons: { es: "Cupones", en: "Coupons" },
     settings: { es: "Ajustes", en: "Settings" },
+  },
+
+  /* ─── Cupones ──────────────────────────────────────────────────────────────
+     ⚠️ EL TEXTO DICE LO QUE UN CUPÓN HACE DE VERDAD, que no es descontar. Aquí
+     no se cobra —el pago se cierra por teléfono—, así que un cupón es una
+     promesa con nombre: alguien lo escribe en el formulario y quien le llama ve
+     qué precio se le prometió. Escribir "aplica un 20% al pago" sería mentir
+     sobre una pasarela que no existe. */
+  coupons: {
+    title: { es: "Cupones", en: "Coupons" },
+    intro: {
+      es: "Códigos que alguien escribe en el formulario de la página. No descuentan solos: cuando ese lead entra, ves su cupón en el aviso y en su ficha de GHL, y quien llama ya sabe qué precio prometerle.",
+      en: "Codes somebody types into the page's form. They don't discount by themselves: when that lead comes in, you see their coupon in the notification and on their GHL record, so whoever calls already knows what price to offer.",
+    },
+
+    newTitle: { es: "Crear un cupón", en: "Create a coupon" },
+    fieldCode: { es: "Código", en: "Code" },
+    fieldCodeHelp: {
+      es: "Se guarda en mayúsculas y sin espacios.",
+      en: "Stored uppercase, without spaces.",
+    },
+    fieldDescription: { es: "Para qué es (opcional)", en: "What it's for (optional)" },
+    fieldKind: { es: "Tipo", en: "Type" },
+    kindPercent: { es: "Porcentaje", en: "Percentage" },
+    kindAmount: { es: "Importe fijo", en: "Fixed amount" },
+    fieldValue: { es: "Valor", en: "Value" },
+    fieldExpires: { es: "Caduca el (opcional)", en: "Expires on (optional)" },
+    fieldMaxUses: { es: "Usos máximos (opcional)", en: "Maximum uses (optional)" },
+    fieldAgent: { es: "De qué agente (opcional)", en: "Whose agent code (optional)" },
+    agentNone: { es: "De la casa", en: "In-house" },
+    create: { es: "Crear cupón", en: "Create coupon" },
+
+    columnCode: { es: "Código", en: "Code" },
+    columnDiscount: { es: "Descuento", en: "Discount" },
+    columnState: { es: "Estado", en: "State" },
+    columnRequested: { es: "Lo han pedido", en: "Requested" },
+    columnSales: { es: "Altas", en: "Sign-ups" },
+
+    stateActive: { es: "Activo", en: "Active" },
+    stateOff: { es: "Apagado", en: "Off" },
+    stateExpired: { es: "Caducado", en: "Expired" },
+    stateUsedUp: { es: "Agotado", en: "Used up" },
+
+    turnOff: { es: "Apagar", en: "Turn off" },
+    turnOn: { es: "Encender", en: "Turn on" },
+
+    empty: {
+      es: "Todavía no hay cupones. Crea uno y ya se puede escribir en el formulario de la página.",
+      en: "No coupons yet. Create one and it can be typed into the page's form right away.",
+    },
+
+    noticeCreated: { es: "Cupón {code} creado.", en: "Coupon {code} created." },
+    noticeExists: { es: "{code} ya existe.", en: "{code} already exists." },
+    noticeBadCode: {
+      es: "El código necesita al menos tres caracteres, sin espacios.",
+      en: "The code needs at least three characters, no spaces.",
+    },
+    noticeBadValue: {
+      es: "El valor tiene que ser un número mayor que cero (y como mucho 100 si es porcentaje).",
+      en: "The value has to be a number above zero (and at most 100 for a percentage).",
+    },
+    noticeOff: { es: "Cupón apagado.", en: "Coupon turned off." },
+    noticeOn: { es: "Cupón encendido.", en: "Coupon turned on." },
   },
 
   /* ─── Ajustes: el estado de las conexiones ─────────────────────────────────

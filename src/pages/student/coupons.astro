@@ -1,0 +1,409 @@
+---
+import StudentLayout from "@layouts/StudentLayout.astro";
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import { studentCopy } from "@config/studentArea";
+import { repo, normaliseCode, type Coupon, type Student } from "@lib/data";
+import { canAdminister } from "@lib/permissions";
+import { resolverIdiomaServidor, LOCALES } from "@i18n/idioma";
+import { interpolar } from "@i18n/formato";
+import { curso } from "@config/curso.config";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * /student/coupons — los códigos que se escriben en la landing
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * ⚠️ UN CUPÓN DE AQUÍ NO DESCUENTA NADA, Y LA PANTALLA LO DICE. En este sistema
+ * no se cobra: el pago se cierra por teléfono. Lo que un cupón es de verdad es
+ * una PROMESA CON NOMBRE — alguien lo escribe en el formulario, y quien le llama
+ * ve en el aviso y en la ficha de GHL qué precio se le prometió y por qué canal
+ * llegó. Prometer en la interfaz que "aplica un 20% al pago" sería hablar de una
+ * pasarela que no existe.
+ *
+ * ─── LAS DOS CUENTAS ESTÁN SEPARADAS A PROPÓSITO ───────────────────────────
+ *
+ *   · LO HAN PEDIDO — cuánta gente lo escribió. Mide el alcance del canal.
+ *   · ALTAS — cuántos de esos acabaron siendo alumnos.
+ *
+ * Juntarlas en un número escondería justo lo que hay que saber: un cupón con
+ * cuarenta peticiones y dos altas es un cupón que atrae y no cierra, y eso es un
+ * problema de precio o de guion, no de tráfico.
+ *
+ * ⚠️ SOLO EL ADMIN. Un cupón es una decisión de precio, y el precio lo pone
+ * quien lleva el negocio. Un agente recibe el mismo 404 que un alumno.
+ *
+ * ⚠️ NO SE BORRAN, SE APAGAN. Un cupón borrado deja leads huérfanos que
+ * mencionan un código que ya no existe; apagado, deja de admitirse y su
+ * historial sigue ahí para saber qué se prometió y a cuántos.
+ */
+export const prerender = false;
+
+const me = Astro.locals.student!;
+if (!canAdminister(me)) return new Response(null, { status: 404 });
+
+const r = repo();
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+const c = studentCopy.coupons;
+const say = (text: { es: string; en: string }, values?: Record<string, string>) =>
+  values ? interpolar(text[lang], values) : text[lang];
+
+let notice: { type: "ok" | "error"; text: string } | null = null;
+
+if (Astro.request.method === "POST") {
+  const form = await Astro.request.formData();
+  const action = String(form.get("action") ?? "");
+
+  if (action === "create") {
+    const code = normaliseCode(String(form.get("code") ?? ""));
+    const kind = String(form.get("kind") ?? "percent") === "amount" ? "amount" : "percent";
+    const value = Number(String(form.get("value") ?? "").replace(",", "."));
+    const expires = String(form.get("expires") ?? "").trim();
+    const maxUses = Number(String(form.get("maxUses") ?? "").trim());
+    const agentId = String(form.get("agentId") ?? "").trim() || null;
+
+    /* Las validaciones van aquí y no en el `<input>`: un `min`/`max` del marcado
+       es una comodidad para quien usa el formulario, no una regla. */
+    if (code.length < 3) {
+      notice = { type: "error", text: say(c.noticeBadCode) };
+    } else if (
+      !Number.isFinite(value) ||
+      value <= 0 ||
+      (kind === "percent" && value > 100)
+    ) {
+      notice = { type: "error", text: say(c.noticeBadValue) };
+    } else if (await r.findUsableCoupon(code)) {
+      notice = { type: "error", text: say(c.noticeExists, { code }) };
+    } else {
+      await r.createCoupon({
+        code,
+        description: String(form.get("description") ?? "").trim() || null,
+        kind,
+        value,
+        /* La fecha llega como `YYYY-MM-DD` de un `<input type=date>`. Se toma el
+           final del día: un cupón que "caduca el 30" vale todo el día 30. */
+        expiresAt: expires ? new Date(`${expires}T23:59:59`) : null,
+        maxUses: Number.isFinite(maxUses) && maxUses > 0 ? maxUses : null,
+        agentId,
+        createdBy: me.id,
+      });
+      notice = { type: "ok", text: say(c.noticeCreated, { code }) };
+    }
+  }
+
+  if (action === "toggle") {
+    const id = String(form.get("id") ?? "");
+    const active = form.get("active") === "1";
+    await r.setCouponActive(id, active);
+    notice = { type: "ok", text: say(active ? c.noticeOn : c.noticeOff) };
+  }
+
+  const target = new URL("/student/coupons", Astro.url);
+  if (notice) {
+    target.searchParams.set("t", notice.type);
+    target.searchParams.set("m", notice.text);
+  }
+  return Astro.redirect(target.pathname + target.search, 303);
+}
+
+const typeParam = Astro.url.searchParams.get("t");
+const messageParam = Astro.url.searchParams.get("m");
+if (messageParam && (typeParam === "ok" || typeParam === "error")) {
+  notice = { type: typeParam, text: messageParam };
+}
+
+const coupons = await r.listCoupons();
+const everyone = await r.listStudents();
+const agents = everyone.filter((s) => s.role === "agent" && s.active);
+
+/* Cuántas ALTAS trae cada cupón. Es la segunda cuenta, la que dice si además de
+   atraer, cierra. Sale de los alumnos, no de la tabla de cupones. */
+const altasPorCodigo = new Map<string, number>();
+for (const s of everyone) {
+  if (!s.coupon) continue;
+  const k = normaliseCode(s.coupon);
+  altasPorCodigo.set(k, (altasPorCodigo.get(k) ?? 0) + 1);
+}
+
+const nombreAgente = new Map(agents.map((a: Student) => [a.id, a.name ?? a.email]));
+
+const estado = (cupon: Coupon) => {
+  if (!cupon.active) return { label: c.stateOff, tone: "off" as const };
+  if (cupon.expiresAt && cupon.expiresAt <= new Date())
+    return { label: c.stateExpired, tone: "off" as const };
+  if (cupon.maxUses !== null && cupon.timesRequested >= cupon.maxUses)
+    return { label: c.stateUsedUp, tone: "off" as const };
+  return { label: c.stateActive, tone: "on" as const };
+};
+
+const descuento = (cupon: Coupon) =>
+  cupon.kind === "percent"
+    ? `${cupon.value} %`
+    : `${cupon.value} ${curso.precio.moneda}`;
+
+const fecha = (d: Date | null) =>
+  d
+    ? new Intl.DateTimeFormat(LOCALES[lang], {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }).format(d)
+    : null;
+
+const campo =
+  "mt-2 min-h-12 w-full rounded-xl border border-line-strong bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-subtle transition-colors focus:border-secondary-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+const etiqueta = "block text-sm font-semibold text-ink-muted";
+const cell = "px-4 py-3 text-sm";
+---
+
+<StudentLayout title={c.title} student={me} heading={c.title}>
+  <div class="max-w-4xl">
+    <p class="max-w-2xl text-base text-pretty text-ink-muted">
+      <T v={c.intro} />
+    </p>
+
+    {
+      notice && (
+        <p
+          role="status"
+          class:list={[
+            "mt-6 rounded-xl border px-4 py-3 text-sm text-pretty",
+            notice.type === "ok"
+              ? "border-secondary-300 bg-secondary-50 text-ink"
+              : "border-error-500 bg-error-50 text-error-700",
+          ]}
+        >
+          {notice.text}
+        </p>
+      )
+    }
+
+    {/* ─── Crear ────────────────────────────────────────────────────────── */}
+    <form method="POST" class="mt-8 rounded-2xl border border-line bg-surface p-6">
+      <input type="hidden" name="action" value="create" />
+
+      <h2 class="flex items-center gap-2.5 text-lg font-bold text-ink">
+        <span aria-hidden="true" class="marca-linea text-secondary-600">
+          <Icono nombre="mas" class="size-5" grosor={2.2} />
+        </span>
+        <T v={c.newTitle} />
+      </h2>
+
+      <div class="mt-5 grid gap-4 sm:grid-cols-2">
+        <div>
+          <label for="code" class={etiqueta}><T v={c.fieldCode} /></label>
+          <input
+            id="code"
+            name="code"
+            type="text"
+            required
+            autocomplete="off"
+            autocapitalize="characters"
+            spellcheck="false"
+            placeholder="LAURA20"
+            class={`${campo} font-mono uppercase`}
+          />
+          <p class="mt-1.5 text-xs text-ink-subtle"><T v={c.fieldCodeHelp} /></p>
+        </div>
+
+        <div>
+          <label for="description" class={etiqueta}>
+            <T v={c.fieldDescription} />
+          </label>
+          <input
+            id="description"
+            name="description"
+            type="text"
+            autocomplete="off"
+            placeholder="Campaña de agosto"
+            class={campo}
+          />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="kind" class={etiqueta}><T v={c.fieldKind} /></label>
+            <select id="kind" name="kind" class={campo}>
+              <option value="percent">{c.kindPercent[lang]}</option>
+              <option value="amount">{c.kindAmount[lang]}</option>
+            </select>
+          </div>
+          <div>
+            <label for="value" class={etiqueta}><T v={c.fieldValue} /></label>
+            <input
+              id="value"
+              name="value"
+              type="number"
+              required
+              min="1"
+              step="1"
+              inputmode="numeric"
+              placeholder="20"
+              class={campo}
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="expires" class={etiqueta}><T v={c.fieldExpires} /></label>
+            <input id="expires" name="expires" type="date" class={campo} />
+          </div>
+          <div>
+            <label for="maxUses" class={etiqueta}><T v={c.fieldMaxUses} /></label>
+            <input
+              id="maxUses"
+              name="maxUses"
+              type="number"
+              min="1"
+              step="1"
+              inputmode="numeric"
+              placeholder="—"
+              class={campo}
+            />
+          </div>
+        </div>
+
+        {/* De quién es. Solo aparece cuando hay agentes: un desplegable con una
+            única opción es una decisión que nadie tiene que tomar. */}
+        {
+          agents.length > 0 && (
+            <div>
+              <label for="agentId" class={etiqueta}>
+                <T v={c.fieldAgent} />
+              </label>
+              <select id="agentId" name="agentId" class={campo}>
+                <option value="">{c.agentNone[lang]}</option>
+                {agents.map((a) => (
+                  <option value={a.id}>{a.name ?? a.email}</option>
+                ))}
+              </select>
+            </div>
+          )
+        }
+      </div>
+
+      <button
+        type="submit"
+        class="mt-5 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-cta px-6 text-sm font-bold text-ink-inverse shadow-cta transition-colors hover:bg-cta-hover hover:shadow-cta-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      >
+        <T v={c.create} />
+      </button>
+    </form>
+
+    {/* ─── La lista ─────────────────────────────────────────────────────── */}
+    <div class="mt-10">
+      {
+        coupons.length === 0 ? (
+          <p class="rounded-2xl border border-dashed border-line-strong px-6 py-10 text-center text-base text-pretty text-ink-muted">
+            <T v={c.empty} />
+          </p>
+        ) : (
+          <div class="overflow-x-auto rounded-2xl border border-line">
+            <table class="w-full min-w-[44rem] border-collapse text-left">
+              <thead class="bg-surface-muted">
+                <tr class="text-xs font-bold tracking-wide text-ink-subtle uppercase">
+                  <th scope="col" class={cell}><T v={c.columnCode} /></th>
+                  <th scope="col" class={cell}><T v={c.columnDiscount} /></th>
+                  <th scope="col" class={cell}><T v={c.columnState} /></th>
+                  <th scope="col" class={`${cell} text-right`}>
+                    <T v={c.columnRequested} />
+                  </th>
+                  <th scope="col" class={`${cell} text-right`}>
+                    <T v={c.columnSales} />
+                  </th>
+                  <th scope="col" class={cell}>
+                    <span class="sr-only"><T v={studentCopy.admin.actions} /></span>
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {coupons.map((cupon) => {
+                  const e = estado(cupon);
+                  return (
+                    <tr class="border-t border-line">
+                      <td class={cell}>
+                        <span class="block font-mono text-sm font-bold text-ink">
+                          {cupon.code}
+                        </span>
+                        {cupon.description && (
+                          <span class="block text-ink-subtle">{cupon.description}</span>
+                        )}
+                        {cupon.agentId && (
+                          <span class="mt-1 inline-flex rounded-full bg-secondary-100 px-2 py-0.5 text-xs font-bold text-ink-muted">
+                            {nombreAgente.get(cupon.agentId) ?? "—"}
+                          </span>
+                        )}
+                      </td>
+
+                      <td class={`${cell} font-semibold text-ink`}>{descuento(cupon)}</td>
+
+                      <td class={cell}>
+                        <span
+                          class:list={[
+                            "inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-xs font-bold",
+                            e.tone === "on"
+                              ? "bg-secondary-100 text-secondary-800"
+                              : "bg-surface-muted text-ink-muted",
+                          ]}
+                        >
+                          <span
+                            aria-hidden="true"
+                            class:list={[
+                              "size-1.5 rounded-full",
+                              e.tone === "on" ? "bg-secondary-600" : "bg-ink-subtle",
+                            ]}
+                          />
+                          <T v={e.label} />
+                        </span>
+                        {cupon.expiresAt && (
+                          <span class="mt-1 block text-xs text-ink-subtle">
+                            {fecha(cupon.expiresAt)}
+                          </span>
+                        )}
+                      </td>
+
+                      <td class={`${cell} text-right tabular-nums text-ink-muted`}>
+                        {cupon.timesRequested}
+                        {cupon.maxUses !== null && (
+                          <span class="text-ink-subtle"> / {cupon.maxUses}</span>
+                        )}
+                      </td>
+
+                      <td class={`${cell} text-right text-base font-bold tabular-nums text-ink`}>
+                        {altasPorCodigo.get(cupon.code) ?? 0}
+                      </td>
+
+                      <td class={`${cell} text-right`}>
+                        <form method="POST">
+                          <input type="hidden" name="action" value="toggle" />
+                          <input type="hidden" name="id" value={cupon.id} />
+                          <input
+                            type="hidden"
+                            name="active"
+                            value={cupon.active ? "0" : "1"}
+                          />
+                          <button
+                            type="submit"
+                            class="inline-flex min-h-11 items-center rounded-full border border-line-strong px-3.5 text-xs font-bold text-ink-muted transition-colors hover:border-secondary-400 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                          >
+                            <T v={cupon.active ? c.turnOff : c.turnOn} />
+                          </button>
+                        </form>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )
+      }
+    </div>
+  </div>
+</StudentLayout>

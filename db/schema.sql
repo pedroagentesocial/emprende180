@@ -138,3 +138,45 @@ CREATE TABLE IF NOT EXISTS peticiones_acceso (
   pedido_en timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS peticiones_acceso_email ON peticiones_acceso (email, pedido_en);
+
+-- ─── Cupones ────────────────────────────────────────────────────────────────
+-- ⚠️ UN CUPÓN AQUÍ NO DESCUENTA NADA, PORQUE AQUÍ NO SE COBRA. El pago se hace
+-- por teléfono, fuera de este sistema. Lo que un cupón es de verdad en este
+-- negocio es una PROMESA con nombre: alguien lo escribe en el formulario, y
+-- quien le llama ve en la ficha del lead qué precio le prometieron y por qué
+-- canal llegó. Esa es toda su función, y por eso no hay ninguna columna que
+-- hable de importes cobrados.
+--
+-- Las dos cuentas están separadas a propósito:
+--  · `veces_pedido` — cuánta gente lo escribió. Mide el alcance del canal.
+--  · las altas con ese código — cuántas de esas se convirtieron en cliente.
+-- Juntarlas en un solo número escondería justo lo que hay que saber: un cupón
+-- con cuarenta peticiones y dos ventas es un cupón que atrae y no cierra.
+CREATE TABLE IF NOT EXISTS cupones (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  -- Siempre en MAYÚSCULAS y sin espacios: lo normaliza la aplicación antes de
+  -- escribir y antes de buscar, así que "laura20" y "LAURA20" son el mismo.
+  codigo       text NOT NULL UNIQUE,
+  descripcion  text,
+  -- 'porcentaje' | 'importe'. Sin CHECK, por lo mismo que en `rol`: la lista
+  -- vive en el código y una restricción aquí obligaría a migrar para ampliarla.
+  tipo         text NOT NULL DEFAULT 'porcentaje',
+  valor        numeric(10,2) NOT NULL,
+  activo       boolean NOT NULL DEFAULT true,
+  -- Nulo = no caduca. Nulo = sin tope de usos. Un cupón sin límites es una
+  -- decisión válida y frecuente; obligar a poner fechas inventadas no lo es.
+  caduca_en    timestamptz,
+  usos_max     integer,
+  veces_pedido integer NOT NULL DEFAULT 0,
+  -- De qué agente es, si es de alguno. Sirve para saber a quién atribuir el
+  -- lead que llegue con él.
+  agente_id    uuid REFERENCES alumnos(id) ON DELETE SET NULL,
+  creado_por   uuid REFERENCES alumnos(id) ON DELETE SET NULL,
+  creado_en    timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS cupones_activo ON cupones (activo, creado_en DESC);
+
+-- El código con el que llegó cada alumno, si llegó con alguno. Se guarda el
+-- TEXTO y no una clave foránea: si algún día se borra el cupón, la ficha del
+-- alumno tiene que seguir diciendo con qué promesa entró.
+ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS cupon text;
