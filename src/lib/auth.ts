@@ -75,7 +75,28 @@ export async function createMagicLink(student: Student, origin: URL): Promise<st
   const expires = new Date(Date.now() + TOKEN_MINUTES * 60_000);
   await repo().createMagicToken(student.id, await sha256(token), expires);
 
-  const url = new URL("/login/verify", origin);
+  /**
+   * ⚠️ EN PRODUCCIÓN EL ENLACE SE CONSTRUYE CON EL DOMINIO CONFIGURADO, NO CON
+   * EL DE LA PETICIÓN, y esto no es una preferencia de estilo.
+   *
+   * Este enlace ES la llave de la cuenta. Si el dominio sale de una cabecera
+   * que llega de fuera, quien pueda manipular esa cabecera decide a qué
+   * servidor va a parar la llave del alumno. Y aunque nadie lo manipule, ya
+   * pasó lo otro: sin `security.allowedDomains` en `astro.config.mjs`,
+   * `Astro.url` valía `https://localhost` en producción y CADA enlace enviado
+   * habría sido inservible, pareciendo un fallo del correo.
+   *
+   * Con esto, el enlace solo puede apuntar al sitio configurado, pase lo que
+   * pase con las cabeceras o con la configuración del framework. En desarrollo
+   * se sigue usando la petición, o los enlaces de prueba en local llevarían a
+   * producción.
+   */
+  const base =
+    import.meta.env.PROD && import.meta.env.SITE
+      ? new URL(import.meta.env.SITE)
+      : origin;
+
+  const url = new URL("/login/verify", base);
   url.searchParams.set("t", token);
   return url.href;
 }

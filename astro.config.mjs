@@ -11,6 +11,46 @@ const SITE_URL = "https://emprende180.vercel.app";
 export default defineConfig({
   site: SITE_URL,
   output: "server",
+
+  /**
+   * ⚠️ SIN ESTO, `Astro.url` EN PRODUCCIÓN ES `https://localhost`. No es una
+   * exageración: está comprobado contra el despliegue real.
+   *
+   * Desde Astro 5.14, si no se declara esta lista el framework NO se fía de la
+   * cabecera `X-Forwarded-Host` (bien, evita ataques de host injection) pero
+   * TAMPOCO del `Host` normal, y se queda con `localhost` como último recurso.
+   * Detrás del proxy de Vercel, que es donde vive esto, esas dos cabeceras son
+   * la única forma de saber por qué dominio ha entrado alguien.
+   *
+   * Lo que rompía, y por eso esto no es cosmético:
+   *
+   *  1. EL ENLACE DE ACCESO POR CORREO. Se construye con `new URL("/login/verify",
+   *     Astro.url)`, así que cada enlace enviado desde producción habría salido
+   *     como `https://localhost/login/verify?t=…`: inservible para todo el
+   *     mundo. Se habría descubierto el día de encender Resend, pareciendo un
+   *     problema del correo.
+   *  2. LA COMPROBACIÓN DE ORIGEN de los POST, la nuestra y la de Astro. Un
+   *     navegador que no manda `Sec-Fetch-Site` (Safari viejo, los navegadores
+   *     dentro de Instagram o Facebook) caía al plan B, comparar `Origin` con
+   *     `Astro.url.origin`, y `https://emprende180.vercel.app` nunca es igual a
+   *     `https://localhost`. Resultado: 403 al enviar el formulario de la
+   *     landing. Comprobado en producción: 403 con `Origin`, 403 con `Referer`.
+   *
+   * Los patrones son restrictivos a propósito: solo el dominio del proyecto y
+   * sus despliegues. `**.vercel.app` a secas se fiaría del `.vercel.app` de
+   * cualquiera.
+   */
+  security: {
+    allowedDomains: [
+      { hostname: "emprende180.vercel.app", protocol: "https" },
+      { hostname: "emprende180-git-main-pedroagentesocials-projects.vercel.app", protocol: "https" },
+      /* SWAP: el dominio propio, en cuanto se conecte. Dejarlo puesto desde ya
+         no abre nada: mientras el DNS no apunte aquí, nadie entra por él. */
+      { hostname: "emprende180.com", protocol: "https" },
+      { hostname: "**.emprende180.com", protocol: "https" },
+    ],
+  },
+
   adapter: vercel({
     /**
      * Vercel Web Analytics, desactivado.
