@@ -327,8 +327,8 @@ export const studentCopy = {
     },
     ghlTitle: { es: "GoHighLevel", en: "GoHighLevel" },
     ghlText: {
-      es: "Cada alta, baja y reactivación se manda al workflow de GHL para que allí se cree el contacto y se le dé o se le quite el curso. Va sin esperar respuesta: si GHL falla, el alta sigue siendo válida aquí.",
-      en: "Every sign-up, deactivation and reactivation is sent to the GHL workflow so the contact is created there and the course granted or revoked. It doesn't wait for an answer: if GHL fails, the sign-up still stands here.",
+      es: "Cada alta, baja y reactivación se manda al workflow de GHL para que allí se cree el contacto y se le dé o se le quite el curso. También se avisa de la activación: la primera vez que el alumno entra de verdad, que es otra cosa que darlo de alta. Va sin esperar respuesta: si GHL falla, el alta sigue siendo válida aquí.",
+      en: "Every sign-up, deactivation and reactivation is sent to the GHL workflow so the contact is created there and the course granted or revoked. Activation is sent too: the first time the student actually signs in, which is not the same as being registered. It doesn't wait for an answer: if GHL fails, the sign-up still stands here.",
     },
     captchaTitle: { es: "Captcha (Turnstile)", en: "Captcha (Turnstile)" },
     captchaText: {

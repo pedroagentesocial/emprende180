@@ -1,6 +1,7 @@
 import type { AstroCookies } from "astro";
 import { repo, normaliseEmail, type Student, type Role } from "@lib/data";
 import { hashPassword, verifyPassword, burnTime } from "@lib/passwords";
+import { avisarAGhl } from "@lib/ghl";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -111,7 +112,23 @@ async function openSession(
   const session = randomToken();
   const expires = new Date(Date.now() + SESSION_DAYS * 86_400_000);
   await r.createSession(student.id, await sha256(session), expires, userAgent);
+
+  /**
+   * ¿Es la primera vez que esta persona entra?
+   *
+   * ⚠️ SE MIRA ANTES DE `markSignIn`, Y ESE ORDEN ES TODO. `markSignIn` estampa
+   * la fecha de entrada; después de llamarlo, `lastSignIn` ya no está vacío
+   * NUNCA y esta comprobación no volvería a ser cierta jamás. El `student` que
+   * llega aquí se leyó antes de tocar nada, así que su `lastSignIn` en blanco
+   * significa exactamente "no había entrado hasta ahora".
+   */
+  const primeraVez = student.lastSignIn === null;
+
   await r.markSignIn(student.id);
+
+  /* Sin `await`, igual que en el panel: entrar no puede depender de que GHL
+     conteste. Ver `@lib/ghl`, que además nunca lanza. */
+  if (primeraVez) avisarAGhl("activacion", student).catch(() => {});
 
   cookies.set(SESSION_COOKIE, session, {
     httpOnly: true,

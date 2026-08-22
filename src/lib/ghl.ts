@@ -45,8 +45,19 @@ import type { Student } from "@lib/data";
  * a su dueño, no a un webhook.
  */
 
-/** Lo que le puede pasar a un alumno y a GHL le importa. */
-export type EventoGhl = "alta" | "baja" | "reactivacion";
+/**
+ * Lo que le puede pasar a un alumno y a GHL le importa.
+ *
+ * ⚠️ `alta` Y `activacion` NO SON LO MISMO, y esa distinción es justo la que
+ * hacía falta. `alta` es una decisión NUESTRA: el agente lo apunta en el panel.
+ * `activacion` es un acto SUYO: la primera vez que entra de verdad.
+ *
+ * Sin el segundo, en GHL un alumno que nunca ha pulsado su enlace parece
+ * exactamente igual que uno que entró el primer día, y no hay forma de saber a
+ * quién hay que perseguir. Con los dos, la diferencia entre las dos fechas es
+ * literalmente cuánto tarda la gente en empezar.
+ */
+export type EventoGhl = "alta" | "activacion" | "baja" | "reactivacion";
 
 /** La URL del "Inbound Webhook" del workflow de alumnos, o nada. */
 const webhook = (): string | null => import.meta.env.GHL_ALUMNOS_WEBHOOK_URL || null;
