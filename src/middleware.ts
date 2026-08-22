@@ -1,6 +1,7 @@
 import { defineMiddleware } from "astro:middleware";
 import { currentStudent } from "@lib/auth";
 import { harden, isSameOrigin, changesState } from "@lib/security";
+import { esFalloDeBase, respuestaSinBase } from "@lib/downtime";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -55,6 +56,31 @@ const LEGACY_PATHS: Record<string, string> = {
 };
 
 export const onRequest = defineMiddleware(async (context, next) => {
+  try {
+    return await atender(context, next);
+  } catch (error) {
+    /* ⚠️ SOLO LOS FALLOS DE BASE DE DATOS SE CONVIERTEN EN PÁGINA. Cualquier
+       otra excepción se vuelve a lanzar para que siga saliendo como un 500 en
+       el registro: taparlas todas sería cambiar errores visibles por errores
+       silenciosos. Ver `@lib/downtime`. */
+    if (!esFalloDeBase(error)) throw error;
+
+    const { pathname } = context.url;
+    console.error(`[middleware] Base de datos no disponible en ${pathname}:`, error);
+
+    return respuestaSinBase(
+      pathname,
+      context.request.headers.get("accept-language"),
+      pathname.startsWith("/api/"),
+    );
+  }
+});
+
+/** El middleware de verdad. Vive aparte solo para que el `try` de arriba lo envuelva entero. */
+async function atender(
+  context: Parameters<Parameters<typeof defineMiddleware>[0]>[0],
+  next: Parameters<Parameters<typeof defineMiddleware>[0]>[1],
+): Promise<Response> {
   const { pathname } = context.url;
 
   const legacy = LEGACY_PATHS[pathname];
@@ -100,4 +126,4 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   /* ─── 3. Headers ─────────────────────────────────────────────────────── */
   return harden(await next(), pathname);
-});
+}

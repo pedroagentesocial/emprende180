@@ -10,6 +10,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check",
+    "db:setup": "node scripts/db-setup.mjs",
     "marca:assets": "node scripts/generar-assets.mjs",
     "marca:paleta": "node scripts/generar-paleta.mjs",
     "marca:favicon": "node scripts/generar-favicon.mjs"

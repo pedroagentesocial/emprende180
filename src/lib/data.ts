@@ -290,8 +290,24 @@ function postgresRepo(url: string): Repo {
      prepared statements are lost between requests and the query fails
      intermittently — the worst kind of failure. `max: 1` because each
      invocation is short-lived and there is no point opening a pool that is
-     about to be thrown away. */
-  const sql = postgres(url, { prepare: false, max: 1 });
+     about to be thrown away.
+
+     ⚠️ `connect_timeout` IS THE DIFFERENCE BETWEEN FAILING AND HANGING. Without
+     it, a database that accepts the socket and then says nothing keeps the
+     request open until the platform's own limit (300 s on Vercel), and the
+     visitor stares at a blank tab the whole time while the function burns. With
+     10 s, that turns into the "back in a moment" page — which is a bad minute
+     instead of a broken site. See `@lib/downtime`.
+
+     `idle_timeout` returns the connection to the pooler quickly instead of
+     holding a slot that this invocation is not going to use again. On a small
+     free-tier Postgres, slots are the scarce resource, not queries. */
+  const sql = postgres(url, {
+    prepare: false,
+    max: 1,
+    connect_timeout: 10,
+    idle_timeout: 20,
+  });
 
   const toStudent = (f: Record<string, unknown>): Student => ({
     id: f.id as string,
