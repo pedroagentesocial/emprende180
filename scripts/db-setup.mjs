@@ -27,18 +27,33 @@ import { readFileSync } from "node:fs";
 const desdeArgumento = process.argv[2];
 const desdeEntorno = process.env.DATABASE_URL;
 
-/** El `.env` a mano: este script corre fuera de Astro, sin `import.meta.env`. */
+/**
+ * El archivo de entorno, leído a mano: este script corre fuera de Astro y no
+ * tiene `import.meta.env`.
+ *
+ * Mira `.env.local` ANTES que `.env`, y ese orden importa: `vercel env pull`
+ * escribe en `.env.local`, así que después de conectar la base en Vercel la
+ * cadena buena está ahí, no en el `.env` de siempre. Es también el orden de
+ * precedencia que usa Vite, así que el script ve lo mismo que verá la
+ * aplicación.
+ */
 function desdeArchivo() {
-  try {
-    const texto = readFileSync(".env", "utf8");
-    const linea = texto
-      .split("\n")
-      .find((l) => l.trim().startsWith("DATABASE_URL="));
-    if (!linea) return null;
-    return linea.slice(linea.indexOf("=") + 1).trim().replace(/^["']|["']$/g, "");
-  } catch {
-    return null;
+  for (const archivo of [".env.local", ".env"]) {
+    try {
+      const linea = readFileSync(archivo, "utf8")
+        .split("\n")
+        .find((l) => l.trim().startsWith("DATABASE_URL="));
+      if (!linea) continue;
+      const valor = linea
+        .slice(linea.indexOf("=") + 1)
+        .trim()
+        .replace(/^["']|["']$/g, "");
+      if (valor) return valor;
+    } catch {
+      /* Ese archivo no existe: se prueba el siguiente. */
+    }
   }
+  return null;
 }
 
 const url = desdeArgumento || desdeEntorno || desdeArchivo();

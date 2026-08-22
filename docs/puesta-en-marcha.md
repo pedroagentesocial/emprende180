@@ -28,12 +28,29 @@ línea.
 
 ### Cómo
 
-1. Entra en el panel de Vercel del proyecto → pestaña **Storage** → **Create
-   Database** → Neon. Hacerlo desde ahí, y no desde neon.com, importa: Vercel
-   **pone la variable de entorno solo**, en los tres entornos, y ya no hay que
-   copiar ninguna contraseña a mano.
-2. Si lo creas fuera de Vercel, copia la cadena de conexión y añádela como
-   `DATABASE_URL` en Project Settings → Environment Variables.
+1. Panel de Vercel → proyecto `emprende180` → pestaña **Storage** → **Create
+   Database** → **Neon**. Hacerlo desde ahí, y no desde neon.com, importa:
+   Vercel **pone la variable de entorno sola**, en los tres entornos, y no hay
+   que copiar ninguna contraseña a mano.
+2. Plan **Free**. Región: la más cercana a donde corre la función, que hoy es
+   **iad1 (Washington)**, así que **US East**. Cada consulta cruza esa distancia,
+   y con la base en Europa se pagan unos 100 ms de ida y vuelta en cada una.
+3. Al conectarla, marca los tres entornos (Production, Preview, Development).
+4. **Redespliega.** Esto no es opcional y no es evidente: las variables se
+   incrustan AL COMPILAR, no se leen en cada petición. Comprobado buscando el
+   valor de `ADMIN_EMAILS` dentro de la función ya compilada, y ahí está. Una
+   variable añadida después de un despliegue no existe para ese despliegue.
+   Cualquier push vale, o el botón **Redeploy** en el panel.
+5. Para trabajar en local con la misma base:
+   ```bash
+   vercel env pull .env.local
+   ```
+   Baja las variables del proyecto a `.env.local`, que está en `.gitignore` y no
+   pisa tu `.env`.
+
+Si prefieres crear la base fuera de Vercel, copia la cadena y añádela como
+`DATABASE_URL` en Project Settings → Environment Variables. El resto es igual,
+el redespliegue incluido.
 
 > **Usa siempre la cadena CON POOLER** si el proveedor te ofrece las dos (en Neon
 > el host lleva `-pooler`). En serverless cada petición puede abrir su propia
@@ -44,13 +61,15 @@ línea.
 
 ### Crear las tablas
 
-Con la cadena en tu `.env` local:
+Con la cadena ya en `.env.local` (o en `.env`):
 
 ```bash
 npm run db:setup
 ```
 
-O apuntando a una base concreta sin tocar el `.env`:
+Mira `.env.local` primero, que es donde escribe `vercel env pull`, y si no
+encuentra nada ahí prueba con `.env`. O apuntando a una base concreta sin tocar
+ningún archivo:
 
 ```bash
 npm run db:setup -- "postgres://usuario:clave@host/base?sslmode=require"
