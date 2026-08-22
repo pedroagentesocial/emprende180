@@ -119,6 +119,21 @@ en spam o no llega, que es peor que un error.
 Resend regala 3.000 correos al mes y 100 al día. Con 200 alumnos, entre altas y
 enlaces perdidos, no vas a acercarte.
 
+> **⚠️ ENVIAR Y RECIBIR SON DOS COSAS DISTINTAS, Y ESTO COSTÓ UN RATO.**
+> Verificar el dominio en Resend habilita **enviar** desde `@emprende180.com`.
+> **No crea ningún buzón.** Si el dominio no tiene registros MX, una dirección
+> como `hola@emprende180.com` no existe: Resend dice "enviado" y el correo no
+> llega a ninguna parte. Pasó de verdad, con los avisos de leads.
+>
+> Así que `NOTIFY_EMAIL_TO` tiene que ser una dirección que **reciba** de
+> verdad. Y si la página publica `hola@emprende180.com` como contacto, ese buzón
+> tiene que existir: cada visitante que escriba allí está escribiendo al vacío.
+> Se comprueba en un segundo:
+>
+> ```bash
+> node -e "require('dns').promises.resolveMx('emprende180.com').then(console.log).catch(()=>console.log('sin MX: no recibe correo'))"
+> ```
+
 ---
 
 ## 4. Lo demás
@@ -134,6 +149,37 @@ enlaces perdidos, no vas a acercarte.
 En `/student/settings` hay una pantalla que dice cuáles están puestas y cuáles
 no. Enseña el NOMBRE de la variable, nunca el valor: una pantalla que enseña
 secretos es un secreto menos.
+
+---
+
+## 4 bis. Dos trampas al poner variables desde Windows
+
+Las dos costaron tiempo de verdad, así que quedan escritas.
+
+**El BOM invisible.** En PowerShell, pasar un valor por tubería le mete delante
+un carácter invisible (U+FEFF, el BOM):
+
+```powershell
+"re_xxx" | vercel env add RESEND_API_KEY production   # ← mete un BOM al principio
+```
+
+Con la clave así, Resend contesta `Cannot convert argument to a ByteString
+because the character at index 7 has a value of 65279`. El 65279 ES el BOM.
+Cuesta reconocerlo porque el valor se ve perfecto en el panel. Lo que sí
+funciona es redirigir desde un archivo escrito sin BOM:
+
+```powershell
+[System.IO.File]::WriteAllText($f, "re_xxx", (New-Object System.Text.UTF8Encoding($false)))
+cmd /c "vercel env add RESEND_API_KEY production < $f"
+```
+
+Detalle curioso: `ADMIN_EMAILS` con BOM funcionaba igual, porque `.trim()` de
+JavaScript sí borra el U+FEFF. Una cabecera HTTP no perdona nada.
+
+**`vercel redeploy` no recompila.** Reutiliza la compilación anterior, y como las
+variables se incrustan al compilar, un `redeploy` después de tocarlas no cambia
+absolutamente nada. Hay que usar `vercel deploy --prod`, o un push, o destildar
+"use existing build cache" en el panel.
 
 ---
 
