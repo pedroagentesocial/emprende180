@@ -2,6 +2,7 @@ import type { AstroCookies } from "astro";
 import { repo, normaliseEmail, type Student, type Role } from "@lib/data";
 import { hashPassword, verifyPassword, burnTime } from "@lib/passwords";
 import { avisarAGhl } from "@lib/ghl";
+import { limpiarSiToca } from "@lib/mantenimiento";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -277,6 +278,11 @@ export async function sendMagicLink(
   },
 ): Promise<{ devLink: string | null }> {
   const r = repo();
+
+  /* Buen momento para tirar lo caducado: es justo la operación que llena
+     `peticiones_acceso`, y así la tabla se vacía al mismo ritmo al que se llena.
+     Sin `await`: ver `@lib/mantenimiento`. */
+  limpiarSiToca();
 
   // Limit by EMAIL: the IP one doesn't protect the owner of the inbox, who is
   // the person who would receive the mail if somebody used this to annoy them.

@@ -4,7 +4,6 @@ import T from "@components/i18n/T.astro";
 import Icono from "@components/ui/Icono.astro";
 import StaffSummary from "@components/student/StaffSummary.astro";
 import CourseDoors from "@components/student/CourseDoors.astro";
-import HelpRow from "@components/student/HelpRow.astro";
 import { studentCopy } from "@config/studentArea";
 import { construirTxt, resolverIdiomaServidor, LOCALES } from "@i18n/idioma";
 import { interpolar } from "@i18n/formato";
@@ -176,7 +175,6 @@ const greeting = me.name
     showDoors && (
       <>
         <CourseDoors />
-        <HelpRow />
       </>
     )
   }

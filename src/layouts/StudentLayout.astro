@@ -4,6 +4,7 @@ import Footer from "@components/layout/Footer.astro";
 import T from "@components/i18n/T.astro";
 import Icono from "@components/ui/Icono.astro";
 import PortalNav from "@components/student/PortalNav.astro";
+import HelpLinks from "@components/student/HelpLinks.astro";
 import { sitio } from "@config/curso.config";
 import { studentCopy } from "@config/studentArea";
 import { construirTxt, type Txt } from "@i18n/idioma";
@@ -118,6 +119,12 @@ const signOutClass =
         <PortalNav student={student} path={path} variant="sidebar" />
       </div>
 
+      {/* La ayuda, debajo de una raya y de los destinos. Está aquí y no en el
+          inicio del alumno porque quien no consigue algo suele estar en OTRA
+          pantalla, y volver a buscar el teléfono es exactamente el momento en
+          que se abandona. Ver `HelpLinks.astro`. */}
+      <HelpLinks />
+
       {/* Quién eres y la salida, al fondo. Es donde se busca en cualquier
           herramienta, y aquí además cumple otra función: el rol se lee en todo
           momento, así que nadie administra creyendo que mira su propia cuenta. */}
@@ -199,6 +206,14 @@ const signOutClass =
             )
           }
           <slot />
+
+          {/* En móvil no hay columna, así que la ayuda va al final del
+              contenido. Es el mismo componente, no una segunda copia de los
+              enlaces: un teléfono escrito dos veces es un teléfono que algún día
+              se cambia en un sitio y no en el otro. */}
+          <div class="lg:hidden">
+            <HelpLinks variant="bar" />
+          </div>
         </div>
       </main>
 

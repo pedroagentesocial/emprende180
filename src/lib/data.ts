@@ -192,6 +192,25 @@ export interface Repo {
   deleteSession(tokenHash: string): Promise<void>;
   deleteSessionsOf(studentId: string): Promise<void>;
 
+  /**
+   * Borra lo que ya no sirve. Ver `@lib/mantenimiento`.
+   *
+   * ⚠️ LA RAZÓN NO ES EL ESPACIO, ES QUE HAY DATOS QUE NO DEBEN QUEDARSE.
+   * Medido contra la base real: un alumno con un año de uso ocupa 6 KB, así que
+   * en el medio giga del plan gratuito caben decenas de miles. Nada de esto se
+   * hace por sitio.
+   *
+   * Se hace por `peticiones_acceso`, que guarda el correo de CUALQUIERA que
+   * escriba una dirección en "he olvidado mi contraseña" — incluida gente que
+   * nunca compró nada y que jamás nos dio permiso para nada. Esa tabla existe
+   * solo para contar cinco peticiones por hora; pasada esa hora, la fila es una
+   * dirección de correo guardada sin motivo.
+   *
+   * Devuelve cuántas filas se fueron de cada sitio, para poder verlo en el
+   * registro sin abrir la base.
+   */
+  purgeExpired(): Promise<{ sesiones: number; tokens: number; peticiones: number }>;
+
   progressOf(studentId: string): Promise<Progress[]>;
   markWatched(studentId: string, number: number): Promise<void>;
   recordQuizAttempt(studentId: string, number: number, passed: boolean): Promise<void>;
@@ -441,6 +460,30 @@ function postgresRepo(url: string): Repo {
 
     async deleteSessionsOf(studentId) {
       await sql`DELETE FROM sesiones WHERE alumno_id = ${studentId}`;
+    },
+
+    async purgeExpired() {
+      /* Una sesión caducada ya no abre nada: la fila solo dice en qué navegador
+         estuvo alguien hace más de un mes. */
+      const s = await sql`DELETE FROM sesiones WHERE expira_en < now()`;
+
+      /* ⚠️ LOS ENLACES YA USADOS NO SE BORRAN EN EL ACTO, y esa semana de más
+         tiene un motivo escrito en el esquema: mientras la fila existe se puede
+         distinguir "este enlace ya se usó" de "este enlace no existió nunca",
+         que son dos mensajes distintos para quien pulsa un enlace viejo. A los
+         siete días ya nadie vuelve a pulsarlo. */
+      const t = await sql`
+        DELETE FROM tokens_acceso
+        WHERE creado_en < now() - interval '7 days'
+          AND (usado_en IS NOT NULL OR expira_en < now())`;
+
+      /* La ventana del límite es de una hora. Se deja el doble por si algún
+         reloj va desacompasado, y lo demás fuera: ver la nota de `purgeExpired`
+         en la interfaz. */
+      const p = await sql`
+        DELETE FROM peticiones_acceso WHERE pedido_en < now() - interval '2 hours'`;
+
+      return { sesiones: s.count, tokens: t.count, peticiones: p.count };
     },
 
     async progressOf(studentId) {
@@ -781,6 +824,36 @@ function memoryRepo(): Repo {
     },
     async deleteSessionsOf(studentId) {
       for (const [k, v] of sessions) if (v.studentId === studentId) sessions.delete(k);
+    },
+
+    /* Mismo criterio que en Postgres. Aquí sobra —esta tienda se borra entera al
+       reiniciar— pero existe para que las dos implementaciones se comporten
+       igual: una función que solo funciona en producción es una función que se
+       prueba en producción. */
+    async purgeExpired() {
+      const ahora = Date.now();
+      const semana = ahora - 7 * 86_400_000;
+      const dosHoras = ahora - 2 * 3_600_000;
+
+      let sesiones = 0;
+      for (const [k, v] of sessions) {
+        if (v.expires.getTime() < ahora) { sessions.delete(k); sesiones++; }
+      }
+
+      let borrados = 0;
+      for (const [k, v] of tokens) {
+        if ((v.used || v.expires.getTime() < ahora) && v.expires.getTime() < semana) {
+          tokens.delete(k);
+          borrados++;
+        }
+      }
+
+      const antes = requests.length;
+      for (let i = requests.length - 1; i >= 0; i--) {
+        if (requests[i]!.at.getTime() < dosHoras) requests.splice(i, 1);
+      }
+
+      return { sesiones, tokens: borrados, peticiones: antes - requests.length };
     },
 
     async progressOf(studentId) {

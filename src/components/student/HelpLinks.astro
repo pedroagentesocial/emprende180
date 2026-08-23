@@ -1,0 +1,152 @@
+---
+import T from "@components/i18n/T.astro";
+import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
+import { contacto } from "@config/curso.config";
+import { studentCopy } from "@config/studentArea";
+import { resolverIdiomaServidor, type Txt } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * AYUDA — las tres salidas, ahora dentro del panel lateral
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Antes eran tres tarjetas grandes al final del inicio del alumno. El problema
+ * de aquello no era el aspecto: era que la ayuda solo existía en UNA pantalla.
+ * Quien estaba en Alumnos y no conseguía algo tenía que volver al inicio para
+ * encontrar el teléfono. Aquí están en todas.
+ *
+ * ⚠️ TRES SALIDAS PORQUE SON TRES PROBLEMAS DISTINTOS, y la separación es la
+ * pieza que hace que esto funcione:
+ *
+ *  1. ALGO NO FUNCIONA → se llama. Escribir un correo cuando no puedes entrar es
+ *     esperar sin saber si alguien lo leyó.
+ *  2. TENGO UNA DUDA → se escribe. No corre prisa y se explica mejor por escrito.
+ *  3. ESTO SE PODRÍA MEJORAR → también se escribe, pero a otra conversación:
+ *     mezclar una sugerencia con una incidencia hace que se pierdan las dos.
+ *
+ * ⚠️ LOS DOS CORREOS VAN CON ASUNTO PUESTO. Uno que llega con "Sugerencia para
+ * el portal" en el asunto se puede archivar, buscar y contar; uno sin asunto
+ * acaba en el mismo montón que todo lo demás.
+ *
+ * ⚠️ EN LA COLUMNA CABE EL TÍTULO Y EL DATO, NO LA EXPLICACIÓN. Catorce
+ * caracteres de ancho no dan para "Algo no carga o no te deja entrar", así que
+ * esa frase viaja en el `title`: aparece al posarse encima, y quien no la vea no
+ * pierde nada, porque el título y el icono ya dicen a dónde lleva cada una.
+ *
+ * ⚠️ LO QUE NO EXISTE, NO SE PINTA. Sin teléfono en el config, la fila de llamar
+ * no aparece, en vez de un enlace que abre un marcador vacío.
+ */
+
+interface Props {
+  /** `sidebar` para la columna; `bar` para el pie del móvil. */
+  variant?: "sidebar" | "bar";
+}
+
+const { variant = "sidebar" } = Astro.props;
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+const h = studentCopy.help;
+
+/** `mailto` con asunto. `encodeURIComponent` porque el asunto lleva acentos. */
+const mailto = (asunto: Txt) =>
+  `mailto:${contacto.email}?subject=${encodeURIComponent(asunto[lang])}`;
+
+interface Salida {
+  icon: NombreIcono;
+  title: Txt;
+  /** La explicación larga: va al `title` del enlace. */
+  text: Txt;
+  href: string;
+  /** El dato que se lee debajo: el número, el correo. */
+  detail?: string;
+  track: string;
+}
+
+const salidas: Salida[] = [
+  ...(contacto.telefono
+    ? ([
+        {
+          icon: "telefono",
+          title: h.callTitle,
+          text: h.callText,
+          href: `tel:${contacto.telefono}`,
+          /* El número BONITO, no el del `tel:`. El de marcar lleva prefijo y sin
+             espacios porque lo lee el teléfono; el de leer lleva paréntesis y
+             guiones porque lo lee una persona. */
+          detail: contacto.telefonoVisible,
+          track: "portal-ayuda-llamar",
+        },
+      ] satisfies Salida[])
+    : []),
+  {
+    icon: "sobre",
+    title: h.mailTitle,
+    text: h.mailText,
+    href: mailto(h.mailSubject),
+    detail: contacto.email,
+    track: "portal-ayuda-correo",
+  },
+  {
+    icon: "conversacion",
+    title: h.feedbackTitle,
+    text: h.feedbackText,
+    href: mailto(h.feedbackSubject),
+    track: "portal-ayuda-opinion",
+  },
+];
+
+const enSidebar = variant === "sidebar";
+---
+
+<section
+  class:list={[
+    "border-t border-line",
+    enSidebar ? "px-3 pt-3 pb-1" : "mt-10 pt-6",
+  ]}
+>
+  <h2
+    class:list={[
+      "text-xs font-bold tracking-wide text-ink-subtle uppercase",
+      enSidebar ? "px-3 pb-1" : "pb-2",
+    ]}
+  >
+    <T v={h.title} />
+  </h2>
+
+  <ul class:list={[enSidebar ? "grid gap-0.5" : "grid gap-1 sm:grid-cols-3"]}>
+    {
+      salidas.map((s) => (
+        <li>
+          <a
+            href={s.href}
+            data-track={s.track}
+            title={s.text[lang]}
+            class="group flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          >
+            <span
+              aria-hidden="true"
+              class="grid size-8 shrink-0 place-items-center rounded-lg bg-secondary-100 text-secondary-700 transition-colors group-hover:bg-secondary-500 group-hover:text-primary-950"
+            >
+              <Icono nombre={s.icon} class="size-4" grosor={1.9} />
+            </span>
+
+            <span class="min-w-0">
+              <span class="block truncate text-sm font-semibold text-ink-muted transition-colors group-hover:text-ink">
+                <T v={s.title} />
+              </span>
+              {s.detail && (
+                <span class="block truncate text-xs text-ink-subtle">
+                  {s.detail}
+                </span>
+              )}
+            </span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</section>
