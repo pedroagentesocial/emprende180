@@ -51,7 +51,17 @@ const P = 1;
 const LENGTH = 64;
 
 /** Minimum length. See the note on `validatePassword`. */
-export const MIN_PASSWORD = 10;
+export const MIN_PASSWORD = 8;
+
+/**
+ * Un signo: cualquier cosa que no sea letra ni número.
+ *
+ * `\p{L}` y `\p{N}` con la bandera `u` en vez de `[a-zA-Z0-9]`, porque si no la
+ * "ñ" y las vocales con tilde contarían como símbolo y alguien pasaría la regla
+ * escribiendo "Contraseña1" creyendo que ha puesto un signo.
+ */
+const SIGNO = /[^\p{L}\p{N}]/u;
+const MAYUSCULA = /\p{Lu}/u;
 
 /** Returns `scrypt$N$r$p$salt$hash`, all in hexadecimal. */
 export async function hashPassword(password: string): Promise<string> {
@@ -108,22 +118,36 @@ export async function burnTime(password: string): Promise<void> {
   );
 }
 
+export type FalloClave = "short" | "long" | "upper" | "symbol";
+
 /**
  * Is this password acceptable? Returns the reason, or `null` if it's fine.
  *
- * ─── A MINIMUM LENGTH AND NOTHING ELSE ─────────────────────────────────────
+ * ─── OCHO CARACTERES, UNA MAYÚSCULA Y UN SIGNO ─────────────────────────────
  *
- * No mandatory capital, no digit, no symbol. Those rules have been discouraged
- * for years (NIST SP 800-63B) because they don't produce stronger passwords:
- * they produce "Password1!" and a sticky note on the monitor. What actually
- * matters is LENGTH, so length is what's asked for.
+ * Decisión del negocio, tomada a sabiendas, y conviene que quede escrito por qué
+ * no es lo que recomienda el manual: NIST SP 800-63B desaconseja desde hace años
+ * obligar a mayúsculas y símbolos, porque no producen contraseñas más fuertes
+ * sino "Password1!" y un papelito pegado al monitor. Ocho con reglas de
+ * composición es, en la práctica, más débil que doce libres.
+ *
+ * Se pide igualmente porque es lo que la gente espera de un portal serio y
+ * porque discutirlo en cada alta cuesta más de lo que vale. Lo que sí se hace es
+ * NO castigar al que hace lo correcto: una frase larga sin símbolos falla, pero
+ * la pantalla enseña las tres reglas desde el principio en vez de rechazar tres
+ * veces seguidas, que es donde la gente se rinde.
+ *
+ * El orden de las comprobaciones importa: se responde por el primer fallo, y va
+ * primero la longitud porque es el que se arregla escribiendo más.
  */
-export function validatePassword(password: string): "short" | "long" | null {
+export function validatePassword(password: string): FalloClave | null {
   const p = password.normalize("NFKC");
   if (p.length < MIN_PASSWORD) return "short";
   /* A high but existing ceiling: with no limit, a one-megabyte password turns
      every attempt into a denial-of-service attack against our own server, which
      is the one that has to derive it. */
   if (p.length > 200) return "long";
+  if (!MAYUSCULA.test(p)) return "upper";
+  if (!SIGNO.test(p)) return "symbol";
   return null;
 }

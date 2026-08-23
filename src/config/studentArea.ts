@@ -129,8 +129,26 @@ export const studentCopy = {
     titleNew: { es: "Ponte una contraseña", en: "Set your password" },
     titleChange: { es: "Cambia tu contraseña", en: "Change your password" },
     text: {
-      es: "Es la que usarás para entrar a partir de ahora. Mínimo {min} caracteres: lo que importa es que sea larga, no que lleve símbolos raros.",
-      en: "This is what you'll use to sign in from now on. At least {min} characters: what matters is length, not odd symbols.",
+      es: "Es la que usarás para entrar a partir de ahora.",
+      en: "This is what you'll use to sign in from now on.",
+    },
+    /* Las tres reglas, enseñadas ANTES de fallar y marcadas mientras escribe.
+       Rechazar tres veces seguidas es donde la gente abandona. */
+    ruleLength: {
+      es: "Al menos {min} caracteres",
+      en: "At least {min} characters",
+    },
+    ruleUpper: {
+      es: "Una letra mayúscula",
+      en: "One capital letter",
+    },
+    ruleSymbol: {
+      es: "Un signo, como . - _ ! ?",
+      en: "One symbol, like . - _ ! ?",
+    },
+    rulesTitle: {
+      es: "Tiene que llevar",
+      en: "It needs",
     },
     label: { es: "Contraseña nueva", en: "New password" },
     repeat: { es: "Repítela", en: "Repeat it" },
@@ -139,10 +157,18 @@ export const studentCopy = {
     save: { es: "Guardar y entrar", en: "Save and continue" },
     saving: { es: "Guardando…", en: "Saving…" },
     errorShort: {
-      es: "Muy corta: mínimo {min} caracteres.",
-      en: "Too short: at least {min} characters.",
+      es: "Te faltan caracteres: tienen que ser {min} como mínimo.",
+      en: "It's too short: {min} characters minimum.",
     },
     errorLong: { es: "Demasiado larga.", en: "Too long." },
+    errorUpper: {
+      es: "Le falta una mayúscula.",
+      en: "It's missing a capital letter.",
+    },
+    errorSymbol: {
+      es: "Le falta un signo, como . - _ ! ?",
+      en: "It's missing a symbol, like . - _ ! ?",
+    },
     errorMismatch: { es: "Las dos no coinciden.", en: "The two don't match." },
     /* Notice on the dashboard while there is no password. */
     pendingTitle: {
