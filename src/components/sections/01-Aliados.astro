@@ -66,6 +66,35 @@ const marcas = aliados.marcas.map((m) => ({
  * final. Se puede seguir añadiendo sin volver aquí.
  */
 const columnas = marcas.length <= 4 ? marcas.length : marcas.length % 4 === 1 ? 3 : 4;
+
+/**
+ * ─── EL LOGOTIPO DE LAS MARCAS QUE TODAVÍA NO TIENEN LOGO ──────────────────
+ *
+ * Parte el nombre en dos renglones: todo menos la última palabra arriba, la
+ * última abajo. "Wise Power HVAC" → WISE POWER / HVAC.
+ *
+ * ⚠️ POR QUÉ TEXTO Y NO UN ARCHIVO DE IMAGEN. Se pensó en dibujar un logotipo
+ * provisional para cada una y es peor idea de lo que parece: un SVG dentro de un
+ * `<img>` es un documento aislado que NO puede usar la tipografía de la página,
+ * así que saldría en la fuente que tenga el sistema de cada visitante —distinta
+ * en un Mac, en un Windows y en un Android—, y para evitarlo habría que
+ * incrustar la fuente dentro de cada archivo. Esto, en cambio, se pinta con la
+ * Montserrat de verdad, se ve nítido a cualquier tamaño, pesa cero y desaparece
+ * solo el día que llegue el logo real: basta con dejar el archivo en
+ * `/public/imagenes/aliados/`.
+ *
+ * ⚠️ Y NO ES UN HUECO DISFRAZADO. Dos renglones, dos pesos y dos colores es un
+ * lockup tipográfico, que es un logotipo perfectamente legítimo. La mitad de las
+ * marcas serias del mundo son exactamente eso.
+ */
+const lockup = (nombre: string) => {
+  const palabras = nombre.trim().split(/\s+/);
+  if (palabras.length === 1) return { arriba: palabras[0]!, abajo: null };
+  return {
+    arriba: palabras.slice(0, -1).join(" "),
+    abajo: palabras[palabras.length - 1]!,
+  };
+};
 ---
 
 {
@@ -133,11 +162,16 @@ const columnas = marcas.length <= 4 ? marcas.length : marcas.length % 4 === 1 ? 
                   class="h-9 w-auto object-contain sm:h-10"
                 />
               ) : (
-                /* Logotipo tipográfico mientras no llega el archivo. */
-                <span
-                  class="flex h-9 items-center text-center text-lg font-extrabold uppercase leading-tight tracking-[0.08em] text-balance text-ink sm:h-10 sm:text-xl"
-                >
-                  {m.nombre}
+                /* Logotipo tipográfico mientras no llega el archivo. Ver `lockup`. */
+                <span class="flex h-9 flex-col items-center justify-center text-center sm:h-10">
+                  <span class="text-base font-extrabold uppercase leading-none tracking-[0.06em] text-ink sm:text-lg">
+                    {lockup(m.nombre).arriba}
+                  </span>
+                  {lockup(m.nombre).abajo && (
+                    <span class="mt-1 text-[0.6875rem] font-semibold uppercase leading-none tracking-[0.22em] text-ink-brand">
+                      {lockup(m.nombre).abajo}
+                    </span>
+                  )}
                 </span>
               )}
 

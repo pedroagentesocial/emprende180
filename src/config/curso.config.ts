@@ -775,6 +775,46 @@ export const aliados = {
       url: "https://www.skilledtrademanpower.com",
       logo: "skilledtrademanpower",
     },
+
+    /* ─── LAS CUATRO QUE TODAVÍA NO TIENEN NI WEB NI LOGO ────────────────────
+       Se pintan igual que las demás, con su nombre como logotipo tipográfico y
+       sin enlazar a ninguna parte: la relación es real aunque el sitio esté en
+       obras. El día que haya web, se pone la `url`; el día que haya logo, se
+       deja el archivo en `/public/imagenes/aliados/` con el nombre del campo
+       `logo` y entra solo, sin tocar código.
+
+       ⚠️ LOS RUBROS DE TRES DE ELLAS SE LEEN DE SU PROPIO NOMBRE (plumbing es
+       plomería, HVAC es climatización, energy es energía), así que no hay nada
+       inventado. El de Lira Development NO se puede deducir —"development" es
+       inmobiliario, de software o de otra cosa según la empresa— y por eso va
+       marcado como pendiente en vez de rellenado a ojo. Ver `@lib/pendientes`. */
+    {
+      nombre: "Lira Development",
+      rubro: {
+        es: "[COMPLETAR: qué desarrolla, en tres palabras]",
+        en: "[COMPLETAR: what it develops, in three words]",
+      },
+      url: null as string | null,
+      logo: "liradevelopment",
+    },
+    {
+      nombre: "Plumbing Development",
+      rubro: { es: "Plomería", en: "Plumbing" },
+      url: null as string | null,
+      logo: "plumbingdevelopment",
+    },
+    {
+      nombre: "Wise Power HVAC",
+      rubro: { es: "Climatización", en: "HVAC" },
+      url: null as string | null,
+      logo: "wisepowerhvac",
+    },
+    {
+      nombre: "Wise Pros Energy",
+      rubro: { es: "Energía", en: "Energy" },
+      url: null as string | null,
+      logo: "wiseprosenergy",
+    },
   ],
 } as const;
 
