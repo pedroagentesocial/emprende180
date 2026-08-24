@@ -758,6 +758,23 @@ export const aliados = {
          `brokerlenders-blanco.webp`) y entra solo. */
       logo: "brokerlenders",
     },
+    {
+      nombre: "BoltWatts",
+      /* Lo que dice su propia web, no lo que suena bien: "one team, multiple
+         divisions" para obra residencial, comercial e industrial, con
+         remodelaciones, ampliaciones y adecuación de locales. */
+      rubro: { es: "Construcción y remodelación", en: "Construction and remodeling" },
+      url: "https://www.boltwatts.com",
+      logo: "boltwatts",
+    },
+    {
+      nombre: "Skilled Trade Manpower",
+      /* De su propia descripción: reclutamiento de personal de oficios,
+         subcontratación de mano de obra y equipos de venta gestionados. */
+      rubro: { es: "Reclutamiento de oficios", en: "Skilled trades recruiting" },
+      url: "https://www.skilledtrademanpower.com",
+      logo: "skilledtrademanpower",
+    },
   ],
 } as const;
 

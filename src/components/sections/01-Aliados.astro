@@ -32,16 +32,40 @@ import { logoAliado, medidasAliado } from "@lib/assets";
  *
  * ─── LO QUE ESTA SECCIÓN NO PUEDE HACER ────────────────────────────────────
  *
- * Crecer sola. `aliados.marcas` es una lista de HECHOS: cada marca afirma una
- * relación real. Si algún día hay ocho, esto pasa a ser un carrusel; con dos o
- * tres, una fila centrada es lo correcto y lo honesto — un muro de logos con
- * tres repetidos es el truco más viejo del sector.
+ * Inventar. `aliados.marcas` es una lista de HECHOS: cada marca afirma una
+ * relación real y cada rubro sale de lo que esa empresa dice de sí misma en su
+ * propia web. Un muro de logos repetidos, o con marcas con las que no hay
+ * relación, es el truco más viejo del sector y se nota.
+ *
+ * Lo que sí hace sola es acomodarse: la fila se reparte según cuántas marcas
+ * haya, así que añadir una al config no descoloca nada. Ver `columnas`.
  */
 const marcas = aliados.marcas.map((m) => ({
   ...m,
   logo: logoAliado(m.logo),
   medidas: medidasAliado(m.logo),
 }));
+
+/**
+ * ─── CUÁNTAS CABEN POR FILA ────────────────────────────────────────────────
+ *
+ * ⚠️ ESTO NO ES UN CAPRICHO: ES EL ARREGLO DE UN FALLO QUE SE VE. Con las
+ * tarjetas a ancho fijo, cuatro marcas se partían en 3 + 1 —faltaban ocho
+ * píxeles para que cupieran las cuatro— y una tarjeta sola en la segunda fila no
+ * se lee como "cuatro marcas": se lee como una que sobra o como un hueco donde
+ * falta la quinta. En una sección cuyo único trabajo es dar confianza, eso resta.
+ *
+ * Así que el ancho de tarjeta sale de una división, no de un número fijo, y las
+ * columnas las decide la CANTIDAD de marcas:
+ *
+ *   hasta 4 → tantas columnas como marcas (una fila limpia)
+ *   5, 9…   → 3 columnas, porque con 4 quedaría una huérfana (5 = 4+1)
+ *   resto   → 4 columnas (6 = 4+2, 7 = 4+3, 8 = 4+4)
+ *
+ * El resultado es que añadir una marca al config NUNCA deja una tarjeta sola al
+ * final. Se puede seguir añadiendo sin volver aquí.
+ */
+const columnas = marcas.length <= 4 ? marcas.length : marcas.length % 4 === 1 ? 3 : 4;
 ---
 
 {
@@ -58,10 +82,14 @@ const marcas = aliados.marcas.map((m) => ({
         </div>
       </Reveal>
 
-      {/* `justify-center` y no una rejilla: son dos o tres marcas, y una rejilla
-          de columnas fijas dejaría huecos a la derecha que se leen como marcas
-          que faltan. Centradas, dos se ven como dos. */}
-      <ul class="mt-10 flex flex-wrap items-stretch justify-center gap-4 sm:gap-6">
+      {/* `flex-wrap` centrado y NO una rejilla, aunque el ancho salga de una
+          división: en una rejilla, la última fila incompleta deja el hueco a la
+          derecha —se lee como una marca que falta— mientras que aquí se centra
+          sola. Ver el cálculo de `columnas` arriba. */}
+      <ul
+        class="aliados-fila mt-10 flex flex-wrap items-stretch justify-center gap-4 sm:gap-6"
+        style={`--cols:${columnas}`}
+      >
         {marcas.map((m, i) => (
           <Reveal as="li" delay={i * 0.08} class="w-full sm:w-auto">
             {/* ─── CON URL ENLAZA; SIN URL, NO ────────────────────────────────
@@ -86,7 +114,7 @@ const marcas = aliados.marcas.map((m) => ({
               rel={m.url ? "noopener noreferrer" : undefined}
               data-track={m.url ? `aliado-${m.logo}` : undefined}
               class:list={[
-                "group flex h-full min-h-11 min-w-0 flex-col items-center justify-center gap-3 rounded-2xl border border-line bg-surface px-8 py-7 transition-colors duration-200 ease-out-soft sm:min-w-[17rem]",
+                "group flex h-full min-h-11 min-w-0 flex-col items-center justify-center gap-3 rounded-2xl border border-line bg-surface px-6 py-7 transition-colors duration-200 ease-out-soft",
                 m.url &&
                   "hover:border-secondary-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
               ]}
@@ -129,3 +157,39 @@ const marcas = aliados.marcas.map((m) => ({
     </Section>
   )
 }
+
+<style is:global>
+  /**
+   * El ancho de cada tarjeta sale de dividir la fila, no de un número fijo.
+   *
+   * ⚠️ ESTO NO SE PUEDE ESCRIBIR CON UTILIDADES DE TAILWIND porque depende de
+   * `--cols`, que se calcula en el servidor a partir de cuántas marcas hay. Una
+   * clase por cada número posible de columnas sería peor de mantener que estas
+   * seis líneas.
+   *
+   * ⚠️ `is:global` NO ES PEREZA, ES OBLIGATORIO AQUÍ, y costó un rato entenderlo:
+   * los `<li>` los pinta `Reveal`, que es OTRO componente, así que no llevan el
+   * `data-astro-cid-…` de este y una regla con ámbito no los alcanza. Comprobado
+   * en el navegador: el `<ul>` tenía el atributo y los `<li>` no, y el
+   * `flex-basis` calculado salía `auto`. El riesgo de globalizar se acota con
+   * `.aliados-fila`, una clase que solo existe en esta sección.
+   *
+   * Tres escalones, y el de en medio importa: en tableta se fuerzan DOS por
+   * fila, sin mirar `--cols`. Con cuatro columnas a 640 px cada tarjeta se
+   * quedaría en 140 px y el logo saldría del tamaño de un sello.
+   */
+  @media (min-width: 640px) {
+    .aliados-fila > li {
+      flex: 0 1 calc((100% - 1.5rem) / 2);
+      /* Tope para cuando hay pocas marcas: con dos, media fila cada una serían
+         tarjetas de 560 px con un logo diminuto flotando en el centro. */
+      max-width: 20rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .aliados-fila > li {
+      flex: 0 1 calc((100% - (var(--cols) - 1) * 1.5rem) / var(--cols));
+    }
+  }
+</style>
