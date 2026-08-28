@@ -1,5 +1,6 @@
 ---
 import T from "@components/i18n/T.astro";
+import { resolverIdiomaServidor } from "@i18n/idioma";
 import Section from "@components/ui/Section.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Button from "@components/ui/Button.astro";
@@ -9,6 +10,15 @@ import { tienePendiente } from "@lib/pendientes";
 import { temario, curso, copy, contacto, cta } from "@config/curso.config";
 import { construirTxt } from "@i18n/idioma";
 import { interpolar } from "@i18n/formato";
+
+/* El idioma de ESTA petición: hace falta para el `alt` de la foto, que es un
+   atributo y no puede llevar los dos idiomas dentro como hace <T>. El cambio de
+   idioma en caliente lo cubren los `data-alt-es` / `data-alt-en`, igual que en
+   la foto del instructor. */
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -113,6 +123,34 @@ const todosConQuiz = construirTxt((l) =>
           <p class="mt-4 text-base text-pretty text-ink-muted">
             <T v={copy.temario.entradilla} vars={{ n: temario.length }} />
           </p>
+
+          {/* ─── LA FOTO DEL TEMARIO ──────────────────────────────────────────
+              Va en la columna IZQUIERDA porque la sección anterior lleva su
+              escena a la derecha: es la alternancia que hace que la página no
+              se lea como una columna infinita. Ver `FilaAlterna`.
+
+              ⚠️ LA FOTO NO ES DECORACIÓN, ES LA CUALIFICACIÓN DEL ALUMNO. No
+              hay una oficina, ni un equipo, ni nadie señalando una pizarra:
+              es una persona sola en la mesa de su cocina, de noche, con un
+              café. Ese es literalmente el visitante que describe PRODUCT.md
+              —tiene empleo, poco tiempo y estudia a ratos sueltos— y verse
+              retratado hace más por la conversión que cualquier adjetivo.
+
+              `width`/`height` y `aspect-[22/15]` van juntos a propósito: sin
+              las dos cosas la foto reserva su hueco tarde y el bloque de abajo
+              da un salto al cargar, que son décimas de CLS en la métrica y un
+              brinco delante de los ojos en la práctica. */}
+          <img
+            src="/imagenes/secciones/temario.webp"
+            alt={copy.temario.fotoAlt[lang]}
+            data-alt-es={copy.temario.fotoAlt.es}
+            data-alt-en={copy.temario.fotoAlt.en}
+            width={880}
+            height={620}
+            loading="lazy"
+            decoding="async"
+            class="mt-6 aspect-[22/15] w-full rounded-2xl border border-line object-cover"
+          />
 
           {/* Lo que antes eran veinte distintivos repartidos por las tarjetas. */}
           {

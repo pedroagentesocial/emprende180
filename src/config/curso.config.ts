@@ -2063,6 +2063,13 @@ export const copy = {
       es: "Cada video cierra con su quiz de validación. Supera los {n} y te emitimos tu Certificación de Embajador Emprende180.",
       en: "Every video closes with its validation quiz. Pass all {n} and we issue your Emprende180 Ambassador Certification.",
     },
+    /* El alt describe la ESCENA, no el archivo: quien no ve la foto tiene
+       que recibir lo mismo que recibe quien la ve, y lo que esta transmite es
+       en qué condiciones se hace el curso. */
+    fotoAlt: {
+      es: "Una persona sola frente a su portátil en la mesa de la cocina, de noche, con un café al lado.",
+      en: "Someone alone with their laptop at the kitchen table at night, a coffee beside them.",
+    },
     extrasTitulo: { es: "Y además", en: "And on top of that" },
     /**
      * ─── LO QUE ENTRA ADEMÁS DEL TEMARIO ────────────────────────────────
