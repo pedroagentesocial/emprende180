@@ -9,6 +9,8 @@ import CookiePreferences from "@components/legal/CookiePreferences";
 import RedesMarca from "@components/layout/RedesMarca.astro";
 import MarcaAgua from "@components/ui/MarcaAgua.astro";
 import Icono from "@components/ui/Icono.astro";
+import { getCollection } from "astro:content";
+import { articulosPublicados, blogCopy } from "@lib/blog";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -80,6 +82,9 @@ const lang = resolverIdiomaServidor(
   Astro.url,
   Astro.request.headers.get("accept-language"),
 );
+
+/* ¿Hay algo publicado en el blog? Ver la nota del enlace, más abajo. */
+const hayBlog = (await articulosPublicados(getCollection)).length > 0;
 ---
 
 {/* ─── EL HUECO DE LA BARRA FLOTANTE LO RESERVA EL PIE ────────────────────────
@@ -155,6 +160,25 @@ const lang = resolverIdiomaServidor(
                 </a>
               </li>
             ))
+          }
+
+          {/* ⚠️ EL BLOG SOLO APARECE CUANDO HAY ALGO QUE LEER, y esa condición
+              es la mitad de la decisión de tener blog. Un enlace a una sección
+              vacía —o peor, a un "próximamente"— le dice al visitante que el
+              proyecto está a medio hacer justo donde intentas que se fíe para
+              pagar. Vacío no resta si NO EXISTE. Ver `/blog`, que devuelve 404
+              mientras no hay artículos publicados. */}
+          {
+            hayBlog && (
+              <li>
+                <a
+                  href="/blog"
+                  class="inline-flex min-h-11 items-center transition-colors hover:text-ink-inverse"
+                >
+                  <T v={blogCopy.titulo} />
+                </a>
+              </li>
+            )
           }
         </ul>
       </nav>

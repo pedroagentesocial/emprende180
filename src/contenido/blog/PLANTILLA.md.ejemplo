@@ -1,0 +1,58 @@
+---
+titulo: "Un titular que diga de qué va, no que dé intriga"
+resumen: "Dos líneas. Es lo que Google enseña debajo del titular y lo que decide si alguien pulsa, así que aquí ya se dice algo, no se anuncia que se va a decir."
+fecha: 2026-08-25
+idioma: es
+etiquetas: ["referidos"]
+borrador: true
+---
+
+Cómo publicar un artículo, en tres pasos:
+
+1. **Copia este archivo** a `src/contenido/blog/` con un nombre en minúsculas y
+   con guiones: `como-pedir-un-referido.md`. Ese nombre **es la URL**:
+   `emprende180.com/blog/como-pedir-un-referido`. Elígelo pensando en lo que
+   alguien escribiría en Google, y no lo cambies después: cambiarlo rompe el
+   enlace para quien ya lo compartió.
+2. **Escribe.** Esto de aquí es markdown: `## Un título`, `**negrita**`,
+   `- una lista`, `[un enlace](https://…)`.
+3. **Pon `borrador: false`** y haz push. Ya está publicado.
+
+## Las cuatro cosas que conviene saber
+
+**Mientras `borrador` esté en `true` no se publica**, ni aunque subas el archivo.
+No sale en el listado y su dirección devuelve 404. Escribe tranquilo.
+
+**Una fecha futura programa la publicación.** Si pones `fecha: 2026-09-01`, el
+artículo aparece solo ese día. Puedes escribir cuatro un domingo, fecharlos de
+lunes a jueves y olvidarte.
+
+**Cada artículo va en un idioma.** El resto de la página se pinta en español e
+inglés a la vez, pero traducir mil palabras antes de poder publicar es lo que
+mata un blog. Pon `idioma: es` o `idioma: en` y ya. A quien lea en el otro
+idioma se le avisa antes de empezar.
+
+**Si falta un campo, el despliegue falla** y te dice qué archivo es. Es a
+propósito: mejor que no despliegue a que salga en Google un artículo sin
+descripción, con un trozo de texto cortado a la mitad.
+
+## Una portada, si quieres
+
+Deja la imagen en `public/imagenes/blog/` y añade dos líneas arriba:
+
+```
+portada: /imagenes/blog/mi-imagen.webp
+portadaAlt: "Qué se ve en la imagen, para quien no puede verla"
+```
+
+Sin portada el artículo se ve perfectamente. No pongas una foto de banco de
+imágenes por rellenar: una foto genérica de gente dándose la mano resta más de
+lo que suma.
+
+## Sobre qué escribir
+
+Lo que te preguntan por teléfono. Cada duda que te repiten dos veces es un
+artículo, y ya sabes que a alguien le interesa porque te lo han preguntado.
+
+Este archivo termina en `.ejemplo` justamente para que **no** se publique:
+el blog solo lee los `.md`.
