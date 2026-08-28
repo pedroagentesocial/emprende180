@@ -193,6 +193,12 @@ export function logoAliado(
  */
 const MEDIDAS_ALIADOS: Record<string, { w: number; h: number }> = {
   senordelascasas: { w: 640, h: 158 },
+  /* Medidos con `sharp(...).metadata()` sobre los .webp ya recortados. Sin
+     estas dos entradas los logos salían sin `width`/`height` y la fila de la
+     banda se recolocaba al cargarlos: se veía en la auditoría de anchos, seis
+     imágenes sin dimensiones. */
+  boltwatts: { w: 909, h: 205 },
+  skilledtrademanpower: { w: 643, h: 219 },
 };
 
 export const medidasAliado = (archivo: string) =>
