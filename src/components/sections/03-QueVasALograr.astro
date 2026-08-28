@@ -5,11 +5,11 @@ import SectionHeading from "@components/ui/SectionHeading.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Button from "@components/ui/Button.astro";
 import FilaAlterna from "@components/ui/FilaAlterna.astro";
-import Escena from "@components/visuales/Escena.astro";
 import BotonDetalle from "@components/ui/BotonDetalle.astro";
 import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
 import { fondoResultado } from "@lib/assets";
 import { curso, cta, copy } from "@config/curso.config";
+import { resolverIdiomaServidor } from "@i18n/idioma";
 
 /**
  * 03 · QUÉ VAS A LOGRAR — resultado, todavía NO temario.
@@ -98,6 +98,14 @@ import { curso, cta, copy } from "@config/curso.config";
  * maquetación, no contenido. Si se añade un séptimo resultado sin su icono, el
  * `?? "check"` del marcado evita que la página se rompa.
  */
+/* El idioma de ESTA petición: hace falta para el `alt` de la foto, que es un
+   atributo y no puede llevar los dos idiomas dentro como hace `<T>`. El cambio
+   de idioma en caliente lo cubren los `data-alt-es` / `data-alt-en`. */
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
 const ICONOS: NombreIcono[] = [
   "brujula", // dónde encajas
   "diana", // reconocer la oportunidad
@@ -109,20 +117,20 @@ const ICONOS: NombreIcono[] = [
 ---
 
 <Section id="resultados" ritmo="amplio" ariaLabel={copy.resultados.aria}>
-  {/* ─── El cierre del arco ──────────────────────────────────────────────
-      ⚠️ LA TERCERA ESCENA VA AQUÍ Y NO EN LA SECCIÓN DEL PROBLEMA, y el sitio
-      es la mitad del argumento. Arriba se cuentan dos escenas: el mensaje que
-      llega y se queda sin responder, y el mismo mensaje resuelto sin ti tres
-      semanas después. Las dos duelen. Esta es la misma conversación con la
-      única diferencia que vende el curso: esta vez sabes qué contestar.
+  {/* ─── La foto que abre los resultados ─────────────────────────────────
+      ⚠️ AQUÍ HUBO UNA TERCERA ESCENA DE MÓVIL Y SE QUITÓ. La idea era cerrar el
+      arco de la sección anterior: el mensaje sin responder, el mismo resuelto
+      sin ti, y por fin el mismo contestado por ti. Sobre el papel funcionaba;
+      en pantalla, no: eran TRES marcos de móvil casi idénticos en la misma
+      página, y el tercero se leía como una repetición de los dos de arriba en
+      vez de como el giro. Un recurso que se usa tres veces deja de significar.
 
-      Ponerla junto a los dolores habría rematado el problema; ponerla al abrir
-      "qué vas a lograr" convierte la lista de resultados en la consecuencia de
-      algo que se acaba de VER. Y la burbuja sale de ti, en teal y a la derecha,
-      así que el giro se lee sin una palabra de más.
+      Lo sustituye una foto, que es otro registro: grande, limpia y sin velo,
+      justo al revés que las seis tarjetas de abajo, donde la imagen va pequeña
+      y debajo de un degradado. Así el ojo no lee "otra vez lo mismo".
 
-      El visual va a la DERECHA porque la última fila de la sección anterior lo
-      lleva a la izquierda: es la alternancia que impide que dos bloques
+      Y va a la DERECHA porque la última fila de la sección anterior lleva su
+      visual a la izquierda: es la alternancia que impide que dos bloques
       seguidos se lean como el mismo bloque repetido. Ver `FilaAlterna`. */}
   <FilaAlterna alinear="centro" class="mb-16 lg:mb-24">
     <div slot="texto">
@@ -146,12 +154,18 @@ const ICONOS: NombreIcono[] = [
     </div>
 
     <Reveal slot="visual" delay={0.12}>
-      <Escena
-        encabezado={copy.problema.escena.ahora}
-        mensaje={copy.problema.escena.mensaje3}
-        estado={copy.problema.escena.respondido}
-        alt={copy.problema.escena.escena3Alt}
-        saliente
+      {/* `width`/`height` y `aspect-[5/4]` a la vez: sin los dos, la foto
+          reserva su hueco tarde y la columna da un salto al cargar. */}
+      <img
+        src="/imagenes/secciones/resultados.webp"
+        alt={copy.resultados.fotoAlt[lang]}
+        data-alt-es={copy.resultados.fotoAlt.es}
+        data-alt-en={copy.resultados.fotoAlt.en}
+        width={1000}
+        height={800}
+        loading="lazy"
+        decoding="async"
+        class="aspect-[5/4] w-full rounded-3xl object-cover shadow-[var(--shadow-md)]"
       />
     </Reveal>
   </FilaAlterna>

@@ -2,12 +2,14 @@
 import T from "@components/i18n/T.astro";
 import Section from "@components/ui/Section.astro";
 import Reveal from "@components/motion/Reveal.astro";
-import { aliados } from "@config/curso.config";
+import Icono from "@components/ui/Icono.astro";
+import { aliados, copy } from "@config/curso.config";
 import { logoAliado, medidasAliado } from "@lib/assets";
+import { resolverIdiomaServidor } from "@i18n/idioma";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- * 01 · LOS NEGOCIOS DEL ECOSISTEMA
+ * 01 · LOS NEGOCIOS DEL ECOSISTEMA — una banda que no para
  * ═══════════════════════════════════════════════════════════════════════════
  *
  * Va JUSTO DESPUÉS DEL HERO, y esa posición es todo el argumento. El hero acaba
@@ -16,76 +18,69 @@ import { logoAliado, medidasAliado } from "@lib/assets";
  * reales antes de contar el problema responde esa duda mientras todavía hay
  * atención, en vez de dejarla trabajando en contra durante seis secciones.
  *
- * Es una FRANJA, no una sección con peso: ritmo compacto, sin CTA y sin más
- * texto que un titular y una línea. Si esto pesa como el hero, le roba sitio a
- * la promesa, que es lo que de verdad tiene que quedarse.
+ * ─── DE OCHO TARJETAS A UNA BANDA ──────────────────────────────────────────
  *
- * ─── QUÉ SE PINTA CUANDO NO HAY LOGO ───────────────────────────────────────
+ * Antes era una rejilla de tarjetas con logo, rubro y enlace, más un titular y
+ * una entradilla encima. Con ocho marcas ocupaba dos filas y media pantalla, y
+ * eso es demasiado peso para lo que esta franja tiene que hacer: es una PRUEBA,
+ * no un capítulo. Si pesa como el hero, le roba sitio a la promesa.
  *
- * El nombre de la marca como logotipo tipográfico: versalitas anchas, navy,
- * dentro del mismo marco que los logos de verdad. No es un hueco ni una caja
- * rota; se lee como una decisión. En cuanto aparezca el archivo en
- * `/public/imagenes/aliados/`, esa marca lo usa sin tocar código.
+ * Ahora es un rótulo corto y los logos cruzando la pantalla. Ocupa un tercio,
+ * se lee en un vistazo y se mueve, que es lo que hace que el ojo se pare en
+ * ella al bajar.
  *
- * Hoy pasa con Broker Lenders: su web responde 403 a las descargas automáticas
- * y no se ha podido sacar el logo. Ver la nota en `aliados.marcas` del config.
+ * ⚠️ SE PIERDE EL RUBRO DE CADA MARCA, y conviene saberlo antes de echarlo de
+ * menos: en una banda en movimiento no hay tiempo para leer "Financiamiento
+ * inmobiliario" debajo de un logo. Lo que queda es lo que de verdad hace el
+ * trabajo aquí, que es el reconocimiento: son ocho, son reales y son de sectores
+ * distintos. Quien quiera saber qué hace cada una, pulsa.
  *
- * ─── LO QUE ESTA SECCIÓN NO PUEDE HACER ────────────────────────────────────
+ * ─── LA MECÁNICA NO ES NUEVA ───────────────────────────────────────────────
  *
- * Inventar. `aliados.marcas` es una lista de HECHOS: cada marca afirma una
- * relación real y cada rubro sale de lo que esa empresa dice de sí misma en su
- * propia web. Un muro de logos repetidos, o con marcas con las que no hay
- * relación, es el truco más viejo del sector y se nota.
+ * Reusa la de `BandaTestimonios`: los atributos `data-banda*` y su animación
+ * viven en `global.css`. Eso trae gratis lo que cuesta hacer bien:
  *
- * Lo que sí hace sola es acomodarse: la fila se reparte según cuántas marcas
- * haya, así que añadir una al config no descoloca nada. Ver `columnas`.
+ *   · La lista se pinta DOS veces y la pista se mueve un -50 % exacto, así el
+ *     fotograma del reinicio es idéntico al de salida y no se ve la costura.
+ *     ⚠️ Las dos copias tienen que ser IGUALES; si alguien añade una marca a
+ *     una y no a la otra, aparece un tirón en cada vuelta.
+ *   · La segunda copia va `aria-hidden`: para un lector de pantalla las marcas
+ *     son ocho, no dieciséis.
+ *   · Se puede parar de tres formas (el botón, el cursor o el tabulador, y
+ *     `prefers-reduced-motion`). WCAG 2.2.2 lo exige para todo lo que se mueve
+ *     solo más de cinco segundos, y el botón es el único que sirve en un
+ *     teléfono, donde no hay cursor que pasar.
+ *
+ * ─── LO QUE NO SE HACE NUNCA ───────────────────────────────────────────────
+ *
+ * Rellenar. `aliados.marcas` es una lista de HECHOS: cada marca afirma una
+ * relación real. Un muro de logos repetidos, o con marcas con las que no hay
+ * relación, es el truco más viejo del sector y se nota. Con ocho la banda va
+ * sobrada; con tres habría que volver a la fila estática, porque una banda con
+ * tres logos deja ver el ciclo y se lee como que no hay más.
  */
+
 const marcas = aliados.marcas.map((m) => ({
   ...m,
   logo: logoAliado(m.logo),
   medidas: medidasAliado(m.logo),
 }));
 
-/**
- * ─── CUÁNTAS CABEN POR FILA ────────────────────────────────────────────────
- *
- * ⚠️ ESTO NO ES UN CAPRICHO: ES EL ARREGLO DE UN FALLO QUE SE VE. Con las
- * tarjetas a ancho fijo, cuatro marcas se partían en 3 + 1 —faltaban ocho
- * píxeles para que cupieran las cuatro— y una tarjeta sola en la segunda fila no
- * se lee como "cuatro marcas": se lee como una que sobra o como un hueco donde
- * falta la quinta. En una sección cuyo único trabajo es dar confianza, eso resta.
- *
- * Así que el ancho de tarjeta sale de una división, no de un número fijo, y las
- * columnas las decide la CANTIDAD de marcas:
- *
- *   hasta 4 → tantas columnas como marcas (una fila limpia)
- *   5, 9…   → 3 columnas, porque con 4 quedaría una huérfana (5 = 4+1)
- *   resto   → 4 columnas (6 = 4+2, 7 = 4+3, 8 = 4+4)
- *
- * El resultado es que añadir una marca al config NUNCA deja una tarjeta sola al
- * final. Se puede seguir añadiendo sin volver aquí.
- */
-const columnas = marcas.length <= 4 ? marcas.length : marcas.length % 4 === 1 ? 3 : 4;
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
 
 /**
- * ─── EL LOGOTIPO DE LAS MARCAS QUE TODAVÍA NO TIENEN LOGO ──────────────────
+ * El nombre partido en dos renglones para las marcas que aún no tienen archivo
+ * de logo: todo menos la última palabra arriba, la última abajo. "Wise Power
+ * HVAC" se lee WISE POWER / HVAC.
  *
- * Parte el nombre en dos renglones: todo menos la última palabra arriba, la
- * última abajo. "Wise Power HVAC" → WISE POWER / HVAC.
- *
- * ⚠️ POR QUÉ TEXTO Y NO UN ARCHIVO DE IMAGEN. Se pensó en dibujar un logotipo
- * provisional para cada una y es peor idea de lo que parece: un SVG dentro de un
- * `<img>` es un documento aislado que NO puede usar la tipografía de la página,
- * así que saldría en la fuente que tenga el sistema de cada visitante —distinta
- * en un Mac, en un Windows y en un Android—, y para evitarlo habría que
- * incrustar la fuente dentro de cada archivo. Esto, en cambio, se pinta con la
- * Montserrat de verdad, se ve nítido a cualquier tamaño, pesa cero y desaparece
- * solo el día que llegue el logo real: basta con dejar el archivo en
- * `/public/imagenes/aliados/`.
- *
- * ⚠️ Y NO ES UN HUECO DISFRAZADO. Dos renglones, dos pesos y dos colores es un
- * lockup tipográfico, que es un logotipo perfectamente legítimo. La mitad de las
- * marcas serias del mundo son exactamente eso.
+ * ⚠️ ES TEXTO Y NO UNA IMAGEN A PROPÓSITO. Un SVG dentro de un `<img>` es un
+ * documento aislado que no puede usar la tipografía de la página, así que
+ * saldría en la fuente que tenga el sistema de cada visitante. Esto se pinta con
+ * la Montserrat de verdad, pesa cero y desaparece solo el día que llegue el
+ * logo real: basta dejar el archivo en `/public/imagenes/aliados/`.
  */
 const lockup = (nombre: string) => {
   const palabras = nombre.trim().split(/\s+/);
@@ -95,135 +90,148 @@ const lockup = (nombre: string) => {
     abajo: palabras[palabras.length - 1]!,
   };
 };
+
+/**
+ * La duración sale del NÚMERO DE MARCAS, no de un número fijo.
+ *
+ * Con una duración fija, añadir marcas acelera la banda: la pista se hace más
+ * larga y tiene que recorrerla en el mismo tiempo. Cinco segundos por marca
+ * mantiene la velocidad de lectura constante pase lo que pase con la lista.
+ */
+const duracion = `${marcas.length * 5}s`;
 ---
 
 {
   aliados.activa && marcas.length > 0 && (
-    <Section id="aliados" tono="muted" ritmo="compacto">
+    <Section id="aliados" tono="muted" ritmo="compacto" sinContenedor>
       <Reveal>
-        <div class="mx-auto max-w-read text-center">
-          <h2 class="text-2xl font-bold text-balance text-ink sm:text-3xl">
-            <T v={aliados.titulo} />
-          </h2>
-          <p class="mt-3 text-base text-pretty text-ink-muted">
-            <T v={aliados.entradilla} />
-          </p>
-        </div>
+        <p class="container-page text-center text-xs font-bold tracking-[0.18em] text-ink-subtle uppercase">
+          <T v={copy.aliados.rotulo} />
+        </p>
       </Reveal>
 
-      {/* `flex-wrap` centrado y NO una rejilla, aunque el ancho salga de una
-          división: en una rejilla, la última fila incompleta deja el hueco a la
-          derecha —se lee como una marca que falta— mientras que aquí se centra
-          sola. Ver el cálculo de `columnas` arriba. */}
-      <ul
-        class="aliados-fila mt-10 flex flex-wrap items-stretch justify-center gap-4 sm:gap-6"
-        style={`--cols:${columnas}`}
-      >
-        {marcas.map((m, i) => (
-          <Reveal as="li" delay={i * 0.08} class="w-full sm:w-auto">
-            {/* ─── CON URL ENLAZA; SIN URL, NO ────────────────────────────────
-                Una marca sin `url` sigue apareciendo —la relación es real— pero
-                se pinta como tarjeta muerta en vez de como enlace. Es la misma
-                regla de `redesMarca`: no se publica un enlace roto.
-
-                Hoy la usa Broker Lenders, cuyo sitio devuelve 403 y tiene el
-                certificado caducado. Ver el comentario de `aliados.marcas`.
-
-                `rel="noopener"` no es opcional con `target="_blank"`: sin él la
-                página de destino recibe una referencia a esta y puede
-                reescribirla. `noreferrer` porque tampoco hace falta mandarles
-                de dónde viene el clic. */}
-            <Fragment>
-            {(() => {
-              const Tarjeta = m.url ? "a" : "div";
-              return (
-            <Tarjeta
-              href={m.url ?? undefined}
-              target={m.url ? "_blank" : undefined}
-              rel={m.url ? "noopener noreferrer" : undefined}
-              data-track={m.url ? `aliado-${m.logo}` : undefined}
-              class:list={[
-                "group flex h-full min-h-11 min-w-0 flex-col items-center justify-center gap-3 rounded-2xl border border-line bg-surface px-6 py-7 transition-colors duration-200 ease-out-soft",
-                m.url &&
-                  "hover:border-secondary-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
-              ]}
-            >
-              {m.logo ? (
-                /* `h-10 w-auto`: los logos vienen con proporciones distintas, así
-                   que se igualan por ALTO. Igualarlos por ancho haría que uno
-                   apaisado se viera el doble de grande que uno cuadrado. */
-                <img
-                  src={m.logo}
-                  alt={m.nombre}
-                  width={m.medidas?.w}
-                  height={m.medidas?.h}
-                  loading="lazy"
-                  decoding="async"
-                  class="h-9 w-auto object-contain sm:h-10"
-                />
-              ) : (
-                /* Logotipo tipográfico mientras no llega el archivo. Ver `lockup`. */
-                <span class="flex h-9 flex-col items-center justify-center text-center sm:h-10">
-                  <span class="text-base font-extrabold uppercase leading-none tracking-[0.06em] text-ink sm:text-lg">
-                    {lockup(m.nombre).arriba}
-                  </span>
-                  {lockup(m.nombre).abajo && (
-                    <span class="mt-1 text-[0.6875rem] font-semibold uppercase leading-none tracking-[0.22em] text-ink-brand">
-                      {lockup(m.nombre).abajo}
+      <div data-banda data-pausada="false" class="relative mt-8">
+        {/* `overflow-hidden` recorta la pista sin sacar la banda del ancho de
+            la página: nada de `100vw`, que incluye la barra de desplazamiento y
+            provoca scroll horizontal en toda la web. */}
+        <div data-banda-viewport class="overflow-hidden">
+          <ul
+            data-banda-pista
+            class="flex w-max items-center gap-12 py-2 sm:gap-16"
+            style={`--duracion:${duracion}`}
+            aria-label={copy.aliados.rotulo[lang]}
+            data-aria-es={copy.aliados.rotulo.es}
+            data-aria-en={copy.aliados.rotulo.en}
+          >
+            {[0, 1].map((copia) =>
+              marcas.map((m) => (
+                <li
+                  class="shrink-0"
+                  aria-hidden={copia === 1 ? "true" : undefined}
+                  data-banda-clon={copia === 1 ? "" : undefined}
+                >
+                  {/* Con enlace es un `<a>`; sin él, un `<span>`. Una marca sin
+                      `url` sigue apareciendo porque la relación es real, pero no
+                      se publica un enlace roto. */}
+                  {m.url ? (
+                    <a
+                      href={m.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      data-track={`aliado-${m.logo}`}
+                      class="flex min-h-11 items-center opacity-80 transition-opacity duration-[var(--duration-base)] ease-[var(--ease-out-soft)] hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus"
+                    >
+                      {m.logo ? (
+                        <img
+                          src={m.logo}
+                          alt={m.nombre}
+                          width={m.medidas?.w}
+                          height={m.medidas?.h}
+                          loading="lazy"
+                          decoding="async"
+                          class="h-8 w-auto object-contain sm:h-10"
+                        />
+                      ) : (
+                        <span class="flex h-8 flex-col justify-center text-center sm:h-10">
+                          <span class="text-sm font-extrabold tracking-[0.06em] text-ink uppercase sm:text-base">
+                            {lockup(m.nombre).arriba}
+                          </span>
+                          {lockup(m.nombre).abajo && (
+                            <span class="mt-0.5 text-[0.625rem] font-semibold tracking-[0.2em] text-ink-brand uppercase">
+                              {lockup(m.nombre).abajo}
+                            </span>
+                          )}
+                        </span>
+                      )}
+                    </a>
+                  ) : (
+                    <span class="flex min-h-11 items-center opacity-80">
+                      {m.logo ? (
+                        <img
+                          src={m.logo}
+                          alt={m.nombre}
+                          width={m.medidas?.w}
+                          height={m.medidas?.h}
+                          loading="lazy"
+                          decoding="async"
+                          class="h-8 w-auto object-contain sm:h-10"
+                        />
+                      ) : (
+                        <span class="flex h-8 flex-col justify-center text-center sm:h-10">
+                          <span class="text-sm font-extrabold tracking-[0.06em] text-ink uppercase sm:text-base">
+                            {lockup(m.nombre).arriba}
+                          </span>
+                          {lockup(m.nombre).abajo && (
+                            <span class="mt-0.5 text-[0.625rem] font-semibold tracking-[0.2em] text-ink-brand uppercase">
+                              {lockup(m.nombre).abajo}
+                            </span>
+                          )}
+                        </span>
+                      )}
                     </span>
                   )}
-                </span>
-              )}
+                </li>
+              )),
+            )}
+          </ul>
+        </div>
 
-              {/* `text-sm` y no `text-xs`: es lo único que explica QUÉ es cada
-                  marca. A 12 px sobre gris claro, en móvil, no se lee — y sin
-                  ese renglón la sección es un par de logos sin contexto. */}
-              <span class="text-sm font-medium text-ink-subtle">
-                <T v={m.rubro} resaltar />
-              </span>
-            </Tarjeta>
-              );
-            })()}
-            </Fragment>
-          </Reveal>
-        ))}
-      </ul>
+        {/* Los bordes se desvanecen en vez de cortar en seco: sin esto, un logo
+            aparece y desaparece de golpe en el filo y el ojo lo lee como un
+            fallo de maquetación. El color del degradado es el de ESTA sección
+            (`tono="muted"`), así que si alguien le cambia el tono hay que
+            cambiarlo aquí también. */}
+        <div
+          aria-hidden="true"
+          class="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-surface-muted to-transparent sm:w-28"
+        />
+        <div
+          aria-hidden="true"
+          class="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-surface-muted to-transparent sm:w-28"
+        />
+      </div>
+
+      {/* El botón es lo que hace que esto cumpla WCAG en un teléfono, donde no
+          hay cursor con el que pausar. Discreto y centrado: es un mando, no una
+          llamada a la acción. */}
+      <div class="container-page mt-6 flex justify-center">
+        <button
+          type="button"
+          data-banda-pausa
+          aria-pressed="false"
+          aria-label={copy.banda.pausar[lang]}
+          data-aria-es={copy.banda.pausar.es}
+          data-aria-en={copy.banda.pausar.en}
+          data-etiqueta-pausar-es={copy.banda.pausar.es}
+          data-etiqueta-pausar-en={copy.banda.pausar.en}
+          data-etiqueta-reanudar-es={copy.banda.reanudar.es}
+          data-etiqueta-reanudar-en={copy.banda.reanudar.en}
+          class="inline-grid size-11 place-items-center rounded-full border border-line bg-surface text-ink-subtle transition-colors duration-200 hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        >
+          <Icono nombre="pausa" class="size-4" grosor={2} data-icono-pausa />
+          <Icono nombre="play" class="hidden size-4" grosor={1} data-icono-play />
+        </button>
+      </div>
     </Section>
   )
 }
-
-<style is:global>
-  /**
-   * El ancho de cada tarjeta sale de dividir la fila, no de un número fijo.
-   *
-   * ⚠️ ESTO NO SE PUEDE ESCRIBIR CON UTILIDADES DE TAILWIND porque depende de
-   * `--cols`, que se calcula en el servidor a partir de cuántas marcas hay. Una
-   * clase por cada número posible de columnas sería peor de mantener que estas
-   * seis líneas.
-   *
-   * ⚠️ `is:global` NO ES PEREZA, ES OBLIGATORIO AQUÍ, y costó un rato entenderlo:
-   * los `<li>` los pinta `Reveal`, que es OTRO componente, así que no llevan el
-   * `data-astro-cid-…` de este y una regla con ámbito no los alcanza. Comprobado
-   * en el navegador: el `<ul>` tenía el atributo y los `<li>` no, y el
-   * `flex-basis` calculado salía `auto`. El riesgo de globalizar se acota con
-   * `.aliados-fila`, una clase que solo existe en esta sección.
-   *
-   * Tres escalones, y el de en medio importa: en tableta se fuerzan DOS por
-   * fila, sin mirar `--cols`. Con cuatro columnas a 640 px cada tarjeta se
-   * quedaría en 140 px y el logo saldría del tamaño de un sello.
-   */
-  @media (min-width: 640px) {
-    .aliados-fila > li {
-      flex: 0 1 calc((100% - 1.5rem) / 2);
-      /* Tope para cuando hay pocas marcas: con dos, media fila cada una serían
-         tarjetas de 560 px con un logo diminuto flotando en el centro. */
-      max-width: 20rem;
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .aliados-fila > li {
-      flex: 0 1 calc((100% - (var(--cols) - 1) * 1.5rem) / var(--cols));
-    }
-  }
-</style>

@@ -712,6 +712,16 @@ export const aliados = {
   /** `false` esconde la sección entera. */
   activa: true,
 
+  /**
+     * ⚠️ EL TITULAR Y LA ENTRADILLA YA NO SE PINTAN. La sección pasó a ser una
+     * banda de logos con un rótulo corto (`copy.aliados.rotulo`), porque con
+     * ocho marcas la versión con titular ocupaba media pantalla y esta franja
+     * es una PRUEBA, no un capítulo.
+     *
+     * NO se borran, al revés que el código muerto: esto es copia aprobada por
+     * el cliente y específica de este negocio. Si algún día la sección vuelve a
+     * llevar cabecera, está escrita. Ver 01-Aliados.astro.
+     */
   titulo: {
     es: "Los negocios que ya están dentro",
     en: "The businesses already inside",
@@ -1984,23 +1994,6 @@ export const copy = {
         es: "Tres semanas después, el mismo contacto avisa de que su problema ya se resolvió: lo ayudó otra persona.",
         en: "Three weeks later the same contact says their problem is already sorted: someone else helped them.",
       },
-      /* La tercera escena cierra el arco, y por eso la burbuja sale de TI: las
-         dos primeras te llegan, esta la mandas tú. Es el mismo mensaje del
-         principio con la única diferencia que vende el curso: esta vez sabes
-         qué contestar. No promete dinero ni resultados, dice lo que haces. */
-      ahora: { es: "El mismo mensaje, hoy", en: "The same message, today" },
-      mensaje3: {
-        es: "Tranquilo, esto lo veo. Te paso ahora mismo con quien lo resuelve.",
-        en: "Don't worry, I've got this. I'm connecting you right now with the person who handles it.",
-      },
-      respondido: {
-        es: "Contestado en cinco minutos.",
-        en: "Answered in five minutes.",
-      },
-      escena3Alt: {
-        es: "El mismo mensaje, pero esta vez respondido: le dices que lo ves y que lo pasas con quien lo resuelve.",
-        en: "The same message, but answered this time: you tell them you've got it and you're connecting them with whoever handles it.",
-      },
     },
     paraTiTitulo: {
       es: "Si te reconociste arriba, esto es para ti",
@@ -2018,6 +2011,12 @@ export const copy = {
 
   resultados: {
     aria: { es: "Qué vas a lograr", en: "What you'll walk away with" },
+    /* El alt describe la ESCENA: quien no ve la foto recibe lo mismo que
+       quien la ve, que aquí es la actitud, no el decorado. */
+    fotoAlt: {
+      es: "Una persona sonriendo mientras habla por teléfono en la calle, tranquila, en mitad de la conversación.",
+      en: "Someone smiling mid-conversation on the phone out in the street, completely at ease.",
+    },
     titulo: {
       es: "Qué sabrás hacer al terminar",
       en: "What you'll know how to do by the end",
@@ -2643,6 +2642,10 @@ export const copy = {
    * página como cualquier otro texto. `etiqueta` nombra la lista: sin ella, lo
    * que se anuncia es "lista, doce elementos" y no se sabe de qué.
    */
+  /* El rótulo de la banda de logos. Ver 01-Aliados.astro. */
+  aliados: {
+    rotulo: { es: "Confían en nosotros", en: "Trusted by" },
+  },
   banda: {
     etiqueta: { es: "Testimonios de alumnos", en: "Student testimonials" },
     pausar: { es: "Pausar los testimonios", en: "Pause the testimonials" },

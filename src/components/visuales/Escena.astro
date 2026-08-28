@@ -51,22 +51,16 @@ interface Props {
   encabezado?: Txt;
   /** Apaga el mensaje: se usa en la segunda escena, la de "ya se resolvió". */
   apagado?: boolean;
-  /**
-   * La burbuja sale de TI, no del contacto: se va a la derecha, en teal, con la
-   * esquina de abajo a la derecha cuadrada.
-   *
-   * ⚠️ ES LA MISMA CONVENCIÓN, DEL OTRO LADO. La burbuja entrante a la
-   * izquierda y la saliente a la derecha es lo que todo el mundo trae aprendido
-   * de cualquier aplicación de mensajes; no hay que explicarla. Y es lo que
-   * permite contar el giro sin una sola palabra de más: las dos primeras
-   * escenas te llegan, la tercera la mandas tú.
-   *
-   * Con `saliente`, el estado deja de ser rojo: lo que se cuenta ya no es lo
-   * que se perdió.
-   */
-  saliente?: boolean;
   class?: string;
 }
+
+/*
+ * ⚠️ AQUÍ HUBO UN `saliente` (burbuja a la derecha, en teal, para un mensaje
+ * mandado por ti) y se quitó al quitarse la tercera escena de la sección de
+ * resultados. No se dejó "por si acaso": una propiedad que no usa nadie es
+ * código que nadie prueba y que el día que se use estará roto. Si vuelve a
+ * hacer falta, está en el historial.
+ */
 
 const {
   mensaje,
@@ -74,7 +68,6 @@ const {
   alt,
   encabezado = copy.problema.escena.remitente,
   apagado = false,
-  saliente = false,
   class: className = "",
 } = Astro.props;
 
@@ -116,12 +109,10 @@ const lang = resolverIdiomaServidor(
         mandaron a mí", y se entiende sin haber visto nunca esta página. */}
     <p
       class:list={[
-        "max-w-[19rem] rounded-2xl px-4 py-3 text-base text-pretty",
-        saliente
-          ? "ml-auto rounded-br-sm bg-cta text-ink-inverse"
-          : apagado
-            ? "rounded-bl-sm bg-surface-muted text-ink-muted"
-            : "rounded-bl-sm bg-surface-sunken text-ink",
+        "max-w-[19rem] rounded-2xl rounded-bl-sm px-4 py-3 text-base text-pretty",
+        apagado
+          ? "bg-surface-muted text-ink-muted"
+          : "bg-surface-sunken text-ink",
       ]}
     >
       <T v={mensaje} />
@@ -132,11 +123,7 @@ const lang = resolverIdiomaServidor(
     <p
       class:list={[
         "mt-3 text-sm font-semibold",
-        saliente
-          ? "text-right text-ink-brand"
-          : apagado
-            ? "text-ink-subtle"
-            : "text-error-600",
+        apagado ? "text-ink-subtle" : "text-error-600",
       ]}
     >
       <T v={estado} />
