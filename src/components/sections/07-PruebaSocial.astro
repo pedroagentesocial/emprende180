@@ -191,7 +191,13 @@ const puntos = fundador.puntos.map((p) => ({
             prestada que nadie puede ir a verificar; ver `MarcaGoogle.astro`. */}
         {hayResumen && (
           <Reveal class="container-page block">
-            <div class="mx-auto mt-10 flex max-w-2xl flex-col items-center gap-4 rounded-2xl border border-line bg-surface px-6 py-6 sm:flex-row sm:justify-center sm:gap-7 sm:py-5">
+            {/* ⚠️ `w-fit` Y NO `max-w-2xl`: la caja mide lo que mide su
+                contenido. Con un ancho fijo de 672 px para una nota, una línea
+                y un recuento, la mitad de la tarjeta era aire, y una caja medio
+                vacía se lee como un bloque al que le falta algo. Encogida a su
+                contenido es lo que de verdad es: un distintivo, no una tarjeta.
+                También bajó el `padding` por lo mismo. */}
+            <div class="mx-auto mt-8 flex w-fit max-w-full flex-col items-center gap-3 rounded-2xl border border-line bg-surface px-5 py-4 sm:flex-row sm:gap-5 sm:py-3">
               <div class="flex flex-col items-center gap-1.5 sm:items-start">
                 <Estrellas valor={notaMedia} tamano="md" sinTexto />
                 <p class="text-sm text-pretty text-ink-muted">

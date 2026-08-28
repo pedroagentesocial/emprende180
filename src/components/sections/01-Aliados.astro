@@ -104,13 +104,33 @@ const duracion = `${marcas.length * 5}s`;
 {
   aliados.activa && marcas.length > 0 && (
     <Section id="aliados" tono="muted" ritmo="compacto" sinContenedor>
-      <Reveal>
-        <p class="container-page text-center text-xs font-bold tracking-[0.18em] text-ink-subtle uppercase">
-          <T v={copy.aliados.rotulo} />
-        </p>
-      </Reveal>
+  {/* ─── EL RÓTULO VA EN LÍNEA CON LOS LOGOS, NO ENCIMA ────────────────────
+      Centrado y arriba, "Confían en nosotros" se leía como el titular de una
+      sección y devolvía a la franja el peso que se le acababa de quitar. A la
+      izquierda y a la misma altura, es lo que de verdad es: una etiqueta que
+      presenta la fila, como el "Síguenos" de un pie.
 
-      <div data-banda data-pausada="false" class="relative mt-8">
+      En móvil se apila, y no es una concesión: el rótulo mide unos 170 px y con
+      la banda al lado dejaría 200 px para los logos, donde no cabe ni uno
+      entero. Debajo, la banda recupera el ancho completo.
+
+      La banda sigue sangrando hasta el borde derecho (`sinContenedor` en la
+      sección) mientras el rótulo respeta el margen de la página: por eso el
+      padding va en el rótulo y no en el contenedor común. */}
+      <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:gap-10">
+        {/* ⚠️ EL MARGEN VA A MANO Y NO CON `container-page`. Esa utilidad lleva
+            `max-width` y `margin-inline: auto`, así que dentro de una fila flex
+            se comía el ancho entero y empujaba la banda fuera de la pantalla:
+            se veía el rótulo y un solo logo asomando por la derecha. Aquí solo
+            hace falta el margen izquierdo, que son los mismos 1.25/2rem que
+            usa la página. */}
+        <Reveal class="shrink-0 pl-5 sm:pl-8">
+          <p class="text-xs font-bold tracking-[0.18em] text-ink-subtle uppercase">
+            <T v={copy.aliados.rotulo} />
+          </p>
+        </Reveal>
+
+        <div data-banda data-pausada="false" class="relative min-w-0 flex-1">
         {/* `overflow-hidden` recorta la pista sin sacar la banda del ancho de
             la página: nada de `100vw`, que incluye la barra de desplazamiento y
             provoca scroll horizontal en toda la web. */}
@@ -203,12 +223,13 @@ const duracion = `${marcas.length * 5}s`;
             cambiarlo aquí también. */}
         <div
           aria-hidden="true"
-          class="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-surface-muted to-transparent sm:w-28"
+          class="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-surface-muted to-transparent sm:w-12"
         />
         <div
           aria-hidden="true"
           class="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-surface-muted to-transparent sm:w-28"
         />
+        </div>
       </div>
 
       {/* El botón es lo que hace que esto cumpla WCAG en un teléfono, donde no
