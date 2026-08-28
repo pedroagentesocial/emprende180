@@ -4,6 +4,8 @@ import Section from "@components/ui/Section.astro";
 import SectionHeading from "@components/ui/SectionHeading.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Button from "@components/ui/Button.astro";
+import FilaAlterna from "@components/ui/FilaAlterna.astro";
+import Escena from "@components/visuales/Escena.astro";
 import BotonDetalle from "@components/ui/BotonDetalle.astro";
 import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
 import { fondoResultado } from "@lib/assets";
@@ -53,10 +55,14 @@ import { curso, cta, copy } from "@config/curso.config";
  * por el mismo hueco a la izquierda del titular.
  *
  * ⚠️ Con esto, las secciones 02 y 03 comparten mecanismo (icono + titular +
- * detalle al pasar el cursor). Lo que las separa ahora es la maqueta: la 02 va
- * a tres columnas y a ancho completo; la 03, a dos columnas con la cabecera
- * fija al lado. Si alguien iguala también eso, la página pasa a tener dos
- * secciones seguidas que se leen como la misma.
+ * detalle al pasar el cursor), así que lo que las separa tiene que ser la
+ * forma. La cabecera fija al lado se quitó al entrar la tercera escena: ahora
+ * la 03 ABRE con una fila alterna (texto y escena) y sigue a ancho completo con
+ * tarjetas navy en tres columnas, mientras que la 02 son entradas de lista sin
+ * caja repartidas en tres columnas. Cajas contra no-cajas, y una escena en un
+ * lado distinto en cada sección: eso es lo que impide que se lean como la misma
+ * sección dos veces. Si alguien vuelve a igualar la maqueta, hay que replantear
+ * una de las dos.
  *
  * ─── AHORA SÍ SON TARJETAS, Y CON FOTO DE FONDO ────────────────────────────
  *
@@ -103,9 +109,23 @@ const ICONOS: NombreIcono[] = [
 ---
 
 <Section id="resultados" ritmo="amplio" ariaLabel={copy.resultados.aria}>
-  <div class="grid gap-x-16 gap-y-12 lg:grid-cols-[minmax(0,26rem)_1fr]">
-    <!-- Cabecera fija mientras la lista pasa al lado. -->
-    <div class="lg:sticky lg:top-28 lg:self-start">
+  {/* ─── El cierre del arco ──────────────────────────────────────────────
+      ⚠️ LA TERCERA ESCENA VA AQUÍ Y NO EN LA SECCIÓN DEL PROBLEMA, y el sitio
+      es la mitad del argumento. Arriba se cuentan dos escenas: el mensaje que
+      llega y se queda sin responder, y el mismo mensaje resuelto sin ti tres
+      semanas después. Las dos duelen. Esta es la misma conversación con la
+      única diferencia que vende el curso: esta vez sabes qué contestar.
+
+      Ponerla junto a los dolores habría rematado el problema; ponerla al abrir
+      "qué vas a lograr" convierte la lista de resultados en la consecuencia de
+      algo que se acaba de VER. Y la burbuja sale de ti, en teal y a la derecha,
+      así que el giro se lee sin una palabra de más.
+
+      El visual va a la DERECHA porque la última fila de la sección anterior lo
+      lleva a la izquierda: es la alternancia que impide que dos bloques
+      seguidos se lean como el mismo bloque repetido. Ver `FilaAlterna`. */}
+  <FilaAlterna alinear="centro" class="mb-16 lg:mb-24">
+    <div slot="texto">
       <SectionHeading
         titulo={copy.resultados.titulo}
         entradilla={copy.resultados.entradilla}
@@ -125,6 +145,18 @@ const ICONOS: NombreIcono[] = [
       </Reveal>
     </div>
 
+    <Reveal slot="visual" delay={0.12}>
+      <Escena
+        encabezado={copy.problema.escena.ahora}
+        mensaje={copy.problema.escena.mensaje3}
+        estado={copy.problema.escena.respondido}
+        alt={copy.problema.escena.escena3Alt}
+        saliente
+      />
+    </Reveal>
+  </FilaAlterna>
+
+  <div class="grid gap-x-16 gap-y-12">
     <div>
       {/* La pista solo existe si hay un cursor con el que pasar. */}
       <Reveal>
@@ -133,7 +165,7 @@ const ICONOS: NombreIcono[] = [
         </p>
       </Reveal>
 
-      <ol class="grid gap-5 sm:grid-cols-2">
+      <ol class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {
           curso.transformaciones.map((t, i) => {
             const fondo = fondoResultado(i);

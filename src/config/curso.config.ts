@@ -1984,6 +1984,23 @@ export const copy = {
         es: "Tres semanas después, el mismo contacto avisa de que su problema ya se resolvió: lo ayudó otra persona.",
         en: "Three weeks later the same contact says their problem is already sorted: someone else helped them.",
       },
+      /* La tercera escena cierra el arco, y por eso la burbuja sale de TI: las
+         dos primeras te llegan, esta la mandas tú. Es el mismo mensaje del
+         principio con la única diferencia que vende el curso: esta vez sabes
+         qué contestar. No promete dinero ni resultados, dice lo que haces. */
+      ahora: { es: "El mismo mensaje, hoy", en: "The same message, today" },
+      mensaje3: {
+        es: "Tranquilo, esto lo veo. Te paso ahora mismo con quien lo resuelve.",
+        en: "Don't worry, I've got this. I'm connecting you right now with the person who handles it.",
+      },
+      respondido: {
+        es: "Contestado en cinco minutos.",
+        en: "Answered in five minutes.",
+      },
+      escena3Alt: {
+        es: "El mismo mensaje, pero esta vez respondido: le dices que lo ves y que lo pasas con quien lo resuelve.",
+        en: "The same message, but answered this time: you tell them you've got it and you're connecting them with whoever handles it.",
+      },
     },
     paraTiTitulo: {
       es: "Si te reconociste arriba, esto es para ti",

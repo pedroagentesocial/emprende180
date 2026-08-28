@@ -269,7 +269,12 @@ const puntos = fundador.puntos.map((p) => ({
         </dl>
 
         <Reveal delay={0.28}>
-          <p class="mx-auto mt-10 max-w-read border-l-2 border-secondary-500 pl-5 text-base font-medium text-pretty text-ink">
+          {/* Sin filete lateral (ver la nota del hero). Es el remate del
+              fundador después de sus cifras, así que se separa con aire y con
+              una superficie propia: leerlo como una frase aparte es justo lo
+              que se busca, y una raya de color no lo consigue mejor que un
+              fondo. */}
+          <p class="mx-auto mt-10 max-w-read rounded-2xl bg-surface-muted px-6 py-5 text-base font-medium text-pretty text-ink">
             <T v={fundador.remate} />
           </p>
         </Reveal>

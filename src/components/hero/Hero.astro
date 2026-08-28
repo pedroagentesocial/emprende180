@@ -196,9 +196,18 @@ const pruebaSocial = construirTxt((l) =>
           <T v={curso.formato.nivel} />
         </p>
 
-        {/* "Para quién es", en una línea. Cualifica sin ocupar pantalla. */}
+        {/* "Para quién es", en una línea. Cualifica sin ocupar pantalla.
+
+            ⚠️ AQUÍ HABÍA UN FILETE LATERAL TEAL (`border-l-2 … pl-4`) y se
+            quitó: DESIGN.md prohíbe por nombre los bordes laterales de acento.
+            No es un capricho de estilo, es que ese recurso no distingue nada —
+            se le pone a cualquier párrafo que "haya que destacar" y acaba
+            marcando tres cosas distintas en la misma página con la misma raya.
+            Aquí lo sustituye una superficie: un bloque con fondo propio, que
+            sobre el navy del hero separa igual de bien y no compite con el teal
+            del botón, que es el único sitio donde el teal significa "pulsa". */}
         <div
-          class="mt-8 border-l-2 border-secondary-400 pl-4"
+          class="mt-8 max-w-xl rounded-xl bg-primary-800/60 px-4 py-3"
           data-hero-enter
           style="--i:5"
         >
