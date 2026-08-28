@@ -1,0 +1,18 @@
+# Emprende180
+#
+# El área de alumnos y el acceso quedan fuera del rastreo. Las páginas ya
+# llevan `noindex` en su cabecera, que es lo que de verdad las mantiene fuera
+# del índice; esto es la otra mitad: que ni siquiera se pidan.
+#
+# ⚠️ Ojo con la diferencia, porque se confunde a menudo: `Disallow` dice "no
+# entres", `noindex` dice "no lo pongas en tu índice". Una página bloqueada por
+# robots.txt PUEDE aparecer en resultados sin descripción, porque el rastreador
+# no llegó a leer el `noindex`. Por eso están las dos cosas, y por eso el
+# `noindex` es el que manda.
+
+User-agent: *
+Disallow: /student
+Disallow: /login
+Disallow: /api/
+
+Sitemap: https://emprende180.vercel.app/sitemap.xml
