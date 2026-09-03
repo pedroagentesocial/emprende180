@@ -13,7 +13,6 @@ import {
   type Idioma,
   type Txt,
 } from "@i18n/idioma";
-import { formatMoney } from "@i18n/formato";
 import { MARCA_COMPLETAR } from "@lib/pendientes";
 
 interface Props {
@@ -102,23 +101,38 @@ const schemaCourse = {
     ...(curso.formato.declararDuracion && curso.formato.horas
       ? { courseWorkload: `PT${curso.formato.horas}H` }
       : {}),
-    offers: {
-      "@type": "Offer",
-      /* El precio que se paga HOY, no el ancla. Poner aquí la referencia sería
-         declarar a Google un precio que nadie paga: los resultados enriquecidos
-         mostrarían una cifra distinta de la de la página. */
-      price: curso.precio.actual,
-      priceCurrency: curso.precio.moneda,
-      availability: curso.fechas.inscripcionAbierta
-        ? "https://schema.org/InStock"
-        : "https://schema.org/PreOrder",
-      url: canonical,
-      /* `priceValidUntil` solo si hay una fecha de cierre REAL: es una promesa
-         a Google de hasta cuándo vale ese precio. */
-      ...(curso.precio.urgencia.fechaCierre
-        ? { priceValidUntil: curso.precio.urgencia.fechaCierre }
-        : {}),
-    },
+    /* ─── LA OFERTA SOLO EXISTE SI EL PRECIO ES PÚBLICO ──────────────────
+       Con `precio.publico` en false no se declara `offers` en absoluto.
+
+       Y no se declara "sin precio" ni con la cifra real escondida: los dos
+       caminos son peores. Un `Offer` sin `price` es un dato incompleto que
+       Google descarta, y poner la cifra en el marcado mientras la página la
+       calla es exactamente lo que las directrices de Google llaman contenido
+       oculto — y además cualquiera la leería en el código fuente.
+
+       Se pierde el resultado enriquecido con precio en la búsqueda. Es el
+       coste de no publicarlo, y es una decisión de negocio, no técnica. */
+    ...(curso.precio.publico
+      ? {
+          offers: {
+            "@type": "Offer",
+            /* El precio que se paga HOY, no el ancla. Poner aquí la referencia
+               sería declarar a Google un precio que nadie paga: los resultados
+               enriquecidos mostrarían una cifra distinta de la de la página. */
+            price: curso.precio.actual,
+            priceCurrency: curso.precio.moneda,
+            availability: curso.fechas.inscripcionAbierta
+              ? "https://schema.org/InStock"
+              : "https://schema.org/PreOrder",
+            url: canonical,
+            /* `priceValidUntil` solo si hay una fecha de cierre REAL: es una
+               promesa a Google de hasta cuándo vale ese precio. */
+            ...(curso.precio.urgencia.fechaCierre
+              ? { priceValidUntil: curso.precio.urgencia.fechaCierre }
+              : {}),
+          },
+        }
+      : {}),
   },
   ...(cifras.sonReales && cifras.numeroValoraciones > 0
     ? {
@@ -137,10 +151,15 @@ const schemaCourse = {
    description al cambiar de idioma sin recargar. */
 const titulos = { es: titulo.es, en: titulo.en };
 const descripciones = { es: descripcion.es, en: descripcion.en };
-const precioFormateado = {
-  es: formatMoney(curso.precio.actual, "es", curso.precio.moneda),
-  en: formatMoney(curso.precio.actual, "en", curso.precio.moneda),
-};
+/* AQUÍ SE PASABA EL PRECIO AL CLIENTE Y SE HA QUITADO.
+
+   `window.__e180Precio` no lo leía nadie: quedó de una versión anterior del
+   cambio de idioma en caliente. Era código muerto, y además metía "$490" en
+   el HTML de todas las páginas —incluidas las del portal— cuando la web
+   entera ha dejado de publicar el precio. Un dato que no se enseña pero se
+   lee en el código fuente es peor que enseñarlo: parece que se esconde.
+
+   Si algún día vuelve a hacer falta, va detrás de `curso.precio.publico`. */
 ---
 
 <!doctype html>
@@ -304,7 +323,7 @@ const precioFormateado = {
           · los `alt` de las imágenes (data-alt-es / data-alt-en)
         Un `aria-label` que se queda en el idioma anterior deja la página a
         medio traducir justo para quien la navega con lector de pantalla. */}
-    <script is:inline define:vars={{ titulos, descripciones, precioFormateado }}>
+    <script is:inline define:vars={{ titulos, descripciones }}>
       (function () {
         function aplicar(l) {
           if (titulos[l]) {
@@ -329,7 +348,6 @@ const precioFormateado = {
         aplicar(document.documentElement.lang);
       })();
 
-      window.__e180Precio = precioFormateado;
     </script>
 
     <!-- Entrada al scroll: UN solo IntersectionObserver para toda la página. -->

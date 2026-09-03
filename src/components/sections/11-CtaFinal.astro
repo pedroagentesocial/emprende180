@@ -147,18 +147,28 @@ const lang = resolverIdiomaServidor(
             base. Apiladas, el "o 3 pagos de $164" quedaba colgando debajo de un
             número enorme y parecía una nota al pie; al lado, se lee como lo que
             es: la otra forma de pagar lo mismo. */}
-        <p class="mt-6 flex flex-wrap items-baseline justify-center gap-x-4 gap-y-1 lg:justify-start">
-          <span class="text-5xl font-extrabold tracking-tight text-ink-inverse sm:text-6xl">
-            <T v={precioActual} />
-          </span>
-          {
-            textoCuotas && (
-              <span class="text-base font-medium text-secondary-200">
-                <T v={textoCuotas} />
+        {/* ⚠️ SOLO SI EL PRECIO ES PÚBLICO. Con `curso.precio.publico` en
+            false, esta es la última cifra que quedaba en la página: un $490
+            aquí abajo mientras el resto del sitio manda a preguntar el precio
+            no es un descuido, es una contradicción, y la ve cualquiera que
+            baje hasta el final.
+
+            Lo que queda en su sitio es la tira de abajo, que en ese modo dice
+            de qué depende el precio y a dónde ir a pedirlo. */}
+        {
+          curso.precio.publico && (
+            <p class="mt-6 flex flex-wrap items-baseline justify-center gap-x-4 gap-y-1 lg:justify-start">
+              <span class="text-5xl font-extrabold tracking-tight text-ink-inverse sm:text-6xl">
+                <T v={precioActual} />
               </span>
-            )
-          }
-        </p>
+              {textoCuotas && (
+                <span class="text-base font-medium text-secondary-200">
+                  <T v={textoCuotas} />
+                </span>
+              )}
+            </p>
+          )
+        }
       </Reveal>
 
       <Reveal delay={0.1}>

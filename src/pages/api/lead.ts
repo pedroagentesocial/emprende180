@@ -260,12 +260,24 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
         // El aviso interno va siempre en español: lo lees tú, no el lead.
         /* El cupón va EN EL ASUNTO cuando lo hay: quien llama tiene que verlo
            en la lista del buzón, sin abrir el correo. */
-        subject: cupon?.valido
-          ? `Nuevo lead — mini-curso · ${lead.nombre} · cupón ${cupon.valido.code}`
-          : `Nuevo lead — mini-curso · ${lead.nombre} · ${lead.origen}`,
+        /* El asunto dice de qué formulario viene, y el de informes se marca
+           aparte: no es el mismo lead. Quien pide precio está mucho más
+           abajo en el embudo que quien pide siete correos gratis, y hay que
+           poder distinguirlos en la bandeja sin abrir el mensaje. */
+        subject:
+          lead.origen === "informes"
+            ? `PIDE PRECIO — ${lead.nombre}${lead.telefono ? ` · ${lead.telefono}` : ""}`
+            : cupon?.valido
+              ? `Nuevo lead — mini-curso · ${lead.nombre} · cupón ${cupon.valido.code}`
+              : `Nuevo lead — mini-curso · ${lead.nombre} · ${lead.origen}`,
         text: [
           `Nombre:  ${lead.nombre}`,
           `Email:   ${lead.email}`,
+          ...(lead.telefono ? [`Tel:     ${lead.telefono}`] : []),
+          /* Quién le recomendó va JUNTO A LOS DATOS DE CONTACTO y no al final:
+             en el formulario de informes es lo que decide qué precio se le
+             dice, así que quien llame tiene que verlo antes de marcar. */
+          ...(lead.recomendadoPor ? [`Le mandó: ${lead.recomendadoPor}`] : []),
           `Origen:  ${lead.origen}`,
           `Idioma:  ${lead.idioma}`,
           ...(cupon
@@ -283,15 +295,25 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
         ].join("\n"),
       }),
 
-      // Día 1 del mini-curso. TODO: eliminar cuando la secuencia del
-      // autoresponder esté conectada, o el lead recibirá el día 1 dos veces.
-      enviar({
-        from,
-        to: [lead.email],
-        reply_to: contacto.email,
-        subject: BIENVENIDA[lead.idioma].asunto(lead.nombre),
-        text: BIENVENIDA[lead.idioma].cuerpo(lead.nombre),
-      }),
+      /* Día 1 del mini-curso. TODO: eliminar cuando la secuencia del
+         autoresponder esté conectada, o el lead recibirá el día 1 dos veces.
+
+         ⚠️ NO SE MANDA A QUIEN PIDE EL PRECIO. Ese formulario pide permiso
+         para contestar una pregunta, no para meter a nadie en una secuencia
+         de siete correos: mandárselo sería usar su consentimiento para algo
+         distinto de lo que aceptó, y quien pregunta cuánto cuesta y recibe
+         un curso por correo marca spam, no responde. */
+      ...(lead.origen === "informes"
+        ? []
+        : [
+            enviar({
+              from,
+              to: [lead.email],
+              reply_to: contacto.email,
+              subject: BIENVENIDA[lead.idioma].asunto(lead.nombre),
+              text: BIENVENIDA[lead.idioma].cuerpo(lead.nombre),
+            }),
+          ]),
     ]);
 
     if (!aviso.ok) {

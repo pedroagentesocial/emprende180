@@ -78,7 +78,11 @@ const { precio } = curso;
 const { fechaCierre, tipo } = precio.urgencia;
 
 const ms = fechaCierre ? new Date(fechaCierre).getTime() : NaN;
-const conPlazo = tipo === "fecha" && Number.isFinite(ms) && ms > Date.now();
+/* Sin precio público no hay plazo que anunciar: el plazo ERA la subida de
+   precio, y anunciar que sube algo que no se dice cuánto vale no informa de
+   nada. Ver `curso.precio.publico`. */
+const conPlazo =
+  precio.publico && tipo === "fecha" && Number.isFinite(ms) && ms > Date.now();
 
 /** Cada anuncio ya resuelto en los dos idiomas. */
 const frase = (plantilla: Txt, extra: Record<string, string | number> = {}) =>
@@ -106,8 +110,18 @@ const a = copy.anuncios;
  * precio se leen como un cartel de rebajas; intercaladas con lo que entra en el
  * curso, se leen como información.
  */
+/* ⚠️ LAS DOS PRIMERAS SON DE DINERO Y SE CAEN SIN PRECIO PÚBLICO.
+
+   "Precio de lanzamiento: $490" era la primera frase de la tira, o sea la
+   cifra más visible de la página entera —cruza la pantalla sola, cada cinco
+   segundos, en la barra que va siempre delante—. Dejarla mientras el resto
+   del sitio manda a preguntar el precio no sería un descuido, sería la
+   contradicción más grande del sitio.
+
+   En su lugar entra la frase de por qué no hay cifra. La tira sigue teniendo
+   qué contar: qué incluye, la garantía, el acceso y las mensualidades. */
 const anuncios: { texto: Txt; dias?: boolean }[] = [
-  { texto: frase(a.precio) },
+  { texto: precio.publico ? frase(a.precio) : frase(copy.informes.anuncio) },
   { texto: frase(a.curso) },
   ...(conPlazo ? [{ texto: frase(a.sube) }] : []),
   { texto: frase(a.garantia) },

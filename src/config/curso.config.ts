@@ -545,6 +545,27 @@ export const curso = {
    * luego se baja, entonces —y solo entonces— tiene sentido pasar a 'descuento'.
    */
   precio: {
+    /**
+     * ─── EL PRECIO NO SE PUBLICA ─────────────────────────────────────────
+     *
+     * `false` y la página deja de enseñar UNA SOLA cifra de dinero: se van
+     * las tres tiras de precio, el panel del $490 con su desglose valorado,
+     * la cuenta atrás, la línea del cierre y el `Offer` del schema de Google.
+     * En su lugar entra la sección de informes.
+     *
+     * Es decisión del cliente y tiene su motivo: el precio depende de con
+     * quién llega cada persona —quien viene recomendado no paga lo mismo—,
+     * así que una cifra sola en la página sería falsa para la mitad de los
+     * que la leen. Y de paso convierte la pregunta en un contacto.
+     *
+     * ⚠️ LO QUE HAY DEBAJO NO SE BORRA, Y ES A PROPÓSITO. Las cifras siguen
+     * aquí porque son el precio real del producto: las usa el equipo, las
+     * usan los cupones y el día que se decida publicar precio, esto vuelve a
+     * `true` y la página entera lo enseña otra vez sin tocar un componente.
+     * Borrarlas obligaría a reconstruir el desglose desde cero.
+     */
+    publico: false,
+
     /* El símbolo y los separadores los pone `formatMoney` con Intl. Aquí no
        hay ni un "$" escrito a mano ni un separador de miles decidido a dedo. */
     moneda: "USD",
@@ -1848,8 +1869,19 @@ export const redesMarca = [
  * La compra se pide en la sección 9, con temario, instructor y garantía vistos.
  */
 export const cta = {
+  /**
+   * ⚠️ DECÍA "INSCRIBIRME AL CURSO" Y AHORA DICE "PEDIR EL PRECIO".
+   *
+   * No es un cambio de tono, es que el botón tiene que prometer lo que de
+   * verdad pasa al pulsarlo. Sin precio publicado y sin pasarela, "inscribirme"
+   * llevaba a una sección que no dejaba inscribirse: eso se lee como un fallo
+   * de la página, no como un proceso.
+   *
+   * Y funciona a favor: el precio que falta deja de ser un hueco y pasa a ser
+   * el motivo de pulsar. Ver `copy.informes`.
+   */
   primario: {
-    texto: { es: "Inscribirme al curso", en: "Enroll in the course" },
+    texto: { es: "Pedir el precio", en: "Ask for the price" },
     href: "#precio",
   },
   secundario: {
@@ -2278,6 +2310,30 @@ export const copy = {
           },
         },
       ],
+
+      /**
+       * El primer punto, cuando el precio no se publica.
+       *
+       * El original dice "{actual} en lugar de {referencia}", o sea las dos
+       * cifras juntas: es EL sitio donde el ancla se cuela en una sección que
+       * no es la de precio. Con `precio.publico` en false hay que sustituirlo,
+       * no esconderlo: el argumento —entras antes que la fila de casos de
+       * éxito, y eso se nota en lo que pagas— sigue siendo verdad y sigue
+       * siendo el bueno.
+       *
+       * Lo que NO dice es que el precio vaya a subir. Es lo que el config da
+       * por hecho (`framing: 'lanzamiento'`), pero mientras no haya una fecha
+       * real detrás, anunciarlo en la página es una promesa que nadie ha
+       * firmado.
+       */
+      puntoPrecioSinCifras: {
+        titulo: { es: "Entras antes que la fila", en: "You get in before the queue" },
+        texto: {
+          es: "Todavía no hay una hilera de casos de éxito detrás de esto, y lo que cuesta hoy lo refleja. Pregunta el precio y te lo decimos: depende de quién te haya recomendado.",
+          en: "There is no line of success stories behind this yet, and what it costs today reflects that. Ask for the price and we'll tell you: it depends on who referred you.",
+        },
+      },
+
       remate: {
         es: "Cuando los primeros terminen, sus resultados van justo aquí: con nombre y apellido, foto y permiso por escrito. Ni uno inventado.",
         en: "When the first students finish, their results go right here: full name, photo and written permission. Not one of them invented.",
@@ -2291,6 +2347,85 @@ export const copy = {
     avisoPlaceholder: {
       es: "Ajusta el plazo y las condiciones a lo que de verdad puedas cumplir, y haz que coincidan palabra por palabra con la cláusula de devoluciones de los términos.",
       en: "Match the window and conditions to what you can actually honor, and make them agree word for word with the refund clause in the terms.",
+    },
+  },
+
+  /**
+   * ─── LA SECCIÓN DE INFORMES ───────────────────────────────────────────
+   *
+   * Sustituye al panel de precio mientras `curso.precio.publico` sea `false`.
+   *
+   * El texto está escrito con una regla: NO fingir que el precio es un
+   * secreto. Se dice por qué no está y se dice cómo conseguirlo. Una página
+   * que esconde la cifra sin explicarse se lee como "es caro y no te lo
+   * quiero decir", que es justo la conclusión que hay que evitar.
+   */
+  informes: {
+    kicker: { es: "Cuánto cuesta", en: "What it costs" },
+    titulo: {
+      es: "El precio depende de cómo llegas",
+      en: "The price depends on how you come in",
+    },
+    /* El porqué, sin rodeos: es lo que separa "reservado" de "sospechoso". */
+    porQue: {
+      es: "Quien llega recomendado por un Embajador no paga lo mismo que quien llega solo, así que una cifra suelta aquí sería falsa para la mitad de los que la leen. Dinos quién te recomendó —si es que alguien lo hizo— y te decimos tu precio.",
+      en: "Someone referred by an Ambassador doesn't pay the same as someone arriving on their own, so a single figure here would be wrong for half the people reading it. Tell us who referred you, if anyone did, and we'll tell you your price.",
+    },
+    /* Lo que SÍ se puede decir de dinero sin dar la cifra. */
+    hechos: [
+      { es: "Un solo pago. Ni suscripción ni cargos recurrentes.", en: "One payment. No subscription, no recurring charges." },
+      { es: "El acceso al curso no caduca.", en: "Course access doesn't expire." },
+      { es: "Se puede pagar en {n} partes.", en: "You can pay it in {n} parts." },
+    ],
+    ctaBoton: { es: "Quiero mi precio", en: "Send me my price" },
+    aviso: {
+      es: "Te escribimos con tu precio y resolvemos dudas. Sin insistir después.",
+      en: "We'll message you with your price and answer questions. No pestering afterwards.",
+    },
+    exitoTitulo: { es: "Listo. Te escribimos.", en: "Done. We'll be in touch." },
+    exitoTexto: {
+      es: "Te contactamos con tu precio y con lo que necesites saber antes de decidir.",
+      en: "We'll reach out with your price and whatever else you need before deciding.",
+    },
+    telefonoEtiqueta: { es: "Teléfono (opcional)", en: "Phone (optional)" },
+    telefonoAyuda: {
+      es: "Por teléfono se resuelve en cinco minutos lo que por correo tarda tres días.",
+      en: "A phone call settles in five minutes what email takes three days to sort out.",
+    },
+    recomendadoEtiqueta: {
+      es: "¿Quién te recomendó? (opcional)",
+      en: "Who referred you? (optional)",
+    },
+    recomendadoAyuda: {
+      es: "Nombre y apellido de quien te habló de Emprende180.",
+      en: "First and last name of whoever told you about Emprende180.",
+    },
+    llamar: { es: "Prefiero que me llamen", en: "I'd rather you call me" },
+
+    /**
+     * Lo que dicen las tres tiras mientras no haya precio publicado.
+     *
+     * ⚠️ CONFIRMAR ANTES DE PUBLICAR: esto afirma que el precio cambia según
+     * quién te recomiende. Es lo que nos dijo el cliente, y es el motivo de
+     * que la cifra no esté en la página. Si el descuento por recomendación
+     * no existe o funciona de otra forma, esta frase hay que cambiarla: es
+     * una condición comercial, y decirla mal es publicidad engañosa.
+     */
+    cinta: {
+      etiqueta: { es: "El precio", en: "The price" },
+      texto: {
+        es: "depende de con quién llegas",
+        en: "depends on who sends you",
+      },
+      enlace: { es: "Pide el tuyo", en: "Ask for yours" },
+    },
+
+    /* La frase que ocupa el sitio del "Precio de lanzamiento: $490" en la
+       tira de anuncios. Más corta que la de la cinta: aquí pasa moviéndose y
+       hay que poder leerla de una pasada. */
+    anuncio: {
+      es: "El precio depende de quién te recomienda",
+      en: "The price depends on who refers you",
     },
   },
 
@@ -2309,6 +2444,14 @@ export const copy = {
       es: "Qué incluye, y cuánto vale cada parte",
       en: "What's included, and what each part is worth",
     },
+    /* La misma cabecera cuando no hay cifras que enseñar: la lista sigue
+       siendo la misma, pero prometer "cuánto vale cada parte" y no poner ni
+       un número al lado sería una cabecera que miente. */
+    desgloseTituloSinPrecio: {
+      es: "Qué incluye, parte por parte",
+      en: "What is included, piece by piece",
+    },
+
     desgloseTotal: { es: "Valor total", en: "Total value" },
 
     // ── Framing 'lanzamiento' (activo) ──────────────────────────────────────

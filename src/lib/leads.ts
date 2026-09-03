@@ -165,12 +165,19 @@ export async function enviarAWebhook(lead: LeadGuardado): Promise<void> {
     last_name: resto.join(" ") || undefined,
     name: lead.nombre,
     email: lead.email,
+    /* Opcionales los dos: solo los pide el formulario de informes. Van sin
+       normalizar; el teléfono se guarda tal cual lo escribió la persona. */
+    phone: lead.telefono || undefined,
     /* De dónde salió, para poder medir qué formulario de la página convierte
        sin tener que mirar el referer a mano. */
     source: `emprende180.com · ${lead.origen}`,
     tags: [
       "emprende180",
-      "mini-curso-7-dias",
+      /* La etiqueta dice a QUÉ se apuntó, y no todos se apuntan a lo mismo:
+         quien pide el precio no entra en la secuencia del mini-curso. Si
+         entrara con esa etiqueta, la automatización de GHL le mandaría los
+         siete correos que no pidió. */
+      lead.origen === "informes" ? "pide-precio" : "mini-curso-7-dias",
       `origen:${lead.origen}`,
       /* Una etiqueta con el cupón: en GHL se puede segmentar y automatizar por
          etiqueta, que es como se trabaja allí. */
@@ -188,6 +195,10 @@ export async function enviarAWebhook(lead: LeadGuardado): Promise<void> {
     cupon: lead.cuponValido?.codigo ?? lead.cuponEscrito ?? undefined,
     cupon_descuento: lead.cuponValido?.descuento ?? undefined,
     cupon_valido: lead.cuponEscrito ? !!lead.cuponValido : undefined,
+    /* Quién le recomendó. En el formulario de informes es lo que decide su
+       precio, así que tiene que llegar a la ficha del contacto: quien llame
+       lo ve sin salir del CRM. */
+    recomendado_por: lead.recomendadoPor || undefined,
   };
 
   try {

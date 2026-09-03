@@ -148,7 +148,13 @@ const resumenSinFuente = construirTxt((l) =>
    con él. Es el mismo motivo por el que la sección 09 verifica su desglose. */
 const fundador = copy.pruebaSocial.fundador;
 
-const puntos = fundador.puntos.map((p) => ({
+/* El primero cita las dos cifras del ancla, así que sin precio público se
+   cambia por su versión sin números. Ver `puntoPrecioSinCifras`. */
+const puntosBase = curso.precio.publico
+  ? fundador.puntos
+  : [fundador.puntoPrecioSinCifras, ...fundador.puntos.slice(1)];
+
+const puntos = puntosBase.map((p) => ({
   titulo: p.titulo,
   texto: construirTxt((l) =>
     interpolar(p.texto[l], {

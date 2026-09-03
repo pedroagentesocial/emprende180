@@ -384,6 +384,19 @@ export const consentimiento = {
     es: "Acepto recibir los emails del mini-curso y he leído el ",
     en: "I agree to receive the mini-course emails and I've read the ",
   },
+  /**
+   * ⚠️ EL CONSENTIMIENTO DICE A QUÉ SE CONSIENTE, Y NO SON LA MISMA COSA.
+   *
+   * Quien pide el precio no se está apuntando a siete correos diarios: está
+   * pidiendo que le contesten una pregunta. Reutilizar ahí la casilla del
+   * mini-curso es pedir permiso para una cosa y hacer otra, que es
+   * exactamente lo que el RGPD llama consentimiento no informado —y de paso
+   * la forma más rápida de acabar marcado como spam.
+   */
+  textoAntesInformes: {
+    es: "Acepto que me contacten con el precio y he leído el ",
+    en: "I agree to be contacted with the price and I've read the ",
+  },
   enlaceTexto: { es: "aviso de privacidad", en: "privacy notice" },
   textoDespues: { es: ".", en: "." },
   nota: {

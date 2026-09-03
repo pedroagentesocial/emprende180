@@ -41,7 +41,7 @@ import { useIdioma } from "@i18n/react";
    el tipo del evento se deriva de la propia prop `onSubmit` de <form>. */
 type EventoEnvio = Parameters<NonNullable<ComponentProps<"form">["onSubmit"]>>[0];
 
-type Origen = "hero" | "lead-magnet" | "cierre" | "modal" | "footer";
+type Origen = "hero" | "lead-magnet" | "cierre" | "modal" | "footer" | "informes";
 type Estado = "inactivo" | "enviando" | "exito";
 
 interface LeadFormProps {
@@ -58,6 +58,20 @@ interface LeadFormProps {
   tono?: "claro" | "inverso";
   /** Campos en línea en escritorio. Útil en el hero. */
   compacto?: boolean;
+  /**
+   * Qué formulario es.
+   *
+   * `minicurso` pide lo mínimo para mandar siete correos: nombre y email.
+   * `informes` pide además TELÉFONO y QUIÉN TE RECOMENDÓ, y esconde el
+   * cupón: en esa sección el descuento no se escribe como código, se
+   * consigue diciendo quién te mandó. Dos campos para lo mismo, uno al lado
+   * del otro, solo confunden.
+   *
+   * Los dos campos nuevos van OPCIONALES. Quien pregunta el precio ya está
+   * abajo del embudo: pedirle el teléfono como obligatorio es la forma más
+   * rápida de perderlo justo ahí.
+   */
+  variante?: "minicurso" | "informes";
   /** Idioma resuelto en el servidor (ver src/i18n/react.ts). */
   lang?: Idioma;
 }
@@ -70,6 +84,7 @@ export function LeadForm({
   exitoTexto,
   tono = "claro",
   compacto = false,
+  variante = "minicurso",
   lang: langServidor,
 }: LeadFormProps) {
   const [estado, setEstado] = useState<Estado>("inactivo");
@@ -95,6 +110,7 @@ export function LeadForm({
   } as const;
 
   const inverso = tono === "inverso";
+  const esInformes = variante === "informes";
 
   /** Enfoca el primer campo con error, siguiendo el orden visual. */
   function enfocarPrimerError(errs: Partial<Record<CampoLead, string>>) {
@@ -119,6 +135,9 @@ export function LeadForm({
     const candidato = {
       nombre: String(datos.get("nombre") ?? ""),
       cupon: String(datos.get("cupon") ?? "").trim() || undefined,
+      telefono: String(datos.get("telefono") ?? "").trim() || undefined,
+      recomendadoPor:
+        String(datos.get("recomendadoPor") ?? "").trim() || undefined,
       email: String(datos.get("email") ?? ""),
       consentimiento: datos.get("consentimiento") === "on",
       origen,
@@ -227,7 +246,7 @@ export function LeadForm({
   /* `CampoLead` son los campos que el servidor puede rechazar uno a uno. El
      cupón no es uno de ellos a propósito: no bloquea el envío, así que nunca
      lleva error debajo. Por eso el parámetro admite también su nombre. */
-  const claseInput = (campo: CampoLead | "cupon") =>
+  const claseInput = (campo: CampoLead | "cupon" | "telefono" | "recomendadoPor") =>
     [
       // min-h-11 = 44 px táctil · text-base = 16 px, si no iOS hace zoom
       "min-h-11 w-full rounded-lg border px-4 py-3 text-base",
@@ -235,7 +254,11 @@ export function LeadForm({
       inverso
         ? "border-primary-700 bg-primary-950/50 text-ink-inverse placeholder:text-primary-300 focus-visible:outline-focus-inverse"
         : "border-line-strong bg-surface text-ink placeholder:text-ink-subtle focus-visible:outline-focus",
-      campo !== "cupon" && errores[campo] ? "border-error-500" : "",
+      campo === "nombre" || campo === "email" || campo === "consentimiento"
+        ? errores[campo]
+          ? "border-error-500"
+          : ""
+        : "",
       "disabled:opacity-60",
     ].join(" ");
 
@@ -327,6 +350,68 @@ export function LeadForm({
         </div>
       </div>
 
+      {/* ─── SOLO EN INFORMES: TELÉFONO Y QUIÉN TE RECOMENDÓ ─────────────────
+          El teléfono, porque el precio se da hablando y una llamada resuelve
+          en cinco minutos lo que por correo son tres días. Y quién le
+          recomendó, porque es LO QUE DECIDE SU PRECIO: es el campo más
+          valioso de la página y por eso va a la vista, no plegado.
+
+          Los dos opcionales. Quien llega aquí ya está preguntando cuánto
+          cuesta; ponerle un campo obligatorio de más es perderlo en el sitio
+          donde más caro sale perderlo. */}
+      {variante === "informes" && (
+        <>
+          <div className="mt-4">
+            <label
+              htmlFor={idDe("telefono")}
+              className={[
+                "mb-1.5 block text-sm font-medium",
+                inverso ? "text-secondary-200" : "text-ink",
+              ].join(" ")}
+            >
+              {t(copy.informes.telefonoEtiqueta)}
+            </label>
+            <input
+              id={idDe("telefono")}
+              name="telefono"
+              type="tel"
+              autoComplete="tel"
+              inputMode="tel"
+              disabled={enviando}
+              className={claseInput("telefono")}
+            />
+          </div>
+
+          <div className="mt-4">
+            <label
+              htmlFor={idDe("recomendadoPor")}
+              className={[
+                "mb-1.5 block text-sm font-medium",
+                inverso ? "text-secondary-200" : "text-ink",
+              ].join(" ")}
+            >
+              {t(copy.informes.recomendadoEtiqueta)}
+            </label>
+            <input
+              id={idDe("recomendadoPor")}
+              name="recomendadoPor"
+              type="text"
+              autoComplete="off"
+              disabled={enviando}
+              className={claseInput("recomendadoPor")}
+            />
+            <p
+              className={[
+                "mt-1.5 text-xs",
+                inverso ? "text-secondary-200/80" : "text-ink-subtle",
+              ].join(" ")}
+            >
+              {t(copy.informes.recomendadoAyuda)}
+            </p>
+          </div>
+        </>
+      )}
+
       {/* ─── EL CÓDIGO DE DESCUENTO ───────────────────────────────────────────
           Plegado dentro de un `<details>`, y eso es la decisión entera: un campo
           de cupón a la vista le dice a quien NO tiene ninguno que está pagando
@@ -339,7 +424,13 @@ export function LeadForm({
 
           El código NO se valida aquí. Lo comprueba el servidor contra la tabla
           de cupones y, si no vale, el lead entra igual: una errata no puede
-          costar un contacto. Ver `src/lib/cupones.ts`. */}
+          costar un contacto. Ver `src/lib/cupones.ts`.
+
+          ⚠️ NO SE PINTA EN LA VARIANTE DE INFORMES. Ahí el descuento se pide
+          por el nombre de quien recomienda, no por un código, y tener las dos
+          cosas en el mismo formulario obliga a explicar la diferencia entre
+          dos campos que hacen lo mismo. */}
+      {variante === "minicurso" && (
       <details className="mt-4">
         <summary
           className={[
@@ -381,6 +472,7 @@ export function LeadForm({
           </p>
         </div>
       </details>
+      )}
 
       {/* CONSENTIMIENTO DE DATOS.
           Casilla vacía por defecto y obligatoria: bajo RGPD, LGPD, la Ley 1581
@@ -419,7 +511,7 @@ export function LeadForm({
             ].join(" ")}
           />
           <span>
-            {t(consentimiento.textoAntes)}
+            {t(esInformes ? consentimiento.textoAntesInformes : consentimiento.textoAntes)}
             <a
               href={`/legal/${legalConfig.privacidad.slug}`}
               data-legal={legalConfig.privacidad.slug}

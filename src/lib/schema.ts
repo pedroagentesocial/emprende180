@@ -24,6 +24,10 @@ export const ORIGENES = [
   "cierre",
   "modal",
   "footer",
+  /* La sección de precio mientras el precio no se publique. No es el mismo
+     lead que el del mini-curso: este pregunta cuánto cuesta, o sea que está
+     mucho más abajo en el embudo, y el equipo lo tiene que tratar distinto. */
+  "informes",
 ] as const;
 
 /**
@@ -102,6 +106,24 @@ export const crearLeadSchema = (lang: Idioma = "es") => {
    * errata en un formulario que no deja enviar. Ver `/api/lead`.
    */
   cupon: z.string().trim().max(40).optional(),
+
+  /**
+   * Teléfono. OPCIONAL Y SIN VALIDAR EL FORMATO.
+   *
+   * Solo se limita el largo. Un teléfono se escribe de quince maneras
+   * distintas —con lada, sin lada, con guiones, con paréntesis, de otro
+   * país— y cualquier patrón que se invente aquí va a rechazar a alguien
+   * real. Es un dato para que una persona marque, no para que lo procese
+   * una máquina.
+   */
+  telefono: z.string().trim().max(40).optional(),
+
+  /**
+   * Quién le recomendó. Es lo que decide su precio, así que es el campo más
+   * valioso del formulario de informes... y aun así va OPCIONAL: quien llega
+   * por su cuenta también tiene que poder preguntar.
+   */
+  recomendadoPor: z.string().trim().max(80).optional(),
 
   /** Consentimiento explícito. Obligatorio (RGPD). */
   consentimiento: z

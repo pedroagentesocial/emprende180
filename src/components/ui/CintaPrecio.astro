@@ -63,12 +63,29 @@ const {
 const { precio } = curso;
 const { fechaCierre, tipo } = precio.urgencia;
 
-/* Se pinta solo con una fecha REAL y todavía por delante. Cualquier otra cosa
-   —tipo distinto, fecha inválida, fecha ya pasada— y el componente no existe. */
-const ms = fechaCierre ? new Date(fechaCierre).getTime() : NaN;
-const activa = tipo === "fecha" && Number.isFinite(ms) && ms > Date.now();
+/**
+ * ─── DOS MODOS ────────────────────────────────────────────────────────────
+ *
+ * Con `precio.publico`, la tira de siempre: cuánto cuesta hoy, a cuánto sube
+ * y cuándo. Sin él, la MISMA tira dice por qué no hay cifra y a dónde ir a
+ * pedirla.
+ *
+ * Se resuelve aquí dentro y no borrando las tres llamadas porque el sitio es
+ * el mismo —encima de la cabecera, al cerrar el temario y en el cierre— y lo
+ * único que cambia es lo que se dice. El día que el precio vuelva a ser
+ * público, esto vuelve solo.
+ */
+const sinPrecio = !precio.publico;
 
-if (import.meta.env.DEV && tipo === "fecha" && Number.isFinite(ms) && ms <= Date.now()) {
+/* Con precio público se pinta solo con una fecha REAL y todavía por delante:
+   cualquier otra cosa —tipo distinto, fecha inválida, fecha ya pasada— y el
+   componente no existe. Sin precio no hay fecha que valga, y la tira se pinta
+   siempre: no anuncia una subida, explica una ausencia. */
+const ms = fechaCierre ? new Date(fechaCierre).getTime() : NaN;
+const activa =
+  sinPrecio || (tipo === "fecha" && Number.isFinite(ms) && ms > Date.now());
+
+if (import.meta.env.DEV && !sinPrecio && tipo === "fecha" && Number.isFinite(ms) && ms <= Date.now()) {
   console.warn(
     "[CintaPrecio] La fecha de `precio.urgencia.fechaCierre` ya pasó, así que " +
       "las cintas no se pintan. Si el precio subió, actualiza `precio.actual` y " +
@@ -90,15 +107,21 @@ if (import.meta.env.DEV && tipo === "fecha" && Number.isFinite(ms) && ms <= Date
  */
 const vacio: Txt = { es: "", en: "" };
 
-const etiquetaTxt: Txt = activa ? copy.precio.cinta.etiqueta : vacio;
+const etiquetaTxt: Txt = !activa
+  ? vacio
+  : sinPrecio
+    ? copy.informes.cinta.etiqueta
+    : copy.precio.cinta.etiqueta;
 
 /** El precio de hoy, solo. Va aparte para poder pintarlo más grande. */
-const precioHoy: Txt = activa
-  ? construirTxt((l) => formatMoney(precio.actual, l, precio.moneda))
-  : vacio;
+const precioHoy: Txt = !activa || sinPrecio
+  ? vacio
+  : construirTxt((l) => formatMoney(precio.actual, l, precio.moneda));
 
 /** "sube a $3,990 el 30 de septiembre" — las dos cifras juntas. */
-const subeTxt: Txt = activa
+const subeTxt: Txt = sinPrecio
+  ? copy.informes.cinta.texto
+  : activa
   ? construirTxt((l) => {
       const fecha = new Intl.DateTimeFormat(LOCALES[l], {
         day: "numeric",
@@ -176,7 +199,7 @@ const propsEnvoltorio = barraPulsable
         className,
       ]}
       data-cinta-precio
-      data-cierre={fechaCierre}
+      data-cierre={sinPrecio ? undefined : fechaCierre}
       data-dias-es={etiquetas.quedanDias.es}
       data-dias-en={etiquetas.quedanDias.en}
       data-undia-es={etiquetas.quedaUnDia.es}
@@ -192,11 +215,16 @@ const propsEnvoltorio = barraPulsable
           </span>
 
           {/* El precio de hoy, un punto más grande que el resto de la cinta.
-              Es la cifra que tiene que quedarse en la cabeza. */}
-          <span class="text-base font-extrabold sm:text-lg">
-            <T v={precioHoy} />
-          </span>{" "}
-          ·{" "}
+              Es la cifra que tiene que quedarse en la cabeza. Sin precio
+              publicado no hay cifra ni separador que la anuncie. */}
+          {!sinPrecio && (
+            <Fragment>
+              <span class="text-base font-extrabold sm:text-lg">
+                <T v={precioHoy} />
+              </span>{" "}
+              ·{" "}
+            </Fragment>
+          )}
           {/* Y el precio futuro, en el color de acción. Enseñar las dos cifras
               juntas es lo que hace que el salto se VEA en vez de imaginarse.
               Ojo: no se tacha ni se llama "antes". Ver la nota de `cinta.sube`
@@ -231,7 +259,7 @@ const propsEnvoltorio = barraPulsable
             bloque, y la línea de más costaba 16 px del pliegue. */}
         {barraPulsable && (
           <span class:list={["max-sm:hidden font-semibold underline underline-offset-2", claseEnlace]}>
-            <T v={etiquetas.verPrecio} />
+            <T v={sinPrecio ? copy.informes.cinta.enlace : etiquetas.verPrecio} />
           </span>
         )}
 
@@ -248,7 +276,7 @@ const propsEnvoltorio = barraPulsable
               claseEnlace,
             ]}
           >
-            <T v={etiquetas.verPrecio} />
+            <T v={sinPrecio ? copy.informes.cinta.enlace : etiquetas.verPrecio} />
           </a>
         )}
       </span>

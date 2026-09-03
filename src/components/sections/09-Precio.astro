@@ -1,10 +1,10 @@
 ---
 import T from "@components/i18n/T.astro";
 import Section from "@components/ui/Section.astro";
-import SectionHeading from "@components/ui/SectionHeading.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Button from "@components/ui/Button.astro";
 import BotonDetalle from "@components/ui/BotonDetalle.astro";
+import LeadForm from "@components/ui/LeadForm";
 import { Contador } from "@components/motion/Contador";
 import Icono from "@components/ui/Icono.astro";
 import MarcaAgua from "@components/ui/MarcaAgua.astro";
@@ -166,6 +166,29 @@ const alternativaContador =
       )
     : null;
 
+/**
+ * Lo que se puede decir de dinero SIN decir la cifra.
+ *
+ * Cada uno responde a un miedo distinto: "¿me van a cobrar todos los meses?",
+ * "¿lo pierdo si no lo veo ya?", "¿tengo que pagarlo de golpe?" y "¿y si no es
+ * para mí?". Que el precio no esté no significa que no haya nada que contar.
+ *
+ * Los dos últimos SALEN SOLOS si el dato no existe: sin `precio.cuotas` no se
+ * promete pago fraccionado, y sin garantía activa no se promete devolución.
+ */
+const hechosInformes = [
+  copy.informes.hechos[0]!,
+  copy.informes.hechos[1]!,
+  ...(precio.cuotas
+    ? [
+        construirTxt((l) =>
+          copy.informes.hechos[2]![l].replace("{n}", String(precio.cuotas!.numero)),
+        ),
+      ]
+    : []),
+  ...(garantia.activa ? [garantia.titulo] : []),
+];
+
 const lang = resolverIdiomaServidor(
   Astro.url,
   Astro.request.headers.get("accept-language"),
@@ -175,48 +198,32 @@ const lang = resolverIdiomaServidor(
 <Section id="precio" tono="sunken" ritmo="amplio" ariaLabel={copy.precio.aria}>
   {/* `max-w-6xl`: el desglose necesita que "El curso completo: los 10 videos,
       con acceso de por vida" entre en una línea, y con las dos islas separadas
-      por su hueco eso pide 1.152 px. Más ancho no: el panel del precio se
-      estiraría hasta que el $490 quedara nadando. */}
+      por su hueco eso pide 1.152 px. Más ancho no: el panel de la derecha se
+      estiraría hasta que su contenido quedara nadando. */}
   <div class="mx-auto max-w-6xl">
     <Reveal>
       {/* ─── DOS ISLAS, NO UNA TARJETA PARTIDA POR LA MITAD ──────────────
-          Era un solo bloque con dos mitades pegadas y un filete entre ellas,
-          y encima un titular en su propia isla, a lo ancho, como cabecera.
-          Tres piezas para dos ideas.
+          Era un solo bloque con dos mitades pegadas y un filete entre ellas, y
+          encima un titular en su propia isla, a lo ancho, como cabecera. Tres
+          piezas para dos ideas.
 
-          Ahora son dos islas separadas por su hueco: el desglose a la
-          izquierda —con el titular de la sección dentro, que es donde tenía
-          que estar— y el precio en navy a la derecha. Es el mismo reparto que
-          el resto de la página, y aquí además dice algo: lo que vale cada
-          parte a un lado, lo que se paga al otro, y entre las dos cosas un
-          hueco en vez de un filete.
+          Ahora son dos islas separadas por su hueco: qué te llevas a la
+          izquierda —con el titular de la sección dentro, que es donde tenía que
+          estar— y a la derecha lo que responde "¿cuánto cuesta?".
 
-          El navy va a la DERECHA porque la banda de reseñas de arriba tiene
-          su tarjeta azul a la izquierda. Alternar es lo que impide que la
-          página se lea como una columna.
-
-          `items-stretch` para que las dos midan lo mismo: el desglose es más
-          corto que el panel del precio y sin esto quedaba una isla flotando
-          más alta que la otra. */}
+          `items-stretch` para que las dos midan lo mismo. */}
       <div class="grid items-stretch gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-8">
-      <!-- `min-w-0` en los dos paneles y no es cosmético: por defecto un item
-           de grid tiene `min-width: auto`, así que NO baja de su min-content.
-           Con la cuenta atrás dentro, ese min-content era de 381 px y la
-           columna se resolvía a 381 dentro de un contenedor de 348: los dos
-           paneles se ensanchaban 34 px y la tarjeta, que es `overflow-hidden`,
-           cortaba lo que sobresalía. En móvil se comían el final de cada
-           cifra del desglose ("$2,19" en vez de "$2,190"). -->
-        <!-- ── El desglose: lo que sostiene el ancla ────────────────────── -->
-        {/* CENTRADO, Y AHORA CON MOTIVO. El panel de al lado es más alto que
-            el desglose y siempre lo va a ser: lleva precio, insignia, contador,
-            botón, nota y garantía. Alineando el desglose por arriba, todo ese
-            sobrante caía junto al final — 350 px de blanco muerto bajo el
-            "Valor total".
+        {/* ─── ISLA 1 · QUÉ TE LLEVAS ─────────────────────────────────────
+            Con precio público es el DESGLOSE que sostiene el ancla: cada parte
+            con su valor y su barra. Sin precio público sigue siendo la misma
+            lista —las mismas cuatro cosas, en el mismo orden— pero sin cifras
+            y con la justificación de cada una a la vista.
 
-            Centrado se reparte a los dos lados, y con el panel derecho en
-            navy —un bloque macizo de arriba abajo— el desglose centrado
-            contra él se lee como una composición y no como una columna que se
-            quedó corta. */}
+            Las barras se van con las cifras porque sin ellas no significan
+            nada: una barra a escala de un total que no se enseña es un adorno.
+            Y el detalle deja de estar plegado: existía porque cuatro párrafos
+            competían con las cuatro cifras por la misma mirada, y sin cifras no
+            hay competencia. */}
         <div
           class="flex min-w-0 flex-col rounded-3xl border border-line bg-surface p-7 shadow-lg sm:p-9"
         >
@@ -235,25 +242,36 @@ const lang = resolverIdiomaServidor(
           </p>
 
           <h3 class="mt-8 border-t border-line pt-7 text-lg font-bold text-ink">
-            <T v={copy.precio.desgloseTitulo} />
+            <T
+              v={precio.publico
+                ? copy.precio.desgloseTitulo
+                : copy.precio.desgloseTituloSinPrecio}
+            />
           </h3>
 
-          {/* La pista solo existe si hay un cursor con el que pasar. */}
-          <p data-pista-hover class="mt-1 text-xs text-ink-subtle">
-            <T v={copy.ui.pistaHover} />
-          </p>
+          {/* La pista solo existe si hay algo que desplegar y un cursor con el
+              que pasar. */}
+          {
+            precio.publico && (
+              <p data-pista-hover class="mt-1 text-xs text-ink-subtle">
+                <T v={copy.ui.pistaHover} />
+              </p>
+            )
+          }
 
           <ul class="mt-5 divide-y divide-line">
             {
               precio.desglose.map((item) => (
-                <li data-revelar class="group py-4 first:pt-0">
+                <li data-revelar={precio.publico ? "" : undefined} class="group py-4 first:pt-0">
                   <div class="flex items-baseline justify-between gap-4">
                     <p class="min-w-0 font-semibold text-balance text-ink">
                       <T v={item.titulo} />
                     </p>
-                    <p class="shrink-0 text-sm font-bold tabular-nums text-ink">
-                      <T v={dinero(item.valor)} />
-                    </p>
+                    {precio.publico && (
+                      <p class="shrink-0 text-sm font-bold tabular-nums text-ink">
+                        <T v={dinero(item.valor)} />
+                      </p>
+                    )}
                   </div>
 
                   {/* LA BARRA. Cada componente ocupa su parte de la cifra
@@ -265,44 +283,59 @@ const lang = resolverIdiomaServidor(
                       `aria-hidden`: la cifra exacta ya está escrita al lado en
                       texto, así que la barra no aporta nada a quien la escucha
                       y solo añadiría ruido. */}
-                  <div
-                    aria-hidden="true"
-                    class="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-sunken"
-                  >
+                  {precio.publico && (
                     <div
-                      class="h-full rounded-full bg-secondary-400 transition-colors duration-200 ease-out-soft group-hover:bg-secondary-600"
-                      style={`width:${((item.valor / precio.referencia) * 100).toFixed(1)}%`}
-                    />
-                  </div>
-
-                  <div data-detalle>
-                    <div>
-                      <p class="mt-2.5 text-sm text-pretty text-ink-muted">
-                        <T v={item.detalle} />
-                      </p>
+                      aria-hidden="true"
+                      class="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-sunken"
+                    >
+                      <div
+                        class="h-full rounded-full bg-secondary-400 transition-colors duration-200 ease-out-soft group-hover:bg-secondary-600"
+                        style={`width:${((item.valor / precio.referencia) * 100).toFixed(1)}%`}
+                      />
                     </div>
-                  </div>
+                  )}
 
-                  {/* Solo en táctil. Ver `BotonDetalle.astro`. */}
-                  <BotonDetalle class="mt-0.5" />
+                  {precio.publico ? (
+                    <Fragment>
+                      <div data-detalle>
+                        <div>
+                          <p class="mt-2.5 text-sm text-pretty text-ink-muted">
+                            <T v={item.detalle} />
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Solo en táctil. Ver `BotonDetalle.astro`. */}
+                      <BotonDetalle class="mt-0.5" />
+                    </Fragment>
+                  ) : (
+                    <p class="mt-1.5 text-sm text-pretty text-ink-muted">
+                      <T v={item.detalle} />
+                    </p>
+                  )}
                 </li>
               ))
             }
           </ul>
 
-          <!-- La suma, explícita: convierte la cifra ancla en un total que
-               el visitante puede recorrer, no en un número puesto ahí. -->
-          <div
-            class="mt-5 flex items-center justify-between gap-4 border-t-2 border-line-strong pt-5"
-          >
-            <p class="font-bold text-ink"><T v={copy.precio.desgloseTotal} /></p>
-            <p class="text-lg font-extrabold tabular-nums text-ink">
-              <T v={precioReferencia} />
-            </p>
-          </div>
+          {/* La suma, explícita: convierte la cifra ancla en un total que el
+              visitante puede recorrer, no en un número puesto ahí. Sin precio
+              público no hay total que enseñar. */}
+          {
+            precio.publico && (
+              <div class="mt-5 flex items-center justify-between gap-4 border-t-2 border-line-strong pt-5">
+                <p class="font-bold text-ink">
+                  <T v={copy.precio.desgloseTotal} />
+                </p>
+                <p class="text-lg font-extrabold tabular-nums text-ink">
+                  <T v={precioReferencia} />
+                </p>
+              </div>
+            )
+          }
 
           {
-            !desgloseCuadra && (
+            precio.publico && !desgloseCuadra && (
               <p class="mt-4 rounded-lg border-2 border-dashed border-warning-500 bg-warning-50 px-4 py-3 text-sm font-medium text-ink">
                 ⚠ <T v={copy.precio.avisoDesglose} />{" "}
                 <code class="font-mono">{sumaDesglose} ≠ {precio.referencia}</code>
@@ -311,22 +344,14 @@ const lang = resolverIdiomaServidor(
           }
         </div>
 
-        <!-- ── El precio y la acción ────────────────────────────────────── -->
-        {/* EL PANEL SE VA A NAVY.
+        {/* ─── ISLA 2 · LO QUE RESPONDE "¿CUÁNTO CUESTA?" ─────────────────
+            Con precio público, el panel de siempre: la cifra, la insignia
+            contra el desglose, la cuenta atrás, el botón y la garantía.
 
-            Era `bg-surface-muted`: un gris un punto más oscuro que el blanco
-            de al lado. En una tarjeta de precio, el lado donde se paga tiene
-            que ganar la mirada, y dos grises casi iguales no jerarquizan
-            nada — la tarjeta entera se leía plana.
-
-            En navy, el $490 pasa a ser lo primero que se ve de la sección y
-            el botón teal encima del azul es el contraste más alto de toda la
-            página. El desglose se queda en blanco a la izquierda, que es su
-            papel: los datos que sostienen el ancla, no el protagonista.
-
-            El degradado y el halo son sutiles a propósito. Un fondo plano se
-            lee como un bloque de color; con la luz teal arriba a la derecha
-            se lee como una superficie. */}
+            Sin precio público, el formulario de informes. Y el navy se queda
+            igual en los dos casos: el lado donde se paga —o donde se pregunta
+            cuánto— tiene que ganar la mirada, y dos superficies claras juntas
+            no jerarquizan nada. */}
         <div
           class="relative isolate flex min-w-0 flex-col justify-center overflow-hidden rounded-3xl bg-primary-950 p-7 text-center shadow-xl sm:p-9"
         >
@@ -335,195 +360,223 @@ const lang = resolverIdiomaServidor(
             class="pointer-events-none absolute -top-24 -right-16 -z-10 size-64 rounded-full bg-secondary-500/20 blur-3xl"
           ></span>
 
-          {/* El isotipo detrás del precio. Pequeño: el panel es estrecho y
-              está lleno, así que aquí la marca acompaña, no decora. */}
+          {/* El isotipo detrás. Pequeño: el panel es estrecho y está lleno, así
+              que aquí la marca acompaña, no decora. */}
           <MarcaAgua posicion="izquierda" tamano="pequeno" class="opacity-[0.07]" />
 
-          <p class="text-xs font-bold tracking-[0.14em] text-secondary-300 uppercase">
-            <T
-              v={esLanzamiento
-                ? copy.precio.lanzamiento.kicker
-                : copy.precio.descuento.kicker}
-            />
-          </p>
-
           {
-            esLanzamiento ? (
+            precio.publico ? (
               <Fragment>
-                {/* El precio real manda y la referencia va DEBAJO, en futuro:
-                    "subirá a", no un tachón que insinúa un pasado que no fue. */}
-                <p class="mt-3 text-6xl font-extrabold tracking-tight text-ink-inverse">
-                  <T v={precioActual} />
-                </p>
-                <p class="mt-1 text-sm font-medium text-secondary-200">
-                  <T v={copy.precio.lanzamiento.etiquetaPrecio} />
+                <p class="text-xs font-bold tracking-[0.14em] text-secondary-300 uppercase">
+                  <T
+                    v={esLanzamiento
+                      ? copy.precio.lanzamiento.kicker
+                      : copy.precio.descuento.kicker}
+                  />
                 </p>
 
-                {/* EL ENGANCHE. El desglose de al lado suma 3.990 y aquí se
-                    paga 490: esta insignia pone la diferencia en una cifra en
-                    vez de dejar que el visitante la calcule. Va pegada al
-                    precio, que es donde se mira, y no al final de la tarjeta.
-                    Ver la nota de `frenteAlDesglose` en el config: compara
-                    contra la SUMA, nunca contra un precio anterior. */}
-                {textoFrenteAlDesglose && (
-                  <p class="mt-4 inline-flex self-center rounded-full bg-secondary-500 px-4 py-1.5 text-sm font-bold text-balance text-primary-950">
-                    <T v={textoFrenteAlDesglose} />
+                {esLanzamiento ? (
+                  <Fragment>
+                    {/* El precio real manda y la referencia va DEBAJO, en
+                        futuro: "subirá a", no un tachón que insinúa un pasado
+                        que no fue. */}
+                    <p class="mt-3 text-6xl font-extrabold tracking-tight text-ink-inverse">
+                      <T v={precioActual} />
+                    </p>
+                    <p class="mt-1 text-sm font-medium text-secondary-200">
+                      <T v={copy.precio.lanzamiento.etiquetaPrecio} />
+                    </p>
+
+                    {/* EL ENGANCHE. El desglose de al lado suma 3.990 y aquí se
+                        paga 490: esta insignia pone la diferencia en una cifra
+                        en vez de dejar que el visitante la calcule. */}
+                    {textoFrenteAlDesglose && (
+                      <p class="mt-4 inline-flex self-center rounded-full bg-secondary-500 px-4 py-1.5 text-sm font-bold text-balance text-primary-950">
+                        <T v={textoFrenteAlDesglose} />
+                      </p>
+                    )}
+
+                    <p class="mt-3 text-base font-semibold text-balance text-ink-inverse">
+                      <T v={textoSubira} />
+                    </p>
+                  </Fragment>
+                ) : (
+                  <Fragment>
+                    <p class="mt-3 text-base text-secondary-300">
+                      <span class="line-through">
+                        <T v={precioReferencia} />
+                      </span>
+                    </p>
+                    <p class="text-6xl font-extrabold tracking-tight text-ink-inverse">
+                      <T v={precioActual} />
+                    </p>
+                    <p class="mt-3 inline-flex self-center rounded-full bg-secondary-500 px-3 py-1 text-sm font-bold text-primary-950">
+                      <T v={textoAhorro} />
+                    </p>
+                  </Fragment>
+                )}
+
+                {textoCuotas && (
+                  <p class="mt-3 text-base font-medium text-secondary-200">
+                    <T v={textoCuotas} />
                   </p>
                 )}
 
-                <p class="mt-3 text-base font-semibold text-balance text-ink-inverse">
-                  <T v={textoSubira} />
+                {/* La cuenta atrás va ENCIMA del botón, no debajo: es el último
+                    argumento antes de la acción, y leerla después de haber
+                    pasado de largo el botón no sirve de nada. */}
+                {alternativaContador && fechaCierre && (
+                  <Contador
+                    client:visible
+                    fechaCierre={fechaCierre}
+                    alternativa={alternativaContador}
+                    etiquetas={copy.precio.contador}
+                    lang={lang}
+                    tono="oscuro"
+                  />
+                )}
+
+                <div class="mt-7">
+                  {/* MIENTRAS NO HAYA PASARELA, EL BOTÓN LLAMA. Un botón
+                      apagado y mudo en el punto exacto de la compra es peor que
+                      no tener botón: el visitante no deduce "falta configurar
+                      la pasarela", deduce que la página está rota. */}
+                  <Button
+                    href={
+                      checkoutPendiente
+                        ? contacto.telefono
+                          ? `tel:${contacto.telefono}`
+                          : undefined
+                        : precio.urlCheckout
+                    }
+                    disabled={checkoutPendiente && !contacto.telefono}
+                    variant="primary"
+                    size="lg"
+                    sobre="oscuro"
+                    trackId="precio"
+                    block
+                  >
+                    {checkoutPendiente && contacto.telefono && (
+                      <Icono nombre="telefono" class="size-4 shrink-0" grosor={2} />
+                    )}
+                    <T
+                      v={
+                        checkoutPendiente && contacto.telefono
+                          ? copy.precio.llamarParaInscribirse
+                          : cta.primario.texto
+                      }
+                    />
+                  </Button>
+                </div>
+
+                {urgencia && !fechaValida && (
+                  <p class="mt-4 text-sm font-medium text-balance text-ink-inverse">
+                    <T v={urgencia} />
+                  </p>
+                )}
+
+                {/* 13 px en móvil. Es letra pequeña a propósito —impuestos y
+                    formas de pago— pero es lo que evita la sorpresa en la
+                    pasarela, y a 12 px sobre navy, en un teléfono, no se lee. */}
+                <p class="mt-3 text-[0.8125rem] text-pretty text-secondary-200 sm:text-xs">
+                  <T v={precio.nota} />
                 </p>
+
+                {garantia.activa && (
+                  <div class="mt-5 rounded-xl border border-primary-700 bg-primary-900/70 p-4 text-center">
+                    <p class="flex items-center justify-center gap-2 text-sm font-bold text-secondary-300">
+                      <Icono nombre="escudo" class="size-5 shrink-0" />
+                      <T v={garantia.titulo} />
+                    </p>
+                    <p class="mt-1.5 text-[0.8125rem] text-pretty text-secondary-200 sm:text-xs">
+                      <T v={garantia.resumen} />
+                    </p>
+                  </div>
+                )}
               </Fragment>
             ) : (
               <Fragment>
-                <p class="mt-3 text-base text-secondary-300">
-                  <span class="line-through"><T v={precioReferencia} /></span>
+                {/* ─── PEDIR EL PRECIO ─────────────────────────────────────
+                    Va alineado a la izquierda dentro de un panel centrado, y no
+                    es un descuido: un formulario con las etiquetas centradas
+                    sobre sus campos es ilegible. El `text-center` del panel lo
+                    hereda el titular y lo pierde el formulario. */}
+                <p class="inline-flex items-center gap-2 self-center rounded-full border border-primary-800 bg-primary-900 px-3 py-1 text-xs font-bold tracking-wide text-secondary-300 uppercase">
+                  <span aria-hidden="true" class="marca-linea">
+                    <span class="size-1.5 rounded-full bg-secondary-500"></span>
+                  </span>
+                  <T v={copy.informes.kicker} />
                 </p>
-                <p class="text-6xl font-extrabold tracking-tight text-ink-inverse">
-                  <T v={precioActual} />
+
+                <h3 class="mt-4 text-2xl font-extrabold text-balance text-ink-inverse sm:text-3xl">
+                  <T v={copy.informes.titulo} />
+                </h3>
+
+                {/* El PORQUÉ, y va antes que el formulario. Una página que
+                    esconde la cifra sin explicarse se lee como "es caro y no te
+                    lo quiero decir", que es justo la conclusión que hay que
+                    evitar. */}
+                <p class="mt-3 text-base text-pretty text-secondary-100">
+                  <T v={copy.informes.porQue} />
                 </p>
-                <p class="mt-3 inline-flex self-center rounded-full bg-secondary-500 px-3 py-1 text-sm font-bold text-primary-950">
-                  <T v={textoAhorro} />
-                </p>
+
+                {/* Lo que SÍ se puede decir de dinero sin dar la cifra. Que no
+                    haya precio no significa que no haya nada que contar: un
+                    solo pago, acceso que no caduca, se puede fraccionar y hay
+                    garantía. Cuatro respuestas a cuatro miedos distintos. */}
+                <ul class="mt-6 grid gap-2.5 border-t border-primary-800 pt-5 text-left text-sm text-secondary-100">
+                  {hechosInformes.map((hecho) => (
+                    <li class="flex items-start gap-2.5">
+                      <span aria-hidden="true" class="marca-linea shrink-0 text-secondary-500">
+                        <Icono nombre="check" class="size-4" grosor={3} />
+                      </span>
+                      <T v={hecho} />
+                    </li>
+                  ))}
+                </ul>
+
+                <div class="mt-6 text-left">
+                  <LeadForm
+                    client:visible
+                    lang={lang}
+                    variante="informes"
+                    origen="informes"
+                    cta={copy.informes.ctaBoton}
+                    aviso={copy.informes.aviso}
+                    exitoTitulo={copy.informes.exitoTitulo}
+                    exitoTexto={copy.informes.exitoTexto}
+                    tono="inverso"
+                  />
+                </div>
+
+                {/* Y para quien no quiere escribir: el teléfono. El precio se
+                    da hablando, así que la llamada no es la segunda opción, es
+                    la misma por otra puerta. Solo si hay número. */}
+                {contacto.telefono && (
+                  <div class="mt-4">
+                    <Button
+                      href={`tel:${contacto.telefono}`}
+                      variant="inverse"
+                      sobre="oscuro"
+                      trackId="informes-llamada"
+                      block
+                    >
+                      <Icono nombre="telefono" class="size-4 shrink-0" grosor={2} />
+                      <T v={copy.informes.llamar} />
+                    </Button>
+                  </div>
+                )}
               </Fragment>
-            )
-          }
-
-          {
-            textoCuotas && (
-              <p class="mt-3 text-base font-medium text-secondary-200">
-                <T v={textoCuotas} />
-              </p>
-            )
-          }
-
-          {/* La cuenta atrás va ENCIMA del botón, no debajo: es el último
-              argumento antes de la acción, y leerla después de haber pasado
-              de largo el botón no sirve de nada. */}
-          {
-            alternativaContador && fechaCierre && (
-              <Contador
-                client:visible
-                fechaCierre={fechaCierre}
-                alternativa={alternativaContador}
-                etiquetas={copy.precio.contador}
-                lang={lang}
-                tono="oscuro"
-              />
-            )
-          }
-
-          <div class="mt-7">
-            {/* MIENTRAS NO HAYA PASARELA, EL BOTÓN LLAMA.
-
-                Antes se deshabilitaba y debajo salía un aviso explicando por
-                qué. Ese aviso se ha quitado de la página —era una nota para
-                quien edita el sitio impresa para el cliente—, y un botón
-                apagado y mudo en el punto exacto de la compra es peor que no
-                tener botón: el visitante no deduce "falta configurar la
-                pasarela", deduce que la página está rota.
-
-                No cae al formulario de `#gratis` a propósito: ese es el imán
-                gratuito de siete días. Mandar ahí a quien acaba de pulsar
-                "Inscribirme al curso" es prometer una compra y entregar un
-                boletín. Cae al teléfono, que es la única vía por la que hoy
-                se puede pagar de verdad, y el texto del botón lo dice.
-
-                En cuanto `precio.urlCheckout` deje de ser "#", vuelve solo a
-                ser el botón de compra. Y si tampoco hay teléfono, se apaga
-                como antes: sin ninguna de las dos cosas no hay nada que
-                ofrecer. */}
-            <Button
-              href={
-                checkoutPendiente
-                  ? contacto.telefono
-                    ? `tel:${contacto.telefono}`
-                    : undefined
-                  : precio.urlCheckout
-              }
-              disabled={checkoutPendiente && !contacto.telefono}
-              variant="primary"
-              size="lg"
-              sobre="oscuro"
-              trackId="precio"
-              block
-            >
-              {checkoutPendiente && contacto.telefono && (
-                <Icono nombre="telefono" class="size-4 shrink-0" grosor={2} />
-              )}
-              <T
-                v={
-                  checkoutPendiente && contacto.telefono
-                    ? copy.precio.llamarParaInscribirse
-                    : cta.primario.texto
-                }
-              />
-            </Button>
-          </div>
-
-          {/* AQUÍ HABÍA UNA TERCERA FORMA DE DECIR LA MISMA FECHA.
-              El panel ya dice "Después subirá a $3,990" y encima tiene la
-              cuenta atrás corriendo; añadir "El precio sube el 30 de septiembre"
-              debajo del botón era decir el mismo plazo tres veces en veinte
-              centímetros. Repetir un argumento no lo refuerza: lo devalúa, y
-              de paso hace que el panel parezca un panfleto.
-              `urgencia` se sigue calculando arriba porque es el respaldo para
-              cuando NO hay fecha (`tipo: 'lanzamiento'` o `'cupos'`), y en ese
-              caso sí es la única que lo dice. */}
-          {
-            urgencia && !fechaValida && (
-              <p class="mt-4 text-sm font-medium text-balance text-ink-inverse">
-                <T v={urgencia} />
-              </p>
-            )
-          }
-
-          {/* 13 px en móvil. Es letra pequeña a propósito —impuestos y formas
-              de pago— pero es lo que evita la sorpresa en la pasarela, y a
-              12 px sobre navy, en un teléfono, no se lee. */}
-          <p class="mt-3 text-[0.8125rem] text-pretty text-secondary-200 sm:text-xs">
-            <T v={precio.nota} />
-          </p>
-
-          {/* La garantía era una sección entera para decir una frase. Ahora
-              vive aquí, pequeña y justo debajo del botón: es el punto exacto
-              donde aparece el miedo que neutraliza. */}
-          {/* `text-sm` va en la FILA y no solo en el título: la caja de
-              `marca-linea` hereda de su padre la interlínea con la que se
-              alinea, no la del texto que tiene al lado. */}
-          {
-            garantia.activa && (
-              /* LA GARANTÍA SUBE DE RANGO. Estaba al pie de la tarjeta, en
-                 texto pequeño y gris: la pieza que más desactiva el miedo
-                 puesta donde menos se mira. Ahora es un bloque teal con su
-                 icono, justo debajo del botón, que es el instante exacto en
-                 que aparece la duda de "¿y si no es para mí?". */
-              <div class="mt-5 rounded-xl border border-primary-700 bg-primary-900/70 p-4 text-center">
-                <p class="flex items-center justify-center gap-2 text-sm font-bold text-secondary-300">
-                  <Icono nombre="escudo" class="size-5 shrink-0" />
-                  <T v={garantia.titulo} />
-                </p>
-                <p class="mt-1.5 text-[0.8125rem] text-pretty text-secondary-200 sm:text-xs">
-                  <T v={garantia.resumen} />
-                </p>
-              </div>
             )
           }
         </div>
       </div>
     </Reveal>
 
-    {/* EL AVISO DE "FALTA LA PASARELA" YA NO SE PINTA PARA EL VISITANTE.
-        Era una nota de mantenimiento en mitad de la sección que vende, y le
-        contaba al cliente que la tienda está a medio montar. El botón de arriba
-        ya resuelve el caso llamando; quien edita el sitio se entera abriendo
-        `curso.precio.urlCheckout`. */}
-
     {/* Solo para quien edita el sitio. El visitante no ve nada raro: el
         contador simplemente ya no está. */}
     {
-      fechaCaducada && import.meta.env.DEV && (
+      precio.publico && fechaCaducada && import.meta.env.DEV && (
         <p class="mt-6 rounded-lg border-2 border-dashed border-warning-500 bg-warning-50 px-4 py-3 text-center text-sm font-medium text-ink">
           ⚠ <T v={copy.precio.contador.avisoCaducado} />
         </p>
