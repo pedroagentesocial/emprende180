@@ -1,0 +1,122 @@
+---
+import T from "@components/i18n/T.astro";
+import MarcaAgua from "@components/ui/MarcaAgua.astro";
+import type { Txt } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * ISLA DE TÍTULO — el titular deja de encabezar y pasa a acompañar
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Un titular centrado encima de una fila de tarjetas es la forma que tiene una
+ * página de anunciar que es una plantilla. No porque esté mal maquetado, sino
+ * porque es la disposición que trae todo generador de páginas por defecto: se
+ * ha visto tantas veces que ya no se lee, se salta.
+ *
+ * Esto lo cambia de sitio. El titular entra en una superficie propia y se
+ * coloca AL LADO del contenido, no encima. Con eso pasan tres cosas:
+ *
+ *  1. La sección deja de tener una "cabecera" y pasa a tener DOS BLOQUES que se
+ *     miran. El ojo cruza en horizontal en vez de bajar en línea recta.
+ *  2. El titular gana peso sin gastar tamaño de letra: una superficie de color
+ *     pesa más que treinta píxeles más de tipografía, y no rompe la escala.
+ *  3. La fila de contenido puede sangrar hasta el borde de la pantalla, porque
+ *     ya no tiene que alinearse con un titular centrado.
+ *
+ * ─── LOS TONOS SON DE LA MARCA, NO NUEVOS ──────────────────────────────────
+ *
+ * `navy` es la isla que grita: el color primario de la guía, y donde el resto
+ * de sitios ponen negro. `teal` es la que acompaña sin gritar, sobre el crema
+ * de la marca. `claro` es una isla blanca con borde, para cuando ya hay
+ * demasiado color alrededor.
+ *
+ * ⚠️ NO SE INVENTA NINGÚN COLOR. Todo sale de `tokens.css`. Si algún día hace
+ * falta un cuarto tono, sale de las mismas rampas o no sale.
+ *
+ * ⚠️ Y NO SE ANIDAN ISLAS. Una tarjeta dentro de una tarjeta son dos bordes
+ * redondeados concéntricos, que se leen como un fallo de maquetación. Si el
+ * contenido de dentro necesita su propia caja, es que no va aquí dentro.
+ */
+
+interface Props {
+  titulo: Txt;
+  /** Debajo del titular, dentro de la misma isla. Opcional. */
+  entradilla?: Txt;
+  /**
+   * `navy` para la que manda, `teal` para acompañar, `claro` para no sumar
+   * más color a una sección que ya lo tiene.
+   */
+  tono?: "navy" | "teal" | "claro";
+  /** Nivel del encabezado. La portada solo tiene un `h1`, y es el del hero. */
+  como?: "h2" | "h3";
+  /**
+   * La marca de agua del isotipo, detrás. Solo en `navy`: sobre el teal claro
+   * y sobre el blanco no se ve, y una textura que no se ve es peso muerto.
+   */
+  conMarca?: boolean;
+  class?: string;
+}
+
+const {
+  titulo,
+  entradilla,
+  tono = "navy",
+  como: Etiqueta = "h2",
+  conMarca = true,
+  class: className = "",
+} = Astro.props;
+
+const TONOS = {
+  navy: {
+    caja: "bg-primary-900 text-ink-inverse",
+    titulo: "text-ink-inverse",
+    texto: "text-secondary-100",
+  },
+  teal: {
+    caja: "bg-secondary-50 ring-1 ring-secondary-200 ring-inset",
+    titulo: "text-ink",
+    texto: "text-ink-muted",
+  },
+  claro: {
+    caja: "bg-surface ring-1 ring-line ring-inset",
+    titulo: "text-ink",
+    texto: "text-ink-muted",
+  },
+} as const;
+
+const t = TONOS[tono];
+const marca = conMarca && tono === "navy";
+---
+
+<div
+  class:list={[
+    /* `isolate` para que la marca de agua se quede detrás del texto y no
+       debajo del fondo. `overflow-hidden` la recorta contra el radio. */
+    "relative isolate flex h-full flex-col justify-center overflow-hidden rounded-3xl p-8 sm:p-10",
+    t.caja,
+    className,
+  ]}
+>
+  {marca && <MarcaAgua posicion="derecha" class="opacity-[0.07]" />}
+
+  <Etiqueta
+    class:list={[
+      "text-3xl font-extrabold text-balance sm:text-4xl",
+      t.titulo,
+    ]}
+  >
+    <T v={titulo} />
+  </Etiqueta>
+
+  {
+    entradilla && (
+      <p class:list={["mt-4 text-base text-pretty sm:text-lg", t.texto]}>
+        <T v={entradilla} />
+      </p>
+    )
+  }
+
+  {/* Para lo que cada sección quiera meter debajo: un botón, un distintivo,
+      una cifra. Va dentro de la isla, así que hereda su color. */}
+  <slot />
+</div>

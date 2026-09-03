@@ -2,6 +2,7 @@
 import T from "@components/i18n/T.astro";
 import Section from "@components/ui/Section.astro";
 import SectionHeading from "@components/ui/SectionHeading.astro";
+import IslaTitulo from "@components/ui/IslaTitulo.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Button from "@components/ui/Button.astro";
 import BotonDetalle from "@components/ui/BotonDetalle.astro";
@@ -173,12 +174,31 @@ const lang = resolverIdiomaServidor(
 ---
 
 <Section id="precio" tono="sunken" ritmo="amplio" ariaLabel={copy.precio.aria}>
-  <SectionHeading
-    align="center"
-    class="mx-auto"
-    titulo={copy.precio.titulo}
-    entradilla={copy.precio.entradilla}
-  />
+  {/* ─── EL TITULAR TIENE SUPERFICIE Y NO ESTÁ CENTRADO ────────────────────
+      Era un titular centrado flotando sobre el fondo, encima de la tarjeta de
+      precio. Centrado y sin superficie es la disposición por defecto de
+      cualquier generador de páginas, y por eso se salta.
+
+      Ahora es una isla teal que ocupa poco más de la mitad del ancho y se
+      queda a la izquierda. Dos motivos:
+
+       · La ASIMETRÍA es lo que hace que la tarjeta de abajo, que sí va a todo
+         el ancho, se lea como el bloque importante. Dos bloques del mismo
+         ancho pesan igual; uno estrecho y otro ancho tienen jerarquía.
+       · El teal claro sobre el fondo hundido de esta sección separa sin
+         necesidad de un borde, y deja el navy para la tarjeta de precio, que
+         es donde tiene que estar el único bloque oscuro de la sección.
+
+      `conMarca={false}`: la marca de agua solo se ve sobre navy. */}
+  <Reveal>
+    <IslaTitulo
+      class="max-w-3xl"
+      tono="teal"
+      conMarca={false}
+      titulo={copy.precio.titulo}
+      entradilla={copy.precio.entradilla}
+    />
+  </Reveal>
 
   {/* `max-w-5xl` y no `4xl`: a 1440 la tarjeta dejaba 270 px de gris muerto a
       cada lado y las dos columnas iban tan justas que el desglose partía sus
