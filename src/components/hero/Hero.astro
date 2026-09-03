@@ -214,11 +214,17 @@ const pruebaSocial = construirTxt((l) =>
             No es un capricho de estilo, es que ese recurso no distingue nada —
             se le pone a cualquier párrafo que "haya que destacar" y acaba
             marcando tres cosas distintas en la misma página con la misma raya.
-            Aquí lo sustituye una superficie: un bloque con fondo propio, que
-            sobre el navy del hero separa igual de bien y no compite con el teal
-            del botón, que es el único sitio donde el teal significa "pulsa". */}
+            Lo sustituye un FILO, no otra caja. Fue una caja con fondo propio
+            (`rounded-xl bg-primary-800/60`) y era el mismo error una capa más
+            adentro: una tarjeta dentro de una isla son dos bordes redondeados
+            concéntricos, que se leen como un fallo de maquetación. Es la misma
+            regla que sacó las credenciales de sus tarjetas en la sección del
+            instructor.
+
+            Y de paso cuadra la composición: sin el relleno de la caja, la isla
+            baja lo justo para medir lo que mide el vídeo de al lado. */}
         <div
-          class="mt-6 max-w-xl rounded-xl bg-primary-800/60 px-4 py-3"
+          class="mt-6 max-w-xl border-t border-primary-800 pt-5"
           data-hero-enter
           style="--i:5"
         >
@@ -251,11 +257,21 @@ const pruebaSocial = construirTxt((l) =>
           `w-auto` el ancho salía del contenido, y el contenido es un <figure>
           con `w-full`: cada uno esperaba al otro y la columna se resolvía en
           2 px. Con un ancho definido, el `w-full` de dentro tiene de qué
-          agarrarse. */}
+          agarrarse.
+
+          Y son 26rem, no 24, PORQUE ESE ES EL ANCHO AL QUE EL VÍDEO MIDE LO
+          QUE LA ISLA. El marco es 9:16, así que su alto sale de su ancho:
+          416 px de ancho son 739 de alto, y la isla mide 745. Con 24rem se
+          quedaba 67 px corto y las dos columnas no terminaban en la misma
+          línea, que es lo único que se nota de esta composición.
+
+          Medido a 1440 y a 1280; por debajo de `lg` se apila y no hay nada
+          que igualar. Si alguien cambia el texto del titular o de la promesa,
+          la isla crece y esto hay que volver a medirlo. */}
       {
         vsl.disponible && (
           <div
-            class="mx-auto w-full max-w-[21rem] lg:mx-0 lg:w-[24rem] lg:max-w-none lg:shrink-0"
+            class="mx-auto w-full max-w-[21rem] lg:mx-0 lg:w-[26rem] lg:max-w-none lg:shrink-0"
             data-hero-enter
             style="--i:2"
           >
