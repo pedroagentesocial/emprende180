@@ -92,32 +92,20 @@ const pruebaSocial = construirTxt((l) =>
 
 <section
   id="inicio"
-  class="relative isolate flex min-h-[calc(100svh-var(--header-h))] flex-col overflow-hidden bg-primary-950 lg:min-h-[calc(100svh-var(--header-h-lg))]"
+  class="relative isolate flex min-h-[calc(100svh-var(--header-h))] flex-col overflow-hidden bg-surface lg:min-h-[calc(100svh-var(--header-h-lg))]"
 >
-  {/* La trama de puntos de la guía de marca. Al 10 %: tiene que notarse que
-      hay una textura, no verse los puntos. */}
-  <div
-    aria-hidden="true"
-    class="pointer-events-none absolute inset-0 -z-10 opacity-10"
-    style="background-image:radial-gradient(currentColor 1px,transparent 1px);background-size:16px 16px;color:var(--color-secondary-200)"
-  >
-  </div>
+  {/* ─── EL NAVY SE MUDA DEL FONDO A LA ISLA ──────────────────────────────
+      El hero era una pantalla navy entera con el texto y el vídeo encima.
+      Ahora el lienzo es blanco y el navy se concentra en la isla del texto,
+      con el vídeo suelto a su derecha.
 
-  {/* Un halo teal muy suave detrás del vídeo. Es lo único que separa la mitad
-      derecha de un rectángulo navy plano, y va detrás del contenido para que no
-      toque el contraste de nada. */}
-  <div
-    aria-hidden="true"
-    class="pointer-events-none absolute -right-32 top-1/4 -z-10 hidden size-[38rem] rounded-full opacity-20 blur-3xl lg:block"
-    style="background-image:radial-gradient(closest-side, var(--color-secondary-500), transparent)"
-  >
-  </div>
+      Con eso, la textura de puntos, el halo teal y el isotipo de marca de agua
+      se mudan también: eran decoración DEL FONDO navy, y sobre blanco no se
+      ven o ensucian. Ahora viven dentro de la isla, que es la que es navy.
 
-  {/* El isotipo detrás, a la izquierda y casi apagado. En el hero la marca solo
-      salía en la barra de arriba, a 48 px: la primera pantalla de una landing
-      que vende una certificación con este nombre puede permitirse llevarlo
-      grande, siempre que no compita con el titular. Al 5 % no compite. */}
-  <MarcaAgua posicion="izquierda" tamano="medio" class="opacity-[0.05]" />
+      ⚠️ LA CABECERA NO SE ENTERA, y merece decirse porque era el riesgo: la
+      barra de arriba no está superpuesta sobre el hero, es una barra blanca en
+      el flujo normal con su propio borde. Comprobado antes de tocar nada. */}
 
   {/* ─── LOS RECORTES DE `max-[359px]` ─────────────────────────────────────
       Por debajo de 360 px de ancho (iPhone SE de primera generación, 320×568)
@@ -131,8 +119,31 @@ const pruebaSocial = construirTxt((l) =>
     <div
       class="flex flex-1 flex-col justify-center gap-10 lg:flex-row lg:items-center lg:gap-16"
     >
-      {/* ─── Columna de texto ──────────────────────────────────────────── */}
-      <div class="max-w-2xl lg:flex-1">
+      {/* ─── LA ISLA DEL TEXTO ─────────────────────────────────────────────
+          Todo el argumento del hero dentro de una superficie navy: el rótulo,
+          el titular, la promesa, los dos botones y el "para ti si". Los colores
+          de dentro no cambian ni una línea, porque el fondo sobre el que se
+          leen sigue siendo el mismo navy; lo único que cambia es que ahora el
+          navy tiene bordes.
+
+          `p-8 sm:p-10 lg:p-12`: el aire de dentro sube con la pantalla. Una
+          isla con el mismo relleno a 360 que a 1440 se ve apretada en la grande
+          y desperdiciada en la pequeña. */}
+      <div
+        class="relative isolate max-w-2xl overflow-hidden rounded-3xl bg-primary-950 p-8 sm:p-10 lg:flex-1 lg:p-12"
+      >
+        {/* La trama de puntos de la guía de marca. Al 10 %: tiene que notarse
+            que hay una textura, no verse los puntos. */}
+        <div
+          aria-hidden="true"
+          class="pointer-events-none absolute inset-0 -z-10 opacity-10"
+          style="background-image:radial-gradient(currentColor 1px,transparent 1px);background-size:16px 16px;color:var(--color-secondary-200)"
+        >
+        </div>
+
+        {/* El isotipo detrás, casi apagado. Al 5 % no compite con el titular. */}
+        <MarcaAgua posicion="derecha" tamano="medio" class="opacity-[0.06]" />
+
         <div data-hero-enter style="--i:0">
           <Pill tono="oscuro">
             <T v={sitio.claim} />
@@ -257,7 +268,7 @@ const pruebaSocial = construirTxt((l) =>
     {/* La franja de datos cierra el hero: responde a "¿qué me estás vendiendo
         exactamente?" antes de que haya que hacer scroll para averiguarlo. */}
     <div
-      class="mt-10 border-t border-secondary-200/20 pt-6 sm:mt-12"
+      class="mt-10 border-t border-line pt-6 sm:mt-12"
       data-hero-enter
       style="--i:7"
     >

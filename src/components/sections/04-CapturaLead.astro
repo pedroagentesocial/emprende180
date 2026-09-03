@@ -68,11 +68,16 @@ const primerDia = dias[0]!;
       ⚠️ LA CINTA DE PRECIO DE ARRIBA NO SE TOCA. Sigue siendo navy y sigue
       moviéndose: es una franja de paso, no parte de esta sección, y el corte de
       color entre ella y el blanco de aquí es justo lo que la separa. */}
-  {/* `items-start` y no `items-center`: centrada, la isla quedaba flotando a
-      media altura de una columna de texto mucho más alta, sin apoyarse en nada.
-      Arrancando las dos a la misma línea, el titular y la acción se leen como
-      un par. */}
-  <div class="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:gap-16">
+  {/* ⚠️ LA ISLA MIDE LO MISMO QUE LA COLUMNA DE TEXTO, NO LO QUE MIDE SU
+      CONTENIDO. Se probaron las dos alternativas y las dos quedaban raras:
+      centrada, flotaba a media altura sin apoyarse en nada; alineada arriba,
+      dejaba un hueco blanco enorme debajo, y una caja pequeña al lado de una
+      columna alta se lee como que se quedó a medio cargar.
+
+      Estirada, el navy pesa lo mismo que el texto y la sección se lee como dos
+      bloques emparejados. El contenido va centrado DENTRO de la isla, así que
+      el alto extra es aire suyo, no un vacío. */}
+  <div class="grid items-stretch gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:gap-16">
     {/* ─── EL LADO DEL TEXTO ──────────────────────────────────────────────
         A la izquierda y sin centrar. Antes iba centrado a todo el ancho porque
         estaba encima de las dos tarjetas; ahora que es una columna, centrarlo
@@ -122,9 +127,9 @@ const primerDia = dias[0]!;
         pulsa. Sin tarjetas dentro: lo que antes eran dos cajas navy sobre navy
         (que apenas se distinguían del fondo) es ahora una sola isla sobre
         blanco, que se ve desde el otro lado de la pantalla. */}
-    <Reveal delay={0.1}>
+    <Reveal delay={0.1} class="h-full">
       <div
-        class="relative isolate overflow-hidden rounded-3xl bg-primary-900 p-8 text-center sm:p-10"
+        class="relative isolate flex h-full flex-col justify-center overflow-hidden rounded-3xl bg-primary-900 p-8 text-center sm:p-10"
       >
         <MarcaAgua posicion="derecha" class="opacity-[0.07]" />
 
