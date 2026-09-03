@@ -74,6 +74,19 @@ const datos = [
           /* El tamaño y la interlínea van en la FILA, no solo en el texto: la
              caja de la marca los hereda de aquí para calcular su `1lh`. */
           "flex items-start gap-2.5 text-sm leading-6 sm:text-base sm:leading-7",
+          /* ─── CENTRADO DENTRO DE SU CUARTO ───────────────────────────
+             Los cuatro datos ocupan una columna igual, pero miden cosas muy
+             distintas: "Acceso de por vida" son 110 px y "Certificación de
+             Embajador" el doble. Alineados a la izquierda, el sobrante caía
+             TODO detrás de cada uno, así que el hueco entre dos datos cortos
+             era enorme y entre dos largos casi ninguno: cuatro cosas de la
+             misma familia con cuatro separaciones distintas.
+
+             Centrado, el sobrante se reparte a los dos lados y cada filete
+             queda a la misma distancia del texto que tiene delante y del que
+             tiene detrás. Es la misma cantidad de blanco; lo que cambia es
+             que ahora está repartida. */
+          "lg:justify-center",
           /* Los filetes solo en la fila de cuatro: en una o dos columnas no
              separarían nada, cortarían por la mitad. */
           i > 0 && "lg:border-l lg:border-line lg:pl-5",
