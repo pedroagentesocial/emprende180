@@ -63,10 +63,27 @@ const datos = [
     la misma altura aunque uno ocupe dos líneas y otro una. Con el alineado por
     defecto (`stretch`) daba igual, pero dejarlo explícito evita que un cambio
     de altura en un dato mueva a sus vecinos. */}
-{/* `lg:grid-cols-4` y no `sm:`: a 640 px cuatro columnas dejan unos 130 px por
-    dato y "Certificación de Embajador" se parte en tres líneas. En dos columnas
-    respira, y la fila de cuatro entra a partir de 1024, donde sí caben. */}
-<ul class="grid grid-cols-1 items-start gap-x-4 gap-y-4 sm:grid-cols-2 sm:gap-y-5 lg:grid-cols-4 lg:gap-x-0">
+{/* ─── NI CUATRO COLUMNAS IGUALES, NI FILETES A CUARTOS ───────────────────
+    Los cuatro datos vivían en una rejilla de columnas IGUALES, y no miden
+    lo mismo: "Acceso de por vida" pide 173 px y "Certificación de Embajador"
+    pide 289. En columnas de 272 el tercero no cabía y se partía en dos
+    renglones, y ahí estaba el problema que se veía: su caja seguía midiendo
+    los 272 de la columna mientras la tinta ocupaba 100, así que el dato se
+    leía escorado a la izquierda por mucho que la caja estuviera centrada.
+
+    Ahora cada dato mide LO QUE MIDE y la fila entera se centra, con huecos
+    fijos de 40 px entre uno y otro. Nada se parte —los cuatro juntos piden
+    1.060 px en español y la fila da 1.088— y no hay caja vacía que descuadre
+    nada. Medido en los dos idiomas.
+
+    El hueco es FIJO y no repartido a propósito: el filete de separación es
+    un `::before` colocado a -20 px, o sea exactamente en mitad del hueco.
+    Con un hueco elástico (`justify-between`) no habría forma de centrarlo,
+    y un filete descentrado se nota más que no tenerlo.
+
+    Por debajo de `lg` sigue mandando la rejilla: una columna en el teléfono,
+    dos en la tableta, y ahí el alineado a la izquierda es el que corresponde. */}
+<ul class="grid grid-cols-1 items-start gap-x-4 gap-y-4 sm:grid-cols-2 sm:gap-y-5 lg:flex lg:flex-wrap lg:justify-center lg:gap-x-10 lg:gap-y-3">
   {
     datos.map((texto, i) => (
       <li
@@ -74,23 +91,17 @@ const datos = [
           /* El tamaño y la interlínea van en la FILA, no solo en el texto: la
              caja de la marca los hereda de aquí para calcular su `1lh`. */
           "flex items-start gap-2.5 text-sm leading-6 sm:text-base sm:leading-7",
-          /* ─── CENTRADO DENTRO DE SU CUARTO ───────────────────────────
-             Los cuatro datos ocupan una columna igual, pero miden cosas muy
-             distintas: "Acceso de por vida" son 110 px y "Certificación de
-             Embajador" el doble. Alineados a la izquierda, el sobrante caía
-             TODO detrás de cada uno, así que el hueco entre dos datos cortos
-             era enorme y entre dos largos casi ninguno: cuatro cosas de la
-             misma familia con cuatro separaciones distintas.
+          /* ─── EL FILETE, EN MITAD DEL HUECO ───────────────────────────
+             Un `::before` de un píxel a -20 px del borde izquierdo, que es
+             la mitad exacta del hueco de 40. Antes era un `border-l` con su
+             relleno: el filete quedaba pegado al dato de su derecha y a una
+             distancia distinta del de su izquierda.
 
-             Centrado, el sobrante se reparte a los dos lados y cada filete
-             queda a la misma distancia del texto que tiene delante y del que
-             tiene detrás. Es la misma cantidad de blanco; lo que cambia es
-             que ahora está repartida. */
-          "lg:justify-center",
-          /* Los filetes solo en la fila de cuatro: en una o dos columnas no
-             separarían nada, cortarían por la mitad. */
-          i > 0 && "lg:border-l lg:border-line lg:pl-5",
-          i < datos.length - 1 && "lg:pr-5",
+             `top-1.5` y no centrado en vertical: se alinea con la primera
+             línea del texto, como el icono, y así no crece cuando un dato
+             ocupa dos renglones. */
+          i > 0 &&
+            "lg:relative lg:before:absolute lg:before:top-1.5 lg:before:-left-5 lg:before:h-4 lg:before:w-px lg:before:bg-line lg:before:content-['']",
         ]}
       >
         {/* `marca-linea` centra el icono en la primera línea del texto. Ver la
