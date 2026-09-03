@@ -5,6 +5,7 @@ import Section from "@components/ui/Section.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Button from "@components/ui/Button.astro";
 import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
+import MarcaAgua from "@components/ui/MarcaAgua.astro";
 import CintaPrecio from "@components/ui/CintaPrecio.astro";
 import { tienePendiente } from "@lib/pendientes";
 import { temario, curso, copy, contacto, cta } from "@config/curso.config";
@@ -53,10 +54,13 @@ const lang = resolverIdiomaServidor(
  *
  * ─── LA COLUMNA DE LA IZQUIERDA ────────────────────────────────────────────
  *
- * El título, el recuento, la promesa del quiz y los DOS BOTONES viven en un
- * rail `sticky`. Es lo que convierte una lista en una sección que vende: quien
- * está leyendo el video 08 tiene el botón de inscribirse a la altura de los
- * ojos, sin volver arriba ni esperar al final.
+ * El título, el recuento, la promesa del quiz, la foto y los DOS BOTONES viven
+ * en una isla navy, al lado de las diez tarjetas blancas.
+ *
+ * Fue un rail `sticky` y ya no lo es. Lo era para tener el botón de inscribirse
+ * a la altura de los ojos mientras se recorren los diez videos, y eso lo
+ * resuelve ahora la barra de arriba, que se pegó y lleva ese mismo botón. Ver
+ * la nota junto a la isla.
  *
  * Va a la IZQUIERDA a propósito, al revés que el de preguntas frecuentes. Las
  * dos secciones usan el mismo recurso; espejadas, no se leen como la misma
@@ -106,21 +110,49 @@ const todosConQuiz = construirTxt((l) =>
     lo primero visualmente, así que aquí no hace falta `order`. */}
 <Section id="temario" tono="muted" ariaLabel={copy.temario.aria}>
   <div class="grid gap-10 lg:grid-cols-[22rem_minmax(0,1fr)] lg:gap-x-16 xl:gap-x-20">
+    {/* ─── EL RAIL PASA A SER UNA ISLA ────────────────────────────────────
+        El titular, el recuento, la promesa del quiz, la foto y los dos botones
+        vivían sueltos sobre el fondo de la sección, al lado de diez tarjetas
+        blancas. Diez islas contra una columna sin superficie: el lado que pesa
+        se lleva la mirada y el titular, que es quien tiene que abrir la
+        sección, quedaba flotando.
+
+        En navy, y no en blanco, porque las diez tarjetas de al lado YA son
+        blancas: una isla clara junto a diez claras sería una más. El navy la
+        separa de la lista sin necesidad de un borde y le devuelve el peso de
+        cabecera.
+
+        ⚠️ Y DEJA DE SER `sticky`. Lo era para que el botón de inscribirse
+        estuviera a la altura de los ojos mientras se recorren los diez videos,
+        y era buena idea CUANDO LA BARRA DE ARRIBA NO SE PEGABA. Ahora sí se
+        pega, y lleva ese mismo botón: el rail estaba resolviendo un problema
+        que ya no existe.
+
+        Además no podía seguir siéndolo. Medido: con la foto dentro, la isla
+        pide 1046 px y la ventana da 805. Un elemento pegajoso más alto que la
+        pantalla se ancla por arriba y deja su parte de abajo —o sea los dos
+        botones— permanentemente fuera de vista, que es exactamente lo contrario
+        de lo que el `sticky` buscaba. Se probó recortarla con `max-height` y
+        salió peor: la isla se cortaba a media frase y los botones quedaban
+        dentro de un scroll que nadie iba a descubrir. */}
     <aside>
-      <div class="lg:sticky lg:top-10">
+      <div
+        class="relative isolate overflow-hidden rounded-3xl bg-primary-950 p-7 sm:p-8"
+      >
+        <MarcaAgua posicion="derecha" class="opacity-[0.06]" />
         <Reveal>
-          <p class="inline-flex items-center gap-2 rounded-full border border-secondary-200 bg-secondary-50 px-3 py-1 text-xs font-bold tracking-wide text-secondary-700 uppercase">
+          <p class="inline-flex items-center gap-2 rounded-full border border-primary-800 bg-primary-900 px-3 py-1 text-xs font-bold tracking-wide text-secondary-300 uppercase">
             <span aria-hidden="true" class="marca-linea">
               <span class="size-1.5 rounded-full bg-secondary-500"></span>
             </span>
             <T v={cuantos} />
           </p>
 
-          <h2 class="mt-4 text-3xl font-extrabold text-balance text-ink sm:text-4xl">
+          <h2 class="mt-4 text-3xl font-extrabold text-balance text-ink-inverse sm:text-4xl">
             <T v={copy.temario.titulo} vars={{ n: temario.length }} />
           </h2>
 
-          <p class="mt-4 text-base text-pretty text-ink-muted">
+          <p class="mt-4 text-base text-pretty text-secondary-100">
             <T v={copy.temario.entradilla} vars={{ n: temario.length }} />
           </p>
 
@@ -149,13 +181,13 @@ const todosConQuiz = construirTxt((l) =>
             height={620}
             loading="lazy"
             decoding="async"
-            class="mt-6 aspect-[22/15] w-full rounded-2xl border border-line object-cover"
+            class="mt-6 aspect-[22/15] w-full rounded-2xl object-cover"
           />
 
           {/* Lo que antes eran veinte distintivos repartidos por las tarjetas. */}
           {
             curso.formato.conQuiz && (
-              <p class="mt-4 flex items-start gap-2.5 text-sm font-medium text-ink">
+              <p class="mt-4 flex items-start gap-2.5 text-sm font-medium text-secondary-100">
                 <span aria-hidden="true" class="marca-linea shrink-0 text-secondary-600">
                   <Icono nombre="check" class="size-4" grosor={3} />
                 </span>
@@ -186,9 +218,13 @@ const todosConQuiz = construirTxt((l) =>
               píldora. Apilados caben enteros y el orden de arriba abajo es el
               orden de compromiso. */}
           <div class="mt-4 flex flex-col gap-3 sm:flex-row lg:flex-col">
+            {/* `sobre="oscuro"` en los dos: el anillo de foco por defecto es el
+                teal medio, que sobre navy no llega al contraste que exige WCAG
+                para un indicador de foco. Ver `Button.astro`. */}
             <Button
               href={cta.primario.href}
               variant="primary"
+              sobre="oscuro"
               trackId="temario"
               class="w-full sm:w-auto lg:w-full"
             >
@@ -199,7 +235,8 @@ const todosConQuiz = construirTxt((l) =>
               contacto.telefono && (
                 <Button
                   href={`tel:${contacto.telefono}`}
-                  variant="secondary"
+                  variant="inverse"
+                  sobre="oscuro"
                   trackId="temario-llamada"
                   class="w-full sm:w-auto lg:w-full"
                 >
@@ -279,24 +316,36 @@ const todosConQuiz = construirTxt((l) =>
       dejaría más alto que la pantalla en un portátil, y un `sticky` que no cabe
       deja de pegarse. */}
   <Reveal delay={0.1}>
+    {/* ─── LO QUE ENTRA ADEMÁS ────────────────────────────────────────────
+        Eran tres bloques centrados, sin superficie, con el icono centrado
+        encima: la forma exacta de "tres tarjetas iguales" que PRODUCT.md pone
+        como anti-referencia del SaaS genérico, solo que sin las cajas.
+
+        Ahora son tres islas blancas con el contenido a la izquierda, y el
+        rótulo deja de estar centrado encima. Lo que las salva de ser tres
+        tarjetas idénticas es lo mismo que en el bento de la 02: no lo son.
+        Aquí las tres dicen cosas del mismo tipo (qué más entra en el precio),
+        así que la variedad no puede venir del tamaño; viene de que el bloque
+        entero está ANCLADO a la izquierda, con su rótulo y su cierre en la
+        misma columna, en vez de flotar centrado en mitad de la página. */}
     <div class="mt-14 border-t border-line pt-10">
-      <h3 class="text-center text-xs font-bold tracking-[0.16em] text-ink-subtle uppercase">
+      <h3 class="text-xs font-bold tracking-[0.16em] text-ink-subtle uppercase">
         <T v={copy.temario.extrasTitulo} />
       </h3>
 
-      <ul class="mx-auto mt-8 grid max-w-3xl gap-8 text-center sm:grid-cols-3">
+      <ul class="mt-6 grid gap-4 sm:grid-cols-3 sm:gap-5">
         {
           copy.temario.extras.map((e, i) => (
-            <li>
+            <li class="h-full rounded-2xl bg-surface p-6 ring-1 ring-line ring-inset">
               <Icono
                 nombre={ICONOS_EXTRAS[i] ?? "check"}
-                class="mx-auto size-10 text-secondary-600"
+                class="size-9 text-secondary-600"
                 grosor={1.5}
               />
               <p class="mt-4 text-base font-bold text-balance text-ink">
                 <T v={e.titulo} />
               </p>
-              <p class="mt-1 text-sm text-pretty text-ink-subtle">
+              <p class="mt-1 text-sm text-pretty text-ink-muted">
                 <T v={e.nota} />
               </p>
             </li>
@@ -308,7 +357,7 @@ const todosConQuiz = construirTxt((l) =>
           cosas que entran además. Ahora la frase es verdad cuando se lee —ya
           se ha enseñado todo lo que incluye— y hace de puente a la tira de
           precio, que es la siguiente pregunta. */}
-      <p class="mx-auto mt-10 max-w-read text-center text-lg font-semibold text-balance text-ink">
+      <p class="mt-8 max-w-read text-lg font-semibold text-balance text-ink">
         <T v={copy.temario.cierre} />
       </p>
     </div>
