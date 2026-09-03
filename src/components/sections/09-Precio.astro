@@ -2,7 +2,6 @@
 import T from "@components/i18n/T.astro";
 import Section from "@components/ui/Section.astro";
 import SectionHeading from "@components/ui/SectionHeading.astro";
-import IslaTitulo from "@components/ui/IslaTitulo.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Button from "@components/ui/Button.astro";
 import BotonDetalle from "@components/ui/BotonDetalle.astro";
@@ -174,338 +173,343 @@ const lang = resolverIdiomaServidor(
 ---
 
 <Section id="precio" tono="sunken" ritmo="amplio" ariaLabel={copy.precio.aria}>
-  {/* ─── EL TITULAR TIENE SUPERFICIE Y NO ESTÁ CENTRADO ────────────────────
-      Era un titular centrado flotando sobre el fondo, encima de la tarjeta de
-      precio. Centrado y sin superficie es la disposición por defecto de
-      cualquier generador de páginas, y por eso se salta.
-
-      Ahora es una isla teal que ocupa poco más de la mitad del ancho y se
-      queda a la izquierda. Dos motivos:
-
-       · La ASIMETRÍA es lo que hace que la tarjeta de abajo, que sí va a todo
-         el ancho, se lea como el bloque importante. Dos bloques del mismo
-         ancho pesan igual; uno estrecho y otro ancho tienen jerarquía.
-       · El teal claro sobre el fondo hundido de esta sección separa sin
-         necesidad de un borde, y deja el navy para la tarjeta de precio, que
-         es donde tiene que estar el único bloque oscuro de la sección.
-
-      `conMarca={false}`: la marca de agua solo se ve sobre navy. */}
-  <Reveal>
-    <IslaTitulo
-      class="max-w-3xl"
-      tono="teal"
-      conMarca={false}
-      titulo={copy.precio.titulo}
-      entradilla={copy.precio.entradilla}
-    />
-  </Reveal>
-
-  {/* `max-w-5xl` y no `4xl`: a 1440 la tarjeta dejaba 270 px de gris muerto a
-      cada lado y las dos columnas iban tan justas que el desglose partía sus
-      títulos en dos renglones. 1.024 px es el ancho al que "El curso completo:
-      los 10 videos, con acceso de por vida" entra en una línea. */}
-  <div class="mx-auto mt-12 max-w-5xl">
+  {/* `max-w-6xl`: el desglose necesita que "El curso completo: los 10 videos,
+      con acceso de por vida" entre en una línea, y con las dos islas separadas
+      por su hueco eso pide 1.152 px. Más ancho no: el panel del precio se
+      estiraría hasta que el $490 quedara nadando. */}
+  <div class="mx-auto max-w-6xl">
     <Reveal>
-      <div class="overflow-hidden rounded-3xl border border-line bg-surface shadow-xl">
-        <!-- `min-w-0` en los dos paneles y no es cosmético: por defecto un item
-             de grid tiene `min-width: auto`, así que NO baja de su min-content.
-             Con la cuenta atrás dentro, ese min-content era de 381 px y la
-             columna se resolvía a 381 dentro de un contenedor de 348: los dos
-             paneles se ensanchaban 34 px y la tarjeta, que es `overflow-hidden`,
-             cortaba lo que sobresalía. En móvil se comían el final de cada
-             cifra del desglose ("$2,19" en vez de "$2,190"). -->
-        <div class="grid md:grid-cols-[1.25fr_1fr]">
-          <!-- ── El desglose: lo que sostiene el ancla ────────────────────── -->
-          {/* CENTRADO, Y AHORA CON MOTIVO. El panel de al lado es más alto que
-              el desglose y siempre lo va a ser: lleva precio, insignia, contador,
-              botón, nota y garantía. Alineando el desglose por arriba, todo ese
-              sobrante caía junto al final — 350 px de blanco muerto bajo el
-              "Valor total".
+      {/* ─── DOS ISLAS, NO UNA TARJETA PARTIDA POR LA MITAD ──────────────
+          Era un solo bloque con dos mitades pegadas y un filete entre ellas,
+          y encima un titular en su propia isla, a lo ancho, como cabecera.
+          Tres piezas para dos ideas.
 
-              Centrado se reparte a los dos lados, y con el panel derecho en
-              navy —un bloque macizo de arriba abajo— el desglose centrado
-              contra él se lee como una composición y no como una columna que se
-              quedó corta. */}
-          <div
-            class="flex min-w-0 flex-col justify-center border-b border-line p-7 sm:p-9 md:border-b-0 md:border-r"
-          >
-            <h3 class="text-lg font-bold text-ink">
-              <T v={copy.precio.desgloseTitulo} />
-            </h3>
+          Ahora son dos islas separadas por su hueco: el desglose a la
+          izquierda —con el titular de la sección dentro, que es donde tenía
+          que estar— y el precio en navy a la derecha. Es el mismo reparto que
+          el resto de la página, y aquí además dice algo: lo que vale cada
+          parte a un lado, lo que se paga al otro, y entre las dos cosas un
+          hueco en vez de un filete.
 
-            {/* La pista solo existe si hay un cursor con el que pasar. */}
-            <p data-pista-hover class="mt-1 text-xs text-ink-subtle">
-              <T v={copy.ui.pistaHover} />
-            </p>
+          El navy va a la DERECHA porque la banda de reseñas de arriba tiene
+          su tarjeta azul a la izquierda. Alternar es lo que impide que la
+          página se lea como una columna.
 
-            <ul class="mt-5 divide-y divide-line">
-              {
-                precio.desglose.map((item) => (
-                  <li data-revelar class="group py-4 first:pt-0">
-                    <div class="flex items-baseline justify-between gap-4">
-                      <p class="min-w-0 font-semibold text-balance text-ink">
-                        <T v={item.titulo} />
-                      </p>
-                      <p class="shrink-0 text-sm font-bold tabular-nums text-ink">
-                        <T v={dinero(item.valor)} />
-                      </p>
-                    </div>
+          `items-stretch` para que las dos midan lo mismo: el desglose es más
+          corto que el panel del precio y sin esto quedaba una isla flotando
+          más alta que la otra. */}
+      <div class="grid items-stretch gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-8">
+      <!-- `min-w-0` en los dos paneles y no es cosmético: por defecto un item
+           de grid tiene `min-width: auto`, así que NO baja de su min-content.
+           Con la cuenta atrás dentro, ese min-content era de 381 px y la
+           columna se resolvía a 381 dentro de un contenedor de 348: los dos
+           paneles se ensanchaban 34 px y la tarjeta, que es `overflow-hidden`,
+           cortaba lo que sobresalía. En móvil se comían el final de cada
+           cifra del desglose ("$2,19" en vez de "$2,190"). -->
+        <!-- ── El desglose: lo que sostiene el ancla ────────────────────── -->
+        {/* CENTRADO, Y AHORA CON MOTIVO. El panel de al lado es más alto que
+            el desglose y siempre lo va a ser: lleva precio, insignia, contador,
+            botón, nota y garantía. Alineando el desglose por arriba, todo ese
+            sobrante caía junto al final — 350 px de blanco muerto bajo el
+            "Valor total".
 
-                    {/* LA BARRA. Cada componente ocupa su parte de la cifra
-                        ancla, a escala. Es lo que convierte una lista de cuatro
-                        precios en algo que se ENTIENDE de un vistazo: se ve que
-                        el curso en sí es más de la mitad de los 3.990, y ese
-                        reparto es justo lo que hace creíble el total.
+            Centrado se reparte a los dos lados, y con el panel derecho en
+            navy —un bloque macizo de arriba abajo— el desglose centrado
+            contra él se lee como una composición y no como una columna que se
+            quedó corta. */}
+        <div
+          class="flex min-w-0 flex-col rounded-3xl border border-line bg-surface p-7 shadow-lg sm:p-9"
+        >
+          {/* ─── EL TITULAR DE LA SECCIÓN, DENTRO DE LA ISLA ───────────────
+              Estaba arriba, en una isla teal a lo ancho, haciendo de cabecera.
+              Aquí encabeza lo que de verdad encabeza —el desglose de lo que
+              incluye— y la sección se queda en dos bloques en vez de tres.
 
-                        `aria-hidden`: la cifra exacta ya está escrita al lado en
-                        texto, así que la barra no aporta nada a quien la escucha
-                        y solo añadiría ruido. */}
-                    <div
-                      aria-hidden="true"
-                      class="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-sunken"
-                    >
-                      <div
-                        class="h-full rounded-full bg-secondary-400 transition-colors duration-200 ease-out-soft group-hover:bg-secondary-600"
-                        style={`width:${((item.valor / precio.referencia) * 100).toFixed(1)}%`}
-                      />
-                    </div>
+              Y el `h2` sigue siendo el primero del marcado, así que el orden de
+              los encabezados no cambia para quien navega por ellos. */}
+          <h2 class="text-3xl font-extrabold text-balance text-ink sm:text-4xl">
+            <T v={copy.precio.titulo} />
+          </h2>
+          <p class="mt-4 text-base text-pretty text-ink-muted sm:text-lg">
+            <T v={copy.precio.entradilla} />
+          </p>
 
-                    <div data-detalle>
-                      <div>
-                        <p class="mt-2.5 text-sm text-pretty text-ink-muted">
-                          <T v={item.detalle} />
-                        </p>
-                      </div>
-                    </div>
+          <h3 class="mt-8 border-t border-line pt-7 text-lg font-bold text-ink">
+            <T v={copy.precio.desgloseTitulo} />
+          </h3>
 
-                    {/* Solo en táctil. Ver `BotonDetalle.astro`. */}
-                    <BotonDetalle class="mt-0.5" />
-                  </li>
-                ))
-              }
-            </ul>
+          {/* La pista solo existe si hay un cursor con el que pasar. */}
+          <p data-pista-hover class="mt-1 text-xs text-ink-subtle">
+            <T v={copy.ui.pistaHover} />
+          </p>
 
-            <!-- La suma, explícita: convierte la cifra ancla en un total que
-                 el visitante puede recorrer, no en un número puesto ahí. -->
-            <div
-              class="mt-5 flex items-center justify-between gap-4 border-t-2 border-line-strong pt-5"
-            >
-              <p class="font-bold text-ink"><T v={copy.precio.desgloseTotal} /></p>
-              <p class="text-lg font-extrabold tabular-nums text-ink">
-                <T v={precioReferencia} />
-              </p>
-            </div>
-
+          <ul class="mt-5 divide-y divide-line">
             {
-              !desgloseCuadra && (
-                <p class="mt-4 rounded-lg border-2 border-dashed border-warning-500 bg-warning-50 px-4 py-3 text-sm font-medium text-ink">
-                  ⚠ <T v={copy.precio.avisoDesglose} />{" "}
-                  <code class="font-mono">{sumaDesglose} ≠ {precio.referencia}</code>
-                </p>
-              )
-            }
-          </div>
-
-          <!-- ── El precio y la acción ────────────────────────────────────── -->
-          {/* EL PANEL SE VA A NAVY.
-
-              Era `bg-surface-muted`: un gris un punto más oscuro que el blanco
-              de al lado. En una tarjeta de precio, el lado donde se paga tiene
-              que ganar la mirada, y dos grises casi iguales no jerarquizan
-              nada — la tarjeta entera se leía plana.
-
-              En navy, el $490 pasa a ser lo primero que se ve de la sección y
-              el botón teal encima del azul es el contraste más alto de toda la
-              página. El desglose se queda en blanco a la izquierda, que es su
-              papel: los datos que sostienen el ancla, no el protagonista.
-
-              El degradado y el halo son sutiles a propósito. Un fondo plano se
-              lee como un bloque de color; con la luz teal arriba a la derecha
-              se lee como una superficie. */}
-          <div
-            class="relative isolate flex min-w-0 flex-col justify-center overflow-hidden bg-primary-950 p-7 text-center sm:p-9"
-          >
-            <span
-              aria-hidden="true"
-              class="pointer-events-none absolute -top-24 -right-16 -z-10 size-64 rounded-full bg-secondary-500/20 blur-3xl"
-            ></span>
-
-            {/* El isotipo detrás del precio. Pequeño: el panel es estrecho y
-                está lleno, así que aquí la marca acompaña, no decora. */}
-            <MarcaAgua posicion="izquierda" tamano="pequeno" class="opacity-[0.07]" />
-
-            <p class="text-xs font-bold tracking-[0.14em] text-secondary-300 uppercase">
-              <T
-                v={esLanzamiento
-                  ? copy.precio.lanzamiento.kicker
-                  : copy.precio.descuento.kicker}
-              />
-            </p>
-
-            {
-              esLanzamiento ? (
-                <Fragment>
-                  {/* El precio real manda y la referencia va DEBAJO, en futuro:
-                      "subirá a", no un tachón que insinúa un pasado que no fue. */}
-                  <p class="mt-3 text-6xl font-extrabold tracking-tight text-ink-inverse">
-                    <T v={precioActual} />
-                  </p>
-                  <p class="mt-1 text-sm font-medium text-secondary-200">
-                    <T v={copy.precio.lanzamiento.etiquetaPrecio} />
-                  </p>
-
-                  {/* EL ENGANCHE. El desglose de al lado suma 3.990 y aquí se
-                      paga 490: esta insignia pone la diferencia en una cifra en
-                      vez de dejar que el visitante la calcule. Va pegada al
-                      precio, que es donde se mira, y no al final de la tarjeta.
-                      Ver la nota de `frenteAlDesglose` en el config: compara
-                      contra la SUMA, nunca contra un precio anterior. */}
-                  {textoFrenteAlDesglose && (
-                    <p class="mt-4 inline-flex self-center rounded-full bg-secondary-500 px-4 py-1.5 text-sm font-bold text-balance text-primary-950">
-                      <T v={textoFrenteAlDesglose} />
+              precio.desglose.map((item) => (
+                <li data-revelar class="group py-4 first:pt-0">
+                  <div class="flex items-baseline justify-between gap-4">
+                    <p class="min-w-0 font-semibold text-balance text-ink">
+                      <T v={item.titulo} />
                     </p>
-                  )}
+                    <p class="shrink-0 text-sm font-bold tabular-nums text-ink">
+                      <T v={dinero(item.valor)} />
+                    </p>
+                  </div>
 
-                  <p class="mt-3 text-base font-semibold text-balance text-ink-inverse">
-                    <T v={textoSubira} />
-                  </p>
-                </Fragment>
-              ) : (
-                <Fragment>
-                  <p class="mt-3 text-base text-secondary-300">
-                    <span class="line-through"><T v={precioReferencia} /></span>
-                  </p>
-                  <p class="text-6xl font-extrabold tracking-tight text-ink-inverse">
-                    <T v={precioActual} />
-                  </p>
-                  <p class="mt-3 inline-flex self-center rounded-full bg-secondary-500 px-3 py-1 text-sm font-bold text-primary-950">
-                    <T v={textoAhorro} />
-                  </p>
-                </Fragment>
-              )
+                  {/* LA BARRA. Cada componente ocupa su parte de la cifra
+                      ancla, a escala. Es lo que convierte una lista de cuatro
+                      precios en algo que se ENTIENDE de un vistazo: se ve que
+                      el curso en sí es más de la mitad de los 3.990, y ese
+                      reparto es justo lo que hace creíble el total.
+
+                      `aria-hidden`: la cifra exacta ya está escrita al lado en
+                      texto, así que la barra no aporta nada a quien la escucha
+                      y solo añadiría ruido. */}
+                  <div
+                    aria-hidden="true"
+                    class="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-sunken"
+                  >
+                    <div
+                      class="h-full rounded-full bg-secondary-400 transition-colors duration-200 ease-out-soft group-hover:bg-secondary-600"
+                      style={`width:${((item.valor / precio.referencia) * 100).toFixed(1)}%`}
+                    />
+                  </div>
+
+                  <div data-detalle>
+                    <div>
+                      <p class="mt-2.5 text-sm text-pretty text-ink-muted">
+                        <T v={item.detalle} />
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Solo en táctil. Ver `BotonDetalle.astro`. */}
+                  <BotonDetalle class="mt-0.5" />
+                </li>
+              ))
             }
+          </ul>
 
-            {
-              textoCuotas && (
-                <p class="mt-3 text-base font-medium text-secondary-200">
-                  <T v={textoCuotas} />
-                </p>
-              )
-            }
-
-            {/* La cuenta atrás va ENCIMA del botón, no debajo: es el último
-                argumento antes de la acción, y leerla después de haber pasado
-                de largo el botón no sirve de nada. */}
-            {
-              alternativaContador && fechaCierre && (
-                <Contador
-                  client:visible
-                  fechaCierre={fechaCierre}
-                  alternativa={alternativaContador}
-                  etiquetas={copy.precio.contador}
-                  lang={lang}
-                  tono="oscuro"
-                />
-              )
-            }
-
-            <div class="mt-7">
-              {/* MIENTRAS NO HAYA PASARELA, EL BOTÓN LLAMA.
-
-                  Antes se deshabilitaba y debajo salía un aviso explicando por
-                  qué. Ese aviso se ha quitado de la página —era una nota para
-                  quien edita el sitio impresa para el cliente—, y un botón
-                  apagado y mudo en el punto exacto de la compra es peor que no
-                  tener botón: el visitante no deduce "falta configurar la
-                  pasarela", deduce que la página está rota.
-
-                  No cae al formulario de `#gratis` a propósito: ese es el imán
-                  gratuito de siete días. Mandar ahí a quien acaba de pulsar
-                  "Inscribirme al curso" es prometer una compra y entregar un
-                  boletín. Cae al teléfono, que es la única vía por la que hoy
-                  se puede pagar de verdad, y el texto del botón lo dice.
-
-                  En cuanto `precio.urlCheckout` deje de ser "#", vuelve solo a
-                  ser el botón de compra. Y si tampoco hay teléfono, se apaga
-                  como antes: sin ninguna de las dos cosas no hay nada que
-                  ofrecer. */}
-              <Button
-                href={
-                  checkoutPendiente
-                    ? contacto.telefono
-                      ? `tel:${contacto.telefono}`
-                      : undefined
-                    : precio.urlCheckout
-                }
-                disabled={checkoutPendiente && !contacto.telefono}
-                variant="primary"
-                size="lg"
-                sobre="oscuro"
-                trackId="precio"
-                block
-              >
-                {checkoutPendiente && contacto.telefono && (
-                  <Icono nombre="telefono" class="size-4 shrink-0" grosor={2} />
-                )}
-                <T
-                  v={
-                    checkoutPendiente && contacto.telefono
-                      ? copy.precio.llamarParaInscribirse
-                      : cta.primario.texto
-                  }
-                />
-              </Button>
-            </div>
-
-            {/* AQUÍ HABÍA UNA TERCERA FORMA DE DECIR LA MISMA FECHA.
-                El panel ya dice "Después subirá a $3,990" y encima tiene la
-                cuenta atrás corriendo; añadir "El precio sube el 30 de septiembre"
-                debajo del botón era decir el mismo plazo tres veces en veinte
-                centímetros. Repetir un argumento no lo refuerza: lo devalúa, y
-                de paso hace que el panel parezca un panfleto.
-                `urgencia` se sigue calculando arriba porque es el respaldo para
-                cuando NO hay fecha (`tipo: 'lanzamiento'` o `'cupos'`), y en ese
-                caso sí es la única que lo dice. */}
-            {
-              urgencia && !fechaValida && (
-                <p class="mt-4 text-sm font-medium text-balance text-ink-inverse">
-                  <T v={urgencia} />
-                </p>
-              )
-            }
-
-            {/* 13 px en móvil. Es letra pequeña a propósito —impuestos y formas
-                de pago— pero es lo que evita la sorpresa en la pasarela, y a
-                12 px sobre navy, en un teléfono, no se lee. */}
-            <p class="mt-3 text-[0.8125rem] text-pretty text-secondary-200 sm:text-xs">
-              <T v={precio.nota} />
+          <!-- La suma, explícita: convierte la cifra ancla en un total que
+               el visitante puede recorrer, no en un número puesto ahí. -->
+          <div
+            class="mt-5 flex items-center justify-between gap-4 border-t-2 border-line-strong pt-5"
+          >
+            <p class="font-bold text-ink"><T v={copy.precio.desgloseTotal} /></p>
+            <p class="text-lg font-extrabold tabular-nums text-ink">
+              <T v={precioReferencia} />
             </p>
-
-            {/* La garantía era una sección entera para decir una frase. Ahora
-                vive aquí, pequeña y justo debajo del botón: es el punto exacto
-                donde aparece el miedo que neutraliza. */}
-            {/* `text-sm` va en la FILA y no solo en el título: la caja de
-                `marca-linea` hereda de su padre la interlínea con la que se
-                alinea, no la del texto que tiene al lado. */}
-            {
-              garantia.activa && (
-                /* LA GARANTÍA SUBE DE RANGO. Estaba al pie de la tarjeta, en
-                   texto pequeño y gris: la pieza que más desactiva el miedo
-                   puesta donde menos se mira. Ahora es un bloque teal con su
-                   icono, justo debajo del botón, que es el instante exacto en
-                   que aparece la duda de "¿y si no es para mí?". */
-                <div class="mt-5 rounded-xl border border-primary-700 bg-primary-900/70 p-4 text-center">
-                  <p class="flex items-center justify-center gap-2 text-sm font-bold text-secondary-300">
-                    <Icono nombre="escudo" class="size-5 shrink-0" />
-                    <T v={garantia.titulo} />
-                  </p>
-                  <p class="mt-1.5 text-[0.8125rem] text-pretty text-secondary-200 sm:text-xs">
-                    <T v={garantia.resumen} />
-                  </p>
-                </div>
-              )
-            }
           </div>
+
+          {
+            !desgloseCuadra && (
+              <p class="mt-4 rounded-lg border-2 border-dashed border-warning-500 bg-warning-50 px-4 py-3 text-sm font-medium text-ink">
+                ⚠ <T v={copy.precio.avisoDesglose} />{" "}
+                <code class="font-mono">{sumaDesglose} ≠ {precio.referencia}</code>
+              </p>
+            )
+          }
+        </div>
+
+        <!-- ── El precio y la acción ────────────────────────────────────── -->
+        {/* EL PANEL SE VA A NAVY.
+
+            Era `bg-surface-muted`: un gris un punto más oscuro que el blanco
+            de al lado. En una tarjeta de precio, el lado donde se paga tiene
+            que ganar la mirada, y dos grises casi iguales no jerarquizan
+            nada — la tarjeta entera se leía plana.
+
+            En navy, el $490 pasa a ser lo primero que se ve de la sección y
+            el botón teal encima del azul es el contraste más alto de toda la
+            página. El desglose se queda en blanco a la izquierda, que es su
+            papel: los datos que sostienen el ancla, no el protagonista.
+
+            El degradado y el halo son sutiles a propósito. Un fondo plano se
+            lee como un bloque de color; con la luz teal arriba a la derecha
+            se lee como una superficie. */}
+        <div
+          class="relative isolate flex min-w-0 flex-col justify-center overflow-hidden rounded-3xl bg-primary-950 p-7 text-center shadow-xl sm:p-9"
+        >
+          <span
+            aria-hidden="true"
+            class="pointer-events-none absolute -top-24 -right-16 -z-10 size-64 rounded-full bg-secondary-500/20 blur-3xl"
+          ></span>
+
+          {/* El isotipo detrás del precio. Pequeño: el panel es estrecho y
+              está lleno, así que aquí la marca acompaña, no decora. */}
+          <MarcaAgua posicion="izquierda" tamano="pequeno" class="opacity-[0.07]" />
+
+          <p class="text-xs font-bold tracking-[0.14em] text-secondary-300 uppercase">
+            <T
+              v={esLanzamiento
+                ? copy.precio.lanzamiento.kicker
+                : copy.precio.descuento.kicker}
+            />
+          </p>
+
+          {
+            esLanzamiento ? (
+              <Fragment>
+                {/* El precio real manda y la referencia va DEBAJO, en futuro:
+                    "subirá a", no un tachón que insinúa un pasado que no fue. */}
+                <p class="mt-3 text-6xl font-extrabold tracking-tight text-ink-inverse">
+                  <T v={precioActual} />
+                </p>
+                <p class="mt-1 text-sm font-medium text-secondary-200">
+                  <T v={copy.precio.lanzamiento.etiquetaPrecio} />
+                </p>
+
+                {/* EL ENGANCHE. El desglose de al lado suma 3.990 y aquí se
+                    paga 490: esta insignia pone la diferencia en una cifra en
+                    vez de dejar que el visitante la calcule. Va pegada al
+                    precio, que es donde se mira, y no al final de la tarjeta.
+                    Ver la nota de `frenteAlDesglose` en el config: compara
+                    contra la SUMA, nunca contra un precio anterior. */}
+                {textoFrenteAlDesglose && (
+                  <p class="mt-4 inline-flex self-center rounded-full bg-secondary-500 px-4 py-1.5 text-sm font-bold text-balance text-primary-950">
+                    <T v={textoFrenteAlDesglose} />
+                  </p>
+                )}
+
+                <p class="mt-3 text-base font-semibold text-balance text-ink-inverse">
+                  <T v={textoSubira} />
+                </p>
+              </Fragment>
+            ) : (
+              <Fragment>
+                <p class="mt-3 text-base text-secondary-300">
+                  <span class="line-through"><T v={precioReferencia} /></span>
+                </p>
+                <p class="text-6xl font-extrabold tracking-tight text-ink-inverse">
+                  <T v={precioActual} />
+                </p>
+                <p class="mt-3 inline-flex self-center rounded-full bg-secondary-500 px-3 py-1 text-sm font-bold text-primary-950">
+                  <T v={textoAhorro} />
+                </p>
+              </Fragment>
+            )
+          }
+
+          {
+            textoCuotas && (
+              <p class="mt-3 text-base font-medium text-secondary-200">
+                <T v={textoCuotas} />
+              </p>
+            )
+          }
+
+          {/* La cuenta atrás va ENCIMA del botón, no debajo: es el último
+              argumento antes de la acción, y leerla después de haber pasado
+              de largo el botón no sirve de nada. */}
+          {
+            alternativaContador && fechaCierre && (
+              <Contador
+                client:visible
+                fechaCierre={fechaCierre}
+                alternativa={alternativaContador}
+                etiquetas={copy.precio.contador}
+                lang={lang}
+                tono="oscuro"
+              />
+            )
+          }
+
+          <div class="mt-7">
+            {/* MIENTRAS NO HAYA PASARELA, EL BOTÓN LLAMA.
+
+                Antes se deshabilitaba y debajo salía un aviso explicando por
+                qué. Ese aviso se ha quitado de la página —era una nota para
+                quien edita el sitio impresa para el cliente—, y un botón
+                apagado y mudo en el punto exacto de la compra es peor que no
+                tener botón: el visitante no deduce "falta configurar la
+                pasarela", deduce que la página está rota.
+
+                No cae al formulario de `#gratis` a propósito: ese es el imán
+                gratuito de siete días. Mandar ahí a quien acaba de pulsar
+                "Inscribirme al curso" es prometer una compra y entregar un
+                boletín. Cae al teléfono, que es la única vía por la que hoy
+                se puede pagar de verdad, y el texto del botón lo dice.
+
+                En cuanto `precio.urlCheckout` deje de ser "#", vuelve solo a
+                ser el botón de compra. Y si tampoco hay teléfono, se apaga
+                como antes: sin ninguna de las dos cosas no hay nada que
+                ofrecer. */}
+            <Button
+              href={
+                checkoutPendiente
+                  ? contacto.telefono
+                    ? `tel:${contacto.telefono}`
+                    : undefined
+                  : precio.urlCheckout
+              }
+              disabled={checkoutPendiente && !contacto.telefono}
+              variant="primary"
+              size="lg"
+              sobre="oscuro"
+              trackId="precio"
+              block
+            >
+              {checkoutPendiente && contacto.telefono && (
+                <Icono nombre="telefono" class="size-4 shrink-0" grosor={2} />
+              )}
+              <T
+                v={
+                  checkoutPendiente && contacto.telefono
+                    ? copy.precio.llamarParaInscribirse
+                    : cta.primario.texto
+                }
+              />
+            </Button>
+          </div>
+
+          {/* AQUÍ HABÍA UNA TERCERA FORMA DE DECIR LA MISMA FECHA.
+              El panel ya dice "Después subirá a $3,990" y encima tiene la
+              cuenta atrás corriendo; añadir "El precio sube el 30 de septiembre"
+              debajo del botón era decir el mismo plazo tres veces en veinte
+              centímetros. Repetir un argumento no lo refuerza: lo devalúa, y
+              de paso hace que el panel parezca un panfleto.
+              `urgencia` se sigue calculando arriba porque es el respaldo para
+              cuando NO hay fecha (`tipo: 'lanzamiento'` o `'cupos'`), y en ese
+              caso sí es la única que lo dice. */}
+          {
+            urgencia && !fechaValida && (
+              <p class="mt-4 text-sm font-medium text-balance text-ink-inverse">
+                <T v={urgencia} />
+              </p>
+            )
+          }
+
+          {/* 13 px en móvil. Es letra pequeña a propósito —impuestos y formas
+              de pago— pero es lo que evita la sorpresa en la pasarela, y a
+              12 px sobre navy, en un teléfono, no se lee. */}
+          <p class="mt-3 text-[0.8125rem] text-pretty text-secondary-200 sm:text-xs">
+            <T v={precio.nota} />
+          </p>
+
+          {/* La garantía era una sección entera para decir una frase. Ahora
+              vive aquí, pequeña y justo debajo del botón: es el punto exacto
+              donde aparece el miedo que neutraliza. */}
+          {/* `text-sm` va en la FILA y no solo en el título: la caja de
+              `marca-linea` hereda de su padre la interlínea con la que se
+              alinea, no la del texto que tiene al lado. */}
+          {
+            garantia.activa && (
+              /* LA GARANTÍA SUBE DE RANGO. Estaba al pie de la tarjeta, en
+                 texto pequeño y gris: la pieza que más desactiva el miedo
+                 puesta donde menos se mira. Ahora es un bloque teal con su
+                 icono, justo debajo del botón, que es el instante exacto en
+                 que aparece la duda de "¿y si no es para mí?". */
+              <div class="mt-5 rounded-xl border border-primary-700 bg-primary-900/70 p-4 text-center">
+                <p class="flex items-center justify-center gap-2 text-sm font-bold text-secondary-300">
+                  <Icono nombre="escudo" class="size-5 shrink-0" />
+                  <T v={garantia.titulo} />
+                </p>
+                <p class="mt-1.5 text-[0.8125rem] text-pretty text-secondary-200 sm:text-xs">
+                  <T v={garantia.resumen} />
+                </p>
+              </div>
+            )
+          }
         </div>
       </div>
     </Reveal>

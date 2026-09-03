@@ -2,7 +2,7 @@
 import T from "@components/i18n/T.astro";
 import Section from "@components/ui/Section.astro";
 import SectionHeading from "@components/ui/SectionHeading.astro";
-import IslaTitulo from "@components/ui/IslaTitulo.astro";
+import MarcaAgua from "@components/ui/MarcaAgua.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import BandaTestimonios from "@components/motion/BandaTestimonios.astro";
 import Estrellas from "@components/ui/Estrellas.astro";
@@ -172,65 +172,72 @@ const puntos = fundador.puntos.map((p) => ({
   {
     lista.length > 0 ? (
       <>
-        {/* ─── ISLA A LA IZQUIERDA, BANDA CRUZANDO A LA DERECHA ─────────────
+        {/* ─── UNA TARJETA MÁS, SOLO QUE AZUL Y QUIETA ─────────────────────
             Esto era un titular centrado con un distintivo centrado debajo y la
             banda a todo lo ancho: tres bloques apilados, cada uno esperando su
             turno, y el titular centrado encima de una fila es la forma que
             tiene una página de anunciar que es una plantilla.
 
-            Ahora el titular y la nota viven en UNA isla navy a la izquierda, y
-            las reseñas pasan por su derecha hasta salirse de la pantalla. La
-            sección deja de tener cabecera y pasa a tener dos bloques que se
-            miran: el ojo cruza en horizontal en vez de bajar en línea recta, y
-            la banda gana la sangría completa porque ya no tiene que alinearse
-            con nada centrado.
+            Después fue una isla de título, y era demasiado grande: `IslaTitulo`
+            trae su propio radio y su propio aire (rounded-3xl, p-10) y al lado
+            de las reseñas se leía como un bloque de otra familia, más alto que
+            todo lo demás y con medio metro de blanco debajo.
 
-            En móvil se apila (isla arriba, banda debajo), que es el único orden
-            que funciona con una sola columna. */}
+            Ahora es literalmente una tarjeta más de la fila: MISMO radio, MISMO
+            relleno y MISMO ancho que una reseña, y la rejilla de la banda le da
+            además la misma altura. Lo único que la distingue es que es azul y
+            que no se mueve. Por eso no usa `IslaTitulo`: aquí lo que manda es
+            la geometría de la banda, no la del componente.
+
+            Va DENTRO de `<BandaTestimonios>`, que es quien la coloca. El motivo
+            está en su cabecera y es el mando de parada. */}
         <div class="container-page lg:pr-0">
-          <div class="grid items-stretch gap-8 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:gap-10">
-            <Reveal>
-              <IslaTitulo titulo={copy.pruebaSocial.titulo} tono="navy">
-                {hayResumen && (
-                  /* La nota entra DENTRO de la isla, no en una tarjeta aparte:
-                     era un distintivo suelto flotando entre el titular y la
-                     banda, y ahí no pertenecía a ninguno de los dos. Aquí es lo
-                     que respalda al titular, que es lo que siempre fue. */
-                  <div class="mt-7 flex flex-col gap-3 border-t border-primary-800 pt-6 sm:flex-row sm:items-center sm:gap-4">
-                    <Estrellas valor={notaMedia} tamano="md" sinTexto />
-                    <p class="text-sm text-pretty text-secondary-100">
-                      {todasEnGoogle ? (
-                        <T v={resumenReseñas} />
-                      ) : (
-                        <T v={resumenSinFuente} />
-                      )}
+          <BandaTestimonios items={lista}>
+            {/* `h-full` en cadena: la celda de la rejilla se estira sola, pero
+                este `Reveal` de en medio no, y sin él la tarjeta azul se queda
+                en su altura de contenido y vuelve a no medir lo que las
+                reseñas. */}
+            <Reveal class="h-full">
+              <div class="relative isolate flex h-full flex-col justify-center overflow-hidden rounded-2xl bg-primary-900 p-6">
+                <MarcaAgua posicion="derecha" class="opacity-[0.07]" />
+
+                <h2 class="text-2xl font-extrabold text-balance text-ink-inverse sm:text-3xl">
+                  <T v={copy.pruebaSocial.titulo} />
+                </h2>
+
+                {
+                  hayResumen && (
+                    /* La nota entra DENTRO de la tarjeta, no en una aparte: era
+                       un distintivo suelto flotando entre el titular y la
+                       banda, y ahí no pertenecía a ninguno de los dos. Aquí es
+                       lo que respalda al titular, que es lo que siempre fue. */
+                    <div class="mt-6 flex flex-col gap-3 border-t border-primary-800 pt-5 sm:flex-row sm:items-center sm:gap-4">
+                      <Estrellas valor={notaMedia} tamano="md" sinTexto />
+                      <p class="text-sm text-pretty text-secondary-100">
+                        {todasEnGoogle ? (
+                          <T v={resumenReseñas} />
+                        ) : (
+                          <T v={resumenSinFuente} />
+                        )}
+                      </p>
+                      {todasEnGoogle && <MarcaGoogle class="size-7 shrink-0" />}
+                    </div>
+                  )
+                }
+
+                {
+                  cifras.sonReales && cifras.alumnos > 0 && (
+                    <p class="mt-4 text-sm text-secondary-100">
+                      <span class="font-bold text-ink-inverse">
+                        <T v={numAlumnos} />
+                      </span>{" "}
+                      <T v={copy.pruebaSocial.etiquetaAlumnos} />
                     </p>
-                    {todasEnGoogle && <MarcaGoogle class="size-7 shrink-0" />}
-                  </div>
-                )}
-
-                {cifras.sonReales && cifras.alumnos > 0 && (
-                  <p class="mt-4 text-sm text-secondary-100">
-                    <span class="font-bold text-ink-inverse">
-                      <T v={numAlumnos} />
-                    </span>{" "}
-                    <T v={copy.pruebaSocial.etiquetaAlumnos} />
-                  </p>
-                )}
-              </IslaTitulo>
+                  )
+                }
+              </div>
             </Reveal>
-
-            {/* La banda va FUERA de `Reveal`: el fundido de entrada empieza con
-                el bloque desplazado 24 px y eso, en algo que ya se está moviendo
-                solo, se ve como un tirón al aparecer.
-
-                `min-w-0` no es opcional en una celda de rejilla que contiene
-                algo más ancho que ella: sin él, la celda crece hasta el ancho de
-                la pista de testimonios y se lleva la rejilla por delante. */}
-            <div class="min-w-0">
-              <BandaTestimonios items={lista} />
-            </div>
-          </div>
+          </BandaTestimonios>
         </div>
       </>
     ) : (

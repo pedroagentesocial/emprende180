@@ -35,6 +35,29 @@ import { resolverIdiomaServidor } from "@i18n/idioma";
  * ⚠️ Las dos copias tienen que ser EXACTAMENTE iguales. Si alguien añade una
  * tarjeta a una y no a la otra, aparece un tirón en cada vuelta.
  *
+ * ─── LOS DOS BORDES SE DESVANECEN ──────────────────────────────────────────
+ *
+ * Sin la máscara, la primera y la última tarjeta salen CORTADAS a cuchillo
+ * contra el borde de la columna, y una tarjeta partida por la mitad se lee como
+ * un fallo de maquetación, no como algo que está pasando de largo. Con el
+ * degradado entran y salen, que es lo que hace que la banda parezca no tener
+ * principio ni final.
+ *
+ * ─── LA TARJETA DE CABECERA ENTRA POR EL `slot` ────────────────────────────
+ *
+ * Lo que se le pase dentro se pinta como PRIMERA COLUMNA, quieta, con las
+ * reseñas pasando a su derecha. La sección lo usa para su tarjeta azul: el
+ * titular deja de ser una cabecera centrada y pasa a ser una tarjeta más de la
+ * fila, del mismo tamaño que las otras.
+ *
+ * Y la coloca la banda, no la sección, por un motivo concreto: el mando de
+ * parada TIENE que vivir dentro de `[data-banda]` —ahí lo busca `montarBandas`
+ * y ahí lo alcanzan los selectores de pausa del CSS— pero no puede robarle
+ * altura a la fila. Debajo de la pista, la celda medía las tarjetas MÁS el
+ * botón, y la tarjeta azul, que se estira a la fila, salía 64 px más alta que
+ * las blancas. Con dos filas el mando cae en la segunda, bajo la tarjeta azul,
+ * y la primera mide exactamente lo que miden las reseñas.
+ *
  * ─── SE PUEDE PARAR, Y ES OBLIGATORIO ──────────────────────────────────────
  *
  * WCAG 2.2.2 (nivel A) exige que todo lo que se mueve solo más de cinco
@@ -84,137 +107,154 @@ const iniciales = (nombre: string) =>
     .toUpperCase();
 ---
 
-<div
-  data-banda
-  data-pausada="false"
-  class:list={["relative", className]}
->
-  {/* `overflow-hidden` recorta la pista sin sacar la banda del ancho de la
-      página: nada de `100vw`, que incluye la barra de scroll y provoca scroll
-      horizontal en toda la web. */}
-  <div data-banda-viewport class="overflow-hidden">
-    <ul
-      data-banda-pista
-      class="flex w-max gap-5 py-1"
-      style={`--duracion:${duracion}`}
-      aria-label={copy.banda.etiqueta[lang]}
-      data-aria-es={copy.banda.etiqueta.es}
-      data-aria-en={copy.banda.etiqueta.en}
+<div data-banda data-pausada="false" class:list={["relative", className]}>
+  <div
+    class="grid items-stretch gap-8 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:gap-x-10"
+  >
+    {/* La tarjeta de cabecera, si la hay. Ver la nota de arriba: en móvil se
+        apila encima, que es el único orden posible en una sola columna. */}
+    {/* `py-1` igual que la pista: sin él la tarjeta de cabecera empieza
+        cuatro píxeles más arriba que las reseñas y las dos filas de arriba no
+        casan. */}
+    <div class="py-1 lg:col-start-1 lg:row-start-1">
+      <slot />
+    </div>
+
+    {/* `overflow-hidden` recorta la pista sin sacar la banda del ancho de la
+        página: nada de `100vw`, que incluye la barra de scroll y provoca scroll
+        horizontal en toda la web.
+
+        `min-w-0` no es opcional en una celda de rejilla que contiene algo más
+        ancho que ella: sin él, la celda crece hasta el ancho de la pista y se
+        lleva la rejilla por delante. */}
+    <div
+      data-banda-viewport
+      class="min-w-0 overflow-hidden lg:col-start-2 lg:row-start-1 [mask-image:linear-gradient(to_right,transparent,black_2rem,black_calc(100%-2rem),transparent)]"
     >
-      {
-        [0, 1].map((copia) =>
-          items.map((t) => (
-            <li
-              class="w-[19rem] shrink-0 sm:w-[22rem]"
-              aria-hidden={copia === 1 ? "true" : undefined}
-              data-banda-clon={copia === 1 ? "" : undefined}
-            >
-              <figure class="flex h-full flex-col rounded-2xl border border-line bg-surface p-6">
-                {/* ─── LA LÍNEA DE CREDIBILIDAD ────────────────────────────
-                    Estrellas a la izquierda, de dónde sale la reseña a la
-                    derecha. Va ARRIBA del todo porque es lo que decide si se
-                    lee la cita: en una banda en movimiento, una fila de
-                    estrellas se reconoce sin leer nada.
+      <ul
+        data-banda-pista
+        class="flex w-max gap-5 py-1"
+        style={`--duracion:${duracion}`}
+        aria-label={copy.banda.etiqueta[lang]}
+        data-aria-es={copy.banda.etiqueta.es}
+        data-aria-en={copy.banda.etiqueta.en}
+      >
+        {
+          [0, 1].map((copia) =>
+            items.map((t) => (
+              <li
+                class="w-[19rem] shrink-0 sm:w-[22rem]"
+                aria-hidden={copia === 1 ? "true" : undefined}
+                data-banda-clon={copia === 1 ? "" : undefined}
+              >
+                <figure class="flex h-full flex-col rounded-2xl border border-line bg-surface p-6">
+                  {/* ─── LA LÍNEA DE CREDIBILIDAD ────────────────────────────
+                      Estrellas a la izquierda, de dónde sale la reseña a la
+                      derecha. Va ARRIBA del todo porque es lo que decide si se
+                      lee la cita: en una banda en movimiento, una fila de
+                      estrellas se reconoce sin leer nada.
 
-                    La nota va `sinTexto` aquí y solo aquí: el resumen de la
-                    cabecera de la sección ya la dice escrita, y repetir "5 de
-                    5" en cada una de las tarjetas sería ruido. La versión
-                    accesible de la puntuación vive en ese resumen.
+                      La nota va `sinTexto` aquí y solo aquí: el resumen de la
+                      tarjeta azul ya la dice escrita, y repetir "5 de 5" en
+                      cada una de las tarjetas sería ruido. La versión
+                      accesible de la puntuación vive en ese resumen.
 
-                    (Los comentarios van AQUÍ arriba y no dentro de cada
-                    `{cond && (…)}`: un comentario JSX dentro de una expresión
-                    rompe el parser de Astro.) */}
-                {(t.estrellas || t.fuente === "google") && (
-                  <div class="mb-4 flex items-center justify-between gap-3">
-                    {t.estrellas ? (
-                      <Estrellas valor={t.estrellas} sinTexto />
-                    ) : (
-                      <span />
-                    )}
+                      (Los comentarios van AQUÍ arriba y no dentro de cada
+                      `{cond && (…)}`: un comentario JSX dentro de una expresión
+                      rompe el parser de Astro.) */}
+                  {(t.estrellas || t.fuente === "google") && (
+                    <div class="mb-4 flex items-center justify-between gap-3">
+                      {t.estrellas ? (
+                        <Estrellas valor={t.estrellas} sinTexto />
+                      ) : (
+                        <span />
+                      )}
 
-                    {t.fuente === "google" && t.url && (
-                      <a
-                        href={t.url}
-                        target="_blank"
-                        rel="noopener noreferrer nofollow"
-                        data-track="testimonio-google"
-                        aria-label={copy.pruebaSocial.verEnGoogle[lang]}
-                        data-aria-es={copy.pruebaSocial.verEnGoogle.es}
-                        data-aria-en={copy.pruebaSocial.verEnGoogle.en}
-                        class="inline-flex min-h-11 shrink-0 items-center gap-1.5 text-xs font-semibold text-ink-subtle transition-colors duration-200 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                      >
-                        <MarcaGoogle class="size-4" />
-                        <span><T v={copy.pruebaSocial.enGoogle} /></span>
-                      </a>
-                    )}
-                  </div>
-                )}
-
-                {/* El distintivo del resultado va a `text-sm` y no a `text-xs`:
-                    es la frase por la que existe la tarjeta, y a 12 px dentro
-                    de una banda que se mueve, en un teléfono, no da tiempo a
-                    leerla. */}
-                {t.resultado && (
-                  <p class="mb-4 inline-flex self-start rounded-full bg-secondary-100 px-3 py-1 text-sm font-bold text-secondary-700">
-                    <T v={t.resultado} resaltar />
-                  </p>
-                )}
-
-                <blockquote class="flex-1 text-base text-pretty text-ink">
-                  <T v={t.cita} resaltar />
-                </blockquote>
-
-                <figcaption class="mt-6 flex items-center gap-3 border-t border-line pt-5">
-                  {t.foto ? (
-                    <img
-                      src={t.foto}
-                      alt=""
-                      loading="lazy"
-                      decoding="async"
-                      class="size-11 shrink-0 rounded-full object-cover"
-                    />
-                  ) : (
-                    <span
-                      aria-hidden="true"
-                      class="grid size-11 shrink-0 place-items-center rounded-full bg-secondary-100 text-sm font-bold text-secondary-700"
-                    >
-                      {iniciales(t.nombre)}
-                    </span>
+                      {t.fuente === "google" && t.url && (
+                        <a
+                          href={t.url}
+                          target="_blank"
+                          rel="noopener noreferrer nofollow"
+                          data-track="testimonio-google"
+                          aria-label={copy.pruebaSocial.verEnGoogle[lang]}
+                          data-aria-es={copy.pruebaSocial.verEnGoogle.es}
+                          data-aria-en={copy.pruebaSocial.verEnGoogle.en}
+                          class="inline-flex min-h-11 shrink-0 items-center gap-1.5 text-xs font-semibold text-ink-subtle transition-colors duration-200 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                        >
+                          <MarcaGoogle class="size-4" />
+                          <span><T v={copy.pruebaSocial.enGoogle} /></span>
+                        </a>
+                      )}
+                    </div>
                   )}
-                  <span class="min-w-0">
-                    <span class="block font-semibold text-ink">{t.nombre}</span>
-                    <span class="block text-sm text-ink-subtle">
-                      <T v={t.contexto} resaltar />
-                    </span>
-                  </span>
-                </figcaption>
-              </figure>
-            </li>
-          )),
-        )
-      }
-    </ul>
-  </div>
 
-  {/* El mando de parada. Ver la nota de la cabecera: es lo que hace que esto
-      cumpla WCAG 2.2.2, y el único que sirve en un celular. */}
-  <div class="container-page mt-5 flex justify-end">
-    <button
-      type="button"
-      data-banda-pausa
-      aria-pressed="false"
-      aria-label={copy.banda.pausar[lang]}
-      data-aria-es={copy.banda.pausar.es}
-      data-aria-en={copy.banda.pausar.en}
-      data-etiqueta-pausar-es={copy.banda.pausar.es}
-      data-etiqueta-pausar-en={copy.banda.pausar.en}
-      data-etiqueta-reanudar-es={copy.banda.reanudar.es}
-      data-etiqueta-reanudar-en={copy.banda.reanudar.en}
-      class="inline-grid size-11 place-items-center rounded-full border border-line bg-surface text-ink-muted transition-colors duration-200 hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-    >
-      <Icono nombre="pausa" class="size-4" grosor={2} data-icono-pausa />
-      <Icono nombre="play" class="hidden size-4" grosor={1} data-icono-play />
-    </button>
+                  {/* El distintivo del resultado va a `text-sm` y no a
+                      `text-xs`: es la frase por la que existe la tarjeta, y a
+                      12 px dentro de una banda que se mueve, en un teléfono, no
+                      da tiempo a leerla. */}
+                  {t.resultado && (
+                    <p class="mb-4 inline-flex self-start rounded-full bg-secondary-100 px-3 py-1 text-sm font-bold text-secondary-700">
+                      <T v={t.resultado} resaltar />
+                    </p>
+                  )}
+
+                  <blockquote class="flex-1 text-base text-pretty text-ink">
+                    <T v={t.cita} resaltar />
+                  </blockquote>
+
+                  <figcaption class="mt-6 flex items-center gap-3 border-t border-line pt-5">
+                    {t.foto ? (
+                      <img
+                        src={t.foto}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        class="size-11 shrink-0 rounded-full object-cover"
+                      />
+                    ) : (
+                      <span
+                        aria-hidden="true"
+                        class="grid size-11 shrink-0 place-items-center rounded-full bg-secondary-100 text-sm font-bold text-secondary-700"
+                      >
+                        {iniciales(t.nombre)}
+                      </span>
+                    )}
+                    <span class="min-w-0">
+                      <span class="block font-semibold text-ink">{t.nombre}</span>
+                      <span class="block text-sm text-ink-subtle">
+                        <T v={t.contexto} resaltar />
+                      </span>
+                    </span>
+                  </figcaption>
+                </figure>
+              </li>
+            )),
+          )
+        }
+      </ul>
+    </div>
+
+    {/* El mando de parada. Ver la nota de la cabecera: es lo que hace que esto
+        cumpla WCAG 2.2.2, es el único que sirve en un celular, y está en la
+        SEGUNDA fila para no sumarle altura a la primera. */}
+    <div class="mt-1 flex lg:col-start-1 lg:row-start-2 lg:mt-5">
+      <button
+        type="button"
+        data-banda-pausa
+        aria-pressed="false"
+        aria-label={copy.banda.pausar[lang]}
+        data-aria-es={copy.banda.pausar.es}
+        data-aria-en={copy.banda.pausar.en}
+        data-etiqueta-pausar-es={copy.banda.pausar.es}
+        data-etiqueta-pausar-en={copy.banda.pausar.en}
+        data-etiqueta-reanudar-es={copy.banda.reanudar.es}
+        data-etiqueta-reanudar-en={copy.banda.reanudar.en}
+        class="inline-grid size-11 place-items-center rounded-full border border-line bg-surface text-ink-muted transition-colors duration-200 hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      >
+        <Icono nombre="pausa" class="size-4" grosor={2} data-icono-pausa />
+        <Icono nombre="play" class="hidden size-4" grosor={1} data-icono-play />
+      </button>
+    </div>
   </div>
 </div>
 
