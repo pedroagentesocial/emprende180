@@ -51,6 +51,7 @@ import CapturaLead from "@components/sections/04-CapturaLead.astro";
 import Temario from "@components/sections/05-Temario.astro";
 import Instructor from "@components/sections/06-Instructor.astro";
 import PruebaSocial from "@components/sections/07-PruebaSocial.astro";
+import Plan90 from "@components/sections/08-Plan90.astro";
 import Precio from "@components/sections/09-Precio.astro";
 import Faq from "@components/sections/10-Faq.astro";
 import CtaFinal from "@components/sections/11-CtaFinal.astro";
@@ -108,6 +109,14 @@ import CtaFinal from "@components/sections/11-CtaFinal.astro";
     <CintaAnuncio />
 
     <PruebaSocial />
+
+    {/* El plan de 90 días va JUSTO ANTES DEL PRECIO y después de la prueba
+        social: es la última pieza de «qué me llevo», y la que contesta lo que
+        queda por preguntar después de ver el temario y a la gente que ya lo
+        hizo — vale, ¿y qué hago yo exactamente? Contestada esa, la siguiente
+        pregunta es cuánto cuesta. */}
+    <Plan90 />
+
     <Precio />
     <Faq />
 

@@ -1,0 +1,245 @@
+---
+import T from "@components/i18n/T.astro";
+import Section from "@components/ui/Section.astro";
+import Reveal from "@components/motion/Reveal.astro";
+import Icono from "@components/ui/Icono.astro";
+import MarcaAgua from "@components/ui/MarcaAgua.astro";
+import { copy } from "@config/curso.config";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 08 · EL PLAN DE 90 DÍAS — «vale, ¿y qué hago yo exactamente?»
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * ESTA SECCIÓN NO EXISTÍA Y ERA EL AGUJERO MÁS GRANDE DE LA PÁGINA.
+ *
+ * La página prometía un ESTADO —"conviértete en Embajador"— y enumeraba diez
+ * videos. En ningún sitio decía qué se hace después de verlos. Y lo que
+ * convence a quien duda no es el temario: es descubrir que el trabajo cabe en
+ * dos horas al día y que alguien ya pensó en qué orden hacerlo.
+ *
+ * Todo lo que se cuenta aquí sale del documento del cliente ("Plan de 90 Días
+ * — Prospección Diaria del Embajador"). Ni un dato inventado.
+ *
+ * ─── LA BARRA ES EL CALENDARIO A ESCALA ────────────────────────────────────
+ *
+ * Las cuatro fases NO ocupan lo mismo: duran 20, 25, 25 y 20 días, y la
+ * rejilla las reparte con esa proporción exacta (`20fr 25fr 25fr 20fr`). Con
+ * cuatro columnas iguales el bloque quedaría más ordenado y estaría MINTIENDO
+ * un poco: diría que las cuatro etapas pesan igual. Se ve que las dos de en
+ * medio son más largas porque lo son.
+ *
+ * El color va de teal claro a navy: es la única progresión de la página, y
+ * dice sin escribirlo que esto avanza hacia algo.
+ *
+ * ─── LO QUE NO ENTRA AQUÍ ──────────────────────────────────────────────────
+ *
+ * Las metas del documento (450 contactos, 700 personas contactadas, 30
+ * referidos) son de ACTIVIDAD y no de ingresos, así que publicarlas sería
+ * legal. Aun así no están: en una página de venta, cualquier número al lado de
+ * la palabra "meta" se lee como una promesa de resultado. La regla 5 del propio
+ * documento dice "nunca prometas resultados, montos, tiempos ni diagnósticos".
+ */
+
+const { plan90 } = copy;
+
+/**
+ * ⚠️ LA PROPORCIÓN DE LA BARRA VA ESCRITA A MANO, Y TIENE QUE SER ASÍ.
+ *
+ * `lg:grid-cols-[20fr_25fr_25fr_20fr]` son los días de cada fase. Da la
+ * tentación de construirla desde el config (`lg:grid-cols-[${...}]`) y NO
+ * FUNCIONA: Tailwind lee las clases como texto al compilar, así que una clase
+ * armada a trozos no llega a existir en el CSS. Y no avisa —sale una rejilla
+ * de columnas iguales, que es justo la mentira que esta barra evita—, así que
+ * el aviso de aquí abajo lo comprueba en desarrollo.
+ */
+const PROPORCION = "20fr_25fr_25fr_20fr";
+
+if (import.meta.env.DEV) {
+  const real = plan90.fases.map((f) => `${f.dias}fr`).join("_");
+  if (real !== PROPORCION) {
+    console.warn(
+      `[08-Plan90] Los días de las fases cambiaron (${real}) y la barra sigue ` +
+        `repartida como ${PROPORCION}. Hay que actualizar la clase ` +
+        `lg:grid-cols-[…] a mano: Tailwind no puede construirla sola.`,
+    );
+  }
+}
+
+/**
+ * El color de cada tramo, de más claro a más oscuro.
+ *
+ * Se escriben enteros y no con una plantilla porque Tailwind lee las clases
+ * como TEXTO al compilar: una clase construida a trozos (`bg-${x}`) no existe
+ * en el CSS final. Es el fallo clásico, y no avisa: sale sin fondo.
+ */
+const TRAMOS = [
+  "bg-secondary-200",
+  "bg-secondary-400",
+  "bg-secondary-600",
+  "bg-primary-900",
+];
+---
+
+<Section id="plan" tono="surface" ariaLabel={plan90.aria}>
+  {/* ─── FILA 1 · LA ISLA QUE ABRE, Y EL DÍA A DÍA AL LADO ─────────────────
+      Mismo reparto que el resto de la página: el argumento en una isla navy y
+      los datos en una isla clara enfrente. */}
+  <div class="grid items-stretch gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:gap-8">
+    <div
+      class="relative isolate flex flex-col justify-center overflow-hidden rounded-3xl bg-primary-950 p-8 sm:p-10"
+    >
+      <MarcaAgua posicion="derecha" class="opacity-[0.06]" />
+
+      <Reveal>
+        <p class="inline-flex items-center gap-2 rounded-full border border-primary-800 bg-primary-900 px-3 py-1 text-xs font-bold tracking-wide text-secondary-300 uppercase">
+          <span aria-hidden="true" class="marca-linea">
+            <span class="size-1.5 rounded-full bg-secondary-500"></span>
+          </span>
+          <T v={plan90.kicker} />
+        </p>
+
+        <h2 class="mt-4 text-3xl font-extrabold text-balance text-ink-inverse sm:text-4xl">
+          <T v={plan90.titulo} />
+        </h2>
+
+        <p class="mt-4 max-w-2xl text-base text-pretty text-secondary-100 sm:text-lg">
+          <T v={plan90.entradilla} />
+        </p>
+
+        {/* ─── LAS DOS HORAS, SOLAS Y GRANDES ────────────────────────────
+            Es el dato que más cualifica de toda la página: espanta a quien no
+            puede darlas y tranquiliza a quien sí. Un curso que no dice cuánto
+            tiempo pide obliga a suponerlo, y quien supone, supone lo peor. */}
+        <div class="mt-8 flex flex-wrap items-baseline gap-x-4 gap-y-1 border-t border-primary-800 pt-6">
+          <p class="text-xs font-bold tracking-[0.14em] text-secondary-300 uppercase">
+            <T v={plan90.compromiso.etiqueta} />
+          </p>
+          <p class="text-3xl font-extrabold tracking-tight text-ink-inverse sm:text-4xl">
+            <T v={plan90.compromiso.valor} />
+          </p>
+          <p class="text-sm text-secondary-200">
+            <T v={plan90.compromiso.nota} />
+          </p>
+        </div>
+
+        <p class="mt-6 text-base font-semibold text-ink-inverse">
+          <T v={plan90.regla} />
+        </p>
+        <p class="mt-2 max-w-2xl text-sm text-pretty text-secondary-100">
+          <T v={plan90.acompanamiento} />
+        </p>
+      </Reveal>
+    </div>
+
+    {/* ─── EL DÍA, EN TRES BLOQUES ──────────────────────────────────────
+        Los minutos van a la izquierda y en negrita: es lo que se escanea. Y
+        van en su propia columna, alineados, porque tres cifras alineadas se
+        leen como un reparto y tres cifras metidas dentro de la frase se leen
+        como texto. */}
+    <Reveal delay={0.08} class="lg:h-full">
+      <div
+        class="flex h-full flex-col justify-center rounded-3xl border border-line bg-surface p-7 shadow-lg sm:p-8"
+      >
+        <h3 class="text-xl font-bold text-balance text-ink">
+          <T v={plan90.dia.titulo} />
+        </h3>
+        <p class="mt-2 text-sm text-pretty text-ink-muted">
+          <T v={plan90.dia.entradilla} />
+        </p>
+
+        <ul class="mt-6 grid gap-4">
+          {
+            plan90.dia.bloques.map((b) => (
+              <li class="grid grid-cols-[4.5rem_minmax(0,1fr)] items-baseline gap-x-4 border-t border-line pt-4 first:border-t-0 first:pt-0">
+                <p class="text-base font-extrabold tabular-nums text-ink-brand">
+                  <T v={b.minutos} />
+                </p>
+                <div class="min-w-0">
+                  <p class="font-semibold text-ink">
+                    <T v={b.nombre} />
+                  </p>
+                  <p class="mt-0.5 text-sm text-pretty text-ink-muted">
+                    <T v={b.para} />
+                  </p>
+                </div>
+              </li>
+            ))
+          }
+        </ul>
+
+        <p class="mt-6 border-t border-line pt-5 text-sm text-pretty text-ink-muted">
+          <T v={plan90.dia.cambia} />
+        </p>
+      </div>
+    </Reveal>
+  </div>
+
+  {/* ─── FILA 2 · LAS CUATRO FASES, A ESCALA ───────────────────────────────
+      Ver la nota de la cabecera: los anchos son los días de verdad. */}
+  <Reveal delay={0.12}>
+    <div class="mt-14">
+      <h3 class="text-xs font-bold tracking-[0.16em] text-ink-subtle uppercase">
+        <T v={plan90.fasesTitulo} />
+      </h3>
+
+      <ol class="mt-5 grid gap-6 sm:grid-cols-2 lg:grid-cols-[20fr_25fr_25fr_20fr] lg:gap-5">
+        {
+          plan90.fases.map((fase, i) => (
+            <li>
+              {/* El tramo de barra. `aria-hidden` porque el rango de días está
+                  escrito justo debajo: la barra es la misma información en
+                  forma de proporción, y repetirla en voz alta es ruido. */}
+              <div
+                aria-hidden="true"
+                class:list={["h-1.5 rounded-full", TRAMOS[i] ?? "bg-secondary-400"]}
+              />
+              <p class="mt-3 text-xs font-bold tracking-wide text-ink-subtle uppercase">
+                <T v={fase.rango} />
+              </p>
+              <p class="mt-1 text-lg font-bold text-balance text-ink">
+                <T v={fase.nombre} />
+              </p>
+              <p class="mt-1.5 text-sm text-pretty text-ink-muted">
+                <T v={fase.objetivo} />
+              </p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </Reveal>
+
+  {/* ─── FILA 3 · LOS TRES DÍAS QUE MIRAN ──────────────────────────────────
+      Van en una isla clara y aparte de las fases porque son de otra naturaleza:
+      las fases dicen qué haces, y estos tres dicen cuándo el programa se para a
+      mirarte. Un plan que admite que a la mitad te puede decir "esto no es para
+      ti" es lo contrario de vender humo, y por eso esto no se esconde. */}
+  <Reveal delay={0.16}>
+    <div
+      class="mt-12 rounded-3xl bg-surface-muted p-8 ring-1 ring-line ring-inset sm:p-10"
+    >
+      <h3 class="text-xl font-bold text-balance text-ink">
+        <T v={plan90.hitosTitulo} />
+      </h3>
+
+      <ol class="mt-6 grid gap-6 lg:grid-cols-3 lg:gap-8">
+        {
+          plan90.hitos.map((h) => (
+            <li class="border-t border-line pt-5">
+              <p class="flex items-center gap-2 text-sm font-extrabold tracking-wide text-ink-brand uppercase">
+                <span aria-hidden="true" class="marca-linea text-secondary-600">
+                  <Icono nombre="diana" class="size-4" />
+                </span>
+                <T v={h.dia} />
+              </p>
+              <p class="mt-2 text-sm text-pretty text-ink-muted">
+                <T v={h.texto} />
+              </p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </Reveal>
+</Section>
