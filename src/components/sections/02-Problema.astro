@@ -6,7 +6,6 @@ import FilaAlterna from "@components/ui/FilaAlterna.astro";
 import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Button from "@components/ui/Button.astro";
-import BotonDetalle from "@components/ui/BotonDetalle.astro";
 import Escena from "@components/visuales/Escena.astro";
 import { curso, copy, cta } from "@config/curso.config";
 
@@ -54,13 +53,21 @@ import { curso, copy, cta } from "@config/curso.config";
  * Si alguien añade `rounded-2xl border bg-surface p-6` a estos `<li>`, la
  * sección pasa a ser exactamente lo que el documento prohíbe.
  *
- * ─── EL DETALLE SE DESPLIEGA: CON EL CURSOR O CON EL DEDO ──────────────────
+ * ─── EL DETALLE SE LEE SIEMPRE (ANTES SE DESPLEGABA) ───────────────────────
  *
- * Donde hay ratón, al pasarlo por encima. En táctil, con el botón "Ver más" de
- * cada entrada. Antes en móvil se veía siempre —para no esconder nada detrás de
- * un gesto imposible— y el resultado era que esta rejilla, que en escritorio se
- * escanea en dos segundos, en un teléfono eran cinco párrafos seguidos.
- * Ver el bloque `[data-revelar]` en global.css y `BotonDetalle.astro`.
+ * Aquí el párrafo de cada dolor se escondía y aparecía al pasar el cursor, o al
+ * tocar "Ver más" en táctil. Tenía sentido cuando esto eran cinco entradas de
+ * lista sin caja: cinco párrafos seguidos hacían la sección larguísima en un
+ * teléfono.
+ *
+ * Con islas ya no: el párrafo cabe dentro de la caja sin alargar nada, porque
+ * la caja ya ocupaba ese alto. Y esconderlo costaba dos cosas que no compensan:
+ * la sección solo se entendía pasando el cursor —lo que en un móvil no pasa
+ * nunca— y las islas se veían vacías, que es como se descubrió. Este bloque es
+ * el reconocimiento del problema: tiene que leerse SIN hacer nada.
+ *
+ * El mecanismo (`[data-revelar]` en global.css, `BotonDetalle.astro`) sigue
+ * existiendo y lo usa la sección 03, donde sus seis tarjetas sí se despliegan.
  *
  * La regla de contenido que lo sostiene: el titular tiene que entenderse SOLO.
  * El detalle amplía, nunca completa. Está en la cabecera de `dolores`.
@@ -95,40 +102,40 @@ const dolores = curso.problema.dolores.map((d, i) => ({
 }));
 
 /**
- * Cuánto ocupa cada isla en la rejilla de seis columnas.
+ * Cuánto ocupa cada isla en la rejilla de seis columnas: 2+2+2 arriba y 3+3
+ * abajo.
  *
- * 4+2, luego 2+4, y la quinta a todo el ancho. El vaivén es deliberado: dos
- * filas con la isla ancha en lados opuestos hacen que el ojo cruce en zigzag
- * dentro de la propia rejilla, en vez de recorrer tres columnas iguales.
+ * ─── POR QUÉ NO ES 4+2 / 2+4 / 6, QUE ES LO QUE HABÍA ──────────────────────
  *
- * ⚠️ ESTA TABLA ES POR POSICIÓN Y HAY CINCO DOLORES. Si se añade un sexto sin
- * añadir su tramo, el `?? "sm:col-span-2"` lo deja a dos columnas y la rejilla
- * sigue cuadrando (2+2+2 en su fila). Si se quita uno, hay que rehacer la
- * tabla: 4+2 con solo cuatro dolores deja la última fila coja.
+ * Porque salía roto, y conviene que quede escrito para no repetirlo. La idea
+ * era que el tamaño fuese la jerarquía: isla ancha con su párrafo a la vista,
+ * isla estrecha con el párrafo escondido tras el cursor. Sobre el papel tiene
+ * sentido; en pantalla, no:
+ *
+ *  · Las islas de una misma fila se estiran a la altura de la más alta. La
+ *    estrecha, con el texto escondido, quedaba como una caja con un icono, un
+ *    título y un palmo de vacío debajo. No se lee como "hay más al pasar el
+ *    cursor", se lee como que algo no cargó.
+ *  · Y era ARBITRARIO para quien mira: dos tarjetas enseñaban su texto y dos
+ *    no, sin ninguna señal de por qué. La pista decía "pasa el cursor por cada
+ *    uno" cuando solo dos de las cinco reaccionaban.
+ *
+ * Con las islas de una fila del MISMO ancho, el texto ocupa los mismos
+ * renglones en todas y ninguna se queda con hueco muerto. El ritmo lo dan las
+ * dos filas, que no tienen el mismo número de islas: tres arriba, dos abajo.
+ * Eso basta para que no se lea como una cuadrícula, y no cuesta un vacío.
+ *
+ * ⚠️ ESTA TABLA ES POR POSICIÓN Y HAY CINCO DOLORES. Con un sexto, el
+ * `?? "sm:col-span-2"` lo deja a dos columnas y la fila de arriba cuadra igual.
+ * Si se quita uno, hay que rehacerla: 3+3 con cuatro deja la última fila coja.
  */
 const TRAMOS = [
-  "sm:col-span-4",
   "sm:col-span-2",
   "sm:col-span-2",
-  "sm:col-span-4",
-  "sm:col-span-6",
+  "sm:col-span-2",
+  "sm:col-span-3",
+  "sm:col-span-3",
 ];
-
-/**
- * Las islas anchas enseñan su detalle SIEMPRE; las estrechas lo despliegan.
- *
- * ⚠️ ES LA REGLA QUE JUSTIFICA EL BENTO. Una rejilla de tamaños distintos donde
- * todas las cajas dicen lo mismo es decoración: los tamaños no significarían
- * nada. Aquí el tamaño ES la jerarquía — la isla ancha tiene sitio para el
- * párrafo, así que lo enseña; la estrecha no lo tiene, así que lo esconde
- * detrás del cursor (o del botón "Ver más" en táctil, que es donde no hay
- * cursor que pasar).
- *
- * El efecto secundario es el que se buscaba: las anchas se leen de un vistazo
- * sin hacer nada, que era el problema de tener cinco cajas con dos palabras
- * cada una y todo el texto escondido.
- */
-const ANCHAS = new Set([0, 3, 4]);
 ---
 
 <Section id="problema" tono="muted" ritmo="amplio" ariaLabel={copy.problema.aria}>
@@ -159,10 +166,11 @@ const ANCHAS = new Set([0, 3, 4]);
         <h3 class="text-2xl font-bold text-balance text-ink">
           <T v={copy.problema.doloresTitulo} />
         </h3>
-        {/* Solo aparece si hay cursor con el que pasar. Ver global.css. */}
-        <p data-pista-hover class="text-sm text-ink-subtle">
-          <T v={copy.ui.pistaHover} />
-        </p>
+        {/* ⚠️ AQUÍ IBA LA PISTA "pasa el cursor por cada uno para ver el
+            detalle", y se va con el desplegable. Una pista que anuncia una
+            interacción que ya no existe es peor que no tener pista: manda a
+            probar algo que no responde. La sección 03 la conserva porque allí
+            sus seis tarjetas sí se despliegan. */}
       </div>
     </Reveal>
 
@@ -195,15 +203,11 @@ const ANCHAS = new Set([0, 3, 4]);
       {
         dolores.map((d, i) => (
           <Reveal as="li" delay={i * 0.06} class={TRAMOS[i] ?? "sm:col-span-2"}>
-            {/* `data-revelar` marca el grupo; `data-detalle`, lo que se
-                despliega al pasar el cursor.
-
-                La última isla va en navy: es el cierre de la lista y el dolor
+            {/* La última isla va en navy: es el cierre de la lista y el dolor
                 que remata ("empiezas y lo dejas"). Un bento sin ningún punto
                 oscuro es una cuadrícula de cajas claras, que vuelve a parecerse
                 a lo que no queremos. Con uno, la fila tiene a dónde mirar. */}
             <div
-              data-revelar
               class:list={[
                 "group h-full rounded-2xl p-6 transition-[transform,box-shadow] duration-[var(--duration-base)] ease-[var(--ease-out-soft)] hover:-translate-y-0.5 sm:p-7",
                 i === dolores.length - 1
@@ -235,34 +239,30 @@ const ANCHAS = new Set([0, 3, 4]);
                 <T v={d.titulo} />
               </p>
 
-              {/* En las islas anchas el detalle se lee siempre; en las
-                  estrechas se despliega. Ver la nota de `ANCHAS`. */}
-              {ANCHAS.has(i) ? (
-                <p
-                  class:list={[
-                    "mt-2 max-w-prose text-base text-pretty",
-                    i === dolores.length - 1
-                      ? "text-secondary-100"
-                      : "text-ink-muted",
-                  ]}
-                >
-                  <T v={d.detalle} />
-                </p>
-              ) : (
-                <>
-                  <div data-detalle>
-                    <div>
-                      <p class="mt-2 text-base text-pretty text-ink-muted">
-                        <T v={d.detalle} />
-                      </p>
-                    </div>
-                  </div>
+              {/* ⚠️ EL DETALLE SE LEE SIEMPRE, EN LAS CINCO. Aquí había un
+                  desplegable al pasar el cursor (`data-detalle` + el botón
+                  "Ver más" para táctil) y se ha quitado a propósito.
 
-                  {/* Solo existe en táctil, que es donde no hay cursor que
-                      pasar. Ver `BotonDetalle.astro`. */}
-                  <BotonDetalle class="mt-1" />
-                </>
-              )}
+                  Tenía sentido cuando esto eran cinco entradas de lista sin
+                  caja, donde cinco párrafos seguidos hacían la sección larguísima
+                  en un teléfono. Con islas, el párrafo cabe dentro de cada una
+                  sin alargar nada: la caja ya estaba ocupando ese alto.
+
+                  Y esconderlo tenía dos costes que ahora no compensan: la
+                  sección solo se entendía si alguien pasaba el cursor —cosa que
+                  en un móvil no ocurre nunca— y las islas se veían vacías. Este
+                  bloque es el reconocimiento del problema, o sea lo que tiene
+                  que leerse SIN hacer nada. */}
+              <p
+                class:list={[
+                  "mt-2 text-base text-pretty",
+                  i === dolores.length - 1
+                    ? "text-secondary-100"
+                    : "text-ink-muted",
+                ]}
+              >
+                <T v={d.detalle} />
+              </p>
             </div>
           </Reveal>
         ))
