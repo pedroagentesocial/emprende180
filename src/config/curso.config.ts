@@ -2358,39 +2358,44 @@ export const copy = {
   /**
    * ─── EL PLAN DE 90 DÍAS ────────────────────────────────────────────────
    *
-   * Todo lo que hay aquí sale del documento "Plan de 90 Días — Prospección
-   * Diaria del Embajador" que pasó el cliente, y de su guion en video. No hay
-   * una sola cifra inventada: los repartos de tiempo, los días de cada fase y
-   * los tres hitos están en ese documento, tal cual.
+   * Todo sale del documento "Plan de 90 Días — Prospección Diaria del
+   * Embajador" que pasó el cliente, y de su guion en video. No hay una sola
+   * cifra inventada: los repartos de tiempo, los días de cada fase y los tres
+   * hitos están ahí, tal cual.
    *
-   * POR QUÉ ESTA SECCIÓN EXISTE. La página prometía un estado —"conviértete en
-   * Embajador"— y enumeraba diez videos, pero no decía en ningún sitio QUÉ SE
-   * HACE. Y lo que convence a quien duda no es el temario: es saber que el
-   * trabajo cabe en dos horas y que alguien ya pensó en qué orden hacerlo.
+   * ─── ESTÁ ESCRITO PARA MIRARSE, NO PARA LEERSE ─────────────────────────
+   *
+   * ⚠️ SI ALGUIEN AMPLÍA ESTOS TEXTOS, SE ROMPE LA SECCIÓN. Cada frase de aquí
+   * cabe en una o dos líneas a propósito: la sección es una rejilla de piezas
+   * cortas —tres bloques de tiempo, cuatro fases, tres hitos— y en cuanto una
+   * frase pasa a tres renglones, su vecina se queda corta, la fila se descuadra
+   * y el bloque deja de escanearse.
+   *
+   * La primera versión era el doble de larga. La cambió el cliente con una
+   * frase: "no tanto texto, sea poco que leer".
    *
    * ⚠️ NI UNA CIFRA DE RESULTADOS. Las metas del documento (450 contactos, 700
    * personas contactadas, 30 referidos) son de ACTIVIDAD, no de ingresos, y aun
-   * así no se publican aquí: en una página de venta, cualquier número junto a
-   * la palabra "meta" se lee como una promesa. La regla 5 del propio documento
-   * dice "nunca prometas resultados, montos, tiempos ni diagnósticos", y esta
-   * sección la cumple al pie de la letra.
+   * así no se publican: en una página de venta, cualquier número junto a la
+   * palabra "meta" se lee como una promesa. La regla 5 del propio documento
+   * dice "nunca prometas resultados, montos, tiempos ni diagnósticos".
    */
   plan90: {
     aria: { es: "El plan de 90 días", en: "The 90-day plan" },
-    kicker: { es: "Después de los diez videos", en: "After the ten videos" },
+    kicker: { es: "Después del curso", en: "After the course" },
     titulo: {
       es: "Los 90 días que cambian tu rutina",
       en: "The 90 days that change your routine",
     },
     entradilla: {
-      es: "El último video te deja tu Plan de 90 Días por escrito. Esto es lo que dice: cuatro fases, y un trabajo que cabe en una frase — un mensaje, a una persona, con su nombre y su apellido, en la aplicación donde esa persona ya te contesta.",
-      en: "The last video leaves you with your 90-Day Plan in writing. This is what it says: four phases, and work that fits in one sentence — one message, to one person, by name, in the app where that person already replies to you.",
+      es: "Cuatro fases y un trabajo que cabe en una frase: un mensaje, a una persona, con su nombre.",
+      en: "Four phases and work that fits in one sentence: one message, to one person, by name.",
     },
 
     /* El dato que más cualifica de toda la página: espanta a quien no puede
        darlas y tranquiliza a quien sí. Por eso va grande y solo. */
     compromiso: {
-      etiqueta: { es: "Compromiso diario", en: "Daily commitment" },
+      etiqueta: { es: "Al día", en: "A day" },
       valor: { es: "2 horas", en: "2 hours" },
       nota: {
         es: "Ni más, ni menos. La constancia vence a la intensidad.",
@@ -2404,48 +2409,37 @@ export const copy = {
     },
 
     /* Confirmado por el cliente: la llamada semanal y el CRM configurado
-       existen hoy. Si algún día dejan de existir, esta frase se cae con
-       ellos: es lo único de la sección que promete acompañamiento. */
+       existen hoy. Si dejan de existir, esta frase se cae con ellos. */
     acompanamiento: {
-      es: "Y no lo haces solo: hay una llamada de equipo cada semana, y el CRM te llega configurado —el pipeline, las etiquetas y las plantillas ya puestas—.",
-      en: "And you don't do it alone: there's a team call every week, and your CRM arrives set up — pipeline, tags and message templates already in place.",
+      es: "Con una llamada de equipo cada semana y el CRM ya configurado.",
+      en: "With a team call every week and your CRM already set up.",
     },
 
     dia: {
       titulo: { es: "Tu día, en tres bloques", en: "Your day, in three blocks" },
-      entradilla: {
-        es: "Todos los días tienen la misma estructura. Cambia el contenido, no el ritmo.",
-        en: "Every day has the same structure. The content changes, the rhythm doesn't.",
-      },
       bloques: [
         {
           nombre: { es: "Prospección", en: "Prospecting" },
           minutos: { es: "60 min", en: "60 min" },
-          para: {
-            es: "Contactar personas nuevas por mensaje",
-            en: "Reaching out to new people by message",
-          },
+          para: { es: "Gente nueva, por mensaje", en: "New people, by message" },
         },
         {
-          nombre: { es: "Seguimiento y reconexión", en: "Follow-up and reconnecting" },
+          nombre: { es: "Seguimiento", en: "Follow-up" },
           minutos: { es: "45 min", en: "45 min" },
           para: {
-            es: "Conversaciones abiertas y contactos que se enfriaron",
-            en: "Open conversations and contacts that went cold",
+            es: "Conversaciones abiertas y contactos fríos",
+            en: "Open conversations and cold contacts",
           },
         },
         {
           nombre: { es: "Cierre en CRM", en: "Closing in the CRM" },
           minutos: { es: "15 min", en: "15 min" },
-          para: {
-            es: "Tareas, contactos al día y las notas del día",
-            en: "Tasks, contacts up to date and the day's notes",
-          },
+          para: { es: "Tareas, contactos y notas del día", en: "Tasks, contacts and the day's notes" },
         },
       ],
       cambia: {
-        es: "Y el reparto se mueve: al final son 35 · 70 · 15. Empiezas contactando gente nueva porque no tienes a nadie a quien dar seguimiento; terminas dando seguimiento, porque ya construiste algo que cuidar.",
-        en: "And the split shifts: by the end it's 35 · 70 · 15. You start contacting new people because you have nobody to follow up with; you finish following up, because by then you built something worth looking after.",
+        es: "Al final el reparto es 35 · 70 · 15: menos gente nueva y más seguimiento, porque ya hay algo que cuidar.",
+        en: "By the end it's 35 · 70 · 15: fewer new people, more follow-up, because by then there's something to look after.",
       },
     },
 
@@ -2459,8 +2453,8 @@ export const copy = {
         rango: { es: "Días 1–20", en: "Days 1–20" },
         nombre: { es: "Fundación", en: "Foundation" },
         objetivo: {
-          es: "Construir tu base y aprender a sostener una conversación de verdad. Todavía no vendes nada.",
-          en: "Build your base and learn to hold a real conversation. You're not selling anything yet.",
+          es: "Construyes tu base y aprendes a conversar. Todavía no vendes.",
+          en: "You build your base and learn to hold a conversation. No selling yet.",
         },
       },
       {
@@ -2468,8 +2462,8 @@ export const copy = {
         rango: { es: "Días 21–45", en: "Days 21–45" },
         nombre: { es: "Sistematización", en: "Systematizing" },
         objetivo: {
-          es: "Dejas de improvisar: cada contacto con su etapa, su etiqueta y su siguiente paso con fecha.",
-          en: "You stop improvising: every contact with its stage, its tag and its next step on a date.",
+          es: "Cada contacto con su etapa, su etiqueta y su próximo paso.",
+          en: "Every contact with its stage, its tag and its next step.",
         },
       },
       {
@@ -2477,8 +2471,8 @@ export const copy = {
         rango: { es: "Días 46–70", en: "Days 46–70" },
         nombre: { es: "Red y base viva", en: "Network and living base" },
         objetivo: {
-          es: "Alianzas con negocios locales y reactivación de todo lo que sembraste los primeros 45 días.",
-          en: "Alliances with local businesses, and reactivating everything you sowed in the first 45 days.",
+          es: "Alianzas locales y reactivación de todo lo que sembraste.",
+          en: "Local alliances, and reactivating everything you sowed.",
         },
       },
       {
@@ -2486,16 +2480,16 @@ export const copy = {
         rango: { es: "Días 71–90", en: "Days 71–90" },
         nombre: { es: "Consolidación", en: "Consolidation" },
         objetivo: {
-          es: "Demostrar que la rutina se sostiene sola, cerrar lo que quedó abierto y decidir qué sigue.",
-          en: "Prove the routine holds up on its own, close what's still open and decide what comes next.",
+          es: "La rutina se sostiene sola. Cierras y decides qué sigue.",
+          en: "The routine holds on its own. You close up and decide what's next.",
         },
       },
     ],
 
-    /* Los tres días en que el programa se para a mirarte. Van juntos y aparte
-       de las fases porque son lo que hace creíble todo lo demás: un plan que
-       admite que a la mitad te puede decir "esto no es para ti" no está
-       vendiendo humo. */
+    /* Los tres días en que el programa se para a mirarte. Una línea cada uno:
+       son lo que hace creíble el resto —un plan que admite que a la mitad te
+       puede decir "esto no es para ti" no está vendiendo humo— y para eso no
+       hacen falta párrafos. */
     hitosTitulo: {
       es: "Tres días que no son de trámite",
       en: "Three days that aren't a formality",
@@ -2504,25 +2498,32 @@ export const copy = {
       {
         dia: { es: "Día 45", en: "Day 45" },
         texto: {
-          es: "Corte de medio programa. Sacas tus números reales, sin adornos, y te sientas con tu líder: sigues igual, ajustas con acompañamiento o pausas. Es mejor corregir aquí que descubrirlo en el día 90.",
-          en: "Mid-program checkpoint. You pull your real numbers, unvarnished, and sit down with your leader: carry on, adjust with closer support, or pause. Better to correct course here than to find out on day 90.",
+          es: "Corte con tu líder: sigues, ajustas o pausas.",
+          en: "Checkpoint with your leader: carry on, adjust or pause.",
         },
       },
       {
         dia: { es: "Día 78", en: "Day 78" },
         texto: {
-          es: "Dejas de recibir tareas y escribes las tuyas. Tú decides tu semana y respondes por ella; tu líder sigue ahí, pero ya no te marca el paso.",
-          en: "You stop being handed tasks and start writing your own. You decide your week and answer for it; your leader is still there, but no longer sets your pace.",
+          es: "Dejas de recibir tareas y escribes las tuyas.",
+          en: "You stop being handed tasks and write your own.",
         },
       },
       {
         dia: { es: "Día 90", en: "Day 90" },
         texto: {
-          es: "Con tus números delante eliges qué sigue: continuar con metas más altas, subir de esquema o empezar a formar a otros embajadores.",
-          en: "With your numbers in front of you, you choose what's next: carry on with higher targets, move up a tier, or start training other ambassadors.",
+          es: "Con tus números delante, eliges qué sigue.",
+          en: "With your numbers in front of you, you choose what's next.",
         },
       },
     ],
+
+    /* El puente al imán gratuito. El plan son 90 días y nadie los empieza desde
+       una página de venta; el reto de 7 correos sí se empieza hoy. */
+    gratisTitulo: {
+      es: "Empieza por los primeros 7 días",
+      en: "Start with the first 7 days",
+    },
   },
 
   /**

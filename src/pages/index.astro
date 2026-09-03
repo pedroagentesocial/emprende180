@@ -31,7 +31,7 @@ import CintaAnuncio from "@components/ui/CintaAnuncio.astro";
     01 Hero ............ ¿de qué va esto y es para mí?      → CTA: email gratis
     02 Problema ........ ¿me entiende? ¿es para mí de verdad?
     03 Qué vas a lograr  ¿qué me llevo?                     (resultado, no temario)
-    04 Captura ......... aún no compro → captúrame el email
+    04 Plan de 90 días  vale, ¿y qué hago yo exactamente?  → CTA: email gratis
     05 Temario ......... ¿qué incluye exactamente?
     06 Instructor ...... ¿quién eres tú? ¿qué NO cubres?
     07 Prueba social ... ¿le funciona a gente como yo?
@@ -47,11 +47,10 @@ import Hero from "@components/hero/Hero.astro";
 import Aliados from "@components/sections/01-Aliados.astro";
 import Problema from "@components/sections/02-Problema.astro";
 import QueVasALograr from "@components/sections/03-QueVasALograr.astro";
-import CapturaLead from "@components/sections/04-CapturaLead.astro";
 import Temario from "@components/sections/05-Temario.astro";
 import Instructor from "@components/sections/06-Instructor.astro";
 import PruebaSocial from "@components/sections/07-PruebaSocial.astro";
-import Plan90 from "@components/sections/08-Plan90.astro";
+import Plan90 from "@components/sections/04-Plan90.astro";
 import Precio from "@components/sections/09-Precio.astro";
 import Faq from "@components/sections/10-Faq.astro";
 import CtaFinal from "@components/sections/11-CtaFinal.astro";
@@ -102,21 +101,17 @@ import CtaFinal from "@components/sections/11-CtaFinal.astro";
 
     <CintaAnuncio />
 
-    <CapturaLead />
+    {/* El plan de 90 días ocupa el sitio donde estaba la captura del imán:
+        dos plazos compitiendo —7 días y 90 días— hacían que ninguno
+        significara nada. El imán no se pierde, baja de rango: es el último
+        bloque de esta sección. Ver 04-Plan90. */}
+    <Plan90 />
     <Temario />
     <Instructor />
 
     <CintaAnuncio />
 
     <PruebaSocial />
-
-    {/* El plan de 90 días va JUSTO ANTES DEL PRECIO y después de la prueba
-        social: es la última pieza de «qué me llevo», y la que contesta lo que
-        queda por preguntar después de ver el temario y a la gente que ya lo
-        hizo — vale, ¿y qué hago yo exactamente? Contestada esa, la siguiente
-        pregunta es cuánto cuesta. */}
-    <Plan90 />
-
     <Precio />
     <Faq />
 
