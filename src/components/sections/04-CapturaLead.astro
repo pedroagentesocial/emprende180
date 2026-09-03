@@ -3,6 +3,7 @@ import T from "@components/i18n/T.astro";
 import Section from "@components/ui/Section.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Button from "@components/ui/Button.astro";
+import MarcaAgua from "@components/ui/MarcaAgua.astro";
 import { leadMagnet, copy, cta } from "@config/curso.config";
 
 /**
@@ -53,70 +54,80 @@ const dias = leadMagnet.dias;
 const primerDia = dias[0]!;
 ---
 
-<Section id="gratis" tono="inverse" ariaLabel={copy.captura.aria}>
-  {/* Cabecera centrada, a todo el ancho de la columna de lectura.
-      Antes iba a la izquierda dentro de una de las dos columnas, y eso obligaba
-      a que la otra columna arrancara a su altura: quedaba un hueco muerto
-      enorme debajo del formulario. Sacando la cabecera fuera, las dos tarjetas
-      pasan a ser hermanas de la misma fila y pueden alinearse entre ellas. */}
-  <Reveal>
-    <div class="mx-auto max-w-read text-center">
-      <p class="text-xs font-bold uppercase tracking-[0.16em] text-secondary-300">
-        <T v={copy.captura.kicker} />
-      </p>
-      <h2 class="mt-3 text-3xl font-bold text-balance text-ink-inverse sm:text-4xl">
-        <T v={leadMagnet.nombre} />
-      </h2>
-      <p class="mt-4 text-lg text-pretty text-secondary-200">
-        <T v={leadMagnet.promesa} />
-      </p>
-    </div>
-  </Reveal>
+<Section id="gratis" tono="surface" ariaLabel={copy.captura.aria}>
+  {/* ─── DE FRANJA NAVY A LIENZO BLANCO CON UNA ISLA ───────────────────────
+      Esta sección era una franja navy entera con la cabecera centrada encima
+      de dos tarjetas. Ahora el fondo es claro y el navy se concentra en UNA
+      isla: el texto a un lado, la oferta al otro.
 
-  {/* `items-end`: las dos tarjetas se alinean por ABAJO, no por arriba. Tienen
-      alturas distintas por naturaleza (una lleva un párrafo y la otra un botón),
-      y alinearlas por arriba dejaba la corta flotando con un palmo de aire
-      debajo. Por abajo, las dos apoyan en la misma línea y el aire sobrante
-      queda arriba, donde no se lee como un hueco olvidado.
+      Lo que se gana no es solo aire. En la franja, todo era navy —la cabecera,
+      la muestra, el formulario, el raíl— así que nada destacaba sobre nada. Con
+      el fondo claro, el único bloque oscuro de la sección es exactamente aquel
+      en el que hay que actuar, y el ojo va ahí solo.
 
-      Se fue el `sticky` del formulario: solo tenía sentido cuando al lado había
-      una columna larga por la que hacer recorrido. Ahora son dos tarjetas de la
-      misma fila y no hay nada por lo que deslizarse. */}
-  <div class="mt-12 grid items-end gap-8 lg:mt-14 lg:grid-cols-2 lg:gap-10">
-    {/* LA MUESTRA. Un solo día, entero, para que se vea que el contenido es
-        específico y no un folleto. Ver la nota de la cabecera. */}
-    <Reveal delay={0.08}>
-      <figure
-        class="rounded-2xl border border-primary-700 bg-primary-950/50 p-6 text-center sm:p-8"
-      >
-        <figcaption
-          class="flex items-center justify-center gap-2.5 text-xs font-bold uppercase tracking-[0.12em] text-secondary-300"
-        >
-          <span
-            aria-hidden="true"
-            class="grid size-6 shrink-0 place-items-center rounded-full bg-secondary-500 text-[0.7rem] font-extrabold text-ink-inverse"
-          >
-            {primerDia.dia}
-          </span>
-          <T v={copy.captura.muestraTitulo} />
-        </figcaption>
-
-        <p class="mt-5 text-2xl font-bold text-balance text-ink-inverse">
-          <T v={primerDia.titulo} />
+      ⚠️ LA CINTA DE PRECIO DE ARRIBA NO SE TOCA. Sigue siendo navy y sigue
+      moviéndose: es una franja de paso, no parte de esta sección, y el corte de
+      color entre ella y el blanco de aquí es justo lo que la separa. */}
+  {/* `items-start` y no `items-center`: centrada, la isla quedaba flotando a
+      media altura de una columna de texto mucho más alta, sin apoyarse en nada.
+      Arrancando las dos a la misma línea, el titular y la acción se leen como
+      un par. */}
+  <div class="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:gap-16">
+    {/* ─── EL LADO DEL TEXTO ──────────────────────────────────────────────
+        A la izquierda y sin centrar. Antes iba centrado a todo el ancho porque
+        estaba encima de las dos tarjetas; ahora que es una columna, centrarlo
+        obligaría al ojo a buscar el principio de cada línea. */}
+    <Reveal>
+      <div>
+        <p class="text-xs font-bold tracking-[0.16em] text-ink-brand uppercase">
+          <T v={copy.captura.kicker} />
         </p>
-        {/* El párrafo se queda alineado a la izquierda aunque la tarjeta esté
-            centrada: cuatro líneas centradas obligan al ojo a buscar dónde
-            empieza cada una. Se centra lo corto, no lo que hay que leer. */}
-        <p class="mt-3 text-left text-base text-pretty text-secondary-200">
-          <T v={primerDia.entrega} />
+        <h2 class="mt-3 text-3xl font-bold text-balance text-ink sm:text-4xl">
+          <T v={leadMagnet.nombre} />
+        </h2>
+        <p class="mt-4 max-w-xl text-lg text-pretty text-ink-muted">
+          <T v={leadMagnet.promesa} />
         </p>
-      </figure>
+
+        {/* LA MUESTRA. Un solo día, entero, para que se vea que el contenido
+            es específico y no un folleto.
+
+            Se queda en el lado del texto y SIN caja propia: es contenido para
+            leer, no una acción. Metida en la isla navy habría hecho falta una
+            caja dentro de otra caja, que es lo que no se hace. Aquí la separa
+            una raya y el número del día, que basta. */}
+        <div class="mt-8 border-t border-line pt-6">
+          <p class="flex items-center gap-2.5 text-xs font-bold tracking-[0.12em] text-ink-subtle uppercase">
+            <span
+              aria-hidden="true"
+              class="grid size-6 shrink-0 place-items-center rounded-full bg-secondary-500 text-[0.7rem] font-extrabold text-ink-inverse"
+            >
+              {primerDia.dia}
+            </span>
+            <T v={copy.captura.muestraTitulo} />
+          </p>
+
+          <p class="mt-4 text-2xl font-bold text-balance text-ink">
+            <T v={primerDia.titulo} />
+          </p>
+          <p class="mt-2 max-w-xl text-base text-pretty text-ink-muted">
+            <T v={primerDia.entrega} />
+          </p>
+        </div>
+      </div>
     </Reveal>
 
-    <Reveal delay={0.14}>
+    {/* ─── LA ISLA DE LA ACCIÓN ───────────────────────────────────────────
+        Navy, el color que tenía la sección entera, ahora concentrado donde se
+        pulsa. Sin tarjetas dentro: lo que antes eran dos cajas navy sobre navy
+        (que apenas se distinguían del fondo) es ahora una sola isla sobre
+        blanco, que se ve desde el otro lado de la pantalla. */}
+    <Reveal delay={0.1}>
       <div
-        class="rounded-2xl border border-primary-700 bg-primary-950/40 p-6 text-center sm:p-8"
+        class="relative isolate overflow-hidden rounded-3xl bg-primary-900 p-8 text-center sm:p-10"
       >
+        <MarcaAgua posicion="derecha" class="opacity-[0.07]" />
+
         <h3 class="text-2xl font-bold text-balance text-ink-inverse">
           <T v={leadMagnet.titularFormulario} />
         </h3>
@@ -124,7 +135,7 @@ const primerDia = dias[0]!;
           <T v={leadMagnet.formato} />
         </p>
 
-        <div class="mt-6">
+        <div class="mt-7">
           <Button
             href={cta.secundario.href}
             variant="primary"
@@ -139,7 +150,7 @@ const primerDia = dias[0]!;
         {/* 13 px en móvil. Es letra pequeña, sí, pero es la que dice "sin spam
             y te das de baja en un clic": lo que hay que leer justo antes de
             dejar el correo. A 12 px sobre navy, en un teléfono, no se lee. */}
-        <p class="mt-3 text-[0.8125rem] text-primary-300 sm:text-xs">
+        <p class="mt-3 text-[0.8125rem] text-secondary-200 sm:text-xs">
           <T v={leadMagnet.aviso} />
         </p>
       </div>
@@ -154,10 +165,10 @@ const primerDia = dias[0]!;
       números. En móvil el mismo raíl gira: la línea baja por la izquierda y los
       días se apilan. Es el MISMO marcado en los dos casos, sin duplicar nada:
       lo único que cambia es la dirección del flex y de dónde cuelga la línea. */}
-  <div class="mt-14 border-t border-primary-800 pt-10 lg:mt-20">
+  <div class="mt-14 border-t border-line pt-10 lg:mt-20">
     <Reveal>
       <h3
-        class="text-xs font-bold uppercase tracking-[0.16em] text-secondary-300"
+        class="text-xs font-bold tracking-[0.16em] text-ink-subtle uppercase"
       >
         <T v={copy.captura.railTitulo} />
       </h3>
@@ -173,7 +184,7 @@ const primerDia = dias[0]!;
             <span
               aria-hidden="true"
               class:list={[
-                "pointer-events-none absolute bg-primary-700",
+                "pointer-events-none absolute bg-line",
                 // Móvil: vertical, pegada a la izquierda, a la altura del número.
                 "left-[0.6875rem] top-0 h-full w-px",
                 i === 0 && "top-[0.6875rem] h-[calc(100%-0.6875rem)]",
@@ -188,11 +199,11 @@ const primerDia = dias[0]!;
             <div class="relative flex items-start gap-3 pb-4 sm:block sm:pb-0">
               <span
                 aria-hidden="true"
-                class="grid size-[1.375rem] shrink-0 place-items-center rounded-full bg-primary-900 text-[0.65rem] font-extrabold text-secondary-300 ring-2 ring-primary-700"
+                class="grid size-[1.375rem] shrink-0 place-items-center rounded-full bg-secondary-50 text-[0.65rem] font-extrabold text-secondary-700 ring-2 ring-secondary-200"
               >
                 {d.dia}
               </span>
-              <p class="text-sm font-semibold text-balance text-secondary-100 sm:mt-3 sm:pr-3">
+              <p class="text-sm font-semibold text-balance text-ink sm:mt-3 sm:pr-3">
                 <T v={d.titulo} />
               </p>
             </div>
