@@ -5,6 +5,7 @@ import Reveal from "@components/motion/Reveal.astro";
 import Button from "@components/ui/Button.astro";
 import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
 import PlaceholderImage from "@components/placeholder/PlaceholderImage.astro";
+import MarcaAgua from "@components/ui/MarcaAgua.astro";
 import { instructor, contacto, copy, cta, aliados } from "@config/curso.config";
 import { logoAliado, medidasAliado, fotoInstructor } from "@lib/assets";
 import { resolverIdiomaServidor } from "@i18n/idioma";
@@ -43,13 +44,18 @@ import { MARCA_COMPLETAR, tienePendiente } from "@lib/pendientes";
  *
  * ─── LO GRÁFICO ────────────────────────────────────────────────────────────
  *
- *  · La foto pasa a mandar: columna propia y pegajosa mientras se lee el resto.
- *  · Las credenciales dejan de ser una lista con palomitas y pasan a ser
- *    tarjetas con icono.
- *  · Entra el logotipo de su otra empresa. No es un anuncio: que la persona que
- *    da el curso dirija además un negocio real del sector es exactamente la
- *    credencial que esta sección tiene que demostrar, y un logotipo lo dice más
- *    rápido que una frase.
+ *  · Dos bloques que se miran: la foto sola a un lado y una isla navy al otro
+ *    con todo lo que se lee. Antes eran siete cajas grises apiladas en dos
+ *    columnas, y pesaba más la pila de méritos que la persona.
+ *  · Las credenciales dejan de ser tarjetas y pasan a ser cuatro líneas con su
+ *    icono DENTRO de la isla. Una tarjeta dentro de una isla son dos bordes
+ *    redondeados concéntricos, y eso se lee como un fallo de maquetación.
+ *  · Entra el logotipo de su otra empresa, montado sobre el borde de la foto.
+ *    No es un anuncio: que la persona que da el curso dirija además un negocio
+ *    real del sector es exactamente la credencial que esta sección tiene que
+ *    demostrar, y un logotipo lo dice más rápido que una frase.
+ *  · "Lo que no cubre" sale de la columna estrecha y cruza la página entera.
+ *    Los límites pesan lo mismo que las promesas, así que ocupan lo mismo.
  *
  * ─── LOS BOTONES ───────────────────────────────────────────────────────────
  *
@@ -99,10 +105,40 @@ const urlWhatsapp = contacto.whatsapp
 ---
 
 <Section id="instructor" ariaLabel={copy.instructor.aria}>
-  <div class="grid items-start gap-10 lg:grid-cols-[minmax(0,22rem)_1fr] lg:gap-16">
-    <!-- ─── Foto + identidad ─────────────────────────────────────────────── -->
-    <Reveal>
-      <div class="lg:sticky lg:top-8">
+  {/* ─── LA FOTO A UN LADO, LA PERSONA EN SU ISLA AL OTRO ────────────────
+      Antes las dos columnas eran una pila de cajas grises (foto, logo, cuatro
+      credenciales) contra un texto suelto sobre el fondo. El lado que pesaba
+      era el de los recuadros, o sea el de los méritos, y no el de la persona:
+      justo al revés de lo que esta sección tiene que conseguir.
+
+      Ahora la foto va sola, sin nada apilado debajo salvo la tarjeta que se le
+      monta encima, y todo lo que se lee —nombre, papel, bio y credenciales—
+      vive en una sola isla navy. Dos bloques que se miran, en vez de siete
+      cajas en fila india.
+
+      La isla va a la DERECHA. La del temario, justo encima, está a la
+      izquierda, y la de reseñas, justo debajo, vuelve a la izquierda: el
+      zigzag es lo que impide que la página se lea como una columna infinita.
+
+      Y ya NO es pegajosa. Lo era para acompañar la lectura de la bio, y con la
+      barra de arriba pegada el hueco de `top-8` la metía por debajo de la
+      cabecera. Además las dos columnas caben ya casi en una pantalla. */}
+  <div
+    class="grid gap-14 lg:grid-cols-[minmax(0,23rem)_minmax(0,1fr)] lg:grid-rows-[1fr_auto] lg:gap-x-16 lg:gap-y-12"
+  >
+    {/* ─── LA FOTO, QUE CRECE HASTA DONDE LLEGUE LA ISLA ──────────────────
+        `flex-1` dentro de una fila `1fr` + `object-cover`: la foto ocupa todo
+        lo que la isla de al lado deje libre, en vez de quedarse en su 4/5 y
+        dejar media columna en blanco debajo. Recorta un poco por los lados, y
+        siendo un retrato centrado no se pierde nada.
+
+        Solo a partir de `lg`. Apilado en móvil no hay nada que igualar, y una
+        foto estirada a lo que mida el texto de al lado saldría con una
+        proporción cualquiera: ahí manda el 4/5 de siempre. */}
+    <Reveal class="mx-auto w-full max-w-sm lg:col-start-1 lg:row-start-1 lg:h-full lg:max-w-none">
+      {/* `relative` porque la tarjeta de la otra empresa se monta sobre el
+          borde de abajo de la foto. Ver la nota de esa tarjeta. */}
+      <div class="relative lg:h-full">
         {/* La foto REAL si existe; si no, el hueco.
             Antes aquí solo estaba `PlaceholderImage`, que no comprueba nada y
             pinta el recuadro punteado siempre: la foto podía estar en su
@@ -122,7 +158,7 @@ const urlWhatsapp = contacto.whatsapp
               height="1000"
               loading="lazy"
               decoding="async"
-              class="aspect-[4/5] w-full rounded-2xl object-cover shadow-lg"
+              class="aspect-[4/5] w-full rounded-3xl object-cover shadow-lg lg:aspect-auto lg:h-full"
             />
           ) : (
             <PlaceholderImage
@@ -130,22 +166,33 @@ const urlWhatsapp = contacto.whatsapp
               medidas={copy.placeholders.fotoInstructorDetalle}
               ruta={instructor.foto}
               ratio="4/5"
-              class="rounded-2xl"
+              class="rounded-3xl"
             />
           )
         }
 
-        {/* El logotipo de su otra empresa, debajo de la foto. Que quien firma
-            el curso dirija además un negocio real del sector es LA credencial
-            de esta sección, y el logotipo lo dice antes que cualquier frase.
+        {/* ─── LA OTRA EMPRESA, MONTADA SOBRE LA FOTO ─────────────────────
+            Que quien firma el curso dirija además un negocio real del sector
+            es LA credencial de esta sección, y el logotipo lo dice antes que
+            cualquier frase.
 
-            Todo centrado: la tarjeta es más ancha que su contenido, y alineado
-            a la izquierda dejaba un sobrante a la derecha que se leía como un
-            hueco. Centrado, el aire queda repartido y parece intencionado. */}
+            Estaba debajo, en su propia caja gris, y ahí era el segundo de
+            varios recuadros apilados. Montada sobre el borde de la foto deja
+            de ser un elemento más de una pila y pasa a ser lo que es: una nota
+            SOBRE esta persona. Es el único sitio de la página donde algo se
+            solapa, y por eso se nota.
+
+            No es una isla dentro de otra: se apoya en la foto, no vive dentro
+            de una tarjeta. La regla que prohíbe anidar es la de los dos bordes
+            redondeados concéntricos, y aquí no los hay.
+
+            El logo y el rubro en la misma línea, no apilados: en vertical la
+            tarjeta volvía a medir lo que medía la caja de antes y se comía
+            media foto. */}
         {
           logoOtraMarca && otraMarca && (
-            <div class="mt-5 rounded-2xl border border-line bg-surface-muted px-5 py-5 text-center">
-              <p class="text-[0.7rem] font-bold uppercase tracking-[0.12em] text-ink-subtle">
+            <div class="absolute inset-x-4 -bottom-7 rounded-2xl bg-surface p-4 shadow-lg ring-1 ring-line sm:inset-x-6">
+              <p class="text-xs font-bold tracking-[0.12em] text-ink-subtle uppercase">
                 <T v={copy.instructor.tambien} />
               </p>
               <a
@@ -153,7 +200,7 @@ const urlWhatsapp = contacto.whatsapp
                 target="_blank"
                 rel="noopener noreferrer"
                 data-track="instructor-otra-marca"
-                class="mx-auto mt-3 inline-flex min-h-11 items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                class="mt-2 flex min-h-11 flex-wrap items-center gap-x-4 gap-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
               >
                 <img
                   src={logoOtraMarca}
@@ -162,46 +209,65 @@ const urlWhatsapp = contacto.whatsapp
                   height={medidasOtraMarca?.h}
                   loading="lazy"
                   decoding="async"
-                  class="h-8 w-auto object-contain"
+                  class="h-7 w-auto shrink-0 object-contain"
                 />
+                <span class="text-sm text-ink-subtle">
+                  <T v={otraMarca.rubro} />
+                </span>
               </a>
-              <p class="mt-1 text-sm text-ink-subtle">
-                <T v={otraMarca.rubro} />
-              </p>
             </div>
           )
         }
+      </div>
+    </Reveal>
 
-        {/* ─── Credenciales, en 2×2 bajo el logo ────────────────────────────
-            Estaban en la columna de texto, en una fila de tres tarjetas
-            grandes: partían la lectura entre la bio y los límites, y la cuarta
-            se quedaba sola en una segunda fila.
+    {/* ─── LA ISLA DE LA PERSONA ────────────────────────────────────────────
+        Nombre, papel, bio y credenciales, todo en la misma superficie. Las
+        credenciales estaban en cuatro tarjetas grises de texto centrado, en
+        columnas de 150 px donde cada mérito se partía en cinco renglones:
+        cuatro cajas para decir cuatro frases cortas.
 
-            Aquí abajo funcionan mejor por dos motivos. Uno: son credenciales de
-            LA PERSONA, y pertenecen a la columna de la persona, junto a su foto
-            y al logo de su otra empresa. Dos: en 2×2 y pequeñas se escanean de
-            un vistazo, que es lo único que se hace con una lista de méritos —
-            nadie las lee de corrido.
+        Aquí dentro no pueden ser tarjetas —una isla dentro de otra son dos
+        bordes concéntricos, que se leen como un fallo de maquetación— así que
+        son lo que siempre debieron ser: cuatro líneas con su icono, en dos
+        columnas, separadas de la bio por un filo. Ocupan la mitad y se leen
+        enteras.
 
-            Contenido centrado: en media columna no caben grandes, y centradas
-            no dejan el sobrante a la derecha de cada tarjeta.
+        Ocupa las DOS filas de la rejilla: es la que manda en la altura, y la
+        foto y los botones se reparten esa misma altura a su izquierda. */}
+    <Reveal delay={0.08} class="lg:col-start-2 lg:row-span-2 lg:row-start-1">
+      <div class="relative isolate overflow-hidden rounded-3xl bg-primary-950 p-8 sm:p-10">
+        <MarcaAgua posicion="derecha" class="opacity-[0.06]" />
 
-            El cuerpo sube de 12 a 14 px, también en móvil. Doce era el mínimo
-            que hacía caber la credencial más larga en dos columnas de un
-            teléfono de 320 px, pero a ese tamaño se dejan de leer: son cuatro
-            méritos que sostienen a quien firma el curso, y un mérito que no se
-            lee no sostiene nada. Las tarjetas crecen un par de renglones y esa
-            es toda la factura. */}
+        <p class="inline-flex items-center gap-2 rounded-full border border-primary-800 bg-primary-900 px-3 py-1 text-xs font-bold tracking-wide text-secondary-300 uppercase">
+          <span aria-hidden="true" class="marca-linea">
+            <span class="size-1.5 rounded-full bg-secondary-500"></span>
+          </span>
+          <T v={copy.instructor.kicker} />
+        </p>
+
+        <h2 class="mt-4 text-4xl font-extrabold text-balance text-ink-inverse sm:text-5xl">
+          {instructor.nombre}
+        </h2>
+        <p class="mt-2 text-lg font-medium text-secondary-300">
+          <T v={instructor.rol} resaltar />
+        </p>
+        <p class="mt-6 max-w-2xl text-base text-pretty text-secondary-100 sm:text-lg">
+          <T v={instructor.bio} resaltar />
+        </p>
+
         {
           credenciales.length > 0 && (
-            <ul class="mt-4 grid grid-cols-2 gap-3">
+            <ul class="mt-8 grid gap-x-8 gap-y-5 border-t border-primary-800 pt-8 sm:grid-cols-2">
               {credenciales.map((c, i) => (
-                <li class="rounded-xl border border-line bg-surface-muted p-4 text-center">
-                  <Icono
-                    nombre={ICONOS[i] ?? "check"}
-                    class="mx-auto size-6 text-secondary-600"
-                  />
-                  <p class="mt-2.5 text-sm font-semibold leading-snug text-pretty text-ink">
+                <li class="flex items-start gap-3">
+                  <span
+                    aria-hidden="true"
+                    class="marca-linea shrink-0 text-secondary-500"
+                  >
+                    <Icono nombre={ICONOS[i] ?? "check"} class="size-5" />
+                  </span>
+                  <p class="text-sm leading-snug text-pretty text-secondary-100">
                     <T v={c.dato} resaltar />
                   </p>
                 </li>
@@ -212,153 +278,145 @@ const urlWhatsapp = contacto.whatsapp
       </div>
     </Reveal>
 
-    <div>
-      <Reveal delay={0.08}>
-        <p class="text-xs font-bold uppercase tracking-[0.16em] text-ink-brand">
-          <T v={copy.instructor.kicker} />
-        </p>
-        <h2 class="mt-3 text-4xl font-extrabold text-balance text-ink sm:text-5xl">
-          {instructor.nombre}
-        </h2>
-        <p class="mt-2 text-lg font-medium text-ink-brand">
-          <T v={instructor.rol} resaltar />
-        </p>
-        <p class="mt-6 max-w-2xl text-lg text-pretty text-ink-muted">
-          <T v={instructor.bio} resaltar />
-        </p>
-      </Reveal>
+    {/* ─── LA ACCIÓN, DEBAJO DE LA CARA ──────────────────────────────────
+        Estaba al final de la sección, a todo el ancho y centrada. Sube a la
+        columna de la persona por dos motivos.
 
-      {/* ─── Para que no haya sorpresas ─────────────────────────────────────
-          SUBE, y no es solo colocación. Las credenciales se fueron a la columna
-          de la foto, así que esto queda pegado a la bio: se lee "quién soy" y
-          justo después "y esto es lo que no hago". Ese es el orden en que
-          convence — primero la persona, luego sus límites.
+        Uno de fondo: este es el punto en el que se decide si uno se fía de
+        quien da el curso, y esa decisión se toma mirando la foto y leyendo la
+        bio. El botón tiene que estar ahí, no dos bloques más abajo, después de
+        la letra pequeña de lo que el curso NO hace.
 
-          Se rediseñó, no se recortó. Ver la nota de `noCubreTitulo` en el
-          config: cuatro aspas ROJAS seguidas se leen como una lista de errores
-          del producto, cuando lo que dicen es justo lo contrario —que aquí se
-          juega limpio—. Ahora van en una caja tranquila, con un guion neutro en
-          vez del aspa y el color de la marca en el título. */}
-      <Reveal delay={0.14}>
-        <div class="mt-9 rounded-2xl border border-line bg-surface-muted p-6 sm:p-7">
-          <div class="flex items-start gap-3">
-            <span aria-hidden="true" class="marca-linea text-secondary-600">
-              <Icono nombre="escudo" class="size-5" />
-            </span>
-            <div class="min-w-0">
-              <h3 class="text-base font-bold text-ink">
-                <T v={copy.instructor.noCubreTitulo} />
-              </h3>
-              <p class="mt-1 text-sm text-ink-subtle">
-                <T v={copy.instructor.noCubreNota} />
-              </p>
-            </div>
-          </div>
+        Y uno de forma: la columna de la foto terminaba en un hueco. Ahora la
+        cierra la acción.
 
-          <ul class="mt-5 grid gap-x-10 gap-y-2.5 border-t border-line pt-5 text-sm sm:grid-cols-2">
-            {
-              noCubre.map((item) => (
-                <li class="flex items-start gap-2.5">
-                  {/* Un guion, no un aspa: marca el límite sin dramatizarlo. */}
-                  <span
-                    aria-hidden="true"
-                    class="marca-linea text-ink-subtle"
-                  >
-                    <span class="block h-px w-3 bg-current" />
-                  </span>
-                  <span class="text-pretty text-ink-muted">
-                    <T v={item} />
-                  </span>
-                </li>
-              ))
-            }
-          </ul>
-        </div>
-      </Reveal>
+        ⚠️ VA DESPUÉS DE LA ISLA EN EL MARCADO, aunque en pantalla grande se
+        pinte a la izquierda: la coloca la rejilla, no el orden del HTML. Si
+        estuviera antes, en móvil —donde todo se apila— saldría "inscríbete"
+        ANTES de decir quién es la persona, que es pedir la decisión antes de
+        dar el motivo. Y con `order` en CSS se arreglaría la vista pero no el
+        orden en que lo lee un lector de pantalla ni el del tabulador.
 
-      {/* Los HECHOS que siguen sin rellenar, aparte y en ámbar. */}
-      {
-        credencialesPendientes.length > 0 && (
-          <Reveal delay={0.2}>
-            <ul class="mt-8 grid gap-2 rounded-xl border-2 border-dashed border-line-strong bg-surface-muted p-5 text-sm">
-              {credencialesPendientes.map((c) => (
-                <li class="text-pretty text-ink-muted">
-                  <T v={c.dato} resaltar />
-                </li>
-              ))}
-            </ul>
-          </Reveal>
-        )
-      }
+        Apilados y a todo el ancho, como en el rail del temario: en una columna
+        de 23rem, dos botones lado a lado dejan 10rem a cada uno y el texto se
+        parte dentro de la píldora. */}
+    <Reveal delay={0.16} class="mx-auto w-full max-w-sm lg:col-start-1 lg:row-start-2 lg:max-w-none">
+      <div class="flex flex-col gap-3">
+        <Button
+          href={cta.primario.href}
+          variant="primary"
+          size="lg"
+          trackId="instructor"
+          class="w-full"
+        >
+          <T v={cta.primario.texto} />
+        </Button>
 
-      {
-        sinRellenar && (
-          <p class="mt-6 rounded-lg border-2 border-dashed border-line-strong bg-surface-muted px-4 py-3 text-sm font-medium text-ink-muted">
-            ⚠ <T v={copy.instructor.avisoPlaceholder} />
-          </p>
-        )
-      }
-    </div>
+        {/* Solo si hay número. Un botón de llamar que no llama es peor que no
+            tenerlo: se pulsa, no pasa nada, y se pierde la confianza justo en
+            la sección que existe para ganarla. */}
+        {
+          contacto.telefono && (
+            <Button
+              href={`tel:${contacto.telefono}`}
+              variant="secondary"
+              size="lg"
+              trackId="instructor-llamada"
+              class="w-full"
+            >
+              <T v={copy.instructor.llamame} />
+            </Button>
+          )
+        }
+
+        {
+          urlWhatsapp && (
+            <Button
+              href={urlWhatsapp}
+              variant="secondary"
+              size="lg"
+              trackId="instructor-whatsapp"
+              class="w-full"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <T v={copy.instructor.whatsapp} />
+            </Button>
+          )
+        }
+      </div>
+    </Reveal>
   </div>
 
-  {/* ─── La acción ────────────────────────────────────────────────────────
-      FUERA de las dos columnas, y ese es todo el arreglo. Dentro de la columna
-      de texto los botones heredaban su borde izquierdo, o sea que arrancaban a
-      un tercio de la página y quedaban escorados a la derecha: parecían
-      colgando en vez de centrados.
+  {/* ─── PARA QUE NO HAYA SORPRESAS ───────────────────────────────────────
+      No se toca lo que dice, y esa es la regla: PRODUCT.md pide que los
+      límites lleven el mismo peso visual que las promesas, porque quien admite
+      lo que no hace resulta creíble en todo lo demás, y de paso no le vende a
+      quien esperaba otra cosa.
 
-      Aquí abajo, a todo el ancho, se centran de verdad respecto a la sección
-      entera. Y funcionan mejor: cierran la sección para quien acaba de leer la
-      bio Y para quien solo miró la foto y las credenciales.
+      Sale de la columna de texto y pasa a ancho completo, en dos columnas: el
+      título y su nota a un lado, los cuatro límites al otro. Dentro de la
+      columna estrecha se leían como una nota al pie de la bio; cruzando la
+      página entera pesan lo que tienen que pesar. Y de paso ocupan el blanco
+      que dejaba debajo la columna más corta.
 
-      Este es el punto en el que se decide si uno se fía de la persona. El botón
-      de WhatsApp solo existe si hay número en el config. */}
-  <Reveal delay={0.26}>
-    <div
-      class="mt-12 flex flex-col items-center justify-center gap-3 border-t border-line pt-10 sm:flex-row sm:flex-wrap sm:gap-4"
-    >
-      <Button
-        href={cta.primario.href}
-        variant="primary"
-        size="lg"
-        trackId="instructor"
-        class="w-full sm:w-auto"
-      >
-        <T v={cta.primario.texto} />
-      </Button>
+      Sigue sin aspas rojas: cuatro aspas seguidas se leen como una lista de
+      fallos del producto, cuando dicen justo lo contrario. */}
+  <Reveal delay={0.14}>
+    <div class="mt-16 grid gap-8 rounded-3xl bg-surface-muted p-8 ring-1 ring-line ring-inset sm:p-10 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] lg:items-center lg:gap-16">
+      <div class="flex items-start gap-3">
+        <span aria-hidden="true" class="marca-linea text-secondary-600">
+          <Icono nombre="escudo" class="size-5" />
+        </span>
+        <div class="min-w-0">
+          <h3 class="text-xl font-bold text-balance text-ink">
+            <T v={copy.instructor.noCubreTitulo} />
+          </h3>
+          <p class="mt-2 text-sm text-pretty text-ink-subtle">
+            <T v={copy.instructor.noCubreNota} />
+          </p>
+        </div>
+      </div>
 
-      {/* Solo si hay número. Un botón de llamar que no llama es peor que no
-          tenerlo: se pulsa, no pasa nada, y se pierde la confianza justo en la
-          sección que existe para ganarla. */}
-      {
-        contacto.telefono && (
-          <Button
-            href={`tel:${contacto.telefono}`}
-            variant="secondary"
-            size="lg"
-            trackId="instructor-llamada"
-            class="w-full sm:w-auto"
-          >
-            <T v={copy.instructor.llamame} />
-          </Button>
-        )
-      }
-
-      {
-        urlWhatsapp && (
-          <Button
-            href={urlWhatsapp}
-            variant="secondary"
-            size="lg"
-            trackId="instructor-whatsapp"
-            class="w-full sm:w-auto"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <T v={copy.instructor.whatsapp} />
-          </Button>
-        )
-      }
+      <ul class="grid gap-x-10 gap-y-3 text-sm sm:grid-cols-2">
+        {
+          noCubre.map((item) => (
+            <li class="flex items-start gap-2.5">
+              {/* Un guion, no un aspa: marca el límite sin dramatizarlo. */}
+              <span aria-hidden="true" class="marca-linea text-ink-subtle">
+                <span class="block h-px w-3 bg-current" />
+              </span>
+              <span class="text-pretty text-ink-muted">
+                <T v={item} />
+              </span>
+            </li>
+          ))
+        }
+      </ul>
     </div>
   </Reveal>
+
+  {/* Los HECHOS que siguen sin rellenar, aparte y en ámbar. */}
+  {
+    credencialesPendientes.length > 0 && (
+      <Reveal delay={0.2}>
+        <ul class="mt-8 grid gap-2 rounded-xl border-2 border-dashed border-line-strong bg-surface-muted p-5 text-sm">
+          {credencialesPendientes.map((c) => (
+            <li class="text-pretty text-ink-muted">
+              <T v={c.dato} resaltar />
+            </li>
+          ))}
+        </ul>
+      </Reveal>
+    )
+  }
+
+  {
+    sinRellenar && (
+      <p class="mt-6 rounded-lg border-2 border-dashed border-line-strong bg-surface-muted px-4 py-3 text-sm font-medium text-ink-muted">
+        ⚠ <T v={copy.instructor.avisoPlaceholder} />
+      </p>
+    )
+  }
+
 </Section>
