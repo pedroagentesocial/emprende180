@@ -195,6 +195,33 @@ export async function signInWithPassword(
 }
 
 /**
+ * Entra con un proveedor externo (Google, Facebook).
+ *
+ * ⚠️ NO CREA CUENTAS, Y ESE ES EL PUNTO ENTERO. Recibe un correo que el
+ * proveedor ya verificó (ver `@lib/oauth`) y busca al alumno que lo tiene. Si
+ * no existe, devuelve `null` y quien llama manda de vuelta al acceso.
+ *
+ * El portal es de quien compró el curso: un "entrar con Google" que diera de
+ * alta convertiría el área de alumnos en algo a lo que entra cualquiera con
+ * una cuenta de Gmail.
+ *
+ * ⚠️ Y DEVUELVE `null` IGUAL para "no existe" y para "está desactivado", por
+ * lo mismo que `signInWithPassword`: dos mensajes distintos son un
+ * comprobador de clientes.
+ */
+export async function abrirSesionDeProveedor(
+  email: string,
+  cookies: AstroCookies,
+  userAgent: string | null,
+): Promise<Student | null> {
+  const student = await repo().studentByEmail(email.trim().toLowerCase());
+  if (!student?.active) return null;
+
+  await openSession(student, cookies, userAgent);
+  return student;
+}
+
+/**
  * Saves a new password and CLOSES EVERY OTHER SESSION.
  *
  * That second part is half the reason a reset exists: someone changing their

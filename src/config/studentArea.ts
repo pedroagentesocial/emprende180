@@ -205,6 +205,32 @@ export const studentCopy = {
   },
   signedOut: { es: "Has salido de tu cuenta.", en: "You've been signed out." },
 
+  /* ─── ENTRAR CON GOOGLE O CON FACEBOOK ──────────────────────────────────
+     Los botones solo se pintan si el proveedor está configurado. Ver
+     `@lib/oauth`. */
+  entrarCon: { es: "Entrar con {proveedor}", en: "Continue with {proveedor}" },
+  oBien: { es: "o con tu correo", en: "or with your email" },
+
+  /** Cualquier tropiezo del viaje de ida y vuelta al proveedor. */
+  errorOauth: {
+    es: "No hemos podido completar la entrada. Prueba otra vez, o entra con tu correo y tu contraseña.",
+    en: "We couldn't complete the sign-in. Try again, or use your email and password.",
+  },
+
+  /**
+   * Se identificó bien, pero ese correo no es de ningún alumno.
+   *
+   * ⚠️ NO DICE "esa cuenta no existe", y no es un descuido de redacción: el
+   * mismo mensaje sale si la cuenta está desactivada. Dos mensajes distintos
+   * serían un comprobador de clientes —cualquiera podría averiguar qué
+   * direcciones compraron el curso—, que es la misma razón por la que el
+   * error de contraseña tampoco distingue.
+   */
+  errorSinCuenta: {
+    es: "Ese correo no tiene acceso al portal. Si compraste el curso con otra dirección, entra con esa; si no, llámanos y lo vemos.",
+    en: "That email doesn't have portal access. If you bought the course with a different address, use that one; if not, call us and we'll sort it out.",
+  },
+
   /* ─── Ayuda, en el portal del alumno ───────────────────────────────────────
      Tres salidas para las tres cosas distintas que le pueden pasar a alguien que
      ya está dentro: algo no funciona, tengo una duda, o esto se podría hacer

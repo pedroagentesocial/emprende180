@@ -8,6 +8,7 @@ import MarcaAgua from "@components/ui/MarcaAgua.astro";
 import LoginForm from "@components/student/LoginForm";
 import { sitio, contacto, copy } from "@config/curso.config";
 import { studentCopy } from "@config/studentArea";
+import BotonesProveedor from "@components/auth/BotonesProveedor.astro";
 import { construirTxt, resolverIdiomaServidor } from "@i18n/idioma";
 import {
   currentStudent,
@@ -261,12 +262,25 @@ const logo = sitio.logoHorizontal;
           {
             hasNotice && (
               <div class="mb-4 grid gap-3">
+                {/* Tres motivos distintos para volver aquí con `?error=`: el
+                    enlace caducado de siempre, un tropiezo entrando con Google o
+                    Facebook, y el caso de identificarse bien pero no tener
+                    cuenta. El tercero es el que más importa que se entienda:
+                    quien lo ve hizo todo bien y aun así no entra. */}
                 {error && (
                   <p
                     role="alert"
                     class="rounded-2xl border border-warning-500 bg-warning-50 px-4 py-3 text-sm text-pretty text-ink"
                   >
-                    <T v={studentCopy.errorExpired} />
+                    <T
+                      v={
+                        error === "sin-cuenta"
+                          ? studentCopy.errorSinCuenta
+                          : error === "oauth"
+                            ? studentCopy.errorOauth
+                            : studentCopy.errorExpired
+                      }
+                    />
                   </p>
                 )}
 
@@ -314,6 +328,10 @@ const logo = sitio.logoHorizontal;
           }
 
           <div class="rounded-3xl border border-line bg-surface p-6 shadow-[var(--shadow-xl)] sm:p-8">
+            {/* Google y Facebook, si están configurados. Si no, no pinta ni
+                un hueco: la card se queda como estaba. Ver el componente. */}
+            <BotonesProveedor next={next} />
+
             <LoginForm
               client:load
               lang={lang}
