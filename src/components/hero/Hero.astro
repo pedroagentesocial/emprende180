@@ -92,7 +92,7 @@ const pruebaSocial = construirTxt((l) =>
 
 <section
   id="inicio"
-  class="relative isolate flex min-h-[calc(100svh-var(--header-h))] flex-col overflow-hidden bg-surface lg:min-h-[calc(100svh-var(--header-h-lg))]"
+  class="relative isolate flex min-h-[calc(100svh-var(--header-h-grande))] flex-col overflow-hidden bg-surface lg:min-h-[calc(100svh-var(--header-h-grande-lg))]"
 >
   {/* ─── EL NAVY SE MUDA DEL FONDO A LA ISLA ──────────────────────────────
       El hero era una pantalla navy entera con el texto y el vídeo encima.
@@ -117,7 +117,7 @@ const pruebaSocial = construirTxt((l) =>
       necesita es el mismo aire. */}
   <div class="container-page relative flex flex-1 flex-col pb-8 pt-5 max-[359px]:pt-3 sm:pt-12 md:pb-14">
     <div
-      class="flex flex-1 flex-col justify-center gap-10 lg:flex-row lg:items-center lg:gap-16"
+      class="flex flex-1 flex-col justify-center gap-10 lg:flex-row lg:items-center lg:gap-12"
     >
       {/* ─── LA ISLA DEL TEXTO ─────────────────────────────────────────────
           Todo el argumento del hero dentro de una superficie navy: el rótulo,
@@ -130,7 +130,7 @@ const pruebaSocial = construirTxt((l) =>
           isla con el mismo relleno a 360 que a 1440 se ve apretada en la grande
           y desperdiciada en la pequeña. */}
       <div
-        class="relative isolate max-w-2xl overflow-hidden rounded-3xl bg-primary-950 p-8 sm:p-10 lg:flex-1 lg:p-12"
+        class="relative isolate flex max-w-2xl flex-col justify-center overflow-hidden rounded-3xl bg-primary-950 p-8 sm:p-10 lg:flex-1 lg:p-9 xl:p-11"
       >
         {/* La trama de puntos de la guía de marca. Al 10 %: tiene que notarse
             que hay una textura, no verse los puntos. */}
@@ -151,7 +151,7 @@ const pruebaSocial = construirTxt((l) =>
         </div>
 
         <h1
-          class="mt-4 text-hero font-extrabold text-balance text-ink-inverse max-[359px]:mt-2.5 sm:mt-5"
+          class="mt-4 text-hero font-extrabold text-balance text-ink-inverse max-[359px]:mt-2.5"
           data-hero-enter
           style="--i:1"
         >
@@ -170,7 +170,7 @@ const pruebaSocial = construirTxt((l) =>
         </p>
 
         <div
-          class="mt-6 flex flex-col gap-3 max-[359px]:mt-4 sm:mt-8 sm:flex-row sm:items-center sm:gap-4"
+          class="mt-6 flex flex-col gap-3 max-[359px]:mt-4 sm:flex-row sm:items-center sm:gap-4"
           data-hero-enter
           style="--i:3"
         >
@@ -218,7 +218,7 @@ const pruebaSocial = construirTxt((l) =>
             sobre el navy del hero separa igual de bien y no compite con el teal
             del botón, que es el único sitio donde el teal significa "pulsa". */}
         <div
-          class="mt-8 max-w-xl rounded-xl bg-primary-800/60 px-4 py-3"
+          class="mt-6 max-w-xl rounded-xl bg-primary-800/60 px-4 py-3"
           data-hero-enter
           style="--i:5"
         >
@@ -255,7 +255,7 @@ const pruebaSocial = construirTxt((l) =>
       {
         vsl.disponible && (
           <div
-            class="mx-auto w-full max-w-[21rem] lg:mx-0 lg:shrink-0"
+            class="mx-auto w-full max-w-[21rem] lg:mx-0 lg:w-[24rem] lg:max-w-none lg:shrink-0"
             data-hero-enter
             style="--i:2"
           >

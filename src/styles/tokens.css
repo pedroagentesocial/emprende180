@@ -287,15 +287,20 @@
   --container-read: 42rem; /* ~68 caracteres por línea */
   --container-page: 72rem;
 
-  /* Alto del header.
-     El header está en el flujo normal (`position: static`): ocupa su sitio él
-     solo y se va con el scroll, así que nadie tiene que reservarle hueco.
-     Este token existe por UN motivo: el hero resta esta altura a la pantalla
-     (`min-h: calc(100svh - var(--header-h))`) para que header + hero sumen
-     exactamente una pantalla y no sobre una franja ni falte. Los dos números
-     tienen que salir del mismo sitio o el hero deja de cuadrar. */
+  /* Alto del header, EN SUS DOS ESTADOS.
+     La barra se queda arriba al bajar (`sticky`) y tiene dos tamaños: alta
+     mientras no se ha hecho scroll, compacta en cuanto se empieza a bajar.
+
+     Los cuatro números viven aquí y no en utilidades sueltas por un motivo
+     concreto: el hero resta la altura GRANDE a la pantalla
+     (`min-h: calc(100svh - var(--header-h-grande))`) para que barra + hero
+     sumen exactamente una pantalla al cargar, que es cuando la barra está
+     alta. Si esos números se escriben en dos sitios, el día que alguien cambie
+     uno el hero deja de cuadrar y nadie sabe por qué. */
   --header-h: 4rem;
   --header-h-lg: 4.5rem;
+  --header-h-grande: 5rem;
+  --header-h-grande-lg: 6.5rem;
 
   /* Objetivo táctil mínimo: 44 px (Apple HIG / WCAG 2.5.5) = `min-h-11`.
      Ningún elemento pulsable debe quedar por debajo. */

@@ -51,7 +51,7 @@ const lang = resolverIdiomaServidor(
       data-src={vsl.mp4}
       data-subtitulos={vsl.subtitulos ?? undefined}
       data-pista-label={copy.vsl.pistaSubtitulos[lang]}
-      class="relative mx-auto w-full max-w-[19rem] overflow-hidden rounded-3xl border border-secondary-200/25 bg-primary-950 shadow-xl sm:max-w-[21rem]"
+      class="relative mx-auto w-full max-w-[19rem] overflow-hidden rounded-3xl border border-line bg-primary-950 shadow-xl sm:max-w-[21rem] lg:max-w-none"
     >
       {/* La proporción está fijada aquí y no la decide el vídeo al cargar: sin
           esto, el marco mide cero hasta que llegan los metadatos y todo lo que

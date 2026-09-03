@@ -9,38 +9,37 @@ import { resolverIdiomaServidor } from "@i18n/idioma";
 /**
  * Header de la landing.
  *
- * ES ESTÁTICO EN EL SENTIDO LITERAL: `position: static`
- * ─────────────────────────────────────────────────────
- * La barra vive en el flujo normal, arriba del documento, y SE VA con el scroll
- * como cualquier otro contenido. No se pega, no reaparece, no se encoge, no
- * cambia de fondo. Ni un listener de scroll: el componente no sabe por dónde va
- * la página y no necesita saberlo.
+ * SE PEGA ARRIBA Y TIENE DOS TAMAÑOS
+ * ──────────────────────────────────
+ * Alta mientras no se ha bajado nada; compacta en cuanto se empieza a bajar. Se
+ * queda visible todo el rato (`sticky`).
  *
- * Pasó por tres versiones y conviene dejar constancia para no volver atrás sin
- * querer: era `sticky` con fondo translúcido y desenfoque; luego `fixed` con
- * fondo opaco; ahora estático. Lo pidió el cliente, con estas palabras: que la
- * barra se quede en su lugar y no baje con nosotros.
+ * ⚠️ ESTO REVIERTE UNA DECISIÓN ANTERIOR DEL PROPIO CLIENTE, y las dos quedan
+ * escritas porque la historia importa más que la última versión:
  *
- * QUÉ SE GANA. La primera pantalla es del hero entero y de nadie más, y al
- * bajar no hay una franja blanca comiéndose 64 px de cada sección. En una
- * página de una sola columna con el argumento en orden, eso es aire.
+ *   · Antes fue `sticky` con desenfoque, luego `fixed`, y luego ESTÁTICA. Lo
+ *     pidió él, con estas palabras: "que la barra se quede en su lugar y no
+ *     baje con nosotros".
+ *   · Ahora ha pedido lo contrario: grande al principio y que encoja al hacer
+ *     scroll. Eso solo tiene sentido si la barra sigue ahí mientras se baja, o
+ *     sea pegajosa.
  *
- * QUÉ SE PIERDE, PARA QUE ESTÉ DICHO. En escritorio el botón "Inscribirme al
- * curso" deja de estar disponible en cuanto se pasa el hero: quien decide
- * comprar en mitad del temario tiene que seguir bajando hasta la sección de
- * precio o subir del todo. En móvil no pasa, porque ahí manda el CTA fijo
- * inferior (`StickyCta`), que sigue apareciendo al dejar atrás el hero. Si algún
- * día se quiere tapar ese hueco sin resucitar el header pegajoso, lo correcto es
- * extender esa misma barra inferior a escritorio, no volver a `fixed`.
+ * QUÉ SE RECUPERA. El botón de comprar vuelve a estar disponible en escritorio
+ * durante toda la página. Ese hueco estaba anotado como el coste de la versión
+ * estática: quien decidía comprar en mitad del temario tenía que seguir bajando
+ * hasta el precio o subir del todo.
  *
- * El fondo es OPACO y no translúcido con desenfoque. Ya no hace falta para
- * convivir con el vídeo (la barra deja de montarse encima al bajar), pero un
- * `backdrop-blur` a pantalla completa cuesta compositing en cada scroll y aquí
- * no compra nada.
+ * QUÉ SE PAGA, PARA QUE ESTÉ DICHO. La franja se come alto en cada pantalla al
+ * bajar, que es exactamente lo que molestaba antes. Se compensa con el segundo
+ * tamaño: compacta ocupa 4rem, no 6,5.
  *
- * El alto sale del token `--header-h` y no de una utilidad de Tailwind: el mismo
- * número lo usa el hero para calcular su altura, de modo que header + hero suman
- * exactamente una pantalla. Escrito en un solo sitio, no pueden desincronizarse.
+ * El fondo es OPACO y no translúcido con desenfoque: un `backdrop-blur` a
+ * pantalla completa cuesta compositing en CADA scroll, y ahora que la barra
+ * viaja con la página eso se pagaría todo el rato.
+ *
+ * LAS CUATRO ALTURAS SALEN DE TOKENS y no de utilidades sueltas, porque el hero
+ * resta la altura GRANDE a la pantalla para que barra + hero sumen una pantalla
+ * exacta al cargar. Escritas en un solo sitio, no pueden desincronizarse.
  *
  * Sin menú de navegación más allá de tres anclas: en una página de conversión
  * cada enlace es una salida, y los tres que hay llevan HACIA la compra.
@@ -103,25 +102,73 @@ const logoAlt = {
 };
 ---
 
-{/* Sin `position`, sin `z-index` y sin `inset`: está en el flujo. El único
-    motivo por el que queda un `relative` es que el logo y el CTA necesitan
-    contexto de apilamiento propio si algún día se les pone un adorno encima. */}
-<header class="relative border-b border-line bg-surface">
+{/* ⚠️ EL CENTINELA. Un píxel invisible justo encima de la barra. Mientras se
+    ve, estamos arriba del todo y la barra va alta; en cuanto sale de pantalla,
+    la barra se compacta. Un IntersectionObserver sobre esto cuesta cero; un
+    listener de `scroll` se dispara decenas de veces por segundo. */}
+<div data-tope-centinela aria-hidden="true" class="h-px w-full"></div>
+
+<header
+  data-cabecera
+  data-compacta="false"
+  class="group sticky top-0 z-40 border-b border-line bg-surface"
+>
   {/* ─── EL HEADER A 320 PX ─────────────────────────────────────────────────
       Con el acceso de alumnos dentro, la fila pasó a pedir 347 px en un
       teléfono de 320: 27 px de desbordamiento, o sea scroll horizontal en toda
       la página. Se recuperan repartidos y sin quitar nada de la barra —el
       hueco entre bloques, el ancho del logotipo y el acolchado del acceso—,
       porque los tres elementos que hay tienen que seguir estando: la marca, el
-      idioma y la puerta de quien ya pagó. */}
+      idioma y la puerta de quien ya pagó.
+
+      ─── TRES COLUMNAS DE `lg` PARA ARRIBA ────────────────────────────────
+      Navegación a la izquierda, logotipo en el centro, acciones a la derecha.
+      Es una rejilla de tres y no un flex con `justify-between` porque el
+      logotipo tiene que quedar en el CENTRO DE LA PANTALLA, no en el centro del
+      hueco que dejen los otros dos: con flex, en cuanto un lado pesa más que el
+      otro, el logo se desplaza y deja de estar centrado.
+
+      Por debajo de `lg` no hay menú, así que la rejilla de tres dejaría la
+      columna izquierda vacía y el logo centrado contra nada. Ahí se vuelve al
+      reparto de siempre: marca a la izquierda, acciones a la derecha. */}
   <div
-    class="container-page flex h-[var(--header-h)] items-center justify-between gap-2 max-[359px]:gap-1 sm:gap-4 lg:h-[var(--header-h-lg)]"
+    class="container-page flex h-[var(--header-h-grande)] items-center justify-between gap-2 transition-[height] duration-300 ease-[var(--ease-out-soft)] group-data-[compacta=true]:h-[var(--header-h)] max-[359px]:gap-1 sm:gap-4 lg:grid lg:h-[var(--header-h-grande-lg)] lg:grid-cols-[1fr_auto_1fr] lg:group-data-[compacta=true]:h-[var(--header-h-lg)]"
   >
-    {/* shrink-0: sin esto, en móvil el flex del header comprimía el enlace y
-        el logo salía deformado (115×32 sobre un arte de 573×120). */}
+    {/* ─── IZQUIERDA: la navegación ──────────────────────────────────────
+        En móvil este bloque no existe, y por eso el logo va antes en el
+        marcado: el orden de lectura tiene que empezar por la marca. En `lg` la
+        rejilla lo coloca en su columna con `order`. */}
+    {
+      !minimo && (
+        <nav
+          aria-label={copy.ui.menuPrincipal[lang]}
+          data-aria-es={copy.ui.menuPrincipal.es}
+          data-aria-en={copy.ui.menuPrincipal.en}
+          class="hidden lg:order-1 lg:flex lg:items-center lg:gap-1 lg:justify-self-start"
+        >
+          {cta.navegacion.map((item) => (
+            <a
+              href={enlace(item.href)}
+              class="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold text-ink-muted transition-colors duration-200 hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            >
+              <T v={item.texto} />
+            </a>
+          ))}
+        </nav>
+      )
+    }
+
+    {/* ─── CENTRO: la marca ──────────────────────────────────────────────
+        shrink-0: sin esto, en móvil el flex del header comprimía el enlace y
+        el logo salía deformado (115×32 sobre un arte de 573×120).
+
+        El logotipo encoge con la barra. Se anima con `height` y no con
+        `transform: scale`, que sería más barato, porque un logotipo escalado se
+        ve borroso a mitad de la transición: es un dibujo con texto fino, y aquí
+        la nitidez manda sobre el ahorro de un fotograma. */}
     <a
       href={hrefLogo}
-      class="flex min-h-11 shrink-0 items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      class="flex min-h-11 shrink-0 items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus lg:order-2 lg:justify-self-center"
     >
       <img
         src={logo.src}
@@ -130,42 +177,19 @@ const logoAlt = {
         data-alt-en={logoAlt.en}
         width={logo.w}
         height={logo.h}
-        class="h-8 w-auto shrink-0 max-[359px]:h-7 sm:h-9"
+        class="h-9 w-auto shrink-0 transition-[height] duration-300 ease-[var(--ease-out-soft)] group-data-[compacta=true]:h-8 max-[359px]:h-7 sm:h-11 lg:h-14 lg:group-data-[compacta=true]:h-9"
         fetchpriority="high"
         decoding="async"
       />
     </a>
 
-    {/* Menú. Solo de `lg` para arriba, y el breakpoint está medido, no elegido:
-        con `md` el menú aparecía a 768 px, donde el header ya lleva logo,
-        selector de idioma y CTA. Los tres enlaces no cabían y el header
-        desbordaba 31 px, o sea scroll horizontal en toda la página justo en el
-        ancho de una tablet en vertical. A 1024 sí caben los cuatro bloques.
-        Los tres llevan HACIA la compra: temario y preguntas son justo las dos
-        objeciones que hacen volver arriba a buscar. */}
-    {
-      !minimo && (
-    <nav
-      aria-label={copy.ui.menuPrincipal[lang]}
-      data-aria-es={copy.ui.menuPrincipal.es}
-      data-aria-en={copy.ui.menuPrincipal.en}
-      class="hidden lg:flex lg:items-center lg:gap-1"
-    >
-      {
-        cta.navegacion.map((item) => (
-          <a
-            href={enlace(item.href)}
-            class="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold text-ink-muted transition-colors duration-200 hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-          >
-            <T v={item.texto} />
-          </a>
-        ))
-      }
-    </nav>
-      )
-    }
-
-    <div class="flex shrink-0 items-center gap-2 sm:gap-3">
+    {/* ─── DERECHA: idioma, acceso y compra ──────────────────────────────
+        El menú (que ahora vive arriba, en su columna) solo aparece de `lg` para
+        arriba, y el punto de corte está medido, no elegido: con `md` salía a
+        768 px, donde la barra ya lleva logo, selector de idioma y CTA. Los tres
+        enlaces no cabían y el header desbordaba 31 px, o sea scroll horizontal
+        en toda la página justo en el ancho de una tablet en vertical. */}
+    <div class="flex shrink-0 items-center gap-2 sm:gap-3 lg:order-3 lg:justify-self-end">
       {/* El selector va SIEMPRE visible, también en móvil: si alguien llega
           con ?lang= equivocado tiene que poder corregirlo sin buscar. */}
       <LanguageSwitch client:load lang={lang} />
@@ -227,3 +251,34 @@ const logoAlt = {
     </div>
   </div>
 </header>
+
+{/* ═══════════════════════════════════════════════════════════════════════════
+    LA BARRA SE COMPACTA AL BAJAR
+    ═══════════════════════════════════════════════════════════════════════════
+
+    Once líneas y ningún listener de `scroll`. El centinela es un píxel encima
+    de la barra: mientras se ve, estamos arriba del todo; en cuanto sale de
+    pantalla, la barra pasa a `data-compacta="true"` y el CSS hace el resto.
+
+    ⚠️ POR QUÉ NO UN LISTENER DE SCROLL. Se dispara decenas de veces por segundo
+    y en cada una hay que leer `scrollY`, que fuerza al navegador a recalcular
+    la maqueta. El observador solo avisa cuando la respuesta CAMBIA, que son dos
+    veces en toda la visita.
+
+    ⚠️ SIN JAVASCRIPT LA BARRA SE QUEDA ALTA, y es la degradación correcta: alta
+    es como se ve al cargar, que es el estado en el que el logotipo se lee mejor.
+    No hay ningún caso en el que la barra desaparezca o tape nada. */}
+<script is:inline>
+  (() => {
+    const centinela = document.querySelector("[data-tope-centinela]");
+    const cabecera = document.querySelector("[data-cabecera]");
+    if (!centinela || !cabecera) return;
+
+    new IntersectionObserver(
+      ([entrada]) => {
+        cabecera.dataset.compacta = String(!entrada.isIntersecting);
+      },
+      { threshold: 0 },
+    ).observe(centinela);
+  })();
+</script>
