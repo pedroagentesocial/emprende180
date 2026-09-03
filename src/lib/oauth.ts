@@ -117,8 +117,34 @@ export const configurado = (p: Proveedor): boolean =>
 export const proveedoresActivos = (): Proveedor[] =>
   PROVEEDORES.filter(configurado);
 
-export const urlRetorno = (proveedor: Proveedor, origen: URL): string =>
-  new URL(`/api/auth/${proveedor}/callback`, origen).href;
+/**
+ * La URL de retorno.
+ *
+ * ⚠️ EN PRODUCCIÓN SALE DEL DOMINIO CONFIGURADO, NO DEL DE LA PETICIÓN, y
+ * aquí no es una precaución: es que si no, esto NO FUNCIONA.
+ *
+ * Google y Facebook comparan esta URL, carácter a carácter, con la lista que
+ * uno registra en su consola, y rechazan el intento si no es idéntica. Si se
+ * construyera con el dominio de la petición, cada despliegue de vista previa
+ * —que tiene su propia URL, distinta en cada push— mandaría una `redirect_uri`
+ * que no está registrada, y el botón fallaría con un error del proveedor que
+ * no dice nada útil (`redirect_uri_mismatch`).
+ *
+ * Con el dominio configurado, solo hay UNA URL que registrar y siempre es la
+ * misma. En desarrollo se usa la petición, o probar en local mandaría a la
+ * gente a producción a mitad del flujo.
+ *
+ * Es la misma decisión, y por el mismo motivo, que la del enlace por correo
+ * en `@lib/auth`.
+ */
+export const urlRetorno = (proveedor: Proveedor, origen: URL): string => {
+  const base =
+    import.meta.env.PROD && import.meta.env.SITE
+      ? new URL(import.meta.env.SITE)
+      : origen;
+
+  return new URL(`/api/auth/${proveedor}/callback`, base).href;
+};
 
 /* ─── Piezas criptográficas ───────────────────────────────────────────────
    Todo con la WebCrypto del runtime, que es la que hay en la función de
