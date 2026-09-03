@@ -93,6 +93,42 @@ const dolores = curso.problema.dolores.map((d, i) => ({
   ...d,
   icono: ICONOS[i] ?? "red",
 }));
+
+/**
+ * Cuánto ocupa cada isla en la rejilla de seis columnas.
+ *
+ * 4+2, luego 2+4, y la quinta a todo el ancho. El vaivén es deliberado: dos
+ * filas con la isla ancha en lados opuestos hacen que el ojo cruce en zigzag
+ * dentro de la propia rejilla, en vez de recorrer tres columnas iguales.
+ *
+ * ⚠️ ESTA TABLA ES POR POSICIÓN Y HAY CINCO DOLORES. Si se añade un sexto sin
+ * añadir su tramo, el `?? "sm:col-span-2"` lo deja a dos columnas y la rejilla
+ * sigue cuadrando (2+2+2 en su fila). Si se quita uno, hay que rehacer la
+ * tabla: 4+2 con solo cuatro dolores deja la última fila coja.
+ */
+const TRAMOS = [
+  "sm:col-span-4",
+  "sm:col-span-2",
+  "sm:col-span-2",
+  "sm:col-span-4",
+  "sm:col-span-6",
+];
+
+/**
+ * Las islas anchas enseñan su detalle SIEMPRE; las estrechas lo despliegan.
+ *
+ * ⚠️ ES LA REGLA QUE JUSTIFICA EL BENTO. Una rejilla de tamaños distintos donde
+ * todas las cajas dicen lo mismo es decoración: los tamaños no significarían
+ * nada. Aquí el tamaño ES la jerarquía — la isla ancha tiene sitio para el
+ * párrafo, así que lo enseña; la estrecha no lo tiene, así que lo esconde
+ * detrás del cursor (o del botón "Ver más" en táctil, que es donde no hay
+ * cursor que pasar).
+ *
+ * El efecto secundario es el que se buscaba: las anchas se leen de un vistazo
+ * sin hacer nada, que era el problema de tener cinco cajas con dos palabras
+ * cada una y todo el texto escondido.
+ */
+const ANCHAS = new Set([0, 3, 4]);
 ---
 
 <Section id="problema" tono="muted" ritmo="amplio" ariaLabel={copy.problema.aria}>
@@ -130,53 +166,103 @@ const dolores = curso.problema.dolores.map((d, i) => ({
       </div>
     </Reveal>
 
-    {/* El filete superior de cada entrada es lo que convierte cinco elementos
-        en tres columnas en una REJILLA y no en cinco cosas flotando con un
-        hueco al final. Con cinco entradas en tres columnas la última fila queda
-        incompleta siempre; con las reglas horizontales eso se lee como el final
-        de una lista, que es lo que es, en vez de como un fallo de maquetación.
-        Y sigue sin haber ninguna caja: ver la nota de la cabecera. */}
-    {/* FLEX Y NO GRID, por lo mismo que la rejilla del temario: cinco dolores
-        en tres columnas dejan la última fila con dos elementos pegados a la
-        izquierda y un hueco a la derecha que se lee como si faltara un tercero.
-        `flex-wrap` + `justify-center` la centra.
-        Los anchos llevan restada su parte del hueco: con `gap-x-10` (40 px) y
-        tres columnas hay 2 huecos que repartir entre 3, o sea 26.67 px cada
-        una; con dos columnas, 20 px. */}
-    <ul class="mt-8 flex flex-wrap justify-center gap-x-10 gap-y-7">
+    {/* ─── AHORA SÍ SON CAJAS, Y ESO CONTRADICE LO QUE DECÍA AQUÍ ───────────
+        Hasta ahora estos cinco dolores eran entradas de lista con un filete
+        arriba y ninguna superficie, y el comentario de la cabecera avisaba de
+        que meterles `rounded-2xl border bg-surface` los convertiría en la
+        rejilla de tarjetas idénticas que DESIGN.md prohíbe. Sigue siendo verdad
+        y por eso el aviso se queda escrito: lo que cambia es que ya no se
+        cumple la condición.
+
+        La prohibición es a las tarjetas IDÉNTICAS repetidas en bucle. Esto no
+        lo es: es un bento, cinco islas de TAMAÑOS DISTINTOS (4+2, 2+4 y una a
+        todo el ancho), y la última además cambia de color. Cinco cajas iguales
+        se leen como una plantilla; cinco de tamaños distintos se leen como
+        cinco cosas distintas, que es exactamente lo que son.
+
+        El cambio viene de que la página entera se está moviendo a un sistema de
+        islas sobre un lienzo. En ese sistema, el contenido SIN superficie es
+        ahora la excepción rara, no la norma: cinco items flotando en mitad de
+        una página de islas se leen como un bloque al que se le olvidó la caja.
+
+        ⚠️ SI ALGÚN DÍA SE IGUALAN LOS TAMAÑOS, la prohibición vuelve a aplicar
+        y hay que replantear la rejilla, no ajustarla.
+
+        La rejilla es de 6 columnas porque 6 admite 4+2, 2+4, 3+3 y 2+2+2 sin
+        que sobre ni falte nada: con cinco elementos, cualquier rejilla de 3 o 4
+        deja un hueco al final que se lee como una tarjeta que falta. */}
+    <ul class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-6 sm:gap-5">
       {
         dolores.map((d, i) => (
-          <Reveal
-            as="li"
-            delay={i * 0.06}
-            class="w-full sm:w-[calc(50%-1.25rem)] lg:w-[calc(33.333%-1.667rem)]"
-          >
+          <Reveal as="li" delay={i * 0.06} class={TRAMOS[i] ?? "sm:col-span-2"}>
             {/* `data-revelar` marca el grupo; `data-detalle`, lo que se
-                despliega al pasar el cursor. */}
-            <div data-revelar class="group h-full border-t border-line pt-5">
-              {/* El icono va SUELTO, sin recuadro de color. La caja redondeada
-                  con iconito pastel es literalmente la anti-referencia del
-                  "SaaS genérico" de PRODUCT.md, y con cinco seguidas se nota. */}
+                despliega al pasar el cursor.
+
+                La última isla va en navy: es el cierre de la lista y el dolor
+                que remata ("empiezas y lo dejas"). Un bento sin ningún punto
+                oscuro es una cuadrícula de cajas claras, que vuelve a parecerse
+                a lo que no queremos. Con uno, la fila tiene a dónde mirar. */}
+            <div
+              data-revelar
+              class:list={[
+                "group h-full rounded-2xl p-6 transition-[transform,box-shadow] duration-[var(--duration-base)] ease-[var(--ease-out-soft)] hover:-translate-y-0.5 sm:p-7",
+                i === dolores.length - 1
+                  ? "bg-primary-900 text-ink-inverse hover:shadow-[var(--shadow-md)]"
+                  : "bg-surface ring-1 ring-line ring-inset hover:shadow-[var(--shadow-md)] hover:ring-secondary-300",
+              ]}
+            >
+              {/* El icono sigue SUELTO, sin recuadro de color detrás. La caja
+                  redondeada con iconito pastel es literalmente la
+                  anti-referencia del "SaaS genérico" de PRODUCT.md, y eso no
+                  cambia porque ahora haya isla: la isla es la tarjeta, el icono
+                  no necesita otra. */}
               <Icono
                 nombre={d.icono}
-                class="size-7 text-secondary-600 transition-colors duration-200 ease-out-soft group-hover:text-ink"
+                class:list={[
+                  "size-7 transition-colors duration-200 ease-out-soft",
+                  i === dolores.length - 1
+                    ? "text-secondary-300"
+                    : "text-secondary-600 group-hover:text-ink",
+                ]}
               />
 
-              <p class="mt-3 text-lg font-bold text-balance text-ink">
+              <p
+                class:list={[
+                  "mt-4 text-lg font-bold text-balance",
+                  i === dolores.length - 1 ? "text-ink-inverse" : "text-ink",
+                ]}
+              >
                 <T v={d.titulo} />
               </p>
 
-              <div data-detalle>
-                <div>
-                  <p class="mt-2 text-base text-pretty text-ink-muted">
-                    <T v={d.detalle} />
-                  </p>
-                </div>
-              </div>
+              {/* En las islas anchas el detalle se lee siempre; en las
+                  estrechas se despliega. Ver la nota de `ANCHAS`. */}
+              {ANCHAS.has(i) ? (
+                <p
+                  class:list={[
+                    "mt-2 max-w-prose text-base text-pretty",
+                    i === dolores.length - 1
+                      ? "text-secondary-100"
+                      : "text-ink-muted",
+                  ]}
+                >
+                  <T v={d.detalle} />
+                </p>
+              ) : (
+                <>
+                  <div data-detalle>
+                    <div>
+                      <p class="mt-2 text-base text-pretty text-ink-muted">
+                        <T v={d.detalle} />
+                      </p>
+                    </div>
+                  </div>
 
-              {/* Solo existe en táctil, que es donde no hay cursor que pasar.
-                  Ver `BotonDetalle.astro`. */}
-              <BotonDetalle class="mt-1" />
+                  {/* Solo existe en táctil, que es donde no hay cursor que
+                      pasar. Ver `BotonDetalle.astro`. */}
+                  <BotonDetalle class="mt-1" />
+                </>
+              )}
             </div>
           </Reveal>
         ))
