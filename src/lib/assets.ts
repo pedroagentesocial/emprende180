@@ -204,6 +204,30 @@ const MEDIDAS_ALIADOS: Record<string, { w: number; h: number }> = {
 export const medidasAliado = (archivo: string) =>
   MEDIDAS_ALIADOS[archivo] ?? null;
 
+const archivosTemario = Object.keys(
+  import.meta.glob("../../public/imagenes/temario/*.{webp,avif,jpg,png}"),
+);
+
+/**
+ * La miniatura de un video del temario, por posición (0 → `01.webp`).
+ *
+ * ⚠️ DEVUELVE `null` SI NO EXISTE EL ARCHIVO, y esa es toda la gracia: la fila
+ * se pinta igual, sin hueco ni imagen rota. Así se pueden ir añadiendo
+ * miniaturas de una en una, o quitarlas todas, sin tocar el componente.
+ *
+ * Mismo patrón que `fondoResultado`. Se repite el cuerpo en vez de compartir un
+ * ayudante genérico porque son cuatro líneas y `import.meta.glob` NO acepta una
+ * ruta variable: el patrón tiene que ser literal para que Vite lo resuelva al
+ * compilar.
+ */
+export function miniaturaTemario(indice: number): string | null {
+  const n = String(indice + 1).padStart(2, "0");
+  const nombre = [`${n}.webp`, `${n}.avif`, `${n}.jpg`, `${n}.png`].find((f) =>
+    tiene(archivosTemario, f),
+  );
+  return nombre ? `/imagenes/temario/${nombre}` : null;
+}
+
 export function fondoResultado(indice: number): string | null {
   const n = String(indice + 1).padStart(2, "0");
   const nombre = [`${n}.webp`, `${n}.avif`, `${n}.jpg`, `${n}.png`].find((f) =>

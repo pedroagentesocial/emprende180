@@ -8,6 +8,7 @@ import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
 import MarcaAgua from "@components/ui/MarcaAgua.astro";
 import CintaPrecio from "@components/ui/CintaPrecio.astro";
 import { tienePendiente } from "@lib/pendientes";
+import { miniaturaTemario } from "@lib/assets";
 import { temario, curso, copy, contacto, cta } from "@config/curso.config";
 import { construirTxt } from "@i18n/idioma";
 import { interpolar } from "@i18n/formato";
@@ -94,6 +95,10 @@ const ICONOS_EXTRAS: NombreIcono[] = ["certificado", "infinito", "actualizar"];
  * decide si compra. Cuando se rellenen en el config, desaparece del todo.
  */
 const pendientes = curso.formato.incluye.filter(tienePendiente);
+
+/* Una miniatura por vídeo, emparejada por POSICIÓN (la 0 con `01.webp`). Vale
+   `null` donde no haya archivo, y entonces la fila se pinta igual, sin hueco. */
+const miniaturas = temario.map((_, i) => miniaturaTemario(i));
 
 const cuantos = construirTxt((l) =>
   interpolar(copy.temario.cuantos[l], { n: temario.length }),
@@ -296,9 +301,40 @@ const todosConQuiz = construirTxt((l) =>
                 </span>
               </span>
 
-              <h3 class="font-bold text-pretty text-ink">
+              <h3 class="min-w-0 flex-1 font-bold text-pretty text-ink">
                 <T v={m.titulo} />
               </h3>
+
+              {/* ─── LA MINIATURA, AL FINAL DE LA FILA ────────────────────────
+                  Va a la derecha, después del título, y hace dos cosas a la vez:
+                  le da altura a la columna para que llegue a la de la isla navy
+                  de al lado, y rompe diez filas de texto seguidas.
+
+                  ⚠️ ES UN ACENTO, NO CONTENIDO, y por eso es pequeña y va
+                  `aria-hidden` con el `alt` vacío: no dice nada que el título no
+                  diga ya, así que a un lector de pantalla solo le añadiría diez
+                  interrupciones. Si algún día una miniatura tuviera que
+                  significar algo por sí sola, tendría que llevar `alt` de
+                  verdad.
+
+                  `hidden sm:block`: en un teléfono la fila ya es alta (el título
+                  ocupa dos y tres renglones) y la miniatura se comería el ancho
+                  que necesita el texto.
+
+                  Si falta el archivo no se pinta nada: la fila se ve como
+                  siempre, sin hueco. Ver `miniaturaTemario()`. */}
+              {miniaturas[i] && (
+                <img
+                  src={miniaturas[i]}
+                  alt=""
+                  aria-hidden="true"
+                  width={176}
+                  height={176}
+                  loading="lazy"
+                  decoding="async"
+                  class="hidden size-16 shrink-0 rounded-xl object-cover sm:block lg:size-[4.5rem]"
+                />
+              )}
             </article>
           </Reveal>
         ))
@@ -316,50 +352,59 @@ const todosConQuiz = construirTxt((l) =>
       dejaría más alto que la pantalla en un portátil, y un `sticky` que no cabe
       deja de pegarse. */}
   <Reveal delay={0.1}>
-    {/* ─── LO QUE ENTRA ADEMÁS ────────────────────────────────────────────
-        Eran tres bloques centrados, sin superficie, con el icono centrado
-        encima: la forma exacta de "tres tarjetas iguales" que PRODUCT.md pone
-        como anti-referencia del SaaS genérico, solo que sin las cajas.
+    {/* ─── LO QUE ENTRA ADEMÁS, EN DOS COLUMNAS ───────────────────────────
+        El rótulo y la frase de cierre a un lado; las tres islas al otro. Es el
+        mismo reparto que el resto de la página —texto contra bloques— y aquí
+        además arregla algo concreto: el cierre ("eso es todo lo que incluye")
+        es la conclusión de las tres cosas de al lado, y debajo de ellas se leía
+        como un cuarto elemento suelto. Enfrentado, se lee como lo que es.
 
-        Ahora son tres islas blancas con el contenido a la izquierda, y el
-        rótulo deja de estar centrado encima. Lo que las salva de ser tres
-        tarjetas idénticas es lo mismo que en el bento de la 02: no lo son.
-        Aquí las tres dicen cosas del mismo tipo (qué más entra en el precio),
-        así que la variedad no puede venir del tamaño; viene de que el bloque
-        entero está ANCLADO a la izquierda, con su rótulo y su cierre en la
-        misma columna, en vez de flotar centrado en mitad de la página. */}
-    <div class="mt-14 border-t border-line pt-10">
-      <h3 class="text-xs font-bold tracking-[0.16em] text-ink-subtle uppercase">
-        <T v={copy.temario.extrasTitulo} />
-      </h3>
+        Las tres van APILADAS y no en fila porque en media página, en fila,
+        cada una se queda en 150 px y su nota parte en cuatro renglones.
 
-      <ul class="mt-6 grid gap-4 sm:grid-cols-3 sm:gap-5">
+        Y antes de esto fueron tres bloques centrados, sin superficie, con el
+        icono encima: la forma exacta de "tres tarjetas iguales" que PRODUCT.md
+        pone como anti-referencia del SaaS genérico, solo que sin las cajas.
+
+        `lg:items-center` porque el lado del texto son cuatro renglones y el de
+        las islas mide el triple: alineados arriba, el titular se queda colgando
+        con media columna en blanco debajo y parece que falta algo. */}
+    <div class="mt-14 grid gap-8 border-t border-line pt-10 lg:grid-cols-2 lg:items-center lg:gap-16">
+      <div>
+        <h3 class="text-xs font-bold tracking-[0.16em] text-ink-subtle uppercase">
+          <T v={copy.temario.extrasTitulo} />
+        </h3>
+
+        {/* El cierre, en su sitio: después de los diez videos Y al lado de las
+            tres cosas que entran además. La frase es verdad cuando se lee —ya
+            se ha enseñado todo lo que incluye— y hace de puente a la tira de
+            precio, que es la siguiente pregunta. */}
+        <p class="mt-4 max-w-read text-2xl font-bold text-balance text-ink sm:text-3xl">
+          <T v={copy.temario.cierre} />
+        </p>
+      </div>
+
+      <ul class="grid gap-4">
         {
           copy.temario.extras.map((e, i) => (
-            <li class="h-full rounded-2xl bg-surface p-6 ring-1 ring-line ring-inset">
+            <li class="flex items-start gap-4 rounded-2xl bg-surface p-5 ring-1 ring-line ring-inset sm:p-6">
               <Icono
                 nombre={ICONOS_EXTRAS[i] ?? "check"}
-                class="size-9 text-secondary-600"
+                class="size-8 shrink-0 text-secondary-600"
                 grosor={1.5}
               />
-              <p class="mt-4 text-base font-bold text-balance text-ink">
-                <T v={e.titulo} />
-              </p>
-              <p class="mt-1 text-sm text-pretty text-ink-muted">
-                <T v={e.nota} />
-              </p>
+              <div class="min-w-0">
+                <p class="text-base font-bold text-balance text-ink">
+                  <T v={e.titulo} />
+                </p>
+                <p class="mt-1 text-sm text-pretty text-ink-muted">
+                  <T v={e.nota} />
+                </p>
+              </div>
             </li>
           ))
         }
       </ul>
-
-      {/* El cierre, en su sitio: después de los diez videos Y de las tres
-          cosas que entran además. Ahora la frase es verdad cuando se lee —ya
-          se ha enseñado todo lo que incluye— y hace de puente a la tira de
-          precio, que es la siguiente pregunta. */}
-      <p class="mt-8 max-w-read text-lg font-semibold text-balance text-ink">
-        <T v={copy.temario.cierre} />
-      </p>
     </div>
   </Reveal>
 
