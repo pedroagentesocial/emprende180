@@ -84,42 +84,52 @@ const lang = resolverIdiomaServidor(
 
 ---
 
-{/* ─── LAS DOS SALIDAS, UNA AL LADO DE OTRA ───────────────────────────────────
-    Esto era una sola columna centrada de 1.353 px de alto sobre 1.440 de ancho:
-    el titular partido en tres renglones cortos, el precio flotando debajo, la
-    tira envuelta en tres líneas desiguales y, después de un filete, el
-    formulario. Mucho azul vacío a los lados y una sección que había que
-    recorrer entera para ver que ofrecía dos cosas.
+{/* ─── DE FRANJA NAVY A DOS ISLAS SOBRE BLANCO ────────────────────────────────
+    Antes de esto fue una sola columna centrada de 1.353 px de alto: el titular
+    partido en tres renglones cortos, el precio flotando debajo y, tras un
+    filete, el formulario. Después fueron dos columnas, y así estaba: la de
+    comprar suelta sobre el azul de la sección y la del mini-curso en una
+    tarjeta un poco más clara.
 
-    Ahora son dos columnas: comprar a la izquierda, el mini-curso gratis a la
-    derecha. Es lo que la sección siempre dijo que hacía —"se le dan las DOS
-    salidas"— pero puestas donde se ven las dos a la vez, en vez de una debajo
-    de la otra separadas por un filete.
+    El problema era el fondo. Con la sección entera en navy, la columna de la
+    izquierda no tenía superficie —flotaba sobre el mismo color— y la de la
+    derecha era un rectángulo apenas más claro que su fondo: dos bloques que no
+    llegaban a ser dos bloques. Y era la última sección que quedaba con el
+    tratamiento viejo.
 
-    Y el titular deja de ir centrado en una medida estrecha: alineado a la
-    izquierda en su media columna, cae en renglones enteros en vez de partirse
-    en "Conviértete / en Embajador / Emprende180". */}
-<Section
-  id="empezar"
-  tono="inverse"
-  ariaLabel={copy.cierre.aria}
-  class="relative isolate overflow-hidden"
->
-  {/* El isotipo detrás del cierre. Es la última pantalla antes del pie, y lo
-      último que conviene que se quede es de quién es el sello que se compra. */}
-  <MarcaAgua posicion="izquierda" class="opacity-[0.05]" />
+    Ahora el lienzo es blanco y las DOS salidas son islas de verdad, cada una
+    con su superficie: navy la de comprar, clara la del mini-curso gratis. El
+    contraste dice lo que la sección hace —una cosa se paga y la otra no— sin
+    escribirlo, y de paso el azul deja de ser el fondo para volver a ser lo que
+    es en el resto de la página: el color de lo importante.
 
-  <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start lg:gap-x-16 xl:gap-x-20">
-    <!-- Salida 1: comprar -->
-    <div class="text-center lg:text-left">
+    `items-stretch`: las dos miden lo mismo, como en el precio y en las
+    reseñas. */}
+<Section id="empezar" tono="surface" ariaLabel={copy.cierre.aria}>
+  <div
+    class="grid items-stretch gap-8 lg:grid-cols-[minmax(0,1fr)_24rem] lg:gap-10"
+  >
+    {/* ─── SALIDA 1 · COMPRAR ───────────────────────────────────────────────
+        La isla no lleva `Reveal` ella misma y sus dos bloques sí: lo que entra
+        escalonado es el contenido, no la superficie. Una tarjeta que aparece
+        desplazándose arrastra su sombra y su borde, y eso se ve como un salto,
+        no como una entrada. */}
+    <div
+      class="relative isolate flex flex-col justify-center overflow-hidden rounded-3xl bg-primary-950 p-8 text-center sm:p-10 lg:text-left"
+    >
+      {/* El isotipo detrás del cierre. Es la última pantalla antes del pie, y
+          lo último que conviene que se quede es de quién es el sello que se
+          compra. */}
+      <MarcaAgua posicion="derecha" class="opacity-[0.06]" />
+
       <Reveal>
         {/* El distintivo hace dos cosas: da un punto de entrada a la columna
             —sin él, el titular arrancaba en el aire— y dice dónde está el
             visitante. "Último paso" después de una página entera es una
             indicación de sitio, no una frase de venta. */}
-        <p class="inline-flex items-center gap-2 rounded-full border border-primary-700 bg-primary-900/60 px-3 py-1 text-xs font-bold tracking-wide text-secondary-300 uppercase">
+        <p class="inline-flex items-center gap-2 rounded-full border border-primary-800 bg-primary-900 px-3 py-1 text-xs font-bold tracking-wide text-secondary-300 uppercase">
           <span aria-hidden="true" class="marca-linea">
-            <span class="size-1.5 rounded-full bg-secondary-400"></span>
+            <span class="size-1.5 rounded-full bg-secondary-500"></span>
           </span>
           <T v={copy.cierre.kicker} />
         </p>
@@ -158,13 +168,21 @@ const lang = resolverIdiomaServidor(
             segunda fecha que se pueda desincronizar. Sin enlace, porque el
             botón que lleva a comprar está tres centímetros más abajo.
 
-            `max-w-md` se fue: en media columna ya no hace falta estrecharla, y
-            era lo que la partía en tres renglones desiguales. */}
+            ⚠️ `variante="linea"` y ya no `"panel"`. El panel es un bloque con
+            su borde y su radio, y aquí dentro sería una tarjeta dentro de una
+            isla: los dos bordes redondeados concéntricos que la página tiene
+            prohibidos desde la sección del instructor. La misma frase, sin
+            caja, dice exactamente lo mismo. */}
+        {/* La tira centra su contenido por dentro (`mx-auto justify-center`),
+            que es lo que quiere cuando cruza la página entera. Aquí vive en una
+            columna alineada a la izquierda, así que se le desactiva a partir de
+            `lg`: una sola línea centrada entre un titular, unos botones y unas
+            píldoras alineados a la izquierda se lee como un descuadre. */}
         <CintaPrecio
-          variante="panel"
+          variante="linea"
           inverso
           conEnlace={false}
-          class="mt-7"
+          class="mt-6 lg:[&>span]:mx-0 lg:[&>span]:justify-start"
         />
 
         <div class="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4 lg:justify-start">
@@ -204,17 +222,18 @@ const lang = resolverIdiomaServidor(
         {/* Las tres razones para no dudar, en una línea y con icono. Sustituyen
             al párrafo suelto de la garantía: dicen lo mismo más lo que faltaba
             (que el acceso no caduca y que se puede pagar a plazos), y se leen
-            de un vistazo en vez de en una frase. */}
-        {/* Las tres razones, ahora en fichas. Sueltas sobre el azul se leían
-            como un pie de página; con su marco pesan lo que tienen que pesar,
-            que es justo lo que frena en el último momento. */}
-        {/* `items-start` en cada ficha y no `items-center`: la ficha lleva
-            dentro un `marca-linea`, cuyo trabajo es centrar el icono en la
-            PRIMERA línea del texto. Con `items-center` esa caja de una
-            interlínea se centraba a su vez en la ficha entera, así que en cuanto
-            la frase pasaba a dos renglones —cosa que en un teléfono estrecho
-            pasa— el icono acababa entre los dos. Con una sola línea las dos
-            alineaciones dan el mismo píxel, así que aquí no se pierde nada.
+            de un vistazo en vez de en una frase.
+
+            Son píldoras, no fichas, y por eso siguen valiendo dentro de la
+            isla: lo que la página prohíbe anidar son las tarjetas —bordes
+            redondeados concéntricos—, no una etiqueta redonda de una línea.
+
+            `items-start` en cada una y no `items-center`: llevan dentro un
+            `marca-linea`, cuyo trabajo es centrar el icono en la PRIMERA línea
+            del texto. Con `items-center` esa caja de una interlínea se centraba
+            a su vez en la píldora entera, así que en cuanto la frase pasaba a
+            dos renglones —cosa que en un teléfono estrecho pasa— el icono
+            acababa entre los dos.
 
             (Y el comentario va AQUÍ y no dentro del `.map()`: un comentario JSX
             suelto al lado del nodo raíz que devuelve una expresión rompe el
@@ -222,7 +241,7 @@ const lang = resolverIdiomaServidor(
         <ul class="mt-8 flex flex-wrap justify-center gap-2 text-sm lg:justify-start">
           {
             tranquilidad.map((t) => (
-              <li class="flex items-start gap-2 rounded-full border border-primary-700 bg-primary-900/50 px-3.5 py-2 text-secondary-200">
+              <li class="flex items-start gap-2 rounded-full border border-primary-800 bg-primary-900 px-3.5 py-2 text-secondary-200">
                 <span aria-hidden="true" class="marca-linea shrink-0 text-secondary-300">
                   <Icono nombre={t.icono} class="size-4" />
                 </span>
@@ -234,25 +253,28 @@ const lang = resolverIdiomaServidor(
       </Reveal>
     </div>
 
-    {/* Salida 2: el mini-curso gratis, para quien aún no compra.
+    {/* ─── SALIDA 2 · EL MINI-CURSO GRATIS ──────────────────────────────────
+        Para quien llega al final y todavía no compra. Sin esto, ese visitante
+        se pierde entero.
 
-        Pasa a ser una TARJETA con su propio fondo. Antes era el mismo azul de
-        la sección separado por un filete, así que las dos salidas parecían una
-        sola cosa muy larga. Con marco propio se lee como la alternativa que es,
-        y se ve a la vez que el botón de comprar en vez de después de él. */}
-    <Reveal delay={0.16} class="lg:sticky lg:top-10">
-      {/* `isolate` + el halo teal detrás: es el mismo recurso que el panel de
-          precio, y hace que la tarjeta se despegue del azul de la sección en
-          vez de ser un rectángulo un poco más claro. */}
-      <div class="relative isolate overflow-hidden rounded-3xl border border-primary-700 bg-primary-900/70 p-6 shadow-2xl sm:p-8">
-        <span
-          aria-hidden="true"
-          class="pointer-events-none absolute -top-20 -right-16 -z-10 size-56 rounded-full bg-secondary-500/20 blur-3xl"
-        ></span>
-        <p class="text-center text-lg font-semibold text-balance text-ink-inverse">
+        La isla es CLARA, y es la única de la página que se apoya en el
+        contraste con su pareja: al lado del navy de comprar, el blanco dice
+        "esto es lo otro, y no cuesta nada" sin escribirlo. Antes era un azul
+        casi igual al del fondo, o sea la alternativa disfrazada de lo mismo.
+
+        Se fue el `sticky`. Acompañaba mientras se leía la columna de al lado, y
+        ahora las dos islas miden lo mismo y terminan a la vez: no hay nada que
+        acompañar. Y se fue también el halo teal de detrás, que existía para
+        despegar la tarjeta del azul; sobre blanco no despega nada, solo
+        ensucia. */}
+    <Reveal delay={0.16} class="lg:h-full">
+      <div
+        class="flex h-full flex-col justify-center rounded-3xl border border-line bg-surface p-6 shadow-lg sm:p-8"
+      >
+        <p class="text-center text-lg font-semibold text-balance text-ink">
           <T v={copy.cierre.dudaTitulo} />
         </p>
-        <p class="mt-2 text-center text-base text-pretty text-secondary-200">
+        <p class="mt-2 text-center text-base text-pretty text-ink-muted">
           <T v={copy.cierre.dudaTexto} vars={{ formato: leadMagnet.formato }} />
         </p>
 
@@ -264,7 +286,6 @@ const lang = resolverIdiomaServidor(
             aviso={leadMagnet.aviso}
             exitoTitulo={leadMagnet.exito.titulo}
             exitoTexto={leadMagnet.exito.texto}
-            tono="inverso"
           />
         </div>
       </div>
