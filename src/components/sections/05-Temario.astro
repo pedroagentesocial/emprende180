@@ -251,6 +251,19 @@ const todosConQuiz = construirTxt((l) =>
               )
             }
           </div>
+
+          {/* Quien ya compró no viene a decidir, viene a entrar. Hasta ahora
+              solo lo tenía en la cabecera, en letra pequeña. Es un ENLACE y no
+              un botón: la regla del proyecto es un solo color de acción, y
+              esto no compite con el que convierte. */}
+          <a
+            href={cta.acceso.href}
+            data-track="ya-compre"
+            class="mt-4 inline-flex min-h-11 items-center gap-2 self-start text-sm font-medium text-secondary-200 underline underline-offset-4 transition-colors duration-200 hover:text-ink-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+          >
+            <Icono nombre="usuario" class="size-4 shrink-0" grosor={1.8} />
+            <T v={copy.ui.yaCompraste} />
+          </a>
         </Reveal>
       </div>
     </aside>

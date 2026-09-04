@@ -3007,6 +3007,22 @@ export const copy = {
   },
 
   ui: {
+    /**
+     * ─── LA PUERTA DE QUIEN YA COMPRÓ ──────────────────────────────────
+     *
+     * Va junto al botón de pedir el precio en el temario, en el cierre y en
+     * la barra flotante. Hasta ahora el acceso solo estaba en la cabecera, en
+     * letra pequeña, y son dos personas distintas: una viene a decidir y la
+     * otra viene a entrar. La segunda no tiene por qué buscar.
+     *
+     * Es un ENLACE y no un botón a propósito. La regla del proyecto es un
+     * solo color de acción: si esto fuera un botón más, competiría con el
+     * único que convierte, y quien ya compró no necesita que le griten.
+     */
+    yaCompraste: {
+      es: "¿Ya compraste? Entra al portal",
+      en: "Already bought? Go to the portal",
+    },
     saltarAlContenido: { es: "Saltar al contenido", en: "Skip to content" },
     volverArriba: { es: "volver arriba", en: "back to top" },
     cerrar: { es: "Cerrar", en: "Close" },

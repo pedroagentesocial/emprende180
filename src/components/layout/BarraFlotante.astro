@@ -114,6 +114,20 @@ const lang = resolverIdiomaServidor(
         </span>
       </a>
 
+      {/* La puerta de quien ya compró. Solo el icono en móvil, como sus dos
+          vecinos: ahí el ancho vale oro y lo que tiene que crecer es el
+          botón que convierte. */}
+      <a
+        href={cta.acceso.href}
+        data-track="barra-acceso"
+        class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-primary-700 px-3 text-sm font-semibold text-secondary-100 transition-colors duration-200 hover:border-secondary-400 hover:text-ink-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse sm:px-4"
+      >
+        <Icono nombre="usuario" class="size-4 shrink-0" grosor={2} />
+        <span class="max-sm:sr-only">
+          <T v={cta.acceso.texto} />
+        </span>
+      </a>
+
       {/* La acción principal. Teal, como en toda la página.
 
           `flex-1` por debajo de `lg`: es el que absorbe el ancho sobrante y deja
