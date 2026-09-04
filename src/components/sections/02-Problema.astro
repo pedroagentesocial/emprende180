@@ -88,10 +88,13 @@ import { curso, copy, cta } from "@config/curso.config";
  * existen. Si se añade un sexto dolor sin añadir su icono, `?? "red"` evita que
  * la página se rompa y simplemente repite uno.
  */
+/* Emparejados por POSICIÓN con `problema.dolores`. Si allí se reordena o se
+   cambia uno, esta lista va detrás: un teléfono encima de "pedir te da pena"
+   no rompe nada, y por eso es de los fallos que se publican. */
 const ICONOS: NombreIcono[] = [
-  "red",
-  "ojo",
   "telefono",
+  "ojo",
+  "reloj",
   "conversacion",
   "calendario",
 ];

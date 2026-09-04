@@ -243,34 +243,40 @@ export const curso = {
     /**
      * En primera persona del lector. Que se reconozca en al menos dos.
      *
+     * ─── DE DÓNDE SALEN ESTOS CINCO ────────────────────────────────────────
+     *
+     * Los escribimos antes de leer el Plan de 90 Días del cliente, y ese
+     * documento trae una lista mejor: sus CUATRO GRUPOS DE REACTIVACIÓN (día
+     * 60) son, literalmente, un inventario de por dónde se escapa una red —
+     * interesados que nunca avanzaron, contactados que nunca respondieron,
+     * referidos que no cerraron y gente cercana que dejaste de saludar.
+     *
+     * De ahí sale el tercero, que es el que faltaba y el más común de todos:
+     * el "déjame verlo" que nadie volvió a tocar. El plan le dedica una
+     * secuencia entera (seguimiento a los 3, 7 y 14 días) porque es donde se
+     * cae la mayoría.
+     *
+     * Los otros tres del documento NO están aquí a propósito. Son dolores de
+     * quien YA está trabajando su red, y esta sección la lee alguien que
+     * todavía no ha empezado: no le duele el contacto sin siguiente paso,
+     * porque aún no tiene contactos apuntados. Esos viven donde les toca, en
+     * la sección del plan de 90 días.
+     *
+     * Y se fue "Tu red no se mueve", que decía lo mismo que el titular de la
+     * sección tres centímetros más arriba.
+     *
      * CADA DOLOR TIENE DOS PIEZAS Y NO SON INTERCAMBIABLES:
      *
      *   `titulo`  — de tres a cinco palabras. Es lo ÚNICO que se lee seguro:
      *               es lo que queda visible siempre y lo que se escanea. Tiene
      *               que sostenerse solo, sin el detalle. Si un título necesita
      *               que leas el detalle para entenderse, está mal escrito.
-     *   `detalle` — la frase completa. Amplía, no completa. En escritorio
-     *               aparece al pasar el ratón; en móvil y en táctil se ve
-     *               siempre, porque ahí no hay ratón que pasar.
+     *   `detalle` — una frase. Amplía, no completa.
      *
      * El icono va emparejado en el componente por posición (ver 02-Problema),
      * no aquí: es decisión de maquetación, no de contenido.
      */
     dolores: [
-      {
-        titulo: { es: "Tu red no se mueve", en: "Your network sits still" },
-        detalle: {
-          es: "Conoces a mucha gente, pero no sabes cómo convertir eso en algo sin que parezca que vas a aprovecharte de tus amistades.",
-          en: "You know a lot of people, but you don't know how to turn that into anything without looking like you're using your friends.",
-        },
-      },
-      {
-        titulo: { es: "No las ves venir", en: "You don't spot them" },
-        detalle: {
-          es: "Intuyes que hay oportunidades a tu alrededor y no sabes reconocerlas cuando las tienes delante, ni qué hacer con ellas si las reconoces.",
-          en: "You sense there are opportunities around you, and you can't spot them when they're in front of you, or know what to do with them if you do.",
-        },
-      },
       {
         titulo: { es: "No supiste a quién llamar", en: "You didn't know who to call" },
         detalle: {
@@ -279,10 +285,24 @@ export const curso = {
         },
       },
       {
+        titulo: { es: "No las ves venir", en: "You don't spot them" },
+        detalle: {
+          es: "Las situaciones pasan por delante de ti, y no se reconocen si nadie te enseñó qué buscar.",
+          en: "Situations pass right by you, and you can't spot them if nobody taught you what to look for.",
+        },
+      },
+      {
+        titulo: { es: "Se quedó en «déjame verlo»", en: "It stalled at “let me look into it”" },
+        detalle: {
+          es: "No te dijeron que no. Te dijeron «déjame verlo» y ahí murió, porque nadie volvió a escribir.",
+          en: "They didn't say no. They said “let me look into it”, and that was the end of it, because nobody wrote again.",
+        },
+      },
+      {
         titulo: { es: "Pedir te da pena", en: "Asking makes you cringe" },
         detalle: {
-          es: "Pedir un referido te da pena. Prefieres no preguntar antes que sonar a que le quieres vender algo a un conocido.",
-          en: "Asking for a referral makes you cringe. You'd rather not ask than sound like you're selling something to someone you know.",
+          es: "Prefieres no preguntar antes que sonar a que le quieres vender algo a un conocido.",
+          en: "You'd rather not ask than sound like you're selling something to someone you know.",
         },
       },
       {
