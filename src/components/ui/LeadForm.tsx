@@ -10,7 +10,7 @@ import {
   type LeadResponse,
 } from "@lib/schema";
 import { consentimiento, legalConfig } from "@config/legal.config";
-import { copy } from "@config/curso.config";
+import { copy, curso } from "@config/curso.config";
 import type { Txt, Idioma } from "@i18n/idioma";
 import { useIdioma } from "@i18n/react";
 
@@ -429,8 +429,14 @@ export function LeadForm({
           ⚠️ NO SE PINTA EN LA VARIANTE DE INFORMES. Ahí el descuento se pide
           por el nombre de quien recomienda, no por un código, y tener las dos
           cosas en el mismo formulario obliga a explicar la diferencia entre
-          dos campos que hacen lo mismo. */}
-      {variante === "minicurso" && (
+          dos campos que hacen lo mismo.
+
+          ⚠️ Y TAMPOCO SE PINTA SIN PRECIO PÚBLICO. Un campo que pide un
+          código de descuento a quien no sabe cuánto cuesta el curso no
+          descuenta nada: solo le dice que hay un precio que no le enseñan y
+          que además otros pagan menos. Vuelve solo el día que
+          `curso.precio.publico` vuelva a ser `true`. */}
+      {variante === "minicurso" && curso.precio.publico && (
       <details className="mt-4">
         <summary
           className={[

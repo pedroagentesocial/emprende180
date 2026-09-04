@@ -2428,6 +2428,19 @@ export const copy = {
       en: "If it isn't in the CRM, it didn't happen.",
     },
 
+    /**
+     * DÓNDE ACABA TU PARTE. Es la regla 5 del documento del cliente, y en una
+     * línea contesta tres objeciones a la vez: ¿necesito licencia?, ¿tengo
+     * que saber de seguros?, ¿me hago responsable de lo que pase?
+     *
+     * Va aquí, en el plan, y no solo en el FAQ: quien lee cómo es el trabajo
+     * diario es quien se está preguntando hasta dónde llega su parte.
+     */
+    limite: {
+      es: "Tú conectas; el equipo certificado resuelve.",
+      en: "You connect people; the certified team handles it.",
+    },
+
     /* Confirmado por el cliente: la llamada semanal y el CRM configurado
        existen hoy. Si dejan de existir, esta frase se cae con ellos. */
     acompanamiento: {
@@ -2441,7 +2454,14 @@ export const copy = {
         {
           nombre: { es: "Prospección", en: "Prospecting" },
           minutos: { es: "60 min", en: "60 min" },
-          para: { es: "Gente nueva, por mensaje", en: "New people, by message" },
+          /* Los referidos van AQUÍ, en el bloque de todos los días, y no en
+             una pieza aparte: en el plan del cliente pedir referidos no es
+             una fase ni un extra, es parte de la hora de prospección desde
+             el día 10. Dos palabras, en el sitio donde se hace. */
+          para: {
+            es: "Gente nueva y referidos, por mensaje",
+            en: "New people and referrals, by message",
+          },
         },
         {
           nombre: { es: "Seguimiento", en: "Follow-up" },
@@ -2472,9 +2492,12 @@ export const copy = {
         dias: 20,
         rango: { es: "Días 1–20", en: "Days 1–20" },
         nombre: { es: "Fundación", en: "Foundation" },
+        /* El primer referido se pide el DÍA 10 según el plan, o sea dentro
+           de esta fase. Se dice aquí y no más adelante porque es lo que
+           sorprende: no hay que esperar tres meses para pedirlo. */
         objetivo: {
-          es: "Construyes tu base y aprendes a conversar. Todavía no vendes.",
-          en: "You build your base and learn to hold a conversation. No selling yet.",
+          es: "Construyes tu base y pides tu primer referido, sin vender nada.",
+          en: "You build your base and ask for your first referral, without selling anything.",
         },
       },
       {
