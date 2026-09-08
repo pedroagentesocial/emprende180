@@ -1,6 +1,7 @@
 ---
 import "@/styles/global.css";
 import montserratLatin from "@fontsource-variable/montserrat/files/montserrat-latin-wght-normal.woff2?url";
+import frauncesLatin from "@fontsource-variable/fraunces/files/fraunces-latin-soft-italic.woff2?url";
 import { sitio, curso, instructor, cifras, contacto, copy } from "@config/curso.config";
 import LegalModal from "@components/legal/LegalModal";
 import CookieBanner from "@components/legal/CookieBanner";
@@ -192,6 +193,18 @@ const descripciones = { es: descripcion.es, en: descripcion.en };
     <link
       rel="preload"
       href={montserratLatin}
+      as="font"
+      type="font/woff2"
+      crossorigin="anonymous"
+    />
+
+    {/* La itálica de Fraunces va en la MISMA precarga y no más abajo: sale
+        dentro de los titulares, o sea en lo primero que se pinta. Si llegara
+        tarde, la frase en cursiva saltaría de tamaño delante de los ojos, que
+        es el mismo CLS que se arregló con Montserrat. */}
+    <link
+      rel="preload"
+      href={frauncesLatin}
       as="font"
       type="font/woff2"
       crossorigin="anonymous"

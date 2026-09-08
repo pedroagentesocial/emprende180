@@ -1,0 +1,130 @@
+---
+import { redesMarca } from "@config/curso.config";
+import { RUTAS_REDES } from "@lib/redes";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * BOTÓN DE RED QUE SE ABRE
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Un círculo con el logo que, al pasar el cursor, se estira hasta enseñar el
+ * nombre de la red. Es el patrón que pidió Pedro para el pie y para la sección
+ * del blog.
+ *
+ * ⚠️ ESTE COMPONENTE EXISTE PARA QUE HAYA UNO SOLO. En la entrega original el
+ * botón venía duplicado en dos archivos, con su propia copia de los cinco SVG
+ * dentro de cada uno. Dos copias del mismo bloque son dos versiones distintas
+ * en cuanto alguien toque una. Los glifos viven ahora en `@lib/redes` y el
+ * comportamiento, aquí.
+ *
+ * ─── SÍ, ANIMA UNA PROPIEDAD DE MAQUETACIÓN ────────────────────────────────
+ *
+ * DESIGN.md dice que no se animan propiedades de layout, y el ancho lo es. Se
+ * hace igualmente y con los ojos abiertos, porque ES EL EFECTO: un círculo que
+ * se convierte en píldora no se puede fingir con `transform` sin deformar el
+ * texto de dentro.
+ *
+ * Lo que lo hace aceptable: son cinco elementos, en una fila, fuera de
+ * cualquier scroll; el navegador recalcula una tira de 300 px, no la página. Y
+ * con `prefers-reduced-motion` no hay transición: el nombre aparece de golpe,
+ * sin estirón.
+ *
+ * ─── SIN URL NO HAY ENLACE ─────────────────────────────────────────────────
+ *
+ * Los perfiles de `redesMarca` que todavía no existen (hoy, los cinco) se
+ * pintan apagados y NO son pulsables. Es la misma regla de `RedesMarca.astro`:
+ * las cinco redes son parte de la marca antes de que existan las cuentas, pero
+ * nunca se publica un enlace a un perfil que no está.
+ */
+
+interface Props {
+  /** Sobre qué fondo se pinta. `oscuro` para el pie navy. */
+  tono?: "claro" | "oscuro";
+  /** Rótulo accesible de los perfiles que aún no existen. */
+  etiquetaPendiente: string;
+  class?: string;
+}
+
+const { tono = "claro", etiquetaPendiente, class: className = "" } = Astro.props;
+
+const ESTILOS = {
+  claro: {
+    activo:
+      "border-line text-ink-muted hover:border-ink hover:bg-surface-muted hover:text-ink",
+    pendiente: "border-line text-ink-subtle/60",
+  },
+  oscuro: {
+    activo:
+      "border-primary-700 text-secondary-200 hover:border-secondary-400 hover:bg-primary-900 hover:text-ink-inverse",
+    pendiente: "border-primary-700 text-secondary-200/50",
+  },
+} as const;
+
+const estilo = ESTILOS[tono];
+
+/* `h-11` = 44 px, el mínimo táctil del proyecto. El ancho arranca igual que el
+   alto —un círculo— y crece con el contenido al pasar el cursor. */
+const BASE =
+  "group inline-flex h-11 items-center overflow-hidden rounded-full border " +
+  "motion-safe:transition-[width,background-color,border-color,color] duration-300 ease-out-soft";
+---
+
+<ul role="list" class:list={["flex flex-wrap items-center gap-2", className]}>
+  {
+    redesMarca.map((red) => {
+      const glifo = RUTAS_REDES[red.key];
+      const icono = (
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          focusable="false"
+          class="size-5 shrink-0"
+          style="margin-inline:0.625rem"
+        >
+          <path d={glifo} fill="currentColor" />
+        </svg>
+      );
+
+      /* El nombre. Nace con ancho cero y sin opacidad; al abrir el botón, se
+         despliega. `whitespace-nowrap` para que no parta el nombre mientras
+         crece, que es lo que hace que un despliegue se vea roto. */
+      const nombre = (
+        <span
+          class="max-w-0 overflow-hidden pr-0 text-sm font-semibold whitespace-nowrap opacity-0 motion-safe:transition-[max-width,opacity,padding] motion-safe:duration-300 motion-safe:ease-out-soft group-hover:max-w-[10rem] group-hover:pr-4 group-hover:opacity-100 group-focus-visible:max-w-[10rem] group-focus-visible:pr-4 group-focus-visible:opacity-100"
+        >
+          {red.label}
+        </span>
+      );
+
+      return (
+        <li>
+          {red.url ? (
+            <a
+              href={red.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-track={`red-${red.key}`}
+              aria-label={red.label}
+              class:list={[
+                BASE,
+                estilo.activo,
+                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
+              ]}
+            >
+              {icono}
+              {nombre}
+            </a>
+          ) : (
+            <span
+              aria-label={`${red.label} · ${etiquetaPendiente}`}
+              class:list={[BASE, estilo.pendiente, "cursor-default"]}
+            >
+              {icono}
+              {nombre}
+            </span>
+          )}
+        </li>
+      );
+    })
+  }
+</ul>

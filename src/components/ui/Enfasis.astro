@@ -1,0 +1,62 @@
+---
+import T from "@components/i18n/T.astro";
+import type { Txt } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * ÉNFASIS — la frase en cursiva dentro de un titular
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * El recurso de la segunda dirección visual: un titular en Montserrat bold con
+ * UNA frase corta en Fraunces itálica y en el teal de la marca. Es lo que le da
+ * el aire editorial sin cambiar ni la tipografía ni la escala del resto.
+ *
+ * ─── POR QUÉ ES UN COMPONENTE Y NO UNA CLASE SUELTA ────────────────────────
+ *
+ * El patrón original venía escrito a mano en cada sección:
+ *
+ *     <em class="font-normal italic text-ink-brand"
+ *         style="font-family:'Fraunces Variable',ui-serif,serif">
+ *
+ * Cuatro decisiones repetidas en cada uso, incluido un `style` en línea que se
+ * salta el sistema de tokens. Repetido diez veces, basta con que alguien copie
+ * mal una para que haya dos cursivas distintas en la misma página. Aquí es una
+ * etiqueta y ya.
+ *
+ * ⚠️ UNA FRASE CORTA, NUNCA UN PÁRRAFO. Fraunces itálica a tamaño de titular
+ * funciona; en cuatro líneas de texto corrido se lee peor y parece un fallo de
+ * estilos. Si hay que enfatizar algo largo, el recurso es otro.
+ *
+ * ─── LAS DOS FORMAS DE USARLO ──────────────────────────────────────────────
+ *
+ * Con texto bilingüe del config, que es lo normal:
+ *
+ *     <Enfasis v={copy.algo.frase} />
+ *
+ * O con contenido suelto, cuando la frase ya viene dentro de un `<T>`:
+ *
+ *     <Enfasis>construir tu red</Enfasis>
+ *
+ * ⚠️ `<em>` y no un `<span>`: para un lector de pantalla esto ES énfasis, y la
+ * cursiva sin la etiqueta correcta es decoración que no se oye.
+ */
+
+interface Props {
+  /** Texto bilingüe. Si no viene, se usa el contenido del slot. */
+  v?: Txt;
+  class?: string;
+}
+
+const { v, class: className = "" } = Astro.props;
+---
+
+<em
+  class:list={[
+    /* `font-normal` porque hereda el bold del titular y Fraunces itálica en
+       negrita se empasta: el contraste que se busca es de FORMA, no de peso. */
+    "font-acento font-normal italic text-ink-brand",
+    className,
+  ]}
+>
+  {v ? <T v={v} /> : <slot />}
+</em>

@@ -50,9 +50,7 @@ const base =
   // min-h-11 = 44 px: objetivo táctil mínimo, no bajar de aquí.
   "min-h-11 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out-soft " +
   "focus-visible:outline-2 focus-visible:outline-offset-2 " +
-  // El movimiento se apaga solo bajo prefers-reduced-motion (ver global.css),
-  // pero además se declara aquí para que ni siquiera se aplique la escala.
-  "motion-safe:active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50";
+  "disabled:pointer-events-none disabled:opacity-50";
 
 const focos = {
   claro: "focus-visible:outline-focus",
@@ -64,7 +62,34 @@ const variants = {
   // página: el mismo aquí y en el botón de envío de `LeadForm`. Si esto fuera
   // navy, la misma acción tendría dos colores según el componente que la
   // pinta, y el ojo dejaría de saber qué es pulsable.
-  primary: "bg-cta text-ink-inverse shadow-cta hover:bg-cta-hover hover:shadow-cta-hover",
+  /**
+   * ─── EL BOTÓN SE LEVANTA ─────────────────────────────────────────────
+   *
+   * En reposo es el teal de siempre con un borde navy. Al pasar el cursor se
+   * desplaza 4 px en diagonal, se pone navy y deja detrás una sombra SÓLIDA
+   * navy del mismo tamaño del desplazamiento, así que parece que se ha
+   * despegado del papel. Al pulsar vuelve a su sitio y la sombra desaparece:
+   * el botón se "apoya" otra vez, que es el gesto de pulsar de verdad.
+   *
+   * Sustituye al cambio de color de antes en TODOS los `variant="primary"` de
+   * la página a la vez, que es justo la gracia de que el botón sea un solo
+   * componente.
+   *
+   * ⚠️ LA SOMBRA ES SÓLIDA Y DEL COLOR DE LA MARCA, no un difuminado. Un
+   * `box-shadow` sin blur es un recurso gráfico, no una sombra: por eso
+   * funciona sobre fondo claro y sobre navy sin volverse gris sucio.
+   *
+   * ⚠️ Y SE APAGA CON `prefers-reduced-motion`. La transición está en la clase
+   * base y global.css la anula entera, así que quien pide menos movimiento ve
+   * el cambio de color de golpe, sin desplazamiento. No hace falta tocar nada
+   * aquí para eso.
+   */
+  primary:
+    "border border-primary-900 bg-cta text-ink-inverse " +
+    "motion-safe:hover:-translate-x-1 motion-safe:hover:-translate-y-1 " +
+    "hover:bg-primary-900 " +
+    "motion-safe:hover:shadow-[0.25rem_0.25rem_0_0_var(--color-primary-900)] " +
+    "active:translate-x-0 active:translate-y-0 active:shadow-none",
   secondary:
     "bg-surface text-ink border border-line-strong hover:bg-surface-muted",
   ghost: "bg-transparent text-ink-brand hover:bg-surface-muted",

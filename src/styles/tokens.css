@@ -217,6 +217,22 @@
     "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji";
   --font-display: var(--font-sans);
+
+  /* ─── LA SEGUNDA TIPOGRAFÍA, Y DÓNDE SE USA ──────────────────────────
+     FRAUNCES, y solo en su variante ITÁLICA BLANDA (`soft-italic`). No es
+     una fuente para textos: es para UNA frase corta dentro de un titular en
+     Montserrat, que es lo que le da el aire editorial sin tocar el resto.
+
+     ⚠️ NO SE USA PARA PÁRRAFOS NI PARA TITULARES ENTEROS. Una Fraunces
+     itálica en un párrafo de cuatro líneas se lee peor y se ve como un
+     error de estilos. Si hace falta enfatizar algo que no cabe en una
+     frase, el recurso es otro: peso, tamaño o superficie.
+
+     Al vivir en @theme, Tailwind genera la utilidad `font-acento` sola, así
+     que el patrón no necesita un `style="font-family:…"` a mano en cada
+     sitio. Ver `Enfasis.astro`, que es por donde debería pasar siempre. */
+  --font-acento: "Fraunces Variable", ui-serif, Georgia, "Times New Roman",
+    serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 
   /* Escala tipográfica — mobile-first. Los titulares usan clamp() para crecer

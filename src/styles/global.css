@@ -2,6 +2,9 @@
 /* Montserrat, la tipografía de la guía de marca. Autoalojada: cero peticiones
    a Google Fonts, cero bloqueo de render, cero fuga de IP de los visitantes. */
 @import "@fontsource-variable/montserrat";
+/* Solo la itálica blanda: es la única variante que se usa. Traer la
+   redonda además sería descargar una familia entera para no usarla. */
+@import "@fontsource-variable/fraunces/soft-italic.css";
 @import "./tokens.css";
 
 /* ═══════════════════════════════════════════════════════════════════════════
