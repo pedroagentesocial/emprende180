@@ -1,6 +1,5 @@
 ---
 import T from "@components/i18n/T.astro";
-import Section from "@components/ui/Section.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Icono from "@components/ui/Icono.astro";
 import { aliados, copy } from "@config/curso.config";
@@ -101,9 +100,20 @@ const lockup = (nombre: string) => {
 const duracion = `${marcas.length * 5}s`;
 ---
 
+{/* ─── ESTO YA NO ES UNA SECCIÓN, ES UN BLOQUE ───────────────────────────
+    Vivía en su propia `<Section>`, con su fondo y su ritmo vertical. Ahora se
+    pinta DENTRO de la de testimonios, y por eso no trae ni envoltorio ni color
+    propio: los hereda de quien la incluye.
+
+    El motivo no es de código, es de lectura. Los logos y las reseñas dicen lo
+    mismo —que esto existe de verdad y que ya hay gente dentro— y separados por
+    un cambio de fondo se leían como dos temas distintos que no se respaldan.
+
+    ⚠️ CON EL ENVOLTORIO SE FUE EL `id="aliados"`. Nadie enlazaba a ese ancla;
+    si hace falta una, la que vale es la de la sección que lo contiene. */}
 {
   aliados.activa && marcas.length > 0 && (
-    <Section id="aliados" tono="muted" ritmo="compacto" sinContenedor>
+    <div>
   {/* ─── EL RÓTULO VA EN LÍNEA CON LOS LOGOS, NO ENCIMA ────────────────────
       Centrado y arriba, "Confían en nosotros" se leía como el titular de una
       sección y devolvía a la franja el peso que se le acababa de quitar. A la
@@ -253,6 +263,6 @@ const duracion = `${marcas.length * 5}s`;
           <Icono nombre="play" class="hidden size-4" grosor={1} data-icono-play />
         </button>
       </div>
-    </Section>
+    </div>
   )
 }

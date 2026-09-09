@@ -6,6 +6,7 @@ import Enfasis from "@components/ui/Enfasis.astro";
 import LeadForm from "@components/ui/LeadForm";
 import { copy } from "@config/curso.config";
 import { resolverIdiomaServidor } from "@i18n/idioma";
+import { articulosPublicados, tituloBilingue } from "@lib/blog";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -50,32 +51,34 @@ const lang = resolverIdiomaServidor(
   Astro.request.headers.get("accept-language"),
 );
 
-/* Los seis últimos publicados. `borrador` fuera y las fechas futuras fuera:
-   es la misma regla del índice del blog, y aquí importa igual — un correo con
-   fecha de la semana que viene no ha salido todavía. */
-const ahora = new Date();
-const articulos = (await getCollection("blog"))
-  .filter((a) => !a.data.borrador && a.data.fecha <= ahora)
-  .sort((a, b) => b.data.fecha.getTime() - a.data.fecha.getTime())
-  .slice(0, 6);
+/* Los seis últimos publicados, con la MISMA regla que el listado y que la
+   página del artículo: borradores fuera y fechas futuras fuera. Esta sección
+   la tenía copiada a mano; ahora llama a la función compartida, que es donde
+   esa regla tiene que vivir una sola vez. */
+const articulos = (await articulosPublicados(getCollection)).slice(0, 6);
 
 /* Sin artículos publicados no hay teléfono que enseñar: la sección se queda
    con su texto y su formulario, que es lo que de verdad hace falta. */
 const hayArticulos = articulos.length > 0;
 ---
 
-<Section id="lista" tono="muted" ariaLabel={lista.aria}>
+<Section id="lista" tono="muted" ariaLabel={lista.aria} sinContenedor>
+  <div class="mx-auto w-full max-w-[88rem] px-5 sm:px-8">
   {/* ⚠️ ESQUINAS RECTAS, A PROPÓSITO. Todo lo demás en esta página va con
       `rounded-3xl`; esta tarjeta no lleva radio ninguno. Es la única, y se
       pidió así. Si algún día alguien "corrige" esto por coherencia, que sepa
       que era la intención. */}
   <div class="relative isolate overflow-hidden bg-primary-950">
-    <div class="grid items-center gap-10 p-8 sm:p-12 lg:grid-cols-2 lg:gap-16 lg:p-16">
+    <div class="grid items-center gap-10 p-8 sm:p-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14 lg:p-16">
       {/* ─── El texto ─────────────────────────────────────────────────────
           Centrado, y con una entrada que lo trae desde un poco más pequeño.
           Es la única animación de entrada de la sección: si se moviera también
           el teléfono, competirían. */}
-      <div class="order-2 text-center lg:order-1">
+      <div class="order-2 lg:order-1 lg:text-left">
+        <p class="mb-3 text-sm font-semibold text-secondary-300">
+          <T v={lista.kicker} />
+        </p>
+
         <h2
           data-entrada
           class="text-3xl font-extrabold text-balance text-ink-inverse sm:text-4xl lg:text-5xl"
@@ -93,7 +96,7 @@ const hayArticulos = articulos.length > 0;
           }
         </h2>
 
-        <p class="mx-auto mt-4 max-w-md text-base text-pretty text-secondary-100 sm:text-lg">
+        <p class="mt-4 max-w-md text-base text-pretty text-secondary-100 sm:text-lg">
           <T v={lista.texto} />
         </p>
 
@@ -106,13 +109,14 @@ const hayArticulos = articulos.length > 0;
             El botón sí baja a su renglón. Tres cosas en fila dentro de media
             tarjeta dejan tres cajas de 160 px, y ahí ya no cabe ni el
             marcador de posición. */}
-        <div class="mx-auto mt-8 max-w-xl text-left">
+        <div class="mt-8 max-w-xl">
           <LeadForm
             client:visible
             lang={lang}
             origen="lista"
             variante="lista"
             compacto
+            sinEtiquetas
             cta={lista.cta}
             aviso={lista.aviso}
             exitoTitulo={lista.exitoTitulo}
@@ -159,8 +163,12 @@ const hayArticulos = articulos.length > 0;
                         <span class="block text-[0.65rem] font-bold tracking-wide text-secondary-300 uppercase">
                           <T v={lista.remitente} />
                         </span>
+                        {/* Por `<T>` y no como texto plano: si no, con la web
+                            en inglés los tres asuntos del teléfono eran lo único
+                            de la sección que seguía en español. Ver
+                            `tituloBilingue`. */}
                         <span class="mt-0.5 block text-xs leading-snug text-pretty text-secondary-100">
-                          {a.data.titulo}
+                          <T v={tituloBilingue(a)} />
                         </span>
                       </span>
                     </article>
@@ -182,6 +190,7 @@ const hayArticulos = articulos.length > 0;
           </div>
         )
       }
+      </div>
     </div>
   </div>
 </Section>

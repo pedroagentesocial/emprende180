@@ -157,8 +157,15 @@ export const sitio = {
     en: "Emprende180 — Become an Ambassador",
   },
   descripcion: {
-    es: "El curso completo para ser Embajador Emprende180: 10 videos, un quiz en cada uno y tu certificación al superarlos. Del Ecosistema a tu Plan de 90 Días. Empieza gratis con el reto de 7 días.",
-    en: "The complete course to become an Emprende180 Ambassador: 10 videos, a quiz in each one and your certification once you pass them. From the ecosystem to your 90-Day Plan. Start free with the 7-day challenge.",
+    /* ⚠️ ESTO ES LO QUE SALE EN GOOGLE Y AL COMPARTIR EL ENLACE, así que es lo
+       último que alguien lee antes de decidir si entra. Se quedó desfasada dos
+       veces seguidas y por eso conviene mirarla cada vez que cambia la página:
+       anunciaba "10 videos" cuando la Academia ya no se cuenta así, y remataba
+       con "empieza gratis con el reto de 7 días", que se retiró del sitio
+       entero hace tiempo. Prometer en Google algo que no está en la página es
+       la forma más cara de perder a alguien: entra, no lo encuentra y se va. */
+    es: "El método de Emprende180 para construir algo tuyo desde casa: el plan de 90 días, la Academia con sus programas y un CRM donde no se te pierde nadie.",
+    en: "The Emprende180 method for building something of your own from home: the 90 day plan, the Academy with its programs, and a CRM so you never lose track of anyone.",
   },
 
   ogImagen: "/imagenes/og/og.jpg",
@@ -1901,7 +1908,7 @@ export const cta = {
    * el motivo de pulsar. Ver `copy.informes`.
    */
   primario: {
-    texto: { es: "Pedir el precio", en: "Ask for the price" },
+    texto: { es: "Quiero empezar", en: "I want to start" },
     /* Al cierre, que es donde vive el formulario desde que la sección de
        precio se quitó de la página. Ver 09-Cierre. */
     href: "#empezar",
@@ -1964,7 +1971,7 @@ export const cta = {
    */
   navegacion: [
     { texto: { es: "Inicio", en: "Home" }, href: "#inicio" },
-    { texto: { es: "Quiénes somos", en: "About" }, href: "#embajador" },
+    { texto: { es: "Quiénes somos", en: "About" }, href: "/about" },
     { texto: { es: "Programas", en: "Programs" }, href: "#como-trabajar" },
     { texto: { es: "Recursos", en: "Resources" }, href: "/recursos" },
     /* El plan entra en el menú y no se queda solo en el scroll: es la
@@ -1992,6 +1999,7 @@ export const copy = {
      * sin ver antes qué hay dentro, que si no tiene dónde pulsar se va.
      */
     verTemario: { es: "Ver el temario", en: "See the curriculum" },
+    /** La línea de datos del hero. La usa `copy.hero`, no la sección. */
     pruebaSocial: {
       es: "{alumnos} alumnos · {nota}/5 en {n} valoraciones",
       en: "{alumnos} students · {nota}/5 from {n} reviews",
@@ -2266,12 +2274,26 @@ export const copy = {
     },
   },
 
+  /**
+   * ⚠️ EL TITULAR AFIRMA UNA COSA Y LA PRUEBA ESTÁ DEBAJO, EN LA MISMA
+   * PANTALLA. "Ya están dentro" se sostiene en los seis testimonios reales que
+   * pasan justo debajo, tres de ellos de mujeres, con nombre y contexto. No es
+   * una frase de relleno: es la conclusión de lo que se ve sin bajar más.
+   *
+   * ⚠️ Y POR ESO NO LLEVA NÚMERO. La referencia que pasó el cliente (bossbabe)
+   * encabeza su prueba social con "trusted by 4m women entrepreneurs like you";
+   * nosotros no tenemos esa cifra y `cifras.sonReales` sigue en `false`. Lo que
+   * sí se puede tomar es el mecanismo: nombrar al público y rematar con "como
+   * tú". Un "cientos de mujeres" inventado hunde la sección entera, porque es
+   * justo la que existe para que te fíes.
+   */
   pruebaSocial: {
     aria: { es: "Resultados de los alumnos", en: "Student results" },
-    titulo: {
-      es: "Qué han conseguido otros que empezaban donde tú",
-      en: "What people who started where you are have pulled off",
-    },
+    kicker: { es: "No serías la primera", en: "You wouldn't be the first" },
+    titulo: [
+      { es: "Mujeres como tú,", en: "Women like you," },
+      { es: "ya dentro.", en: "already inside.", enfasis: true },
+    ],
     etiquetaAlumnos: { es: "Alumnos", en: "Students" },
     etiquetaValoracion: { es: "Valoración", en: "Rating" },
     etiquetaNumValoraciones: { es: "Valoraciones", en: "Reviews" },
@@ -2421,66 +2443,145 @@ export const copy = {
    * 32 y 49 sobre 100. La tercera es la justa; si se cambia por una más clara,
    * el texto deja de leerse.
    */
+  /**
+   * ═══════════════════════════════════════════════════════════════════════
+   * EL HERO
+   * ═══════════════════════════════════════════════════════════════════════
+   *
+   * ─── A QUIÉN LE HABLA ──────────────────────────────────────────────────
+   *
+   * A quien tiene el tiempo y no el método: gente en casa, con la agenda
+   * llena de gente que le tiene confianza, que quiere montar algo propio sin
+   * salir por la puerta. Esa persona no está buscando un curso, está buscando
+   * que alguien le diga qué hacer el lunes por la mañana.
+   *
+   * ⚠️ Y POR ESO NO SE PROMETE DINERO EN NINGUNA LÍNEA. Ni cifras, ni "ingreso
+   * extra", ni "gana desde casa". No es prudencia de más: la FTC (16 CFR 465)
+   * y la PROFECO tratan eso como publicidad engañosa salvo que esté probado con
+   * datos reales, y aquí no los hay. Lo que sí se puede decir, y es lo que
+   * engancha de verdad, es CÓMO SE TRABAJA: noventa días, un paso cada día, y
+   * no tienes que inventarte ninguno.
+   *
+   * Si alguien añade "ingresos" o una cifra a estas tres frases, esto deja de
+   * ser una promesa de método y pasa a ser una promesa de resultado.
+   *
+   * ─── DÓNDE CAE EL TEXTO EN CADA FOTO ───────────────────────────────────
+   *
+   * `posicion` lo decide slide a slide, y ese es el recurso: tres pantallas
+   * con el bloque en el mismo sitio se leen como una sola imagen con el texto
+   * cambiado. Moviéndolo, la rotación se nota aunque no se esté mirando.
+   *
+   * Los valores viven en `HeroSlider.astro`, en una tabla cerrada. No se
+   * pueden inventar aquí: Tailwind lee las clases como texto literal y una
+   * armada al vuelo no genera CSS.
+   */
   heroSlider: {
     aria: { es: "Presentación", en: "Introduction" },
 
+    /* ⚠️ EL ORDEN NO ES ESTÉTICO: LA PRIMERA FOTO ES LA QUE DICE PARA QUIÉN ES
+       ESTO. La página le habla a mujeres que están en casa y tienen el tiempo,
+       así que la que abre es la única de las tres en la que salen mujeres.
+
+       ⚠️ Y LAS TRES SON DE BANCO, con hombres en dos de ellas. Es lo primero
+       que hay que cambiar cuando haya sesión de fotos: tres horizontales de
+       2400 px de ancho para arriba, con la gente a la que de verdad le hablamos.
+       Ver el README de /public/imagenes. */
+    /**
+     * ⚠️ EL PRIMER RENGLÓN DE CADA FOTO DICE PARA QUIÉN ES ESTO, y esa es la
+     * única razón de que exista el `kicker`. Es el recurso que usa bossbabe,
+     * que es la referencia que pasó el cliente: una línea pequeña nombra al
+     * público ("we help women entrepreneurs") y el titular grande TERMINA esa
+     * misma frase. Se lee del tirón y en dos segundos sabes si te habla a ti.
+     *
+     * De ahí se toma el mecanismo, no las palabras: las suyas son suyas.
+     *
+     * ⚠️ Y AQUÍ SE SEPARAN LOS CAMINOS EN UNA COSA. Bossbabe escribe "to make
+     * more money" en su titular; nosotros no podemos y no es timidez. La FTC
+     * (16 CFR 465) y la PROFECO tratan las promesas de ingreso como publicidad
+     * engañosa salvo que estén respaldadas con datos reales de alumnos, y esos
+     * datos hoy no existen. Se puede nombrar lo que ella QUIERE y lo que
+     * nosotros DAMOS; no se puede prometer lo que va a conseguir.
+     *
+     * Por eso los ganchos no van de dinero sino de las tres cosas que de verdad
+     * la frenan: creer que hace falta salir de casa, creer que no tiene tiempo
+     * y creer que no conoce a nadie. Las tres son falsas y las tres se
+     * responden con un dato: dos horas al día, noventa días, y una agenda que
+     * ya tiene.
+     *
+     * ⚠️ LAS TRES FOTOS SIGUEN SIENDO DE BANCO. Dos ya son de mujeres, pero
+     * ninguna es de una alumna de verdad ni está hecha en una casa. Es lo
+     * primero de la lista en cuanto haya sesión: horizontales, 2400 px de
+     * ancho para arriba.
+     */
     slides: [
+      {
+        foto: "/imagenes/resultados/03.webp",
+        alt: {
+          es: "Dos mujeres conversando en la calle con un café en la mano",
+          en: "Two women talking on the street holding coffee",
+        },
+        posicion: "derecha-centro",
+        kicker: {
+          es: "Ayudamos a mujeres que están en casa",
+          en: "We help women at home",
+        },
+        titulo: [
+          { es: "a construir", en: "build something" },
+          { es: "algo propio", en: "of their own" },
+          { es: "sin salir de ella.", en: "without leaving it.", enfasis: true },
+        ],
+        subtitulo: {
+          es: "Con experiencia o sin ninguna. Lo que falta no eres tú, es el método.",
+          en: "With experience or none at all. What's missing isn't you, it's the method.",
+        },
+      },
       {
         foto: "/imagenes/secciones/temario.webp",
         alt: {
           es: "Una persona sentada a la mesa de su cocina, de noche, trabajando con su portátil",
           en: "Somebody at their kitchen table at night, working on their laptop",
         },
+        posicion: "derecha-arriba",
+        kicker: { es: "Y no, no hace falta el día entero", en: "And no, it doesn't take all day" },
         titulo: [
-          { es: "Ayudamos a gente", en: "We help people" },
-          { es: "con red a hacer", en: "with a network", enfasis: true },
-          { es: "algo con ella.", en: "do something with it." },
+          { es: "Dos horas al día.", en: "Two hours a day." },
+          { es: "Noventa días.", en: "Ninety days.", enfasis: true },
+          { es: "Ninguno lo pones tú.", en: "You invent none of them." },
         ],
         subtitulo: {
-          es: "Sin experiencia previa en el sector.",
-          en: "No prior industry experience needed.",
+          es: "Cada mañana sabes exactamente qué te toca hacer.",
+          en: "Every morning you know exactly what you have to do.",
         },
       },
       {
-        foto: "/imagenes/resultados/05.webp",
+        foto: "/imagenes/resultados/06.webp",
         alt: {
-          es: "Una persona grabando un video con el teléfono en un trípode",
-          en: "Somebody recording a video with a phone on a tripod",
+          es: "Una mujer hablando por teléfono en la calle",
+          en: "A woman on a phone call out in the street",
         },
+        posicion: "derecha-abajo",
+        kicker: { es: "Empiezas con lo que ya tienes", en: "You start with what you already have" },
         titulo: [
-          { es: "Reconocer la ocasión.", en: "Spot the moment." },
-          { es: "Pedir sin que dé pena.", en: "Ask without cringing.", enfasis: true },
-          { es: "No perder a nadie.", en: "Lose nobody." },
+          { es: "Tu agenda vale", en: "Your contacts are worth" },
+          { es: "más de lo que crees.", en: "more than you think.", enfasis: true },
         ],
         subtitulo: {
-          es: "Lo que aprendes, en el orden en que hace falta.",
-          en: "What you learn, in the order you need it.",
-        },
-      },
-      {
-        foto: "/imagenes/resultados/03.webp",
-        alt: {
-          es: "Dos personas conversando en la calle con un café en la mano",
-          en: "Two people talking on the street holding coffee",
-        },
-        titulo: [
-          { es: "Tú conectas.", en: "You connect people." },
-          { es: "El Ecosistema", en: "The Ecosystem", enfasis: true },
-          { es: "resuelve.", en: "handles it.", enfasis: true },
-        ],
-        subtitulo: {
-          es: "Accidentes de Auto y Vivienda, para empezar.",
-          en: "Auto and Home Accidents, to start with.",
+          es: "La Academia te enseña a moverla. El CRM se acuerda por ti.",
+          en: "The Academy teaches you how to work it. The CRM remembers for you.",
         },
       },
     ],
 
     /* Un solo botón, y el mismo en las tres. Dos botones en un hero que cambia
        cada seis segundos son dos decisiones que tomar mientras la pantalla se
-       mueve. */
+       mueve.
+
+       ⚠️ YA NO LLEVA A PEDIR NADA. Llevaba al formulario del precio; ahora
+       lleva a la sección donde se explica cómo funciona el método, que es lo
+       que esta página vende. */
     cta: {
-      texto: { es: "Construyamos tu red", en: "Let's build your network" },
-      href: "#empezar",
+      texto: { es: "Ver cómo funciona", en: "See how it works" },
+      href: "#como-trabajar",
     },
 
     /* Los mandos. La rotación es contenido en movimiento de más de cinco
@@ -2529,40 +2630,49 @@ export const copy = {
       es: "La próxima que escriba te llega a ti.",
       en: "The next one I write goes to you.",
     },
-    /* ⚠️ EL ALT DESCRIBE LA FOTO QUE HAY, NO LA QUE GUSTARÍA TENER. Si se
-       cambia el archivo en 03-Guias.astro, esta frase se cambia con él: un alt
-       que no coincide con la imagen es peor que no tener alt. */
-    foto: {
-      es: "Una mano escribiendo a lápiz en una mesa, con una taza al lado",
-      en: "A hand writing in pencil at a table, a mug beside it",
-    },
   },
 
+  /**
+   * ─── LA LISTA ──────────────────────────────────────────────────────────
+   *
+   * ⚠️ SE FUE "LO ESCRIBE PEDRO, NO UNA AGENCIA". Era una frase buena y estaba
+   * en el sitio equivocado: en una sección que le habla a alguien que todavía
+   * no sabe quién es Pedro, presumir de quién escribe no dice nada. Quien quiera
+   * saber quién está detrás tiene el botón de la sección anterior y la página
+   * /about entera. Aquí lo único que importa es QUÉ LLEGA.
+   *
+   * ⚠️ Y LO QUE LLEGA NO TIENE FRECUENCIA. "Cuando hay algo, no cuando toca" es
+   * literal: no hay boletín semanal ni nadie que lo escriba los martes.
+   * Prometer una cadencia que no se cumple es la forma más rápida de que un
+   * correo acabe marcado como spam, y de las tres cosas que se anuncian
+   * —recursos, programas y artículos— solo la tercera tiene hoy un ritmo real.
+   */
   lista: {
     aria: { es: "Únete a la lista", en: "Join the list" },
+    kicker: { es: "La lista de Emprende180", en: "The Emprende180 list" },
     titulo: [
-      { es: "Únete a", en: "Join" },
-      { es: "la lista.", en: "the list.", enfasis: true },
+      { es: "Entérate", en: "Find out" },
+      { es: "antes que nadie.", en: "before anyone else.", enfasis: true },
     ],
     texto: {
-      es: "Un correo cuando hay algo nuevo que sirva. Lo escribe Pedro, no una agencia.",
-      en: "One email when there's something new worth reading. Written by Pedro, not an agency.",
+      es: "Los recursos nuevos, los programas que vamos abriendo y cada artículo que se publica.",
+      en: "New resources, the programs we open up, and every article as it goes out.",
     },
-    /* La línea en negrita del rediseño. Dice lo único que hay que saber antes
-       de dejar un correo, y es verdad: no hay serie de ventas detrás. */
+    /* La línea en negrita. Dice lo único que hay que saber antes de dejar un
+       correo, y es verdad: no hay serie de ventas detrás. */
     remate: {
-      es: "Gratis, y te das de baja en un clic.",
-      en: "Free, and you can unsubscribe in one click.",
+      es: "Cuando hay algo, no cuando toca. Y te das de baja en un clic.",
+      en: "When there's something, not when it's due. And you can leave in one click.",
     },
-    cta: { es: "Apuntarme", en: "Sign me up" },
+    cta: { es: "Quiero enterarme", en: "Keep me posted" },
     aviso: {
       es: "Sin spam. Te das de baja en un clic.",
       en: "No spam. Unsubscribe in one click.",
     },
     exitoTitulo: { es: "Ya estás dentro.", en: "You're in." },
     exitoTexto: {
-      es: "Te escribo cuando publique lo siguiente.",
-      en: "I'll write when the next one goes out.",
+      es: "Te escribo cuando haya algo que valga la pena.",
+      en: "I'll write when there's something worth your time.",
     },
     /* El remitente que se ve en el teléfono. */
     remitente: { es: "EMPRENDE180", en: "EMPRENDE180" },
@@ -2573,55 +2683,80 @@ export const copy = {
   },
 
   /**
-   * ─── QUÉ ES UN EMBAJADOR ───────────────────────────────────────────────
+   * ─── QUÉ ES UNA EMBAJADORA ─────────────────────────────────────────────
    *
-   * La sección de identidad del rediseño. El titular no lo inventé: sale de la
-   * frase con la que ya empieza la sección del problema, "Visto. Sin
-   * responder.". Si allí duele que nadie conteste, aquí la definición tiene
-   * que ser exactamente la contraria, con las mismas palabras.
+   * Mismo mecanismo que el hero: el renglón pequeño nombra y el titular
+   * termina la frase.
    *
-   * ⚠️ DEFINE UN PAPEL, NO PROMETE UN RESULTADO. "A quien sí le contestan" es
-   * una descripción de cómo trabaja alguien; "vas a cerrar más" sería una
-   * promesa de ingresos, que es justo lo que PRODUCT.md prohíbe y la FTC
-   * persigue. La diferencia está en una línea de texto, así que cuidado al
-   * reescribir esto.
+   * ⚠️ EL GANCHO ES QUE YA LO ESTÁ HACIENDO. A una mujer que lleva la casa ya
+   * le preguntan por un plomero, por un abogado, por quién arregla el techo.
+   * Contesta por WhatsApp y ahí acaba. Decirle "conviértete en Embajadora"
+   * suena a empezar de cero; decirle "eso que ya haces tiene nombre" no le pide
+   * que cambie, le pide que lo aproveche. Es la misma sección y es otra puerta.
    *
-   * ⚠️ EL BOTÓN YA NO VA A `#instructor`. Esa sección se quitó de la página,
-   * y con ella el temario, el precio y las preguntas: no queda ningún sitio
-   * donde ampliar, así que el botón lleva a lo único que se puede hacer aquí,
-   * que es preguntar cuánto cuesta. En el menú, "Quiénes somos" apunta ahora
-   * a esta misma sección, que es la que cuenta quién está detrás.
+   * ⚠️ "EMBAJADORA" EN FEMENINO, y no es un descuido con el nombre del
+   * producto. La certificación se sigue llamando "Certificación de Embajador
+   * Emprende180" porque ese es su nombre oficial; el texto que le habla a ella
+   * la trata como lo que es. Mezclar las dos formas en español es normal y lo
+   * raro sería lo contrario.
+   *
+   * ⚠️ Y NO SE PROMETE NADA A CAMBIO. "Ahí acaba todo" describe lo que pasa
+   * hoy, no insinúa cuánto se cobra mañana. En cuanto una de estas líneas
+   * sugiera dinero, deja de ser una descripción y pasa a ser una promesa de
+   * ingresos. Ver la nota del hero.
    */
   embajador: {
-    aria: { es: "Qué es un Embajador", en: "What an Ambassador is" },
-    kicker: { es: "Quiénes somos", en: "Who we are" },
+    aria: { es: "Qué es una Embajadora", en: "What an Ambassador is" },
+    kicker: { es: "Ser Embajadora Emprende180 es esto", en: "Being an Emprende180 Ambassador is this" },
     titulo: [
-      { es: "Un Embajador Emprende180", en: "An Emprende180 Ambassador" },
-      {
-        es: "es a quien sí le contestan.",
-        en: "is the one who gets answered.",
-        enfasis: true,
-      },
+      { es: "La que siempre", en: "The one who always" },
+      { es: "conoce a alguien.", en: "knows someone.", enfasis: true },
     ],
     texto: [
       {
-        es: "No vende: contesta. Su gente le pregunta antes de decidir, y ahí no llega ningún anuncio.",
-        en: "They don't sell, they answer. Their people ask them before deciding, and no ad reaches that place.",
+        es: "Ya te preguntan por un plomero, por un abogado, por quién arregla el techo. Contestas por WhatsApp y ahí acaba todo.",
+        en: "People already ask you for a plumber, a lawyer, someone to fix the roof. You answer on WhatsApp and that's where it ends.",
       },
       {
-        es: "Eso no se compra. Se construye contestando bien, una vez y otra.",
-        en: "That isn't bought. It's built by answering well, once and then again.",
+        es: "Una Embajadora contesta igual, con un Ecosistema detrás que se encarga del resto. Ese es todo el cambio.",
+        en: "An Ambassador answers the same way, with an ecosystem behind her that handles the rest. That's the whole change.",
       },
     ],
-    cta: { es: "Pedir el precio", en: "Ask for the price" },
+    cta: { es: "Conócenos", en: "Get to know us" },
     fotoGrande: {
-      es: "Una persona hablando por teléfono en la calle, de camino a algún sitio",
-      en: "Somebody on a phone call out in the street, on their way somewhere",
+      es: "Dos mujeres conversando en la calle con un café en la mano",
+      en: "Two women talking on the street holding coffee",
     },
     fotoChica: {
-      es: "Dos personas conversando en la calle con un café en la mano",
-      en: "Two people talking on the street holding coffee",
+      es: "Una mujer hablando por teléfono en la calle",
+      en: "A woman on a phone call out in the street",
     },
+  },
+
+  /**
+   * ─── LA PÁGINA DE QUIÉNES SOMOS ────────────────────────────────────────
+   *
+   * Existe porque el botón de la sección del Embajador y el enlace del menú
+   * llevan aquí, y hasta ahora los dos llevaban a un ancla de la propia
+   * portada. Una página de "quiénes somos" que es un salto a media pantalla
+   * más abajo no responde la pregunta que la trae.
+   *
+   * ⚠️ TODO LO QUE DICE SALE DE `instructor`, que es donde vive lo comprobable.
+   * Aquí no se escribe ni un dato nuevo: si falta algo, falta allí.
+   */
+  about: {
+    aria: { es: "Quiénes somos", en: "About us" },
+    titulo: { es: "Quiénes somos", en: "About us" },
+    entradilla: {
+      es: "Emprende180 es un método y un Ecosistema. Esto es quién está detrás y por qué existe.",
+      en: "Emprende180 is a method and an ecosystem. This is who's behind it and why it exists.",
+    },
+    descripcion: {
+      es: "Quién está detrás de Emprende180, por qué existe el Ecosistema y qué hace una Embajadora.",
+      en: "Who is behind Emprende180, why the ecosystem exists and what an Ambassador does.",
+    },
+    credencialesTitulo: { es: "Los datos", en: "The receipts" },
+    volver: { es: "Ver cómo funciona el método", en: "See how the method works" },
   },
 
   /**
@@ -2651,8 +2786,8 @@ export const copy = {
         numero: "01",
         titulo: { es: "La Academia", en: "The Academy" },
         texto: {
-          es: "Diez videos en orden, con un quiz en cada uno. Se ven cuando puedas.",
-          en: "Ten videos in order, with a quiz in each one. Watch them when you can.",
+          es: "Los programas y el método que los sostiene, en videos cortos y en orden. Se ven cuando puedas.",
+          en: "The programs and the method behind them, in short videos and in order. Watch them when you can.",
         },
         cta: { es: "Ver la Academia", en: "See the Academy" },
         href: "#academia",
@@ -2664,17 +2799,17 @@ export const copy = {
           es: "Tus contactos y tus oportunidades en un sitio, con su estado al día. Va incluido.",
           en: "Your contacts and opportunities in one place, status current. It comes included.",
         },
-        cta: { es: "Pedir el precio", en: "Ask for the price" },
+        cta: { es: "Quiero empezar", en: "I want to start" },
         href: "#empezar",
       },
       {
         numero: "03",
-        titulo: { es: "El plan de 90 días", en: "The 90 day plan" },
+        titulo: { es: "El reto de 90 días", en: "The 90 day challenge" },
         texto: {
           es: "Qué haces cada día desde el primero. No tienes que inventarte la agenda.",
           en: "What you do each day from day one. You don't have to invent the schedule.",
         },
-        cta: { es: "Pedir el precio", en: "Ask for the price" },
+        cta: { es: "Quiero empezar", en: "I want to start" },
         href: "#empezar",
       },
     ],
@@ -2688,19 +2823,44 @@ export const copy = {
    * el mismo motivo: una portada que anuncia artículos que no existen se cae
    * sola en cuanto alguien pulsa.
    *
-   * Lo único que vive en el config es lo de alrededor.
+   * ─── DE DÓNDE SALE LA FORMA ────────────────────────────────────────────
+   *
+   * Del bloque del podcast de bossbabe, que es la referencia que pasó el
+   * cliente. Lo que se toma de ahí son tres cosas, y ninguna es una palabra
+   * suya:
+   *
+   *   1. Un rótulo corto que nombra la cosa y un titular que la remata en
+   *      cursiva.
+   *   2. UNA FRASE DE ESCENA COTIDIANA antes de la lista. Ellos escriben
+   *      "pour your raw milk latte, grab your favorite journal". No es relleno:
+   *      es lo que convierte "aquí hay artículos" en "esto es para ti, y este
+   *      es el momento del día en que lo lees". La nuestra habla de su día, no
+   *      del nuestro.
+   *   3. Un rótulo encima de la lista ("MY TOP 5 EPISODES:") que la presenta en
+   *      vez de dejarla suelta.
+   *
+   * ⚠️ Y LA ESCENA TIENE QUE SER LA SUYA. "Antes de que te vuelvan a preguntar"
+   * solo funciona si a quien lee ya le preguntan cosas, que es exactamente lo
+   * que dice la sección del Embajador tres pantallas más arriba. Si algún día
+   * el público cambia, esta frase es la primera que deja de valer.
    */
   blogPortada: {
     aria: { es: "Lo último del blog", en: "Latest from the blog" },
     kicker: { es: "El blog", en: "The blog" },
     titulo: [
-      { es: "Lo que escribo", en: "What I write" },
-      { es: "entre semana.", en: "during the week.", enfasis: true },
+      { es: "Las respuestas", en: "The answers" },
+      { es: "que ya te piden.", en: "people already ask you for.", enfasis: true },
     ],
     texto: {
-      es: "Casos que pasan de verdad, y qué se contesta en cada uno. Se leen en cinco minutos.",
-      en: "Things that actually happen, and what to answer in each one. Five minute reads.",
+      es: "Casos que pasan de verdad y qué contestar en cada uno. Ni teoría ni motivación: la frase exacta.",
+      en: "Things that actually happen and what to answer in each one. No theory, no pep talk: the exact words.",
     },
+    /* La escena. Ver la nota de arriba. */
+    escena: {
+      es: "Se leen en cinco minutos, con el café y sin dejar el correo. Justo antes de que te vuelvan a preguntar.",
+      en: "Five minute reads, with your coffee and without leaving your email. Right before someone asks you again.",
+    },
+    listaTitulo: { es: "Lo último que escribí", en: "The latest I've written" },
     /* El botón de cada título. No dice "leer más": dice qué va a pasar al
        pulsar, que es que el artículo se abre encima sin salir de la página. */
     abrir: { es: "Abrir", en: "Open" },
@@ -2710,13 +2870,9 @@ export const copy = {
     verEnBlog: { es: "Ver en el blog", en: "View on the blog" },
     verTodos: { es: "Todos los artículos", en: "All articles" },
     redes: { es: "Dónde publico", en: "Where I post" },
-    fotoCentro: {
+    foto: {
       es: "Retrato de Pedro Lira, fundador de Emprende180",
       en: "Portrait of Pedro Lira, founder of Emprende180",
-    },
-    fotoLado: {
-      es: "Una persona hablando por teléfono, de pie en la calle",
-      en: "Somebody on a phone call, standing in the street",
     },
     vacio: {
       es: "Todavía no hay artículos publicados.",
@@ -2727,40 +2883,57 @@ export const copy = {
   /**
    * ─── LA ACADEMIA ───────────────────────────────────────────────────────
    *
-   * ⚠️ AQUÍ NO SE PROMETE CONTENIDO FUTURO. La maqueta decía "cada curso de la
-   * Academia a medida que se publica", y eso es una promesa: si durante un año
-   * solo hay un curso, la frase pasa a ser mentira sin que nadie la haya
-   * tocado. Lo que se dice es lo que hay hoy, y lo que hay hoy ya es
-   * suficiente: el curso entero, cuando quieras y las veces que quieras.
+   * ⚠️ AQUÍ YA NO SE DICE "DIEZ VIDEOS", y el cambio lo pidió el cliente con
+   * un motivo de producto, no de estilo: la Academia NO es un curso, es donde
+   * viven los programas, y va a haber más de uno. Contarla por el número de
+   * videos de uno solo la encoge a la mitad de lo que es.
+   *
+   * Lo que la sección vende ahora es el MÉTODO: el plan de 90 días, que es lo
+   * único que responde "¿y yo qué hago mañana?". El formato —videos cortos, en
+   * orden, con su quiz— sigue estando porque es cierto y porque quita miedo,
+   * pero va detrás, no delante.
+   *
+   * ⚠️ Y SIGUE SIN PROMETER UNA CADENCIA. "Los programas" en plural es un hecho
+   * del producto que dijo el cliente; "un programa nuevo cada mes" sería una
+   * promesa que hay que cumplir. Si alguien añade una frecuencia a esta
+   * sección, la está inventando.
+   *
+   * ─── EL GANCHO ES UNA HORA DEL DÍA, NO UNA VENTAJA ─────────────────────
+   *
+   * "Se ve de noche, en la mesa de la cocina" no describe el producto: describe
+   * el momento en que ella puede. Es el mismo recurso de la frase del café en
+   * el blog, y responde sin discutirla la objeción que de verdad frena a
+   * alguien con la casa a cuestas, que no es el precio ni el temario, es
+   * "¿cuándo lo voy a hacer?".
+   *
+   * Por eso el segundo párrafo dice lo que NO hay: ni directos ni horarios. Un
+   * curso con clase el martes a las seis está descartado antes de leer de qué
+   * va.
    *
    * Tampoco habla del CRM ni del Ecosistema: eso tiene su sitio en
-   * `comoTrabajar`, y repetirlo aquí solo diluye las dos.
+   * `comoTrabajar`, y repetirlo aquí diluye las dos.
    */
   academia: {
     aria: { es: "La Academia", en: "The Academy" },
     kicker: { es: "La Academia", en: "The Academy" },
     titulo: [
-      { es: "Tu curso te espera", en: "Your course is waiting" },
-      { es: "cuando puedas.", en: "whenever you can.", enfasis: true },
+      { es: "Se ve de noche,", en: "You watch it at night," },
+      { es: "en la mesa de la cocina.", en: "at the kitchen table.", enfasis: true },
     ],
     texto: [
       {
-        es: "Entras con tu correo y ahí está todo lo que compraste, en el orden en que hay que verlo.",
-        en: "Sign in with your email and everything you bought is there, in the order you need to watch it.",
+        es: "Dentro están los programas de Emprende180 y el método que los sostiene: el reto de 90 días, un paso cada día, para que no tengas que inventarte la agenda.",
+        en: "Inside are the Emprende180 programs and the method that holds them together: the 90 day challenge, one step a day, so you never have to invent your own schedule.",
       },
       {
-        es: "A las seis de la mañana o a medianoche. Las veces que haga falta, sin que caduque.",
-        en: "At six in the morning or at midnight. As many times as you need, with no expiry date.",
+        es: "Cada programa en videos cortos y en orden, con un quiz que confirma que lo tienes. Sin clases en directo ni horarios: si hoy no puedes, mañana sigue ahí.",
+        en: "Each program in short videos, in order, with a quiz that confirms you've got it. No live classes and no schedule: if today isn't the day, it's still there tomorrow.",
       },
     ],
     cta: { es: "Entrar", en: "Log in" },
-    fotoGrande: {
+    foto: {
       es: "Una persona sentada a la mesa de su cocina, de noche, trabajando con su portátil",
       en: "Somebody at their kitchen table at night, working on their laptop",
-    },
-    fotoChica: {
-      es: "Una mano anotando la semana en una agenda, junto a un teclado",
-      en: "A hand writing the week into a planner, next to a keyboard",
     },
   },
 
@@ -2770,17 +2943,33 @@ export const copy = {
    * La franja oscura que manda a `/recursos`. El enlace del menú apunta ahí
    * desde antes que esta sección, así que la página tiene que existir: dos
    * sitios llevando a un 404 es peor que uno.
+   *
+   * ─── EL GANCHO ES LO QUE NO PEDIMOS ────────────────────────────────────
+   *
+   * El titular anterior era una lista de sustantivos: "guías, respuestas
+   * directas y trucos". Eso no engancha porque no dice nada que el lector no
+   * dé por hecho; cualquier página promete guías.
+   *
+   * Lo que sí es raro en internet, y por eso es el gancho, es que NO haya que
+   * dejar el correo para leer. Ella ya sabe cómo funciona esto: das el email y
+   * empiezan a llegarte cosas. Decirle por adelantado que aquí no pasa quita la
+   * única duda que tiene antes de pulsar.
+   *
+   * ⚠️ Y TIENE QUE SEGUIR SIENDO VERDAD. En `/recursos` los artículos se leen
+   * sin formulario; el que hay al final es opcional y solo sirve para avisar de
+   * los siguientes. El día que algo de esa página se ponga detrás de un correo,
+   * esta frase pasa a ser mentira y hay que cambiarla.
    */
   recursos: {
     aria: { es: "Recursos gratis", en: "Free resources" },
+    kicker: { es: "Recursos", en: "Resources" },
     titulo: [
-      { es: "Guías,", en: "Guides," },
-      { es: "respuestas directas", en: "straight answers", enfasis: true },
-      { es: "y trucos para mover tu red.", en: "and shortcuts for working your network." },
+      { es: "Todo lo que escribimos,", en: "Everything we write," },
+      { es: "sin dejar el correo.", en: "without leaving your email.", enfasis: true },
     ],
     texto: {
-      es: "Gratis, y sin dejar el correo para leerlos.",
-      en: "Free, and you don't have to leave your email to read them.",
+      es: "Guías cortas para mover tu red sin incomodar a nadie. Se abren y se leen: ni registro, ni prueba gratis.",
+      en: "Short guides on working your network without making it weird. You open them and read: no sign-up, no free trial.",
     },
     cta: { es: "Ver los recursos", en: "See the resources" },
 
@@ -3014,15 +3203,15 @@ export const copy = {
    * quiero decir", que es justo la conclusión que hay que evitar.
    */
   informes: {
-    kicker: { es: "Cuánto cuesta", en: "What it costs" },
-    titulo: {
-      es: "El precio depende de cómo llegas",
-      en: "The price depends on how you come in",
-    },
+    kicker: { es: "Empezar", en: "Getting started" },
+    titulo: [
+      { es: "El reto empieza", en: "The challenge starts" },
+      { es: "cuando tú digas.", en: "when you say.", enfasis: true },
+    ],
     /* El porqué, sin rodeos: es lo que separa "reservado" de "sospechoso". */
     porQue: {
-      es: "Quien llega recomendado por un Embajador no paga lo mismo que quien llega solo. Déjanos tu correo y te decimos el tuyo.",
-      en: "Someone referred by an Ambassador doesn't pay the same as someone arriving on their own. Leave us your email and we'll tell you yours.",
+      es: "Déjanos tu nombre y tu correo. Te escribimos, te contamos cómo se entra y decides tú.",
+      en: "Leave us your name and your email. We'll write, tell you how it works, and you decide.",
     },
     /* Lo que SÍ se puede decir de dinero sin dar la cifra. */
     hechos: [
@@ -3030,15 +3219,15 @@ export const copy = {
       { es: "El acceso al curso no caduca.", en: "Course access doesn't expire." },
       { es: "Se puede pagar en {n} partes.", en: "You can pay it in {n} parts." },
     ],
-    ctaBoton: { es: "Quiero mi precio", en: "Send me my price" },
+    ctaBoton: { es: "Quiero empezar", en: "I want to start" },
     aviso: {
-      es: "Te escribimos con tu precio y resolvemos dudas. Sin insistir después.",
-      en: "We'll message you with your price and answer questions. No pestering afterwards.",
+      es: "Te escribimos una vez y resolvemos dudas. Sin insistir después.",
+      en: "We write once and answer your questions. No pestering afterwards.",
     },
     exitoTitulo: { es: "Listo. Te escribimos.", en: "Done. We'll be in touch." },
     exitoTexto: {
-      es: "Te contactamos con tu precio y con lo que necesites saber antes de decidir.",
-      en: "We'll reach out with your price and whatever else you need before deciding.",
+      es: "Te contactamos con todo lo que necesites saber antes de decidir.",
+      en: "We'll reach out with everything you need to know before deciding.",
     },
     telefonoEtiqueta: { es: "Teléfono (opcional)", en: "Phone (optional)" },
     telefonoAyuda: {
@@ -3460,9 +3649,12 @@ export const copy = {
    */
   cierre: {
     aria: { es: "Empezar", en: "Get started" },
+    /* ⚠️ EL ALT DESCRIBE LA FOTO QUE HAY, NO LA QUE GUSTARÍA TENER. Si se
+       cambia el archivo en 09-Cierre.astro, esta frase se cambia con él: un alt
+       que no coincide con la imagen es peor que no tener alt. */
     foto: {
-      es: "Una mano escribiendo a lápiz en una mesa, con una taza al lado",
-      en: "A hand writing in pencil at a table, a mug beside it",
+      es: "Una mujer escribiendo la semana en una agenda, junto a un teclado",
+      en: "A woman writing her week into a planner, next to a keyboard",
     },
     /** Distintivo sobre el titular. Dice dónde está: es el final de la página. */
     kicker: { es: "Último paso", en: "Last step" },
@@ -3552,6 +3744,12 @@ export const copy = {
     /* El enlace del mapa del sitio, en la franja de abajo del pie. */
     pieSitemap: { es: "Mapa del sitio", en: "Sitemap" },
 
+    /* El botón de las tres rayas. Dos rótulos porque el botón hace dos cosas y
+       tiene que decir cuál toca: quien lo escucha necesita saber si va a abrir
+       o a cerrar. */
+    abrirMenu: { es: "Abrir el menú", en: "Open the menu" },
+    cerrarMenu: { es: "Cerrar el menú", en: "Close the menu" },
+
     placeholderAqui: { es: "Aquí va", en: "Goes here" },
     placeholderEnProduccion: {
       es: "Placeholder en producción",
@@ -3577,6 +3775,13 @@ export const copy = {
     nombrePlaceholder: { es: "María", en: "Maria" },
     emailEtiqueta: { es: "Tu email", en: "Your email" },
     emailPlaceholder: { es: "maria@email.com", en: "maria@email.com" },
+
+    /* Los de los formularios SIN rótulo encima. Ahí el marcador hace de
+       nombre del campo, así que dice el campo y nada más: un ejemplo como
+       "María" dentro de un recuadro sin rótulo parece un valor ya escrito.
+       El <label> sigue existiendo en sr-only con el texto largo. */
+    nombreCorto: { es: "Nombre", en: "Name" },
+    emailCorto: { es: "Email", en: "Email" },
     errorRed: {
       es: "No pudimos conectar. Revisa tu conexión y vuelve a intentarlo.",
       en: "We couldn't connect. Check your connection and try again.",

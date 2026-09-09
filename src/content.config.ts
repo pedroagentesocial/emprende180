@@ -37,6 +37,25 @@ const blog = defineCollection({
     titulo: z.string().min(10).max(120),
 
     /**
+     * ─── EL TITULAR, TRADUCIDO ────────────────────────────────────────────
+     *
+     * Opcional, y NO convierte el artículo en bilingüe: el cuerpo sigue en el
+     * idioma que diga `idioma` y la página del artículo lo avisa.
+     *
+     * Existe porque el titular aparece en sitios donde va SOLO, sin el texto
+     * al lado: el teléfono de la portada es una bandeja de entrada con tres
+     * asuntos y nada más. Con la web en inglés, esos tres asuntos en español
+     * eran lo único de la sección que no estaba traducido, y ahí no cabe un
+     * aviso de idioma que lo explique.
+     *
+     * Traducir un titular no es inventar contenido: es el mismo titular. Lo
+     * que no se traduce a la ligera es el artículo.
+     *
+     * Si falta, se usa el original. La web no se rompe por no ponerlo.
+     */
+    tituloEn: z.string().min(10).max(120).optional(),
+
+    /**
      * Dos líneas. Salen en el listado y como `<meta description>`.
      *
      * ⚠️ NO ES EL PRIMER PÁRRAFO REPETIDO. Google enseña esto debajo del

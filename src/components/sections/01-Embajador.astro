@@ -9,33 +9,47 @@ import { resolverIdiomaServidor } from "@i18n/idioma";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- * 05 · QUÉ ES UN EMBAJADOR
+ * 01 · QUÉ ES UNA EMBAJADORA
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * Dos fotos montadas a la izquierda, la definición a la derecha. Es la sección
- * de identidad: no explica qué se compra, explica en quién te conviertes.
+ * Lo primero después del hero. No explica qué se compra: explica que lo que
+ * ella ya hace tiene nombre.
  *
- * ─── EL COLLAGE NO LLEVA MARCO, Y ESO ES EL DISEÑO ─────────────────────────
+ * ─── ESTA SECCIÓN NO USA EL CONTENEDOR DE LA PÁGINA ────────────────────────
+ *
+ * El resto del sitio vive dentro de `container-page`, que son 72rem centradas.
+ * Aquí son 88rem: en una pantalla de 1440 eso deja el contenido a 16 px de cada
+ * borde en vez de a 144. Es lo que se pidió mirando bossbabe, y no es capricho
+ * de anchura: con 72rem, una fila de dos columnas deja tanto aire a los lados
+ * que la sección entera se lee como una tarjeta centrada más.
+ *
+ * ⚠️ SI ALGUIEN LA DEVUELVE A `container-page`, la asimetría se pierde entera.
+ * No es solo que se estreche: las dos columnas vuelven a parecerse y el bloque
+ * de texto deja de tener sitio para caer donde cae.
+ *
+ * ─── LAS DOS COLUMNAS NO MIDEN LO MISMO NI EMPIEZAN A LA MISMA ALTURA ──────
+ *
+ * La rejilla es 1,15 / 0,85, no 1 / 1, y va `items-end`: el texto se alinea con
+ * el BORDE DE ABAJO de la foto en vez de centrarse contra ella. Las dos cosas
+ * juntas son toda la asimetría de la sección, y las dos son deliberadas.
+ *
+ * Centrado y a partes iguales es lo que sale por defecto, y es justo lo que se
+ * pidió quitar: "todo está muy estructurado".
+ *
+ * ─── EL COLLAGE NO LLEVA MARCO ─────────────────────────────────────────────
  *
  * Sin borde, sin sombra y sin radio: dos fotos que se pisan y ya está. En
- * cuanto una de las dos lleva marco, las dos se leen como tarjetas, y dos
- * tarjetas concéntricas es exactamente lo que DESIGN.md prohíbe.
+ * cuanto una lleva marco, las dos se leen como tarjetas apiladas, y dos
+ * tarjetas concéntricas es lo que DESIGN.md prohíbe.
  *
- * La chica se sale por la izquierda a propósito. Encajada dentro de la grande
- * parece un error de recorte; saliéndose, se lee como lo que es, dos fotos
- * puestas una encima de otra.
+ * La chica se sale por la DERECHA de la grande, metiéndose en el hueco entre
+ * columnas. Ese hueco es espacio muerto en cualquier rejilla de dos; usándolo,
+ * las dos columnas dejan de ser dos bloques que conviven y pasan a ser una
+ * sola composición.
  *
- * ⚠️ EL MONTAJE SOLO EXISTE DE `lg` PARA ARRIBA. Por debajo, la foto chica se
- * esconde: en 390 px de ancho, una foto encima de otra tapa la mitad de la de
- * abajo y no se entiende ninguna de las dos.
- *
- * ─── ADÓNDE VA EL BOTÓN ────────────────────────────────────────────────────
- *
- * Al cierre. La maqueta apuntaba a `/about`, una página que no existe, y
- * después estuvo apuntando a `#instructor`, que ya tampoco: esa sección se
- * quitó junto con el temario, el precio y las preguntas. Como no queda ningún
- * sitio donde ampliar, el botón lleva a lo único que se puede hacer en esta
- * página, que es preguntar el precio.
+ * ⚠️ SOLO DE `lg` PARA ARRIBA. Por debajo no hay dos columnas ni hueco entre
+ * ellas, así que la foto chica se esconde: encima de la grande taparía justo la
+ * cara de las dos mujeres, que es lo único que esa foto tiene que enseñar.
  */
 
 const { embajador } = copy;
@@ -48,77 +62,88 @@ const lang = resolverIdiomaServidor(
 /* Las dos fotos del montaje. Ver la nota de `09-Cierre.astro`: son de banco y
    se repiten con otras partes de la página, y es lo primero que hay que
    cambiar cuando haya una sesión de fotos de verdad. */
-const FOTO_GRANDE = "/imagenes/secciones/resultados.webp";
-const FOTO_CHICA = "/imagenes/resultados/03.webp";
+const FOTO_GRANDE = "/imagenes/resultados/03.webp";
+const FOTO_CHICA = "/imagenes/resultados/06.webp";
 ---
 
-<Section id="embajador" tono="muted" ariaLabel={embajador.aria}>
-  <div class="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
-    {/* ─── El montaje ─────────────────────────────────────────────────────
-        `pl-*` en escritorio para dejarle sitio a la foto chica, que se sale
-        por la izquierda. Sin ese hueco se comería el margen de la página. */}
-    <Reveal class="relative lg:pl-16">
-      <img
-        src={FOTO_GRANDE}
-        alt={embajador.fotoGrande[lang]}
-        data-alt-es={embajador.fotoGrande.es}
-        data-alt-en={embajador.fotoGrande.en}
-        width={1000}
-        height={800}
-        loading="lazy"
-        decoding="async"
-        class="aspect-[4/3] w-full object-cover"
-      />
+<Section id="embajador" tono="muted" ariaLabel={embajador.aria} sinContenedor>
+  <div class="mx-auto w-full max-w-[88rem] px-5 sm:px-8">
+    <div class="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-end lg:gap-14">
+      {/* ─── El montaje ─────────────────────────────────────────────────── */}
+      <Reveal class="relative">
+        <img
+          src={FOTO_GRANDE}
+          alt={embajador.fotoGrande[lang]}
+          data-alt-es={embajador.fotoGrande.es}
+          data-alt-en={embajador.fotoGrande.en}
+          width={1000}
+          height={800}
+          loading="lazy"
+          decoding="async"
+          class="aspect-[5/4] w-full object-cover"
+        />
 
-      {/* La chica, montada abajo a la izquierda. `aria-hidden` no: tiene alt y
-          se lee, pero va después de la grande en el orden del documento, que
-          es el orden en que se miran. */}
-      <img
-        src={FOTO_CHICA}
-        alt={embajador.fotoChica[lang]}
-        data-alt-es={embajador.fotoChica.es}
-        data-alt-en={embajador.fotoChica.en}
-        width={800}
-        height={600}
-        loading="lazy"
-        decoding="async"
-        class="absolute bottom-[-2.5rem] left-0 hidden aspect-[4/3] w-44 object-cover lg:block xl:w-52"
-      />
-    </Reveal>
+        {/* Se sale por la derecha y por abajo. `translate-x` y no un `right`
+            negativo: así el desbordamiento no cuenta para el ancho de la
+            columna y la rejilla no se descuadra al reducir la ventana.
 
-    {/* ─── La definición ──────────────────────────────────────────────────── */}
-    <Reveal>
-      <p class="text-xs font-bold tracking-[0.18em] text-ink-brand uppercase">
-        <T v={embajador.kicker} />
-      </p>
+            ⚠️ EL DESPLAZAMIENTO ES FIJO Y NO UNA FRACCIÓN. Con `translate-x-1/3`
+            el desbordamiento crecía con el ancho de la foto, así que en `xl`,
+            donde la foto pasa a 192 px, se comía los primeros píxeles de cada
+            renglón del párrafo de al lado. 32 px caben siempre en el hueco. */}
+        <img
+          src={FOTO_CHICA}
+          alt={embajador.fotoChica[lang]}
+          data-alt-es={embajador.fotoChica.es}
+          data-alt-en={embajador.fotoChica.en}
+          width={800}
+          height={600}
+          loading="lazy"
+          decoding="async"
+          class="absolute right-0 bottom-0 hidden aspect-[4/5] w-40 translate-x-8 translate-y-8 object-cover lg:block xl:w-48"
+        />
+      </Reveal>
 
-      <h2 class="mt-4 text-3xl leading-tight font-extrabold text-balance text-ink sm:text-4xl lg:text-5xl">
+      {/* ─── La definición ──────────────────────────────────────────────────
+          `pb-4` de más en escritorio: con `items-end` a pelo, la última línea
+          del botón quedaba clavada en el mismo píxel que el borde de la foto, y
+          dos bordes que coinciden exactamente parecen un accidente. Un poco de
+          desfase se lee como intención. */}
+      <Reveal delay={0.1} class="lg:pb-4">
+        <p class="text-sm font-semibold text-ink-brand">
+          <T v={embajador.kicker} />
+        </p>
+
+        <h2 class="mt-3 text-4xl leading-[1.05] font-extrabold text-balance text-ink sm:text-5xl">
+          {
+            embajador.titulo.map((linea) => (
+              <span class="block">
+                {"enfasis" in linea && linea.enfasis ? (
+                  <Enfasis v={linea} />
+                ) : (
+                  <T v={linea} />
+                )}
+              </span>
+            ))
+          }
+        </h2>
+
         {
-          embajador.titulo.map((linea) => (
-            <span class="block">
-              {"enfasis" in linea && linea.enfasis ? (
-                <Enfasis v={linea} />
-              ) : (
-                <T v={linea} />
-              )}
-            </span>
+          embajador.texto.map((parrafo) => (
+            <p class="mt-5 max-w-prose text-base text-pretty text-ink-muted sm:text-lg">
+              <T v={parrafo} />
+            </p>
           ))
         }
-      </h2>
 
-      {
-        embajador.texto.map((parrafo) => (
-          <p class="mt-5 max-w-prose text-base text-pretty text-ink-muted sm:text-lg">
-            <T v={parrafo} />
-          </p>
-        ))
-      }
-
-      <div class="mt-8">
-        <Button href="#empezar" trackId="embajador-precio">
-          <T v={embajador.cta} />
-        </Button>
-      </div>
-    </Reveal>
+        <div class="mt-8">
+          {/* A `/about`, que es una página de verdad desde hoy. Antes esto
+              apuntaba a `#instructor`, una sección que ya no existe. */}
+          <Button href="/about" trackId="embajador-about">
+            <T v={embajador.cta} />
+          </Button>
+        </div>
+      </Reveal>
+    </div>
   </div>
 </Section>

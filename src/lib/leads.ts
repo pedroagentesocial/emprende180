@@ -184,7 +184,7 @@ export async function enviarAWebhook(lead: LeadGuardado): Promise<void> {
                               el permiso vale para lo que dice y para nada más.
            el resto ......... el mini-curso, que es lo que se les ofreció. */
       lead.origen === "informes"
-        ? "pide-precio"
+        ? "quiere-empezar"
         : lead.origen === "guias" || lead.origen === "lista"
           ? "lista-articulos"
           : "mini-curso-7-dias",

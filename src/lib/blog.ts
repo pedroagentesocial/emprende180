@@ -41,6 +41,20 @@ export async function articulosPublicados<T extends ArticuloMinimo>(
 }
 
 /**
+ * El titular en los dos idiomas, para los sitios donde aparece suelto.
+ *
+ * Devuelve un `Txt` y no una cadena a propósito: la portada pinta LOS DOS
+ * idiomas a la vez y esconde el que no toca con CSS, así que un texto resuelto
+ * en el servidor se quedaría fijo al cambiar de idioma con el selector. Pasando
+ * por `<T>`, el cambio es inmediato y sin recargar.
+ *
+ * Sin `tituloEn`, las dos versiones son la misma y no pasa nada.
+ */
+export const tituloBilingue = (a: {
+  data: { titulo: string; tituloEn?: string };
+}): Txt => ({ es: a.data.titulo, en: a.data.tituloEn ?? a.data.titulo });
+
+/**
  * La fecha, escrita como la escribiría una persona: "24 de agosto de 2026".
  *
  * En el idioma DEL ARTÍCULO, no en el de la interfaz: la fecha va pegada a un

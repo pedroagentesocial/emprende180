@@ -9,52 +9,74 @@ import { copy } from "@config/curso.config";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- * 13 · LOS RECURSOS
+ * 08 · LOS RECURSOS
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * Franja navy, todo centrado, una frase y un botón. Es la sección más corta de
- * la página y así tiene que quedarse: lo único que hace es abrir la puerta de
- * `/recursos`.
+ * Franja navy entre dos secciones con foto. Es la más corta de la página y así
+ * tiene que quedarse: lo único que hace es abrir la puerta de `/recursos`.
  *
- * ─── EL CONTENEDOR ES ANCHO A PROPÓSITO ────────────────────────────────────
+ * ─── EL COLOR ES EL DESCANSO ───────────────────────────────────────────────
  *
- * `max-w-5xl` y no la medida de lectura. El titular son tres frases cortas que
- * TIENEN que caer una por línea, y en una columna estrecha la segunda se parte
- * por la mitad y deja una palabra sola. Aquí el ancho no es para leer más
- * cómodo, es para que el corte de línea caiga donde debe.
+ * Va entre la Academia y el cierre, que son las dos de foto a media pantalla.
+ * Sin este corte oscuro, la página termina en tres bloques fotográficos
+ * seguidos y el último deja de contar como final.
+ *
+ * ─── PERO YA NO ESTÁ CENTRADA ──────────────────────────────────────────────
+ *
+ * Antes era un bloque centrado de `max-w-5xl`: titular al medio, párrafo al
+ * medio y botón al medio. Se leía como el aviso de una plantilla. Ahora el
+ * texto va a la izquierda y el botón se separa al otro extremo de la fila, que
+ * es lo que hace una franja de acción de verdad: el ojo entra por el titular y
+ * sale por el botón, sin volver al centro por el camino.
+ *
+ * En móvil se apila y el botón queda debajo, que es el único orden posible
+ * cuando no hay ancho que repartir.
  */
 
 const { recursos } = copy;
 ---
 
-<Section id="recursos" tono="inverse" ritmo="compacto" ariaLabel={recursos.aria}>
-  <div class="relative isolate overflow-hidden">
-    <MarcaAgua posicion="derecha" class="opacity-[0.06]" />
+<Section id="recursos" tono="inverse" ritmo="compacto" ariaLabel={recursos.aria} sinContenedor>
+  <div class="mx-auto w-full max-w-[88rem] px-5 sm:px-8">
+    <div class="relative isolate overflow-hidden">
+      <MarcaAgua posicion="derecha" class="opacity-[0.06]" />
 
-    <Reveal class="mx-auto max-w-5xl text-center">
-      <h2 class="text-3xl leading-tight font-extrabold text-balance text-ink-inverse sm:text-4xl lg:text-5xl">
-        {
-          recursos.titulo.map((linea) => (
-            <span class="block">
-              {"enfasis" in linea && linea.enfasis ? (
-                <Enfasis v={linea} tono="inverso" />
-              ) : (
-                <T v={linea} />
-              )}
-            </span>
-          ))
-        }
-      </h2>
+      <Reveal>
+        <div class="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between lg:gap-16">
+          <div>
+            <p class="text-sm font-semibold text-secondary-300">
+              <T v={recursos.kicker} />
+            </p>
 
-      <p class="mx-auto mt-5 max-w-md text-base text-pretty text-secondary-100 sm:text-lg">
-        <T v={recursos.texto} />
-      </p>
+            <h2 class="mt-3 text-4xl leading-[1.05] font-extrabold text-balance text-ink-inverse sm:text-5xl">
+              {
+                recursos.titulo.map((linea) => (
+                  <span class="block">
+                    {"enfasis" in linea && linea.enfasis ? (
+                      <Enfasis v={linea} tono="inverso" />
+                    ) : (
+                      <T v={linea} />
+                    )}
+                  </span>
+                ))
+              }
+            </h2>
 
-      <div class="mt-8">
-        <Button href="/recursos" sobre="oscuro" trackId="recursos-ver">
-          <T v={recursos.cta} />
-        </Button>
-      </div>
-    </Reveal>
+            <p class="mt-5 max-w-lg text-base text-pretty text-secondary-100 sm:text-lg">
+              <T v={recursos.texto} />
+            </p>
+          </div>
+
+          {/* `shrink-0` para que el botón no se comprima cuando el titular
+              ocupa toda la línea: sin él, en anchos intermedios el texto del
+              botón se partía en dos renglones. */}
+          <div class="shrink-0">
+            <Button href="/recursos" sobre="oscuro" trackId="recursos-ver">
+              <T v={recursos.cta} />
+            </Button>
+          </div>
+        </div>
+      </Reveal>
+    </div>
   </div>
 </Section>

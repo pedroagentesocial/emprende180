@@ -78,6 +78,59 @@ const lang = resolverIdiomaServidor(
 const SOMBRA_TEXTO =
   "text-shadow:0 1px 2px rgba(2,17,36,.55), 0 6px 28px rgba(2,17,36,.45)";
 
+/**
+ * ─── DÓNDE CAE EL BLOQUE DE TEXTO EN CADA FOTO ─────────────────────────────
+ *
+ * Tres pantallas con el texto en el mismo sitio se leen como UNA sola imagen a
+ * la que le van cambiando las palabras: la rotación pasa desapercibida salvo
+ * que la estés mirando fijo. Moviendo el bloque, el cambio se nota de reojo, que
+ * es cuando de verdad se mira un hero.
+ *
+ * ⚠️ LA TABLA ES CERRADA Y LAS CLASES ESTÁN ESCRITAS ENTERAS. Tailwind lee el
+ * código como TEXTO para decidir qué CSS genera: una clase montada al vuelo
+ * —`items-${donde}`— no existe para él y no se genera nunca. Falla en
+ * silencio, que es la peor forma de fallar. Si hace falta una posición nueva,
+ * se añade aquí escrita completa.
+ *
+ * El `pt` deja pasar la barra de arriba y el `pb` deja sitio a los mandos de
+ * abajo. Sin ellos, el titular de la posición alta se mete debajo del logo y el
+ * de la baja se sienta encima de los puntos.
+ */
+const POSICIONES = {
+  "derecha-arriba": "items-start justify-end pt-32 sm:pt-36",
+  "derecha-centro": "items-center justify-end py-28",
+  "derecha-abajo": "items-end justify-end pb-28 sm:pb-32",
+  "izquierda-arriba": "items-start justify-start pt-32 sm:pt-36",
+  "izquierda-centro": "items-center justify-start py-28",
+  "izquierda-abajo": "items-end justify-start pb-28 sm:pb-32",
+} as const;
+
+/**
+ * ─── EL VELO, Y POR QUÉ VUELVE ─────────────────────────────────────────────
+ *
+ * Este hero se hizo SIN velo por petición expresa: la foto limpia. El problema
+ * es medible y estaba anotado ahí arriba: el peor píxel de las tres fotos deja
+ * el blanco a 1,9:1, 1,1:1 y 1,2:1 de contraste. O sea que hay letras sobre
+ * casi-blanco, y ahí no se lee nada por mucha sombra de texto que se le ponga.
+ *
+ * Lo que vuelve NO es el velo que se quitó. Aquel oscurecía la foto entera y la
+ * dejaba turbia. Este es un degradado que arranca en el lado donde cae el texto
+ * y se apaga del todo a media foto: la mitad que se mira sigue limpia, y la que
+ * está debajo de las letras deja de competir con ellas.
+ *
+ * Por eso la dirección depende de la posición del texto y no es fija.
+ */
+const VELOS = {
+  derecha: "bg-gradient-to-l from-primary-950/80 via-primary-950/35 to-transparent",
+  izquierda: "bg-gradient-to-r from-primary-950/80 via-primary-950/35 to-transparent",
+} as const;
+
+type Posicion = keyof typeof POSICIONES;
+
+/* Si un slide se queda sin `posicion`, cae en la de siempre en vez de romper. */
+const posicionDe = (v: string | undefined): Posicion =>
+  v && v in POSICIONES ? (v as Posicion) : "derecha-centro";
+
 /** "Ver la imagen 2", ya resuelto en los dos idiomas. */
 const etiquetaPunto = (i: number) =>
   construirTxt((l) => interpolar(heroSlider.irASlide[l], { n: i + 1 }));
@@ -86,7 +139,7 @@ const etiquetaPunto = (i: number) =>
 <section
   id="inicio"
   data-hero-slider
-  class="relative isolate flex min-h-svh flex-col justify-end overflow-hidden bg-primary-950"
+  class="relative isolate min-h-svh overflow-hidden bg-primary-950"
   aria-roledescription="carousel"
   aria-label={heroSlider.aria[lang]}
   data-aria-es={heroSlider.aria.es}
@@ -115,36 +168,74 @@ const etiquetaPunto = (i: number) =>
           decoding="async"
           class="size-full object-cover"
         />
+
+        {/* El velo va DENTRO de la foto y no encima de todo: así se desvanece
+            con ella en el cruce en vez de quedarse fijo mientras la imagen de
+            debajo cambia, que se vería como un parpadeo. */}
+        <div
+          aria-hidden="true"
+          class:list={[
+            "absolute inset-0",
+            VELOS[
+              posicionDe((slide as { posicion?: string }).posicion).startsWith(
+                "derecha",
+              )
+                ? "derecha"
+                : "izquierda"
+            ],
+          ]}
+        />
       </div>
     ))
   }
 
-  {/* ─── EL BLOQUE DE TEXTO ─────────────────────────────────────────────────
-      Cargado a la derecha, pero con el texto alineado a la IZQUIERDA dentro de
-      su caja. No es "todo a la derecha": es un bloque a la derecha que se lee
-      de izquierda a derecha, como cualquier texto. Alinear a la derecha las
-      tres líneas de un titular obliga a buscar dónde empieza cada una.
+  {/* ─── EL BLOQUE DE TEXTO, UNO POR FOTO ──────────────────────────────────
+      Cada slide trae el suyo con su propia posición, y por eso el botón se
+      repite dentro de los tres: si viviera fuera, se quedaría clavado en un
+      sitio mientras el titular se mueve, y la mitad de las veces acabaría a
+      media pantalla de distancia de su propio texto. Solo hay uno visible a la
+      vez; los otros dos son `display: none`, así que ni se leen ni se tabulan.
 
-      `pb-28` deja sitio abajo para los mandos sin que el texto se les acerque. */}
-  <div class="container-page relative w-full pt-28 pb-28 sm:pb-32">
-    {/* ⚠️ `max-w-3xl` Y NO `2xl`, Y EL TITULAR SE QUEDA EN `6xl`.
-        Medido: con la caja en 2xl y el titular en 7xl, a 1440 px la primera
-        línea de la primera imagen se partía en dos y las tres de la segunda
-        también. Eso es la palabra huérfana que el rediseño persigue: el salto
-        lo decidía el navegador, no nosotros.
+      El texto va alineado a la IZQUIERDA dentro de su caja aunque la caja esté
+      a la derecha. Alinear a la derecha tres líneas de titular obliga a buscar
+      dónde empieza cada una. */}
+  {
+    heroSlider.slides.map((slide, i) => (
+      <div
+        data-texto={i}
+        data-activo={i === 0 ? "true" : "false"}
+        class:list={[
+          "absolute inset-0 hidden data-[activo=true]:flex",
+          POSICIONES[posicionDe((slide as { posicion?: string }).posicion)],
+        ]}
+      >
+        <div class="container-page w-full">
+          {/* ⚠️ `max-w-2xl` Y EL TITULAR EN `6xl`: son las dos medidas que
+              impiden la palabra huérfana. Medido a 1440 px, con la caja más
+              ancha o el cuerpo más grande, la última línea de la segunda foto
+              se parte y deja una palabra sola en su renglón.
 
-        La regla es agrandar la caja o bajar el cuerpo, nunca acortar la idea.
-        Aquí se hicieron las dos cosas a medias: la caja pasa a 48rem y el
-        cuerpo se queda en 60 px, con lo que la línea más larga —"Pedir sin que
-        dé pena."— pide 726 px y caben 768. */}
-    <div class="ml-auto max-w-3xl">
-      {
-        heroSlider.slides.map((slide, i) => (
+              La regla es agrandar la caja o bajar el cuerpo, nunca acortar la
+              idea. */}
           <div
-            data-texto={i}
-            data-activo={i === 0 ? "true" : "false"}
-            class="hidden data-[activo=true]:block"
+            class:list={[
+              "max-w-2xl",
+              (slide as { posicion?: string }).posicion?.startsWith("derecha")
+                ? "ml-auto"
+                : "mr-auto",
+            ]}
           >
+            {/* El renglón que nombra al público. Va en minúsculas y pequeño
+                a propósito: si compite en tamaño con el titular, deja de leerse
+                como la entrada de una frase y pasa a ser un segundo titular.
+                Ver la nota de `heroSlider.slides` en el config. */}
+            <p
+              class="mb-4 text-sm font-semibold text-secondary-200 sm:text-base"
+              style={SOMBRA_TEXTO}
+            >
+              <T v={slide.kicker} />
+            </p>
+
             <h1 class="text-4xl leading-[1.06] font-extrabold text-balance sm:text-5xl lg:text-6xl">
               {slide.titulo.map((linea) => (
                 <span class="block" style={`color:#ffffff;${SOMBRA_TEXTO}`}>
@@ -159,20 +250,28 @@ const etiquetaPunto = (i: number) =>
 
             {/* Blanco puro escrito a mano y no `text-ink-inverse`: a este
                 tamaño, sobre foto, el token se ve gris. */}
-            <p class="mt-5 max-w-md text-base sm:text-lg" style={`color:#ffffff;${SOMBRA_TEXTO}`}>
+            <p
+              class="mt-5 max-w-md text-base sm:text-lg"
+              style={`color:#ffffff;${SOMBRA_TEXTO}`}
+            >
               <T v={slide.subtitulo} />
             </p>
-          </div>
-        ))
-      }
 
-      <div class="mt-8">
-        <Button href={heroSlider.cta.href} variant="primary" size="lg" trackId="hero">
-          <T v={heroSlider.cta.texto} />
-        </Button>
+            <div class="mt-8">
+              <Button
+                href={heroSlider.cta.href}
+                variant="primary"
+                size="lg"
+                trackId={`hero-${i + 1}`}
+              >
+                <T v={heroSlider.cta.texto} />
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
+    ))
+  }
 
   {/* ─── LOS MANDOS ─────────────────────────────────────────────────────────
       Abajo a la izquierda, lejos del texto y del botón. Los tres puntos dicen

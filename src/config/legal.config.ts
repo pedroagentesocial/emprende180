@@ -394,8 +394,8 @@ export const consentimiento = {
    * la forma más rápida de acabar marcado como spam.
    */
   textoAntesInformes: {
-    es: "Acepto que me contacten con el precio y he leído el ",
-    en: "I agree to be contacted with the price and I've read the ",
+    es: "Acepto que me contacten y he leído el ",
+    en: "I agree to be contacted and I've read the ",
   },
   /**
    * El de las dos secciones que reparten los artículos del blog (las guías y
@@ -404,8 +404,8 @@ export const consentimiento = {
    * recibir lo que se publique.
    */
   textoAntesLista: {
-    es: "Acepto recibir las guías por correo y he leído el ",
-    en: "I agree to receive the guides by email and I've read the ",
+    es: "Acepto recibir los correos de Emprende180 y he leído el ",
+    en: "I agree to receive emails from Emprende180 and I have read the ",
   },
   enlaceTexto: { es: "aviso de privacidad", en: "privacy notice" },
   textoDespues: { es: ".", en: "." },

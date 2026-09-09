@@ -101,6 +101,21 @@ interface LeadFormProps {
    * de una página.
    */
   minimo?: boolean;
+  /**
+   * Esconde los rótulos de los campos y deja el nombre dentro del propio
+   * recuadro.
+   *
+   * ⚠️ ESCONDIDOS DE LA VISTA, NO DEL DOCUMENTO. El `<label>` sigue ahí con
+   * `sr-only`: quien usa un lector de pantalla necesita saber qué campo es, y
+   * un `placeholder` no cumple ese papel porque desaparece en cuanto se empieza
+   * a escribir. Un formulario sin `<label>` es un fallo de accesibilidad, no un
+   * estilo minimalista.
+   *
+   * Y por eso el marcador de posición pasa a ser el rótulo ("Nombre", "Email")
+   * y no un ejemplo ("María"): sin rótulo encima, el ejemplo deja de aclarar y
+   * empieza a confundir, porque parece un valor ya escrito.
+   */
+  sinEtiquetas?: boolean;
   /** Idioma resuelto en el servidor (ver src/i18n/react.ts). */
   lang?: Idioma;
 }
@@ -115,6 +130,7 @@ export function LeadForm({
   compacto = false,
   variante = "minicurso",
   minimo = false,
+  sinEtiquetas = false,
   lang: langServidor,
 }: LeadFormProps) {
   const [estado, setEstado] = useState<Estado>("inactivo");
@@ -324,7 +340,9 @@ export function LeadForm({
           <label
             htmlFor={idDe("nombre")}
             className={[
-              "mb-1.5 block text-sm font-medium",
+              sinEtiquetas
+                ? "sr-only"
+                : "mb-1.5 block text-sm font-medium",
               inverso ? "text-secondary-200" : "text-ink",
             ].join(" ")}
           >
@@ -337,7 +355,11 @@ export function LeadForm({
             type="text"
             autoComplete="name"
             enterKeyHint="next"
-            placeholder={t(copy.formulario.nombrePlaceholder)}
+            placeholder={t(
+              sinEtiquetas
+                ? copy.formulario.nombreCorto
+                : copy.formulario.nombrePlaceholder,
+            )}
             disabled={enviando}
             aria-invalid={errores.nombre ? true : undefined}
             aria-describedby={errores.nombre ? errorIdDe("nombre") : undefined}
@@ -355,7 +377,9 @@ export function LeadForm({
           <label
             htmlFor={idDe("email")}
             className={[
-              "mb-1.5 block text-sm font-medium",
+              sinEtiquetas
+                ? "sr-only"
+                : "mb-1.5 block text-sm font-medium",
               inverso ? "text-secondary-200" : "text-ink",
             ].join(" ")}
           >
@@ -373,7 +397,11 @@ export function LeadForm({
             autoCapitalize="off"
             autoCorrect="off"
             spellCheck={false}
-            placeholder={t(copy.formulario.emailPlaceholder)}
+            placeholder={t(
+              sinEtiquetas
+                ? copy.formulario.emailCorto
+                : copy.formulario.emailPlaceholder,
+            )}
             disabled={enviando}
             aria-invalid={errores.email ? true : undefined}
             aria-describedby={errores.email ? errorIdDe("email") : undefined}

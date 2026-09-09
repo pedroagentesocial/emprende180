@@ -8,7 +8,6 @@ import { privacidad, terminos } from "@config/legal.config";
 import CookiePreferences from "@components/legal/CookiePreferences";
 import BotonRed from "@components/ui/BotonRed.astro";
 import MarcaAgua from "@components/ui/MarcaAgua.astro";
-import Icono from "@components/ui/Icono.astro";
 import { getCollection } from "astro:content";
 import { articulosPublicados, blogCopy } from "@lib/blog";
 
@@ -66,15 +65,6 @@ const enlace = (href: string) =>
 
 const anio = new Date().getFullYear();
 
-/* El mensaje prerrellenado de WhatsApp va en el idioma activo: abrir el chat
-   con un texto en otro idioma es de las cosas que más cantan. */
-const whatsappUrl = contacto.whatsapp
-  ? construirTxt(
-      (l) =>
-        `https://wa.me/${contacto.whatsapp}?text=${encodeURIComponent(contacto.whatsappMensaje[l])}`,
-    )
-  : null;
-
 const copyright = construirTxt((l) =>
   interpolar(copy.ui.copyright[l], { anio, razonSocial: contacto.razonSocial }),
 );
@@ -87,8 +77,32 @@ const lang = resolverIdiomaServidor(
   Astro.request.headers.get("accept-language"),
 );
 
-/* ¿Hay algo publicado en el blog? Ver la nota del enlace, más abajo. */
+/**
+ * ─── TRES POR COLUMNA, Y POR ESO SON DOS COLUMNAS ──────────────────────────
+ *
+ * Los enlaces de la página son cinco —los cuatro del menú más el blog— y el
+ * máximo por columna es tres. Así que se parten: los tres primeros en una
+ * columna y el resto en la siguiente, en el mismo orden del menú.
+ *
+ * Se corta con `slice` y no a mano para que añadir un enlace al menú no obligue
+ * a tocar el pie: entra solo en la columna que le toque. Lo único que hay que
+ * vigilar es que no pasen de seis, porque entonces habría que abrir una tercera.
+ *
+ * ⚠️ EL BLOG SOLO APARECE CUANDO HAY ALGO QUE LEER, y esa condición es la mitad
+ * de la decisión de tener blog. Un enlace a una sección vacía —o peor, a un
+ * "próximamente"— le dice al visitante que el proyecto está a medio hacer justo
+ * donde intentas que se fíe. Ver `/blog`, que devuelve 404 mientras no haya
+ * artículos publicados.
+ */
 const hayBlog = (await articulosPublicados(getCollection)).length > 0;
+
+const enlacesPagina = [
+  ...cta.navegacion.map((n) => ({ texto: n.texto, href: n.href })),
+  ...(hayBlog ? [{ texto: blogCopy.titulo, href: "/blog" }] : []),
+];
+
+const columnaUno = enlacesPagina.slice(0, 3);
+const columnaDos = enlacesPagina.slice(3, 6);
 ---
 
 {/* El pie reservaba 6,5rem por debajo para que la barra flotante, que era
@@ -100,8 +114,10 @@ const hayBlog = (await articulosPublicados(getCollection)).length > 0;
 >
   <MarcaAgua posicion="derecha" class="opacity-[0.06]" />
 
-  <div class="container-page py-14">
-    <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+  {/* Aire recortado: el pie no es una sección, es el remate. Con `py-14` y
+      `gap-10` ocupaba casi una pantalla de teléfono él solo. */}
+  <div class="container-page py-10">
+    <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
       <!-- ── Las redes ─────────────────────────────────────────────────────── -->
       {/* En fila y con el botón que se abre al pasar por encima. Es la primera
           columna y va sin rótulo, igual que las otras tres: cinco círculos con
@@ -111,13 +127,12 @@ const hayBlog = (await articulosPublicados(getCollection)).length > 0;
       </div>
 
       <!-- ── La página ─────────────────────────────────────────────────────── -->
-      {/* Los mismos enlaces del menú de arriba. En el pie sí caben los cuatro:
-          quien llega hasta aquí ya ha leído, y volver a una sección concreta es
-          justo lo que va a querer hacer. */}
+      {/* Los tres primeros del menú. El resto, en la columna de al lado: ver
+          la nota de `enlacesPagina`. */}
       <nav aria-label={copy.ui.pieNavegar[lang]}>
         <ul class="grid text-sm">
           {
-            cta.navegacion.map((n) => (
+            columnaUno.map((n) => (
               <li>
                 <a
                   href={enlace(n.href)}
@@ -128,81 +143,29 @@ const hayBlog = (await articulosPublicados(getCollection)).length > 0;
               </li>
             ))
           }
-
-          {/* ⚠️ EL BLOG SOLO APARECE CUANDO HAY ALGO QUE LEER, y esa condición
-              es la mitad de la decisión de tener blog. Un enlace a una sección
-              vacía —o peor, a un "próximamente"— le dice al visitante que el
-              proyecto está a medio hacer justo donde intentas que se fíe para
-              pagar. Vacío no resta si NO EXISTE. Ver `/blog`, que devuelve 404
-              mientras no hay artículos publicados. */}
-          {
-            hayBlog && (
-              <li>
-                <a
-                  href="/blog"
-                  class="inline-flex min-h-11 items-center transition-colors hover:text-ink-inverse"
-                >
-                  <T v={blogCopy.titulo} />
-                </a>
-              </li>
-            )
-          }
         </ul>
       </nav>
 
-      <!-- ── El contacto ───────────────────────────────────────────────────── -->
-      {/* EL TELÉFONO ENTRA EN EL PIE. Mientras no haya pasarela es la única vía
-          por la que se puede pagar, y estaba en la barra flotante, en el cierre
-          y en preguntas — en todas menos en el sitio donde la gente busca un
-          teléfono cuando ya ha decidido. */}
-      <nav aria-label={copy.ui.pieContacto[lang]}>
+      <!-- ── La página, segunda mitad ──────────────────────────────────────── -->
+      {/* ⚠️ AQUÍ ESTABAN EL TELÉFONO, EL CORREO Y EL WHATSAPP, y se quitaron a
+          petición del cliente. Conviene saber lo que eso significa: el teléfono
+          ya no aparece en NINGUNA parte de la web pública. Estaba también en el
+          cierre, en la barra flotante y en las preguntas, y las tres se fueron
+          antes. Si algún día vuelve a hacer falta que alguien pueda llamar sin
+          rellenar un formulario, este es el sitio donde vivía. */}
+      <nav aria-label={copy.ui.pieNavegar[lang]}>
         <ul class="grid text-sm">
           {
-            contacto.telefono && (
+            columnaDos.map((n) => (
               <li>
                 <a
-                  href={`tel:${contacto.telefono}`}
-                  class="inline-flex min-h-11 items-center gap-2 transition-colors hover:text-ink-inverse"
+                  href={enlace(n.href)}
+                  class="inline-flex min-h-11 items-center transition-colors hover:text-ink-inverse"
                 >
-                  <span aria-hidden="true" class="marca-linea shrink-0">
-                    <Icono nombre="telefono" class="size-4" grosor={2} />
-                  </span>
-                  {contacto.telefonoVisible}
+                  <T v={n.texto} />
                 </a>
               </li>
-            )
-          }
-
-          <li>
-            <a
-              href={`mailto:${contacto.email}`}
-              class="inline-flex min-h-11 items-center gap-2 break-all transition-colors hover:text-ink-inverse"
-            >
-              <span aria-hidden="true" class="marca-linea shrink-0">
-                <Icono nombre="conversacion" class="size-4" grosor={2} />
-              </span>
-              {contacto.email}
-            </a>
-          </li>
-
-          {
-            whatsappUrl && (
-              <li>
-                <a
-                  href={whatsappUrl.es}
-                  data-wa-es={whatsappUrl.es}
-                  data-wa-en={whatsappUrl.en}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="inline-flex min-h-11 items-center gap-2 transition-colors hover:text-ink-inverse"
-                >
-                  <span aria-hidden="true" class="marca-linea shrink-0">
-                    <Icono nombre="bocadillos" class="size-4" grosor={2} />
-                  </span>
-                  WhatsApp
-                </a>
-              </li>
-            )
+            ))
           }
         </ul>
       </nav>
@@ -245,7 +208,7 @@ const hayBlog = (await articulosPublicados(getCollection)).length > 0;
         la marca de agua ya ocupa esa esquina, y dos veces el mismo símbolo en
         el mismo rincón no es marca, es repetición. */}
     <div
-      class="mt-12 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-primary-800 pt-6 text-sm text-secondary-200/80"
+      class="mt-8 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-primary-800 pt-5 text-sm text-secondary-200/80"
     >
       <p><T v={copyright} /></p>
 

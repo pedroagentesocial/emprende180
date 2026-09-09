@@ -2,7 +2,6 @@
 import BaseLayout from "@layouts/BaseLayout.astro";
 import Header from "@components/layout/Header.astro";
 import Footer from "@components/layout/Footer.astro";
-import CintaPrecio from "@components/ui/CintaPrecio.astro";
 
 /* ───────────────────────────────────────────────────────────────────────────
    DÓNDE VIVE CADA COSA
@@ -26,8 +25,7 @@ import CintaPrecio from "@components/ui/CintaPrecio.astro";
     01 Embajador ...... en quién te conviertes
     02 Cómo se trabaja  de qué se compone
     03 Lista .......... deja tu correo y te llegan los artículos
-    04 Testimonios .... le funciona a gente como yo
-    05 Aliados ........ y las empresas que están detrás
+    04 Testimonios .... ya hay mujeres dentro, y las empresas que lo respaldan
     06 Blog ........... lo que se escribe, gratis
     07 Academia ....... la puerta de lo que ya se compró
     08 Recursos ....... la puerta de lo que es gratis
@@ -59,7 +57,6 @@ import Embajador from "@components/sections/01-Embajador.astro";
 import ComoTrabajar from "@components/sections/02-ComoTrabajar.astro";
 import Lista from "@components/sections/03-Lista.astro";
 import Testimonios from "@components/sections/04-Testimonios.astro";
-import Aliados from "@components/sections/05-Aliados.astro";
 import BlogPortada from "@components/sections/06-Blog.astro";
 import Academia from "@components/sections/07-Academia.astro";
 import Recursos from "@components/sections/08-Recursos.astro";
@@ -70,18 +67,16 @@ import Cierre from "@components/sections/09-Cierre.astro";
 ---
 
 <BaseLayout>
-  {/* ─── LA CINTA Y LA BARRA, FLOTANDO SOBRE EL HERO ─────────────────────
-      Las dos van dentro de un envoltorio ABSOLUTO, así que el hero empieza en
-      el píxel cero de la página y la foto se ve por detrás de ambas.
+  {/* ─── LA BARRA, FLOTANDO SOBRE EL HERO ─────────────────────────────────
+      Va dentro de un envoltorio ABSOLUTO, así que el hero empieza en el píxel
+      cero de la página y la foto se ve por detrás.
 
-      La cinta se va con el scroll y no vuelve. La barra sí vuelve: en cuanto
-      el scroll pasa de la cinta, se despega, se ancla arriba en navy y ya no
-      se mueve de ahí. Ver `Header.astro`.
-
-      Si `precio.urgencia.fechaCierre` se pone a `null`, la cinta desaparece
-      sola y la barra pasa a anclarse desde el primer píxel. */}
+      ⚠️ AQUÍ ENCIMA HABÍA UNA CINTA DE PRECIO, la del "el precio depende de con
+      quién llegas". Se fue con todo lo demás que hablaba de dinero: esta página
+      vende un método y el precio se habla hablando. Como ya no hay nada encima
+      de la barra, se ancla arriba desde el primer píxel de scroll, sin umbral
+      que calcular. Ver `Header.astro`. */}
   <div class="absolute inset-x-0 top-0 z-40">
-    <CintaPrecio variante="barra" />
     <Header sobreHero />
   </div>
 
@@ -98,10 +93,10 @@ import Cierre from "@components/sections/09-Cierre.astro";
         captura de correo que hay antes del final. */}
     <Lista />
 
-    {/* Y quién lo dice. Los logos van DEBAJO de los testimonios, no pegados al
-        hero: primero habla la gente y después las empresas. */}
+    {/* Quién lo dice. Los logos viven DENTRO de esta sección desde que las
+        dos se fusionaron: dicen lo mismo y con dos fondos distintos se leían
+        como dos temas que no se respaldan. Ver 04-Testimonios. */}
     <Testimonios />
-    <Aliados />
 
     {/* El blog es lo único gratis que demuestra criterio, así que va antes de
         las dos puertas y del cierre. */}

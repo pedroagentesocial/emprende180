@@ -143,7 +143,17 @@ const logoAlt = {
 
            Y no se esconde al bajar. Llegó a hacerlo, para ganar 80 px de
            pantalla, pero eso es justo lo contrario de tenerla siempre. */
+        /* ⚠️ SOMBRA DE TEXTO MIENTRAS FLOTA SOBRE LA FOTO. Los enlaces son
+           blancos sobre una imagen que no controlamos: encima de una pared
+           clara desaparecían. La sombra oscurece solo lo que hay detrás de cada
+           letra, que es la misma solución del titular del hero. Se apaga sola
+           cuando la barra se ancla, porque ahí el fondo ya es navy.
+
+           Va en `[&_a]` y no en el propio `header`: si se hereda, la hereda
+           también el logotipo, que es una imagen y no la necesita. */
         "relative border-b border-transparent bg-transparent " +
+        "[&_a]:[text-shadow:0_1px_2px_rgba(2,17,36,.55),0_4px_18px_rgba(2,17,36,.45)] " +
+        "data-[fija=true]:[&_a]:[text-shadow:none] " +
         "data-[fija=true]:fixed data-[fija=true]:inset-x-0 data-[fija=true]:top-0 " +
         "data-[fija=true]:border-primary-800 " +
         "data-[fija=true]:bg-primary-950 data-[fija=true]:shadow-lg"
@@ -195,10 +205,17 @@ const logoAlt = {
             <a
               href={enlace(item.href)}
               class:list={[
-                "inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2",
+                /* La raya vive en un `::after` de 2 px anclado abajo, y crece
+                   de 0 al 100 % del ancho del enlace. Se anima `scale-x`, que
+                   es transform: el ancho sería una propiedad de maquetación y
+                   esas no se animan (ver DESIGN.md). `origin-left` es lo que
+                   hace que salga desde la izquierda en vez de abrirse por el
+                   centro, que se lee como un acordeón. */
+                "group/enlace relative inline-flex min-h-11 items-center px-3 text-sm font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2",
+                "after:absolute after:inset-x-3 after:bottom-2 after:h-0.5 after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-300 after:ease-[var(--ease-out-soft)] hover:after:scale-x-100",
                 sobreHero
                   ? "text-white/85 hover:text-white focus-visible:outline-focus-inverse"
-                  : "text-ink-muted hover:bg-surface-muted hover:text-ink focus-visible:outline-focus",
+                  : "text-ink-muted hover:text-ink focus-visible:outline-focus",
               ]}
             >
               <T v={item.texto} />
@@ -236,7 +253,7 @@ const logoAlt = {
         data-alt-en={logoAlt.en}
         width={logo.w}
         height={logo.h}
-        class="h-9 w-auto shrink-0 transition-[height] duration-300 ease-[var(--ease-out-soft)] group-data-[compacta=true]:h-8 max-[359px]:h-7 sm:h-11 lg:h-14 lg:group-data-[compacta=true]:h-9"
+        class="h-9 w-auto shrink-0 transition-[height] duration-300 ease-[var(--ease-out-soft)] group-data-[compacta=true]:h-8 max-[440px]:h-7 sm:h-11 lg:h-14 lg:group-data-[compacta=true]:h-9"
         fetchpriority="high"
         decoding="async"
       />
@@ -252,9 +269,17 @@ const logoAlt = {
         "flex shrink-0 items-center gap-2 sm:gap-3 lg:order-3",
         !sobreHero && "lg:justify-self-end",
       ]}>
-      {/* El selector va SIEMPRE visible, también en móvil: si alguien llega
-          con ?lang= equivocado tiene que poder corregirlo sin buscar. */}
-      <LanguageSwitch client:load lang={lang} tono={sobreHero ? "oscuro" : "claro"} />
+      {/* El selector va visible en la barra desde 360 px: si alguien llega con
+          ?lang= equivocado tiene que poder corregirlo sin buscar.
+
+          ⚠️ POR DEBAJO DE 360 SE VA AL PANEL DEL MENÚ, no desaparece. Medido: a
+          320 px, con el logotipo, el idioma, el acceso y las tres rayas, la fila
+          pide 356 px y desborda 36. De las cuatro cosas, la única que puede
+          esperar a que abras el menú es el idioma: el logotipo es la marca, el
+          acceso es la puerta de quien ya pagó y las rayas son el menú. */}
+      <div class="max-[359px]:hidden">
+        <LanguageSwitch client:load lang={lang} tono={sobreHero ? "oscuro" : "claro"} />
+      </div>
 
       {/* ─── ACCESO DE ALUMNOS ────────────────────────────────────────────────
           Va SIEMPRE visible, también en móvil, y ese es el punto: quien ya pagó
@@ -320,8 +345,90 @@ const logoAlt = {
       </Button>
         )
       }
+
+      {/* ─── LAS TRES RAYAS ───────────────────────────────────────────────
+          Por debajo de `lg` el menú no cabe en la fila, y hasta ahora eso
+          significaba que en un teléfono NO HABÍA MENÚ: la barra se quedaba en
+          logotipo, idioma y acceso, y las cuatro secciones solo se alcanzaban
+          bajando a mano hasta encontrarlas.
+
+          El botón cuenta lo que va a pasar y en qué estado está: `aria-expanded`
+          lo dice, `aria-controls` dice qué abre, y el rótulo cambia de "abrir" a
+          "cerrar". Sin eso, para un lector de pantalla esto es un botón sin
+          nombre que no se sabe qué hace. */}
+      {
+        !minimo && (
+          <button
+            type="button"
+            data-menu-boton
+            aria-expanded="false"
+            aria-controls="menu-movil"
+            aria-label={copy.ui.abrirMenu[lang]}
+            data-etiqueta-abrir-es={copy.ui.abrirMenu.es}
+            data-etiqueta-abrir-en={copy.ui.abrirMenu.en}
+            data-etiqueta-cerrar-es={copy.ui.cerrarMenu.es}
+            data-etiqueta-cerrar-en={copy.ui.cerrarMenu.en}
+            class:list={[
+              "grid size-11 shrink-0 place-items-center rounded-full transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 lg:hidden",
+              sobreHero
+                ? "text-white hover:bg-white/10 focus-visible:outline-focus-inverse"
+                : "text-ink-muted hover:bg-surface-muted hover:text-ink focus-visible:outline-focus",
+            ]}
+          >
+            <Icono nombre="menu" class="size-6" grosor={2} data-icono-menu />
+            <Icono nombre="cruz" class="hidden size-6" grosor={2} data-icono-cerrar />
+          </button>
+        )
+      }
     </div>
   </div>
+
+  {/* ─── EL PANEL ───────────────────────────────────────────────────────────
+      Cuelga de la barra (`top-full`), no ocupa sitio en el flujo y se abre
+      hacia abajo. Es navy siempre, también en las páginas de fondo claro: sobre
+      una foto tiene que tener cuerpo, y un panel translúcido encima de una
+      imagen deja los enlaces ilegibles, que es el mismo problema que se acaba de
+      arreglar en la barra.
+
+      ⚠️ SE ESCONDE CON `hidden` Y NO CON OPACIDAD. Un menú a opacidad cero
+      sigue estando: se puede tabular hasta él y un lector de pantalla lo lee.
+      Con `hidden` no existe hasta que se abre. */}
+  {
+    !minimo && (
+      <div
+        id="menu-movil"
+        data-menu-panel
+        hidden
+        class="absolute inset-x-0 top-full border-b border-primary-800 bg-primary-950 shadow-xl lg:hidden"
+      >
+        <nav
+          aria-label={copy.ui.menuPrincipal[lang]}
+          data-aria-es={copy.ui.menuPrincipal.es}
+          data-aria-en={copy.ui.menuPrincipal.en}
+          class="container-page py-2"
+        >
+          <ul class="grid">
+            {cta.navegacion.map((item) => (
+              <li class="border-b border-primary-800/60 last:border-b-0">
+                <a
+                  href={enlace(item.href)}
+                  class="flex min-h-14 items-center text-base font-semibold text-secondary-100 transition-colors duration-200 hover:text-ink-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+                >
+                  <T v={item.texto} />
+                </a>
+              </li>
+            ))}
+          </ul>
+
+          {/* El idioma, solo en las pantallas donde no cabe arriba. Ver la nota
+              del selector de la barra. */}
+          <div class="min-[360px]:hidden border-t border-primary-800/60 py-4">
+            <LanguageSwitch client:visible lang={lang} tono="oscuro" />
+          </div>
+        </nav>
+      </div>
+    )
+  }
 </header>
 
 {/* ═══════════════════════════════════════════════════════════════════════════
@@ -405,5 +512,66 @@ const logoAlt = {
       },
       { passive: true },
     );
+
+    /* ─── EL MENÚ DE MÓVIL ────────────────────────────────────────────────
+
+       Abre, cierra, y se cierra solo con Escape, al pulsar fuera o al elegir un
+       destino. Ese último caso no es un extra: los enlaces son ANCLAS de esta
+       misma página, así que sin cerrarlo el panel se queda tapando justo la
+       sección a la que se acaba de saltar.
+
+       El foco entra al panel al abrir y vuelve al botón al cerrar. Sin eso,
+       quien navega con teclado abre el menú y sigue tabulando por detrás de él.
+
+       ⚠️ SE VUELVE A CERRAR AL PASAR A ESCRITORIO. El panel es `lg:hidden`, así
+       que al ensanchar la ventana desaparece de la vista pero el botón se
+       quedaba marcado como abierto y el foco, dentro de un panel invisible. */
+    const botonMenu = document.querySelector("[data-menu-boton]");
+    const panelMenu = document.querySelector("[data-menu-panel]");
+
+    if (botonMenu && panelMenu) {
+      const iconoMenu = botonMenu.querySelector("[data-icono-menu]");
+      const iconoCerrar = botonMenu.querySelector("[data-icono-cerrar]");
+      const anchoEscritorio = window.matchMedia("(min-width: 64rem)");
+
+      const abrirMenu = (abrir) => {
+        panelMenu.hidden = !abrir;
+        botonMenu.setAttribute("aria-expanded", String(abrir));
+        iconoMenu?.classList.toggle("hidden", abrir);
+        iconoCerrar?.classList.toggle("hidden", !abrir);
+
+        const idioma = document.documentElement.lang === "en" ? "en" : "es";
+        const etiqueta = abrir
+          ? botonMenu.dataset["etiquetaCerrar" + (idioma === "en" ? "En" : "Es")]
+          : botonMenu.dataset["etiquetaAbrir" + (idioma === "en" ? "En" : "Es")];
+        if (etiqueta) botonMenu.setAttribute("aria-label", etiqueta);
+
+        if (abrir) panelMenu.querySelector("a")?.focus();
+      };
+
+      botonMenu.addEventListener("click", () => {
+        abrirMenu(panelMenu.hidden);
+      });
+
+      panelMenu.addEventListener("click", (e) => {
+        if (e.target.closest("a")) abrirMenu(false);
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key !== "Escape" || panelMenu.hidden) return;
+        abrirMenu(false);
+        botonMenu.focus();
+      });
+
+      document.addEventListener("click", (e) => {
+        if (panelMenu.hidden) return;
+        if (panelMenu.contains(e.target) || botonMenu.contains(e.target)) return;
+        abrirMenu(false);
+      });
+
+      anchoEscritorio.addEventListener("change", (e) => {
+        if (e.matches && !panelMenu.hidden) abrirMenu(false);
+      });
+    }
   })();
 </script>

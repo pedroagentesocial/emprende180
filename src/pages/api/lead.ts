@@ -322,7 +322,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
            poder distinguirlos en la bandeja sin abrir el mensaje. */
         subject:
           lead.origen === "informes"
-            ? `PIDE PRECIO — ${lead.nombre}${lead.telefono ? ` · ${lead.telefono}` : ""}`
+            ? `QUIERE EMPEZAR — ${lead.nombre}${lead.telefono ? ` · ${lead.telefono}` : ""}`
             : esLista
               ? `Nuevo lead — lista · ${lead.nombre} · ${lead.origen}`
               : cupon?.valido

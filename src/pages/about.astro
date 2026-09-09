@@ -1,0 +1,140 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import Header from "@components/layout/Header.astro";
+import Footer from "@components/layout/Footer.astro";
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import Button from "@components/ui/Button.astro";
+import { copy, instructor, sitio } from "@config/curso.config";
+import { construirTxt, resolverIdiomaServidor } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * /about — quiénes somos
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Existe porque ya la enlazaban dos sitios: "Quiénes somos" en el menú y el
+ * botón de la sección del Embajador. Los dos llevaban antes a un ancla de la
+ * propia portada, y una página de "quiénes somos" que es un salto a media
+ * pantalla más abajo no responde la pregunta que la trae.
+ *
+ * ─── AQUÍ NO SE ESCRIBE NI UN DATO NUEVO ───────────────────────────────────
+ *
+ * Todo sale de `instructor`, que es donde vive lo comprobable: la bio, las
+ * cuatro credenciales y su enlace de prueba. Si algo falta, falta allí, y allí
+ * está anotado cuál es el hueco que más pesa (dos frases suyas sobre de dónde
+ * viene, incluido lo que le salió mal).
+ *
+ * ─── LA MISMA ASIMETRÍA DE LA PORTADA ──────────────────────────────────────
+ *
+ * Contenedor ancho, columnas desiguales y el retrato pegado al borde. No es
+ * decoración: si esta página vuelve al bloque centrado de siempre, se lee como
+ * un documento legal y no como la continuación de la página de la que viene.
+ */
+export const prerender = false;
+
+const { about } = copy;
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+const tituloPagina = construirTxt(
+  (l) => `${about.titulo[l]} · ${sitio.nombre}`,
+);
+---
+
+<BaseLayout titulo={tituloPagina} descripcion={about.descripcion}>
+  <Header />
+
+  <main id="contenido" class="section-y">
+    <div class="mx-auto w-full max-w-[88rem] px-5 sm:px-8">
+      {/* ─── El titular y el retrato ─────────────────────────────────────
+          Columnas desiguales y el texto abajo, igual que en la portada. */}
+      <div class="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end lg:gap-14">
+        <div class="lg:pb-6">
+          <h1 class="text-4xl leading-[1.05] font-extrabold text-balance text-ink sm:text-5xl lg:text-6xl">
+            <T v={about.titulo} />
+          </h1>
+          <p class="mt-6 max-w-prose text-lg text-pretty text-ink-muted">
+            <T v={about.entradilla} />
+          </p>
+        </div>
+
+        <img
+          src={instructor.foto}
+          alt={instructor.fotoAlt[lang]}
+          data-alt-es={instructor.fotoAlt.es}
+          data-alt-en={instructor.fotoAlt.en}
+          width={800}
+          height={1000}
+          loading="eager"
+          fetchpriority="high"
+          decoding="async"
+          class="aspect-[4/3] w-full object-cover object-top lg:aspect-[16/10]"
+        />
+      </div>
+
+      {/* ─── La bio, en su propia medida de lectura ──────────────────────
+          El texto largo NO se estira a las 88rem del contenedor: una línea de
+          1300 px se pierde al saltar de renglón. La sección es ancha; el
+          párrafo, no. */}
+      <div class="mt-16 grid gap-10 lg:mt-24 lg:grid-cols-[1fr_0.8fr] lg:gap-16">
+        <div>
+          <p class="text-sm font-semibold text-ink-brand">
+            {instructor.nombre}{", "}<T v={instructor.rol} />
+          </p>
+          <p class="mt-4 max-w-prose text-lg leading-relaxed text-pretty text-ink">
+            <T v={instructor.bio} />
+          </p>
+        </div>
+
+        {/* ─── Las credenciales ──────────────────────────────────────────
+            Cada una con su palomita. La que tiene enlace de prueba lo lleva:
+            es lo que separa un dato de una afirmación. */}
+        <div>
+          <h2 class="text-xs font-bold tracking-[0.18em] text-ink-subtle uppercase">
+            <T v={about.credencialesTitulo} />
+          </h2>
+
+          <ul class="mt-5 grid gap-4">
+            {
+              instructor.credenciales.map((c) => (
+                <li class="flex items-start gap-3 text-base text-pretty text-ink-muted">
+                  <span aria-hidden="true" class="marca-linea shrink-0 text-ink-brand">
+                    <Icono nombre="check" class="size-4" />
+                  </span>
+                  <span>
+                    <T v={c.dato} />
+                    {c.prueba && (
+                      <>
+                        {" "}
+                        <a
+                          href={c.prueba}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="font-semibold text-ink-brand underline underline-offset-4 hover:text-secondary-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                        >
+                          {new URL(c.prueba).hostname.replace(/^www\./, "")}
+                        </a>
+                      </>
+                    )}
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+
+          <div class="mt-10">
+            <Button href="/#como-trabajar" trackId="about-metodo">
+              <T v={about.volver} />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>

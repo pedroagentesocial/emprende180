@@ -7,7 +7,7 @@ import Enfasis from "@components/ui/Enfasis.astro";
 import BotonRed from "@components/ui/BotonRed.astro";
 import Icono from "@components/ui/Icono.astro";
 import { copy, instructor } from "@config/curso.config";
-import { articulosPublicados, formatearFecha } from "@lib/blog";
+import { articulosPublicados, formatearFecha, tituloBilingue } from "@lib/blog";
 import { resolverIdiomaServidor } from "@i18n/idioma";
 
 /**
@@ -43,6 +43,25 @@ import { resolverIdiomaServidor } from "@i18n/idioma";
  * `articulosPublicados` es la misma función que usan el listado y la página del
  * artículo: borradores fuera, fechas futuras fuera. La regla de qué se publica
  * es UNA, y esta sección no se inventa la suya.
+ *
+ * ─── DOS COLUMNAS, Y LA FOTO SE VA POR EL BORDE ────────────────────────────
+ *
+ * Esto fueron tres columnas: texto y redes a la izquierda, un retrato en el
+ * centro y un párrafo con otra foto a la derecha. Se veía como tres cosas
+ * puestas una al lado de otra, cada una en su caja, con aire muerto entre
+ * ellas y sin que ninguna mandara.
+ *
+ * Ahora es lo que hace el bloque del podcast de la referencia: TODO el texto en
+ * una columna y UNA foto que ocupa la otra mitad entera y se sale por el borde
+ * derecho de la pantalla. La foto deja de ser una ilustración metida en una
+ * caja y pasa a ser media sección.
+ *
+ * ⚠️ EL `max-w-[44rem] ml-auto` DE LA COLUMNA DE TEXTO NO ES UN NÚMERO AL AZAR.
+ * La rejilla parte la pantalla por la mitad, así que 44rem pegadas al borde
+ * derecho de esa mitad empiezan exactamente donde empezaría un contenedor
+ * centrado de 88rem, que es el que usan las demás secciones del rediseño. El
+ * texto queda alineado con el resto de la página en cualquier ancho, sin
+ * cálculos ni `vw`.
  */
 
 const { blogPortada } = copy;
@@ -66,121 +85,125 @@ const conContenido = await Promise.all(
   })),
 );
 
-/* La segunda foto. Ver la nota de `09-Cierre.astro` sobre las fotos de banco. */
-const FOTO_LADO = "/imagenes/secciones/resultados.webp";
 ---
 
-<Section id="blog" tono="surface" ariaLabel={blogPortada.aria}>
-  <div class="grid gap-10 lg:grid-cols-[1.15fr_auto_1fr] lg:items-center lg:gap-12">
-    {/* ─── Izquierda: el titular, la lista y las redes ───────────────────── */}
-    <Reveal>
-      <p class="text-xs font-bold tracking-[0.18em] text-ink-brand uppercase">
-        <T v={blogPortada.kicker} />
-      </p>
+<Section id="blog" tono="surface" ariaLabel={blogPortada.aria} sinContenedor>
+  <div class="grid items-stretch lg:grid-cols-2">
+    {/* ─── Izquierda: todo lo que se lee ─────────────────────────────────── */}
+    <div class="w-full px-5 sm:px-8 lg:ml-auto lg:max-w-[44rem] lg:py-6">
+      <Reveal>
+        <p class="text-sm font-semibold text-ink-brand">
+          <T v={blogPortada.kicker} />
+        </p>
 
-      <h2 class="mt-4 text-3xl leading-tight font-extrabold text-balance text-ink">
-        {
-          blogPortada.titulo.map((linea) => (
-            <span class="block">
-              {"enfasis" in linea && linea.enfasis ? (
-                <Enfasis v={linea} />
-              ) : (
-                <T v={linea} />
-              )}
-            </span>
-          ))
-        }
-      </h2>
+        <h2 class="mt-3 text-4xl leading-[1.05] font-extrabold text-balance text-ink sm:text-5xl">
+          {
+            blogPortada.titulo.map((linea) => (
+              <span class="block">
+                {"enfasis" in linea && linea.enfasis ? (
+                  <Enfasis v={linea} />
+                ) : (
+                  <T v={linea} />
+                )}
+              </span>
+            ))
+          }
+        </h2>
+
+        <p class="mt-5 max-w-prose text-base text-pretty text-ink-muted sm:text-lg">
+          <T v={blogPortada.texto} />
+        </p>
+
+        {/* La frase de escena, en la voz de quien escribe. Ver la cabecera. */}
+        <p class="mt-3 max-w-prose text-base text-pretty text-ink-muted">
+          <T v={blogPortada.escena} />
+        </p>
+      </Reveal>
 
       {
         articulos.length === 0 ? (
-          <p class="mt-8 text-base text-ink-muted">
+          <p class="mt-10 text-base text-ink-muted">
             <T v={blogPortada.vacio} />
           </p>
         ) : (
-          <ul class="mt-8 border-t border-line">
-            {articulos.map((a) => (
-              <li class="border-b border-line">
-                {/* El título ES el botón: un botón aparte al lado del título
-                    duplica el mismo destino en dos sitios y obliga a apuntar a
-                    la diana pequeña. */}
-                <button
-                  type="button"
-                  data-abrir={a.id}
-                  class="group flex w-full min-h-11 items-start gap-4 py-4 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                >
-                  <span class="min-w-0 flex-1">
-                    <span class="block text-base font-bold text-pretty text-ink group-hover:text-ink-brand">
-                      {a.data.titulo}
+          <Reveal delay={0.1}>
+            <p class="mt-10 text-xs font-bold tracking-[0.18em] text-ink-subtle uppercase">
+              <T v={blogPortada.listaTitulo} />
+            </p>
+
+            <ul class="mt-4 border-t border-line">
+              {articulos.map((a) => (
+                <li class="border-b border-line">
+                  {/* El título ES el botón: un botón aparte al lado del título
+                      duplica el mismo destino en dos sitios y obliga a apuntar
+                      a la diana pequeña. */}
+                  <button
+                    type="button"
+                    data-abrir={a.id}
+                    class="group flex w-full min-h-11 items-center gap-4 py-4 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                  >
+                    <span class="min-w-0 flex-1">
+                      <span class="block text-lg font-bold text-pretty text-ink group-hover:text-ink-brand sm:text-xl">
+                        <T v={tituloBilingue(a)} />
+                      </span>
+                      <time
+                        datetime={a.data.fecha.toISOString().slice(0, 10)}
+                        class="mt-1 block text-sm text-ink-subtle"
+                      >
+                        {formatearFecha(a.data.fecha, a.data.idioma)}
+                      </time>
                     </span>
-                    <time
-                      datetime={a.data.fecha.toISOString().slice(0, 10)}
-                      class="mt-1 block text-sm text-ink-subtle"
-                    >
-                      {formatearFecha(a.data.fecha, a.data.idioma)}
-                    </time>
-                  </span>
-                  <Icono
-                    nombre="flecha"
-                    class="mt-1 size-5 shrink-0 text-ink-subtle group-hover:text-ink-brand"
-                  />
-                </button>
-              </li>
-            ))}
-          </ul>
+                    <Icono
+                      nombre="flecha"
+                      class="size-5 shrink-0 text-ink-subtle transition-transform duration-200 ease-out-soft group-hover:translate-x-1 group-hover:text-ink-brand"
+                    />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </Reveal>
         )
       }
 
-      <a
-        href="/blog"
-        class="mt-6 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-ink-brand underline underline-offset-4 hover:text-secondary-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-      >
-        <T v={blogPortada.verTodos} />
-      </a>
+      <Reveal delay={0.2}>
+        <div class="mt-8 flex flex-wrap items-center justify-between gap-6">
+          <a
+            href="/blog"
+            class="inline-flex min-h-11 items-center text-sm font-bold text-ink-brand underline underline-offset-4 hover:text-secondary-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          >
+            <T v={blogPortada.verTodos} />
+          </a>
 
-      <div class="mt-10">
-        <p class="text-xs font-bold tracking-[0.18em] text-ink-subtle uppercase">
-          <T v={blogPortada.redes} />
-        </p>
-        <div class="mt-3">
-          <BotonRed etiquetaPendiente={copy.ui.proximamente[lang]} />
+          {/* En un teléfono el rótulo y los cinco círculos no caben en la
+              misma línea: el rótulo partía en dos renglones y el quinto icono
+              se caía a una segunda fila. Apilados, los cinco entran de una. */}
+          <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <p class="text-xs font-bold tracking-[0.18em] text-ink-subtle uppercase">
+              <T v={blogPortada.redes} />
+            </p>
+            <BotonRed etiquetaPendiente={copy.ui.proximamente[lang]} />
+          </div>
         </div>
-      </div>
-    </Reveal>
+      </Reveal>
+    </div>
 
-    {/* ─── Centro: el retrato ────────────────────────────────────────────── */}
-    <Reveal delay={0.1} class="mx-auto w-full max-w-sm lg:w-72 xl:w-80">
+    {/* ─── Derecha: la foto, hasta el borde ───────────────────────────────
+        En móvil no sangra a media pantalla —quedaría una tira rara— sino que
+        ocupa el ancho completo con una altura fija, y va DELANTE del texto:
+        una cara antes que un titular es lo que dice quién escribe esto. */}
+    <div class="relative order-first h-72 w-full bg-primary-950 sm:h-96 lg:order-none lg:h-auto lg:min-h-[36rem]">
       <img
         src={instructor.foto}
-        alt={blogPortada.fotoCentro[lang]}
-        data-alt-es={blogPortada.fotoCentro.es}
-        data-alt-en={blogPortada.fotoCentro.en}
+        alt={blogPortada.foto[lang]}
+        data-alt-es={blogPortada.foto.es}
+        data-alt-en={blogPortada.foto.en}
         width={800}
         height={1000}
         loading="lazy"
         decoding="async"
-        class="aspect-[4/5] w-full object-cover"
+        class="absolute inset-0 size-full object-cover object-top"
       />
-    </Reveal>
-
-    {/* ─── Derecha: el párrafo y la segunda foto ─────────────────────────── */}
-    <Reveal delay={0.2}>
-      <p class="max-w-sm text-base text-pretty text-ink-muted sm:text-lg">
-        <T v={blogPortada.texto} />
-      </p>
-
-      <img
-        src={FOTO_LADO}
-        alt={blogPortada.fotoLado[lang]}
-        data-alt-es={blogPortada.fotoLado.es}
-        data-alt-en={blogPortada.fotoLado.en}
-        width={1000}
-        height={800}
-        loading="lazy"
-        decoding="async"
-        class="mt-8 aspect-[4/3] w-full max-w-sm object-cover"
-      />
-    </Reveal>
+    </div>
   </div>
 
   {/* ─── Los diálogos ─────────────────────────────────────────────────────
@@ -207,7 +230,7 @@ const FOTO_LADO = "/imagenes/secciones/resultados.webp";
                 id={`titulo-${articulo.id}`}
                 class="mt-2 text-2xl font-extrabold text-balance text-ink sm:text-3xl"
               >
-                {articulo.data.titulo}
+                <T v={tituloBilingue(articulo)} />
               </h3>
             </div>
 

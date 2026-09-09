@@ -1,5 +1,6 @@
 ---
 titulo: "Qué contestar cuando alguien te cuenta un problema que no sabes resolver"
+tituloEn: "What to say when someone brings you a problem you cannot solve"
 resumen: "El silencio no viene de que no te importe. Viene de que no tienes una frase preparada para el momento exacto en que llega el mensaje."
 fecha: 2026-09-01
 idioma: es
