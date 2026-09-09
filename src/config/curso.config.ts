@@ -2487,6 +2487,88 @@ export const copy = {
   },
 
   /**
+   * ─── LAS GUÍAS (formulario simple) Y LA LISTA (el del teléfono) ─────────
+   *
+   * Son las dos secciones nuevas del rediseño que capturan correo, y las dos
+   * piden lo mismo. No es un descuido del brief: una PIDE y la otra ENSEÑA lo
+   * que llega. Aun así conviene decidir si las dos se quedan, porque dos
+   * formularios idénticos separados por una pantalla se leen como un fallo.
+   *
+   * ⚠️ NINGUNA PROMETE NADA QUE NO EXISTA. El reto de 7 correos se retiró como
+   * imán, así que lo que se ofrece es lo único que hay de verdad: los artículos
+   * del blog, que son guías cortas, y el aviso cuando sale uno nuevo. Ni
+   * "contenido exclusivo", ni "descargables", ni una frecuencia que no se pueda
+   * cumplir.
+   */
+  guias: {
+    aria: { es: "Recibe las guías", en: "Get the guides" },
+    titulo: [
+      { es: "Guías cortas para", en: "Short guides on" },
+      { es: "mover tu red", en: "working your network", enfasis: true },
+      { es: "sin incomodar a nadie.", en: "without making it weird." },
+    ],
+    texto: {
+      es: "Cada vez que publico una, te llega. Nada más: ni ofertas, ni tres correos a la semana.",
+      en: "Every time I publish one, it lands in your inbox. That's it: no offers, no three emails a week.",
+    },
+    cta: { es: "Quiero recibirlas", en: "Send them to me" },
+    /* El aviso de debajo del botón NO puede ser el del mini-curso, que dice
+       "un email al día durante 7 días": aquí no hay secuencia de siete, hay
+       un aviso cuando se publica. Prometer la cadencia equivocada es la
+       forma más rápida de que alguien marque el correo como spam. */
+    aviso: {
+      es: "Sin spam. Solo cuando hay una nueva, y te das de baja en un clic.",
+      en: "No spam. Only when there's a new one, and you can unsubscribe in one click.",
+    },
+    exitoTitulo: { es: "Hecho.", en: "Done." },
+    exitoTexto: {
+      es: "La próxima que escriba te llega a ti.",
+      en: "The next one I write goes to you.",
+    },
+    /* ⚠️ EL ALT DESCRIBE LA FOTO QUE HAY, NO LA QUE GUSTARÍA TENER. Si se
+       cambia el archivo en 03-Guias.astro, esta frase se cambia con él: un alt
+       que no coincide con la imagen es peor que no tener alt. */
+    foto: {
+      es: "Una mano escribiendo a lápiz en una mesa, con una taza al lado",
+      en: "A hand writing in pencil at a table, a mug beside it",
+    },
+  },
+
+  lista: {
+    aria: { es: "Únete a la lista", en: "Join the list" },
+    titulo: [
+      { es: "Únete a", en: "Join" },
+      { es: "la lista.", en: "the list.", enfasis: true },
+    ],
+    texto: {
+      es: "Un correo cuando hay algo nuevo que sirva. Lo escribe Pedro, no una agencia.",
+      en: "One email when there's something new worth reading. Written by Pedro, not an agency.",
+    },
+    /* La línea en negrita del rediseño. Dice lo único que hay que saber antes
+       de dejar un correo, y es verdad: no hay serie de ventas detrás. */
+    remate: {
+      es: "Gratis, y te das de baja en un clic.",
+      en: "Free, and you can unsubscribe in one click.",
+    },
+    cta: { es: "Apuntarme", en: "Sign me up" },
+    aviso: {
+      es: "Sin spam. Te das de baja en un clic.",
+      en: "No spam. Unsubscribe in one click.",
+    },
+    exitoTitulo: { es: "Ya estás dentro.", en: "You're in." },
+    exitoTexto: {
+      es: "Te escribo cuando publique lo siguiente.",
+      en: "I'll write when the next one goes out.",
+    },
+    /* El remitente que se ve en el teléfono. */
+    remitente: { es: "EMPRENDE180", en: "EMPRENDE180" },
+    telefonoAlt: {
+      es: "Un teléfono con la bandeja de entrada y los últimos artículos",
+      en: "A phone showing the inbox with the latest articles",
+    },
+  },
+
+  /**
    * ─── EL PLAN DE 90 DÍAS ────────────────────────────────────────────────
    *
    * Todo sale del documento "Plan de 90 Días — Prospección Diaria del

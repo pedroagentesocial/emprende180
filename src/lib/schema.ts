@@ -28,6 +28,11 @@ export const ORIGENES = [
      lead que el del mini-curso: este pregunta cuánto cuesta, o sea que está
      mucho más abajo en el embudo, y el equipo lo tiene que tratar distinto. */
   "informes",
+  /* Las dos capturas del rediseño. Van separadas —y no como un solo
+     "boletin"— porque están una detrás de otra en la página y la única
+     forma de saber si las dos hacen falta es ver cuál convierte. */
+  "guias",
+  "lista",
 ] as const;
 
 /**

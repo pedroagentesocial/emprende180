@@ -90,6 +90,56 @@ const BIENVENIDA: Record<
   },
 };
 
+/**
+ * El acuse de las guías y de la lista.
+ *
+ * ⚠️ NO ES LA BIENVENIDA DEL MINI-CURSO, Y NO PUEDE SERLO. Ahí se anuncia un
+ * "día 1" que llega mañana; quien deja el correo en estas dos secciones no ha
+ * pedido ninguna secuencia, ha pedido que le avise cuando publique. Prometerle
+ * una cadencia que no existe es la forma más rápida de acabar en spam.
+ *
+ * Por eso tampoco dice cada cuánto: sale cuando hay algo escrito.
+ */
+const CONFIRMACION_LISTA: Record<
+  Idioma,
+  { asunto: (nombre: string) => string; cuerpo: (nombre: string) => string }
+> = {
+  es: {
+    asunto: (n) => `${n}, ya estás en la lista`,
+    cuerpo: (n) =>
+      [
+        `Hola ${n}:`,
+        ``,
+        `Apuntado. La próxima guía que escriba te llega a ti.`,
+        ``,
+        `No hay más correos que ese: ni ofertas, ni una serie de siete días.`,
+        `Te das de baja cuando quieras, desde cualquiera de ellos.`,
+        ``,
+        `Si quieres preguntar algo, responde aquí mismo.`,
+        ``,
+        `— ${sitio.nombre}`,
+        sitio.claim.es,
+      ].join("\n"),
+  },
+  en: {
+    asunto: (n) => `${n}, you're on the list`,
+    cuerpo: (n) =>
+      [
+        `Hi ${n},`,
+        ``,
+        `You're in. The next guide I write goes to you.`,
+        ``,
+        `That's the only email you'll get: no offers, no seven day series.`,
+        `Unsubscribe whenever you like, from any of them.`,
+        ``,
+        `If you want to ask something, just hit reply.`,
+        ``,
+        `— ${sitio.nombre}`,
+        sitio.claim.en,
+      ].join("\n"),
+  },
+};
+
 const json = (body: LeadResponse, status: number, headers?: HeadersInit) =>
   new Response(JSON.stringify(body), {
     status,
@@ -225,6 +275,12 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   );
 
   // ── 6 · Notificar ─────────────────────────────────────────────────────────
+
+  /* Los dos formularios que reparten los artículos del blog. Se tratan igual
+     entre ellos y distinto del resto: ni entran en el mini-curso ni los llama
+     nadie. Ver `CONFIRMACION_LISTA`. */
+  const esLista = lead.origen === "guias" || lead.origen === "lista";
+
   const apiKey = import.meta.env.RESEND_API_KEY;
   const to = import.meta.env.NOTIFY_EMAIL_TO;
   const from = import.meta.env.NOTIFY_EMAIL_FROM;
@@ -267,9 +323,11 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
         subject:
           lead.origen === "informes"
             ? `PIDE PRECIO — ${lead.nombre}${lead.telefono ? ` · ${lead.telefono}` : ""}`
-            : cupon?.valido
-              ? `Nuevo lead — mini-curso · ${lead.nombre} · cupón ${cupon.valido.code}`
-              : `Nuevo lead — mini-curso · ${lead.nombre} · ${lead.origen}`,
+            : esLista
+              ? `Nuevo lead — lista · ${lead.nombre} · ${lead.origen}`
+              : cupon?.valido
+                ? `Nuevo lead — mini-curso · ${lead.nombre} · cupón ${cupon.valido.code}`
+                : `Nuevo lead — mini-curso · ${lead.nombre} · ${lead.origen}`,
         text: [
           `Nombre:  ${lead.nombre}`,
           `Email:   ${lead.email}`,
@@ -295,14 +353,18 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
         ].join("\n"),
       }),
 
-      /* Día 1 del mini-curso. TODO: eliminar cuando la secuencia del
-         autoresponder esté conectada, o el lead recibirá el día 1 dos veces.
+      /* El correo que recibe la persona, y cuál es DEPENDE DE LO QUE PIDIÓ.
+         TODO: el día 1 del mini-curso desaparece de aquí cuando la secuencia
+         del autoresponder esté conectada, o el lead lo recibirá dos veces.
 
-         ⚠️ NO SE MANDA A QUIEN PIDE EL PRECIO. Ese formulario pide permiso
-         para contestar una pregunta, no para meter a nadie en una secuencia
-         de siete correos: mandárselo sería usar su consentimiento para algo
-         distinto de lo que aceptó, y quien pregunta cuánto cuesta y recibe
-         un curso por correo marca spam, no responde. */
+         ⚠️ A QUIEN PIDE EL PRECIO NO SE LE MANDA NADA AUTOMÁTICO. Ese
+         formulario pide permiso para contestar una pregunta, no para meter a
+         nadie en una secuencia: quien pregunta cuánto cuesta y recibe un curso
+         por correo marca spam, no responde. Le escribe una persona.
+
+         ⚠️ Y a quien se apunta a las guías le llega SU acuse, no la
+         bienvenida del mini-curso: la casilla que marcó hablaba de los
+         artículos. Ver `CONFIRMACION_LISTA`. */
       ...(lead.origen === "informes"
         ? []
         : [
@@ -310,8 +372,12 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
               from,
               to: [lead.email],
               reply_to: contacto.email,
-              subject: BIENVENIDA[lead.idioma].asunto(lead.nombre),
-              text: BIENVENIDA[lead.idioma].cuerpo(lead.nombre),
+              subject: (esLista ? CONFIRMACION_LISTA : BIENVENIDA)[
+                lead.idioma
+              ].asunto(lead.nombre),
+              text: (esLista ? CONFIRMACION_LISTA : BIENVENIDA)[
+                lead.idioma
+              ].cuerpo(lead.nombre),
             }),
           ]),
     ]);

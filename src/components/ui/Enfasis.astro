@@ -44,17 +44,33 @@ import type { Txt } from "@i18n/idioma";
 interface Props {
   /** Texto bilingüe. Si no viene, se usa el contenido del slot. */
   v?: Txt;
+  /**
+   * Sobre qué fondo va. El teal oscuro que se lee bien sobre blanco
+   * desaparece sobre navy, así que cada fondo tiene el suyo.
+   *
+   * ⚠️ ESTO ES UNA PROP Y NO UNA CLASE QUE SE PASE DESDE FUERA, y el motivo es
+   * técnico: `text-ink-brand` y un `text-loquesea` que llegara por `class` son
+   * dos utilidades del MISMO tipo, y cuál gana no lo decide el orden en el
+   * atributo sino el orden en la hoja generada. O sea, no lo decide quien
+   * escribe la sección. Aquí solo se pinta una de las dos y no hay pelea.
+   */
+  tono?: "claro" | "inverso";
   class?: string;
 }
 
-const { v, class: className = "" } = Astro.props;
+const { v, tono = "claro", class: className = "" } = Astro.props;
+
+/* `ink-on-inverse-brand` es secondary-300: 7.93:1 sobre navy, medido y
+   anotado en tokens.css. */
+const color = tono === "inverso" ? "text-ink-on-inverse-brand" : "text-ink-brand";
 ---
 
 <em
   class:list={[
     /* `font-normal` porque hereda el bold del titular y Fraunces itálica en
        negrita se empasta: el contraste que se busca es de FORMA, no de peso. */
-    "font-acento font-normal italic text-ink-brand",
+    "font-acento font-normal italic",
+    color,
     className,
   ]}
 >

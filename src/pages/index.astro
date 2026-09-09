@@ -43,8 +43,16 @@ import CintaAnuncio from "@components/ui/CintaAnuncio.astro";
    decir una frase. Ahora vive dentro de la tarjeta de precio, que es donde
    aparece el miedo que neutraliza, y en una línea del cierre.
    ─────────────────────────────────────────────────────────────────────────── */
+/* ⚠️ LA NUMERACIÓN DE LOS ARCHIVOS ESTÁ A MEDIAS, Y SE SABE.
+   El rediseño del brief va entrando sección a sección, de arriba abajo, y
+   renumerar diez archivos con cada una sería diez veces el mismo commit de
+   ruido. Cuando la columna nueva esté completa se renumera todo de una vez.
+   Mientras tanto manda ESTE archivo: el orden de la página es el orden en que
+   se escriben los componentes aquí abajo, no el número de su nombre. */
 import Hero from "@components/hero/HeroSlider.astro";
 import Aliados from "@components/sections/01-Aliados.astro";
+import Guias from "@components/sections/03-Guias.astro";
+import Lista from "@components/sections/04-Lista.astro";
 import Problema from "@components/sections/02-Problema.astro";
 import QueVasALograr from "@components/sections/03-QueVasALograr.astro";
 import Temario from "@components/sections/05-Temario.astro";
@@ -107,6 +115,15 @@ import CtaFinal from "@components/sections/11-CtaFinal.astro";
     {/* Franja de negocios del Ecosistema, pegada al hero: responde "¿esto
         existe de verdad?" mientras todavía hay atención. Ver 01-Aliados. */}
     <Aliados />
+
+    {/* ─── LA COLUMNA DEL REDISEÑO EMPIEZA AQUÍ ───────────────────────────
+        Dos secciones que piden correo, una detrás de otra, y es a propósito:
+        la primera lo PIDE, la segunda ENSEÑA lo que llega. Aun así, dos
+        formularios seguidos se pueden leer como un fallo; si al ver la página
+        entera sobra uno, el que sobra es este primero, porque el teléfono de
+        la lista explica solo lo que el otro tiene que contar con texto. */}
+    <Guias />
+    <Lista />
 
     <Problema />
     <QueVasALograr />

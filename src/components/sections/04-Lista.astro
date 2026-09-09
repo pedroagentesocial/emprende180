@@ -1,0 +1,229 @@
+---
+import { getCollection } from "astro:content";
+import T from "@components/i18n/T.astro";
+import Section from "@components/ui/Section.astro";
+import Enfasis from "@components/ui/Enfasis.astro";
+import LeadForm from "@components/ui/LeadForm";
+import { copy } from "@config/curso.config";
+import { resolverIdiomaServidor } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 04 · LA LISTA — el teléfono con los correos
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Tarjeta navy de esquinas RECTAS —a diferencia de todo el resto del sitio, y
+ * fue una petición explícita— con el texto a un lado y un teléfono al otro en
+ * el que pasan los correos en bucle.
+ *
+ * ─── LOS ASUNTOS SON LOS ARTÍCULOS DE VERDAD ───────────────────────────────
+ *
+ * ⚠️ ESTO ES LO ÚNICO QUE NO SE PUEDE FALSEAR AQUÍ. La maqueta traía asuntos
+ * inventados de ejemplo; aquí se leen de la colección del blog con
+ * `getCollection`. Enseñar en un teléfono correos que nadie ha escrito es
+ * exactamente la clase de detalle que, si alguien lo comprueba, tira abajo todo
+ * lo demás que dice la página.
+ *
+ * Si algún día hay diez artículos, pasan los seis más recientes y ya está: la
+ * lista se corta sola.
+ *
+ * ─── EL BUCLE ES CSS, NO JAVASCRIPT ────────────────────────────────────────
+ *
+ * La tira se pinta DOS VECES y la animación la desplaza un -50 % exacto, así
+ * que el fotograma en el que reinicia es idéntico al de salida. Es el mismo
+ * mecanismo de la banda de testimonios, y por el mismo motivo: lo lleva el
+ * compositor y sigue fluido aunque el hilo principal esté ocupado.
+ *
+ * La copia va `aria-hidden`: para quien escucha, los artículos son los que son,
+ * no el doble.
+ *
+ * ─── EN EL TELÉFONO, EL TELÉFONO VA PRIMERO ────────────────────────────────
+ *
+ * `order` invertido por debajo de `lg`. El mockup explica de un vistazo qué es
+ * esto —correos— y el texto tarda tres renglones en decir lo mismo.
+ */
+
+const { lista } = copy;
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+/* Los seis últimos publicados. `borrador` fuera y las fechas futuras fuera:
+   es la misma regla del índice del blog, y aquí importa igual — un correo con
+   fecha de la semana que viene no ha salido todavía. */
+const ahora = new Date();
+const articulos = (await getCollection("blog"))
+  .filter((a) => !a.data.borrador && a.data.fecha <= ahora)
+  .sort((a, b) => b.data.fecha.getTime() - a.data.fecha.getTime())
+  .slice(0, 6);
+
+/* Sin artículos publicados no hay teléfono que enseñar: la sección se queda
+   con su texto y su formulario, que es lo que de verdad hace falta. */
+const hayArticulos = articulos.length > 0;
+---
+
+<Section id="lista" tono="surface" ariaLabel={lista.aria}>
+  {/* ⚠️ ESQUINAS RECTAS, A PROPÓSITO. Todo lo demás en esta página va con
+      `rounded-3xl`; esta tarjeta no lleva radio ninguno. Es la única, y se
+      pidió así. Si algún día alguien "corrige" esto por coherencia, que sepa
+      que era la intención. */}
+  <div class="relative isolate overflow-hidden bg-primary-950">
+    <div class="grid items-center gap-10 p-8 sm:p-12 lg:grid-cols-2 lg:gap-16 lg:p-16">
+      {/* ─── El texto ─────────────────────────────────────────────────────
+          Centrado, y con una entrada que lo trae desde un poco más pequeño.
+          Es la única animación de entrada de la sección: si se moviera también
+          el teléfono, competirían. */}
+      <div class="order-2 text-center lg:order-1">
+        <h2
+          data-entrada
+          class="text-3xl font-extrabold text-balance text-ink-inverse sm:text-4xl lg:text-5xl"
+        >
+          {
+            lista.titulo.map((linea) => (
+              <span class="block">
+                {"enfasis" in linea && linea.enfasis ? (
+                  <Enfasis v={linea} tono="inverso" />
+                ) : (
+                  <T v={linea} />
+                )}
+              </span>
+            ))
+          }
+        </h2>
+
+        <p class="mx-auto mt-4 max-w-md text-base text-pretty text-secondary-100 sm:text-lg">
+          <T v={lista.texto} />
+        </p>
+
+        <p class="mt-3 text-base font-bold text-ink-inverse">
+          <T v={lista.remate} />
+        </p>
+
+        {/* Los dos campos en una fila, no uno debajo del otro: el brief pedía
+            que el formulario se leyera como una franja y no como una columna.
+            El botón sí baja a su renglón. Tres cosas en fila dentro de media
+            tarjeta dejan tres cajas de 160 px, y ahí ya no cabe ni el
+            marcador de posición. */}
+        <div class="mx-auto mt-8 max-w-xl text-left">
+          <LeadForm
+            client:visible
+            lang={lang}
+            origen="lista"
+            variante="lista"
+            compacto
+            cta={lista.cta}
+            aviso={lista.aviso}
+            exitoTitulo={lista.exitoTitulo}
+            exitoTexto={lista.exitoTexto}
+            tono="inverso"
+          />
+        </div>
+      </div>
+
+      {/* ─── El teléfono ──────────────────────────────────────────────────
+          Un marco dibujado con CSS, no una foto de un iPhone: pesa cero, se ve
+          nítido en cualquier pantalla y no ata la marca a un modelo concreto
+          que dentro de dos años se vea viejo. */}
+      {
+        hayArticulos && (
+          <div class="order-1 flex justify-center lg:order-2">
+            <div
+              class="relative h-[30rem] w-[15rem] overflow-hidden rounded-[2.5rem] border-[0.6rem] border-primary-800 bg-primary-900 shadow-2xl"
+              role="img"
+              aria-label={lista.telefonoAlt[lang]}
+              data-aria-es={lista.telefonoAlt.es}
+              data-aria-en={lista.telefonoAlt.en}
+            >
+              {/* La muesca de arriba. Decorativa y ya está. */}
+              <span
+                aria-hidden="true"
+                class="absolute top-2 left-1/2 z-10 h-1.5 w-16 -translate-x-1/2 rounded-full bg-primary-800"
+              />
+
+              <div data-pista class="flex flex-col gap-3 p-3 pt-8">
+                {[0, 1].map((copia) =>
+                  articulos.map((a) => (
+                    <article
+                      aria-hidden={copia === 1 ? "true" : undefined}
+                      class="flex shrink-0 items-start gap-3 rounded-xl bg-primary-950/70 p-3"
+                    >
+                      <span
+                        aria-hidden="true"
+                        class="mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg bg-secondary-500 text-[0.7rem] font-extrabold text-primary-950"
+                      >
+                        E1
+                      </span>
+                      <span class="min-w-0">
+                        <span class="block text-[0.65rem] font-bold tracking-wide text-secondary-300 uppercase">
+                          <T v={lista.remitente} />
+                        </span>
+                        <span class="mt-0.5 block text-xs leading-snug text-pretty text-secondary-100">
+                          {a.data.titulo}
+                        </span>
+                      </span>
+                    </article>
+                  )),
+                )}
+              </div>
+
+              {/* El degradado de arriba y el de abajo: sin ellos, los correos
+                  aparecen y desaparecen de golpe contra el borde del marco. */}
+              <span
+                aria-hidden="true"
+                class="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-primary-900 to-transparent"
+              />
+              <span
+                aria-hidden="true"
+                class="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-primary-900 to-transparent"
+              />
+            </div>
+          </div>
+        )
+      }
+    </div>
+  </div>
+</Section>
+
+<style>
+  /* La tira sube sin parar. La lista está duplicada, así que al llegar al -50 %
+     el fotograma es idéntico al inicial y no se ve la costura. */
+  @keyframes lista-subir {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(-50%);
+    }
+  }
+
+  [data-pista] {
+    animation: lista-subir 24s linear infinite;
+  }
+
+  /* La entrada del titular: aparece y crece un punto. Nada más. */
+  @keyframes lista-entrar {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  [data-entrada] {
+    animation: lista-entrar 700ms var(--ease-out-soft) both;
+  }
+
+  /* ⚠️ Quien pide menos movimiento no ve NADA de esto: ni el bucle ni la
+     entrada. Los correos se quedan quietos y legibles, que es lo que importa. */
+  @media (prefers-reduced-motion: reduce) {
+    [data-pista],
+    [data-entrada] {
+      animation: none;
+    }
+  }
+</style>

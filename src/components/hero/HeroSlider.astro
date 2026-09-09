@@ -149,7 +149,7 @@ const etiquetaPunto = (i: number) =>
               {slide.titulo.map((linea) => (
                 <span class="block" style={`color:#ffffff;${SOMBRA_TEXTO}`}>
                   {"enfasis" in linea && linea.enfasis ? (
-                    <Enfasis v={linea} class="text-secondary-300" />
+                    <Enfasis v={linea} tono="inverso" />
                   ) : (
                     <T v={linea} />
                   )}

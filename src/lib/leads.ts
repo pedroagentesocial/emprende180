@@ -173,11 +173,21 @@ export async function enviarAWebhook(lead: LeadGuardado): Promise<void> {
     source: `emprende180.com · ${lead.origen}`,
     tags: [
       "emprende180",
-      /* La etiqueta dice a QUÉ se apuntó, y no todos se apuntan a lo mismo:
-         quien pide el precio no entra en la secuencia del mini-curso. Si
-         entrara con esa etiqueta, la automatización de GHL le mandaría los
-         siete correos que no pidió. */
-      lead.origen === "informes" ? "pide-precio" : "mini-curso-7-dias",
+      /* ⚠️ LA ETIQUETA DICE A QUÉ SE APUNTÓ, Y NO TODOS SE APUNTAN A LO MISMO.
+         Esta línea es la que decide qué automatización de GHL se dispara, así
+         que una etiqueta de más aquí son correos que nadie pidió:
+
+           informes ......... preguntó el precio, lo llama una persona.
+           guías y lista .... quiere los artículos cuando salgan. NO entran en
+                              la secuencia de siete correos: la casilla que
+                              marcaron habla de las guías, no del mini-curso, y
+                              el permiso vale para lo que dice y para nada más.
+           el resto ......... el mini-curso, que es lo que se les ofreció. */
+      lead.origen === "informes"
+        ? "pide-precio"
+        : lead.origen === "guias" || lead.origen === "lista"
+          ? "lista-articulos"
+          : "mini-curso-7-dias",
       `origen:${lead.origen}`,
       /* Una etiqueta con el cupón: en GHL se puede segmentar y automatizar por
          etiqueta, que es como se trabaja allí. */

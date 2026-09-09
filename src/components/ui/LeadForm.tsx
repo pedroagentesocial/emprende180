@@ -41,7 +41,15 @@ import { useIdioma } from "@i18n/react";
    el tipo del evento se deriva de la propia prop `onSubmit` de <form>. */
 type EventoEnvio = Parameters<NonNullable<ComponentProps<"form">["onSubmit"]>>[0];
 
-type Origen = "hero" | "lead-magnet" | "cierre" | "modal" | "footer" | "informes";
+type Origen =
+  | "hero"
+  | "lead-magnet"
+  | "cierre"
+  | "modal"
+  | "footer"
+  | "informes"
+  | "guias"
+  | "lista";
 type Estado = "inactivo" | "enviando" | "exito";
 
 interface LeadFormProps {
@@ -70,8 +78,16 @@ interface LeadFormProps {
    * Los dos campos nuevos van OPCIONALES. Quien pregunta el precio ya está
    * abajo del embudo: pedirle el teléfono como obligatorio es la forma más
    * rápida de perderlo justo ahí.
+   *
+   * `lista` es el de las guías y el de la lista: mismos campos que
+   * `minicurso`, pero el consentimiento habla de los artículos y no de una
+   * secuencia de siete correos que ya no existe.
+   *
+   * ⚠️ LA VARIANTE NO ES DECORATIVA: DECIDE A QUÉ SE ESTÁ CONSINTIENDO. Un
+   * formulario que reparte guías con la casilla del mini-curso pide permiso
+   * para una cosa y entrega otra, y ese permiso no vale.
    */
-  variante?: "minicurso" | "informes";
+  variante?: "minicurso" | "informes" | "lista";
   /** Idioma resuelto en el servidor (ver src/i18n/react.ts). */
   lang?: Idioma;
 }
@@ -111,6 +127,14 @@ export function LeadForm({
 
   const inverso = tono === "inverso";
   const esInformes = variante === "informes";
+
+  /* A qué se consiente, según el formulario. Ver la nota de `variante`. */
+  const textoConsentimiento =
+    variante === "informes"
+      ? consentimiento.textoAntesInformes
+      : variante === "lista"
+        ? consentimiento.textoAntesLista
+        : consentimiento.textoAntes;
 
   /** Enfoca el primer campo con error, siguiendo el orden visual. */
   function enfocarPrimerError(errs: Partial<Record<CampoLead, string>>) {
@@ -517,7 +541,7 @@ export function LeadForm({
             ].join(" ")}
           />
           <span>
-            {t(esInformes ? consentimiento.textoAntesInformes : consentimiento.textoAntes)}
+            {t(textoConsentimiento)}
             <a
               href={`/legal/${legalConfig.privacidad.slug}`}
               data-legal={legalConfig.privacidad.slug}

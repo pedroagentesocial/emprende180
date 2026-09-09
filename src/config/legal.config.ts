@@ -397,6 +397,16 @@ export const consentimiento = {
     es: "Acepto que me contacten con el precio y he leído el ",
     en: "I agree to be contacted with the price and I've read the ",
   },
+  /**
+   * El de las dos secciones que reparten los artículos del blog (las guías y
+   * la lista). No dice "mini-curso" porque no hay mini-curso, y no dice
+   * "precio" porque no se va a llamar a nadie: se consiente a UNA cosa, que es
+   * recibir lo que se publique.
+   */
+  textoAntesLista: {
+    es: "Acepto recibir las guías por correo y he leído el ",
+    en: "I agree to receive the guides by email and I've read the ",
+  },
   enlaceTexto: { es: "aviso de privacidad", en: "privacy notice" },
   textoDespues: { es: ".", en: "." },
   nota: {
