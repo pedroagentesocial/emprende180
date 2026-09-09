@@ -42,12 +42,12 @@ const lang = resolverIdiomaServidor(
   Astro.request.headers.get("accept-language"),
 );
 
-/* Ver la nota de `03-Guias.astro` sobre las fotos de banco. */
+/* Ver la nota de `09-Cierre.astro` sobre las fotos de banco. */
 const FOTO_GRANDE = "/imagenes/secciones/temario.webp";
 const FOTO_CHICA = "/imagenes/resultados/04.webp";
 ---
 
-<Section id="academia" tono="surface" ariaLabel={academia.aria}>
+<Section id="academia" tono="muted" ariaLabel={academia.aria}>
   <div class="grid gap-12 lg:grid-cols-2 lg:items-stretch lg:gap-20">
     {/* ─── El texto ───────────────────────────────────────────────────────
         Dos filas: el rótulo arriba del todo, lo demás centrado en el hueco

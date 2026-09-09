@@ -20,16 +20,22 @@ import CintaPrecio from "@components/ui/CintaPrecio.astro";
    ───────────────────────────────────────────────────────────────────────────
    ORDEN DE LECTURA
 
-    Hero .............. de qué va esto
-    Aliados ........... ¿existe de verdad?
-    Lista ............. deja tu correo y te llegan los artículos
-    Embajador ......... en quién te conviertes
-    Cómo se trabaja ... de qué se compone
-    Prueba social ..... le funciona a gente como yo
-    Blog .............. lo que se escribe, gratis
-    Academia .......... la puerta de lo que ya se compró
-    Recursos .......... la puerta de lo que es gratis
-    Cierre ............ pedir el precio, o llamar
+   El orden lo fijó el cliente, sección por sección, y los archivos están
+   numerados según él: el número del nombre ES la posición en la página.
+
+    01 Embajador ...... en quién te conviertes
+    02 Cómo se trabaja  de qué se compone
+    03 Lista .......... deja tu correo y te llegan los artículos
+    04 Testimonios .... le funciona a gente como yo
+    05 Aliados ........ y las empresas que están detrás
+    06 Blog ........... lo que se escribe, gratis
+    07 Academia ....... la puerta de lo que ya se compró
+    08 Recursos ....... la puerta de lo que es gratis
+    09 Cierre ......... pedir el precio, o llamar
+
+   Los fondos alternan claro y azul suave de arriba abajo. No es decoración:
+   dos secciones seguidas del mismo color se leen como una sola y el ritmo de
+   la página se pierde. Si se mueve una de sitio, hay que mirar su "tono".
 
    ───────────────────────────────────────────────────────────────────────────
    ⚠️ SE QUITARON OCHO SECCIONES, Y NO ES UNA LIMPIEZA: ES LA PÁGINA QUE PIDIÓ
@@ -47,20 +53,17 @@ import CintaPrecio from "@components/ui/CintaPrecio.astro";
    enlace que apuntaba a una sección que ya no está se cambió de destino, no se
    dejó apuntando al vacío: ver `cta.navegacion` y `copy.comoTrabajar`.
    ───────────────────────────────────────────────────────────────────────────
-   ⚠️ LA NUMERACIÓN DE LOS ARCHIVOS ESTÁ A MEDIAS, Y SE SABE.
-   Manda ESTE archivo: el orden de la página es el orden en que se escriben los
-   componentes aquí abajo, no el número de su nombre. Se renumerará todo de una
-   vez cuando el rediseño esté cerrado. */
+   ─────────────────────────────────────────────────────────────────────────── */
 import Hero from "@components/hero/HeroSlider.astro";
-import Aliados from "@components/sections/01-Aliados.astro";
-import Lista from "@components/sections/04-Lista.astro";
-import Embajador from "@components/sections/05-Embajador.astro";
-import ComoTrabajar from "@components/sections/06-ComoTrabajar.astro";
-import PruebaSocial from "@components/sections/07-PruebaSocial.astro";
-import BlogPortada from "@components/sections/08-Blog.astro";
-import Academia from "@components/sections/12-Academia.astro";
-import Recursos from "@components/sections/13-Recursos.astro";
-import Cierre from "@components/sections/14-Cierre.astro";
+import Embajador from "@components/sections/01-Embajador.astro";
+import ComoTrabajar from "@components/sections/02-ComoTrabajar.astro";
+import Lista from "@components/sections/03-Lista.astro";
+import Testimonios from "@components/sections/04-Testimonios.astro";
+import Aliados from "@components/sections/05-Aliados.astro";
+import BlogPortada from "@components/sections/06-Blog.astro";
+import Academia from "@components/sections/07-Academia.astro";
+import Recursos from "@components/sections/08-Recursos.astro";
+import Cierre from "@components/sections/09-Cierre.astro";
 
 /* Esta página no prepara datos para nadie: solo decide QUÉ va y en qué ORDEN,
    que es lo único que debería decidir un archivo de página. */
@@ -85,21 +88,20 @@ import Cierre from "@components/sections/14-Cierre.astro";
   <main id="contenido">
     <Hero />
 
-    {/* Franja de negocios del Ecosistema, pegada al hero: responde "¿esto
-        existe de verdad?" mientras todavía hay atención. Ver 01-Aliados. */}
-    <Aliados />
-
-    {/* La lista, con el teléfono en el que pasan los correos. Es la única
-        captura de correo que queda arriba: el formulario simple que estaba
-        aquí al lado se fue al final de la página. */}
-    <Lista />
-
-    {/* Quién es un Embajador y de qué se compone esto. Van juntas y en este
-        orden: primero en quién te conviertes, después con qué. */}
+    {/* Lo primero después del hero es la definición: en quién te conviertes.
+        Y pegada a ella, con qué. Las dos juntas responden "qué es esto" antes
+        de que la página pida nada. */}
     <Embajador />
     <ComoTrabajar />
 
-    <PruebaSocial />
+    {/* La lista, con el teléfono en el que pasan los correos. Es la única
+        captura de correo que hay antes del final. */}
+    <Lista />
+
+    {/* Y quién lo dice. Los logos van DEBAJO de los testimonios, no pegados al
+        hero: primero habla la gente y después las empresas. */}
+    <Testimonios />
+    <Aliados />
 
     {/* El blog es lo único gratis que demuestra criterio, así que va antes de
         las dos puertas y del cierre. */}
@@ -112,7 +114,7 @@ import Cierre from "@components/sections/14-Cierre.astro";
 
     {/* El formulario simple, al final. Es el ÚNICO desenlace de la página: el
         único sitio donde se puede preguntar el precio y donde está el
-        teléfono. Ver 14-Cierre. */}
+        teléfono. Ver 09-Cierre. */}
     <Cierre />
   </main>
 

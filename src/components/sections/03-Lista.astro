@@ -64,7 +64,7 @@ const articulos = (await getCollection("blog"))
 const hayArticulos = articulos.length > 0;
 ---
 
-<Section id="lista" tono="surface" ariaLabel={lista.aria}>
+<Section id="lista" tono="muted" ariaLabel={lista.aria}>
   {/* ⚠️ ESQUINAS RECTAS, A PROPÓSITO. Todo lo demás en esta página va con
       `rounded-3xl`; esta tarjeta no lleva radio ninguno. Es la única, y se
       pidió así. Si algún día alguien "corrige" esto por coherencia, que sepa

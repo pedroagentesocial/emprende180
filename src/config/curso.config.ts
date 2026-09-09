@@ -761,7 +761,7 @@ export const aliados = {
      *
      * NO se borran, al revés que el código muerto: esto es copia aprobada por
      * el cliente y específica de este negocio. Si algún día la sección vuelve a
-     * llevar cabecera, está escrita. Ver 01-Aliados.astro.
+     * llevar cabecera, está escrita. Ver 05-Aliados.astro.
      */
   titulo: {
     es: "Los negocios que ya están dentro",
@@ -1903,7 +1903,7 @@ export const cta = {
   primario: {
     texto: { es: "Pedir el precio", en: "Ask for the price" },
     /* Al cierre, que es donde vive el formulario desde que la sección de
-       precio se quitó de la página. Ver 11-CtaFinal. */
+       precio se quitó de la página. Ver 09-Cierre. */
     href: "#empezar",
   },
   secundario: {
@@ -3438,7 +3438,7 @@ export const copy = {
    * página como cualquier otro texto. `etiqueta` nombra la lista: sin ella, lo
    * que se anuncia es "lista, doce elementos" y no se sabe de qué.
    */
-  /* El rótulo de la banda de logos. Ver 01-Aliados.astro. */
+  /* El rótulo de la banda de logos. Ver 05-Aliados.astro. */
   aliados: {
     rotulo: { es: "Confían en nosotros", en: "Trusted by" },
   },
@@ -3456,7 +3456,7 @@ export const copy = {
    *
    * `kicker`, `dudaTitulo` y `dudaTexto` se conservan sin usarse porque
    * describen una alternativa que puede volver: el día que el mini-curso
-   * vuelva a ser la segunda salida del final, ya está escrito. Ver 14-Cierre.
+   * vuelva a ser la segunda salida del final, ya está escrito. Ver 09-Cierre.
    */
   cierre: {
     aria: { es: "Empezar", en: "Get started" },
