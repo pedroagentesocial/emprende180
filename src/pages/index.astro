@@ -43,7 +43,7 @@ import CintaAnuncio from "@components/ui/CintaAnuncio.astro";
    decir una frase. Ahora vive dentro de la tarjeta de precio, que es donde
    aparece el miedo que neutraliza, y en una línea del cierre.
    ─────────────────────────────────────────────────────────────────────────── */
-import Hero from "@components/hero/Hero.astro";
+import Hero from "@components/hero/HeroSlider.astro";
 import Aliados from "@components/sections/01-Aliados.astro";
 import Problema from "@components/sections/02-Problema.astro";
 import QueVasALograr from "@components/sections/03-QueVasALograr.astro";
@@ -71,9 +71,17 @@ import CtaFinal from "@components/sections/11-CtaFinal.astro";
       que la barra: nada queda pegado a la pantalla. Es lo primero que se ve y lo
       único de la página que da una razón para no dejarlo para mañana.
       Si `precio.urgencia.fechaCierre` se pone a `null`, desaparece sola. */}
-  <CintaPrecio variante="barra" />
+  {/* ─── LA CINTA Y LA BARRA, FLOTANDO SOBRE EL HERO ─────────────────────
+      Las dos van dentro de un envoltorio ABSOLUTO, así que el hero empieza
+      en el píxel cero de la página y la foto se ve por detrás de ambas.
 
-  <Header />
+      Absoluto y no fijo: las dos tienen que irse con el scroll. La barra
+      vuelve sola, pegada arriba y en navy, cuando el hero se acaba (ver
+      `data-fin-hero` más abajo). */}
+  <div class="absolute inset-x-0 top-0 z-40">
+    <CintaPrecio variante="barra" />
+    <Header sobreHero />
+  </div>
 
   {/* ─────────────────────────────────────────────────────────────────────────
       LAS TIRAS DE ANUNCIOS VAN ENTRE SECCIONES, NO DENTRO DE ELLAS.
@@ -91,6 +99,10 @@ import CtaFinal from "@components/sections/11-CtaFinal.astro";
       ───────────────────────────────────────────────────────────────────────── */}
   <main id="contenido">
     <Hero />
+
+    {/* El píxel que le dice a la barra que el hero se acabó: a partir de
+        aquí deja de flotar y se ancla arriba en navy. Ver Header.astro. */}
+    <div data-fin-hero aria-hidden="true" class="h-px w-full"></div>
 
     {/* Franja de negocios del Ecosistema, pegada al hero: responde "¿esto
         existe de verdad?" mientras todavía hay atención. Ver 01-Aliados. */}

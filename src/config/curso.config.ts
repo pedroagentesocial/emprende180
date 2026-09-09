@@ -1946,15 +1946,27 @@ export const cta = {
    * Solo se muestra de `md` para arriba: en móvil el CTA fijo ya cubre la
    * acción y meter cuatro enlaces más en 390 px aprieta el logo.
    */
+  /**
+   * ⚠️ LA NAVEGACIÓN CAMBIÓ DE CRITERIO CON EL REDISEÑO.
+   *
+   * Antes eran atajos a las secciones que más se preguntan (temario, precio,
+   * preguntas). Ahora es la estructura de un SITIO —quiénes somos, qué
+   * ofrecemos, recursos— porque la página dejó de ser solo una landing.
+   *
+   * Los destinos son reales, y eso no es negociable: cada uno apunta a una
+   * sección que existe o a una página que existe. La entrega del rediseño
+   * traía Home / About / Programs / Resources, de los que tres no existían:
+   * cuatro enlaces muertos en la barra que se ve en todas las pantallas.
+   */
   navegacion: [
-    { texto: { es: "Temario", en: "Curriculum" }, href: "#temario" },
+    { texto: { es: "Inicio", en: "Home" }, href: "#inicio" },
+    { texto: { es: "Quiénes somos", en: "About" }, href: "#instructor" },
+    { texto: { es: "Programas", en: "Programs" }, href: "#plan" },
+    { texto: { es: "Recursos", en: "Resources" }, href: "/recursos" },
     /* El plan entra en el menú y no se queda solo en el scroll: es la
        respuesta a "¿qué hago yo exactamente?", que es la pregunta que trae
        aquí a la mitad de la gente. Son cuatro enlaces y siguen cabiendo: el
        menú solo existe de `md` para arriba. */
-    { texto: { es: "El plan", en: "The plan" }, href: "#plan" },
-    { texto: { es: "Precio", en: "Pricing" }, href: "#precio" },
-    { texto: { es: "Preguntas", en: "FAQ" }, href: "#faq" },
   ],
 } as const;
 
@@ -2373,6 +2385,105 @@ export const copy = {
       es: "Ajusta el plazo y las condiciones a lo que de verdad puedas cumplir, y haz que coincidan palabra por palabra con la cláusula de devoluciones de los términos.",
       en: "Match the window and conditions to what you can actually honor, and make them agree word for word with the refund clause in the terms.",
     },
+  },
+
+  /**
+   * ─── EL HERO DE TRES FOTOS ─────────────────────────────────────────────
+   *
+   * La segunda dirección visual: foto a sangre completa, tres escenas que
+   * rotan, y el bloque de texto cargado a la derecha.
+   *
+   * ─── LOS SALTOS DE LÍNEA SON MANUALES, Y ES LO MÁS IMPORTANTE DE AQUÍ ──
+   *
+   * Cada titular es un ARRAY DE LÍNEAS, no una frase. El navegador no decide
+   * nunca dónde parte: a pantalla completa, dejado a su aire, deja una palabra
+   * sola en el último renglón —una "huérfana"— y eso es lo que hace que un
+   * titular grande parezca mal hecho.
+   *
+   * ⚠️ SI SE CAMBIA UN TEXTO, HAY QUE VOLVER A MIRARLO EN PANTALLA. Las líneas
+   * están cortadas para ESTAS palabras; una palabra más larga en inglés puede
+   * desbordar la línea y partirse igual. La regla, cuando pase: agrandar el
+   * contenedor o bajar el cuerpo, nunca acortar la idea.
+   *
+   * ─── LAS FOTOS SON PROVISIONALES ───────────────────────────────────────
+   *
+   * Son las que había en el repo: 800×600 y 880×620. A pantalla completa en un
+   * monitor grande se van a ver blandas. Para publicar hacen falta tres fotos
+   * horizontales de 2400 px de ancho como mínimo.
+   *
+   * Y están elegidas POR LUMINOSIDAD, no por gusto: el texto va en blanco y sin
+   * velo encima —lo pidió el cliente— así que la única defensa del contraste es
+   * que la foto sea oscura donde va el texto. Medidas en la mitad derecha: 30,
+   * 32 y 49 sobre 100. La tercera es la justa; si se cambia por una más clara,
+   * el texto deja de leerse.
+   */
+  heroSlider: {
+    aria: { es: "Presentación", en: "Introduction" },
+
+    slides: [
+      {
+        foto: "/imagenes/secciones/temario.webp",
+        alt: {
+          es: "Una persona sentada a la mesa de su cocina, de noche, trabajando con su portátil",
+          en: "Somebody at their kitchen table at night, working on their laptop",
+        },
+        titulo: [
+          { es: "Ayudamos a gente", en: "We help people" },
+          { es: "con red a hacer", en: "with a network", enfasis: true },
+          { es: "algo con ella.", en: "do something with it." },
+        ],
+        subtitulo: {
+          es: "Sin experiencia previa en el sector.",
+          en: "No prior industry experience needed.",
+        },
+      },
+      {
+        foto: "/imagenes/resultados/05.webp",
+        alt: {
+          es: "Una persona grabando un video con el teléfono en un trípode",
+          en: "Somebody recording a video with a phone on a tripod",
+        },
+        titulo: [
+          { es: "Reconocer la ocasión.", en: "Spot the moment." },
+          { es: "Pedir sin que dé pena.", en: "Ask without cringing.", enfasis: true },
+          { es: "No perder a nadie.", en: "Lose nobody." },
+        ],
+        subtitulo: {
+          es: "Lo que aprendes, en el orden en que hace falta.",
+          en: "What you learn, in the order you need it.",
+        },
+      },
+      {
+        foto: "/imagenes/resultados/03.webp",
+        alt: {
+          es: "Dos personas conversando en la calle con un café en la mano",
+          en: "Two people talking on the street holding coffee",
+        },
+        titulo: [
+          { es: "Tú conectas.", en: "You connect people." },
+          { es: "El Ecosistema", en: "The Ecosystem", enfasis: true },
+          { es: "resuelve.", en: "handles it.", enfasis: true },
+        ],
+        subtitulo: {
+          es: "Accidentes de Auto y Vivienda, para empezar.",
+          en: "Auto and Home Accidents, to start with.",
+        },
+      },
+    ],
+
+    /* Un solo botón, y el mismo en las tres. Dos botones en un hero que cambia
+       cada seis segundos son dos decisiones que tomar mientras la pantalla se
+       mueve. */
+    cta: {
+      texto: { es: "Construyamos tu red", en: "Let's build your network" },
+      href: "#precio",
+    },
+
+    /* Los mandos. La rotación es contenido en movimiento de más de cinco
+       segundos, así que la WCAG 2.2.2 exige poder pararla: no es un extra. */
+    pausar: { es: "Pausar la presentación", en: "Pause the slideshow" },
+    reanudar: { es: "Reanudar la presentación", en: "Resume the slideshow" },
+    irASlide: { es: "Ver la imagen {n}", en: "Show image {n}" },
   },
 
   /**

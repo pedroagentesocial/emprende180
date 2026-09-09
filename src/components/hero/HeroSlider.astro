@@ -1,0 +1,322 @@
+---
+import T from "@components/i18n/T.astro";
+import Button from "@components/ui/Button.astro";
+import Enfasis from "@components/ui/Enfasis.astro";
+import Icono from "@components/ui/Icono.astro";
+import { copy } from "@config/curso.config";
+import { resolverIdiomaServidor, construirTxt } from "@i18n/idioma";
+import { interpolar } from "@i18n/formato";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * HERO · TRES FOTOS QUE ROTAN
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * La segunda dirección visual: la foto ocupa la pantalla entera y el texto va
+ * encima, cargado a la derecha. Sustituye al hero de isla navy + vídeo.
+ *
+ * ─── LO QUE SE PIERDE, Y HAY QUE DECIDIR DÓNDE VUELVE ──────────────────────
+ *
+ * ⚠️ AQUÍ ESTABA EL VÍDEO DE PEDRO. Noventa segundos con su cara y su voz, que
+ * es el activo más fuerte de la página, y en este diseño no cabe. El archivo y
+ * su componente (`VideoVsl.astro`) siguen en el repo intactos: hay que darle
+ * un sitio en otra sección, no dejarlo perdido.
+ *
+ * ─── SIN VELO SOBRE LA FOTO, POR PETICIÓN EXPRESA ──────────────────────────
+ *
+ * No hay degradado ni capa oscura encima de la imagen. Eso deja el contraste
+ * del texto en manos de UNA cosa: que la foto sea oscura donde va el texto. Las
+ * tres están elegidas por luminosidad medida (30, 32 y 49 sobre 100 en su mitad
+ * derecha), no por gusto.
+ *
+ * Si alguien cambia una foto por otra más clara, el texto blanco deja de
+ * leerse y no va a haber ningún aviso: hay que volver a medirlo.
+ *
+ * ─── LOS SALTOS DE LÍNEA NO LOS DECIDE EL NAVEGADOR ────────────────────────
+ *
+ * Cada titular viene del config como una LISTA DE LÍNEAS. A pantalla completa,
+ * dejar que el navegador reparta deja una palabra sola en el último renglón, y
+ * eso es justo lo que hace que un titular grande parezca mal hecho.
+ *
+ * ─── SE PUEDE PARAR, Y NO ES UN EXTRA ──────────────────────────────────────
+ *
+ * Tres imágenes rotando cada seis segundos son contenido en movimiento de más
+ * de cinco: la WCAG 2.2.2 (nivel A) exige poder detenerlo. De ahí el botón de
+ * pausa y los tres puntos, que además sirven para elegir imagen. Con
+ * `prefers-reduced-motion` no rota: se queda en la primera y los puntos siguen
+ * funcionando a mano.
+ */
+
+const { heroSlider } = copy;
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+/**
+ * ─── LA SOMBRA QUE SALVA EL CONTRASTE ────────────────────────────────────
+ *
+ * Medido sobre las tres fotos: el contraste MEDIO del blanco contra el fondo
+ * es de 10:1, 8:1 y 5,9:1, que está bien. El problema es el PEOR PÍXEL —1,9,
+ * 1,1 y 1,2 a uno— o sea que en los puntos claros de la foto (una lámpara, una
+ * pared blanca) hay letras que caen sobre casi-blanco y ahí no se leen.
+ *
+ * La solución de manual es un velo oscuro sobre la foto, y está descartada por
+ * petición expresa: la foto se ve limpia. Así que el contraste lo sostiene una
+ * SOMBRA DEL TEXTO, que oscurece solo lo que hay justo detrás de cada letra y
+ * deja el resto de la imagen intacto.
+ *
+ * Son dos: una corta y opaca que define el borde de la letra, y una amplia y
+ * suave que apaga el fondo alrededor. El color no es negro, es el navy de la
+ * marca, para que no aparezca un gris sucio sobre las fotos cálidas.
+ *
+ * ⚠️ NO ES UN SUSTITUTO EXACTO DE UN VELO. Ayuda mucho y es lo correcto
+ * mientras las fotos sean estas; con una foto muy clara de lado a lado
+ * seguiría sin bastar. Ver la nota de las fotos en el config.
+ */
+const SOMBRA_TEXTO =
+  "text-shadow:0 1px 2px rgba(2,17,36,.55), 0 6px 28px rgba(2,17,36,.45)";
+
+/** "Ver la imagen 2", ya resuelto en los dos idiomas. */
+const etiquetaPunto = (i: number) =>
+  construirTxt((l) => interpolar(heroSlider.irASlide[l], { n: i + 1 }));
+---
+
+<section
+  id="inicio"
+  data-hero-slider
+  class="relative isolate flex min-h-svh flex-col justify-end overflow-hidden bg-primary-950"
+  aria-roledescription="carousel"
+  aria-label={heroSlider.aria[lang]}
+  data-aria-es={heroSlider.aria.es}
+  data-aria-en={heroSlider.aria.en}
+>
+  {
+    heroSlider.slides.map((slide, i) => (
+      <div
+        data-slide={i}
+        data-activo={i === 0 ? "true" : "false"}
+        class="absolute inset-0 -z-10 opacity-0 transition-opacity duration-[1200ms] ease-out-soft data-[activo=true]:opacity-100"
+        aria-hidden={i === 0 ? undefined : "true"}
+      >
+        {/* `fetchpriority="high"` y `loading="eager"` SOLO en la primera: es la
+            imagen más grande de la página y la que decide el LCP. Las otras dos
+            no se ven hasta el segundo seis, así que esperan. */}
+        <img
+          src={slide.foto}
+          alt={slide.alt[lang]}
+          data-alt-es={slide.alt.es}
+          data-alt-en={slide.alt.en}
+          width={1600}
+          height={900}
+          loading={i === 0 ? "eager" : "lazy"}
+          fetchpriority={i === 0 ? "high" : "auto"}
+          decoding="async"
+          class="size-full object-cover"
+        />
+      </div>
+    ))
+  }
+
+  {/* ─── EL BLOQUE DE TEXTO ─────────────────────────────────────────────────
+      Cargado a la derecha, pero con el texto alineado a la IZQUIERDA dentro de
+      su caja. No es "todo a la derecha": es un bloque a la derecha que se lee
+      de izquierda a derecha, como cualquier texto. Alinear a la derecha las
+      tres líneas de un titular obliga a buscar dónde empieza cada una.
+
+      `pb-28` deja sitio abajo para los mandos sin que el texto se les acerque. */}
+  <div class="container-page relative w-full pt-28 pb-28 sm:pb-32">
+    {/* ⚠️ `max-w-3xl` Y NO `2xl`, Y EL TITULAR SE QUEDA EN `6xl`.
+        Medido: con la caja en 2xl y el titular en 7xl, a 1440 px la primera
+        línea de la primera imagen se partía en dos y las tres de la segunda
+        también. Eso es la palabra huérfana que el rediseño persigue: el salto
+        lo decidía el navegador, no nosotros.
+
+        La regla es agrandar la caja o bajar el cuerpo, nunca acortar la idea.
+        Aquí se hicieron las dos cosas a medias: la caja pasa a 48rem y el
+        cuerpo se queda en 60 px, con lo que la línea más larga —"Pedir sin que
+        dé pena."— pide 726 px y caben 768. */}
+    <div class="ml-auto max-w-3xl">
+      {
+        heroSlider.slides.map((slide, i) => (
+          <div
+            data-texto={i}
+            data-activo={i === 0 ? "true" : "false"}
+            class="hidden data-[activo=true]:block"
+          >
+            <h1 class="text-4xl leading-[1.06] font-extrabold text-balance sm:text-5xl lg:text-6xl">
+              {slide.titulo.map((linea) => (
+                <span class="block" style={`color:#ffffff;${SOMBRA_TEXTO}`}>
+                  {"enfasis" in linea && linea.enfasis ? (
+                    <Enfasis v={linea} class="text-secondary-300" />
+                  ) : (
+                    <T v={linea} />
+                  )}
+                </span>
+              ))}
+            </h1>
+
+            {/* Blanco puro escrito a mano y no `text-ink-inverse`: a este
+                tamaño, sobre foto, el token se ve gris. */}
+            <p class="mt-5 max-w-md text-base sm:text-lg" style={`color:#ffffff;${SOMBRA_TEXTO}`}>
+              <T v={slide.subtitulo} />
+            </p>
+          </div>
+        ))
+      }
+
+      <div class="mt-8">
+        <Button href={heroSlider.cta.href} variant="primary" size="lg" trackId="hero">
+          <T v={heroSlider.cta.texto} />
+        </Button>
+      </div>
+    </div>
+  </div>
+
+  {/* ─── LOS MANDOS ─────────────────────────────────────────────────────────
+      Abajo a la izquierda, lejos del texto y del botón. Los tres puntos dicen
+      en qué imagen vas y dejan elegir; el botón para. Ver la nota de la
+      cabecera: sin esto, el hero incumple la WCAG. */}
+  <div class="container-page absolute inset-x-0 bottom-6 flex items-center gap-4">
+    <ul role="list" class="flex items-center gap-2">
+      {
+        heroSlider.slides.map((_, i) => (
+          <li>
+            <button
+              type="button"
+              data-punto={i}
+              data-activo={i === 0 ? "true" : "false"}
+              aria-label={etiquetaPunto(i)[lang]}
+              data-aria-es={etiquetaPunto(i).es}
+              data-aria-en={etiquetaPunto(i).en}
+              class="grid size-11 place-items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+            >
+              <span
+                aria-hidden="true"
+                class="block h-1 w-6 rounded-full bg-white/40 transition-[background-color,width] duration-300 ease-out-soft"
+                data-barra
+              />
+            </button>
+          </li>
+        ))
+      }
+    </ul>
+
+    <button
+      type="button"
+      data-hero-pausa
+      aria-pressed="false"
+      aria-label={heroSlider.pausar[lang]}
+      data-aria-es={heroSlider.pausar.es}
+      data-aria-en={heroSlider.pausar.en}
+      data-etiqueta-pausar-es={heroSlider.pausar.es}
+      data-etiqueta-pausar-en={heroSlider.pausar.en}
+      data-etiqueta-reanudar-es={heroSlider.reanudar.es}
+      data-etiqueta-reanudar-en={heroSlider.reanudar.en}
+      class="grid size-11 place-items-center rounded-full border border-white/40 text-white transition-colors duration-200 hover:border-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+    >
+      <Icono nombre="pausa" class="size-4" grosor={2} data-icono-pausa />
+      <Icono nombre="play" class="hidden size-4" grosor={1} data-icono-play />
+    </button>
+  </div>
+</section>
+
+<style>
+  /* El punto de la imagen activa se alarga y se pone blanco. Va en CSS y no en
+     clases porque depende de un atributo que mueve el script. */
+  [data-punto][data-activo="true"] [data-barra] {
+    width: 2.5rem;
+    background-color: #ffffff;
+  }
+</style>
+
+<script>
+  /**
+   * La rotación. Diez líneas y sin dependencias.
+   *
+   * ⚠️ NO ARRANCA CON `prefers-reduced-motion`. No es que vaya más despacio: no
+   * empieza. Quien pide menos movimiento no quiere que la pantalla cambie sola
+   * cada seis segundos, y los puntos siguen ahí para ver las otras dos.
+   */
+  const SEGUNDOS = 6;
+
+  function montarHero() {
+    const hero = document.querySelector<HTMLElement>("[data-hero-slider]");
+    if (!hero || hero.dataset.montado) return;
+    hero.dataset.montado = "1";
+
+    const fondos = [...hero.querySelectorAll<HTMLElement>("[data-slide]")];
+    const textos = [...hero.querySelectorAll<HTMLElement>("[data-texto]")];
+    const puntos = [...hero.querySelectorAll<HTMLElement>("[data-punto]")];
+    const boton = hero.querySelector<HTMLButtonElement>("[data-hero-pausa]");
+    if (fondos.length < 2) return;
+
+    const menosMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let actual = 0;
+    let temporizador: number | undefined;
+    let pausado = menosMovimiento.matches;
+
+    const pintar = (i: number) => {
+      actual = i;
+      fondos.forEach((el, n) => {
+        el.dataset.activo = String(n === i);
+        /* El fondo que no se ve no lo anuncia el lector de pantalla. */
+        if (n === i) el.removeAttribute("aria-hidden");
+        else el.setAttribute("aria-hidden", "true");
+      });
+      textos.forEach((el, n) => (el.dataset.activo = String(n === i)));
+      puntos.forEach((el, n) => (el.dataset.activo = String(n === i)));
+    };
+
+    const arrancar = () => {
+      clearInterval(temporizador);
+      if (pausado) return;
+      temporizador = window.setInterval(
+        () => pintar((actual + 1) % fondos.length),
+        SEGUNDOS * 1000,
+      );
+    };
+
+    puntos.forEach((p, i) =>
+      p.addEventListener("click", () => {
+        pintar(i);
+        /* Elegir una imagen a mano reinicia la cuenta: si no, la siguiente
+           podría llegar medio segundo después de haberla elegido. */
+        arrancar();
+      }),
+    );
+
+    const claveIdioma = (base: string) =>
+      document.documentElement.lang === "en" ? `${base}En` : `${base}Es`;
+
+    const pintarBoton = () => {
+      if (!boton) return;
+      const etiqueta =
+        boton.dataset[claveIdioma(pausado ? "etiquetaReanudar" : "etiquetaPausar")];
+      if (etiqueta) boton.setAttribute("aria-label", etiqueta);
+      boton.setAttribute("aria-pressed", String(pausado));
+      boton.querySelector("[data-icono-pausa]")?.classList.toggle("hidden", pausado);
+      boton.querySelector("[data-icono-play]")?.classList.toggle("hidden", !pausado);
+    };
+
+    boton?.addEventListener("click", () => {
+      pausado = !pausado;
+      pintarBoton();
+      arrancar();
+    });
+
+    window.addEventListener("e180:idioma", pintarBoton);
+
+    /* Si la pestaña no está a la vista, no se gasta nada en rotar. */
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) clearInterval(temporizador);
+      else arrancar();
+    });
+
+    pintarBoton();
+    arrancar();
+  }
+
+  montarHero();
+</script>

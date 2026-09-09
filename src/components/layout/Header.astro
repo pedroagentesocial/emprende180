@@ -62,12 +62,27 @@ interface Props {
    *     la misma pantalla no son dos llamadas: son una llamada rota en dos.
    */
   variante?: "completo" | "minimo";
+  /**
+   * ─── LA BARRA FLOTA SOBRE LA FOTO ──────────────────────────────────
+   *
+   * Solo en la portada, que es la única página con un hero fotográfico
+   * detrás. La barra no ocupa sitio: se pinta ENCIMA de la imagen, sin
+   * fondo y con el logotipo en blanco. Cuando el hero se acaba, se pega
+   * arriba y se pone navy.
+   *
+   * En cualquier otra página (`/login`, el blog, lo legal) sigue siendo la
+   * barra blanca de siempre: ahí no hay foto sobre la que flotar y una
+   * cabecera transparente quedaría sobre el fondo del cuerpo.
+   */
+  sobreHero?: boolean;
 }
 
-const { variante = "completo" } = Astro.props;
+const { variante = "completo", sobreHero = false } = Astro.props;
 const minimo = variante === "minimo";
 
-const logo = sitio.logoHorizontal;
+/* Sobre la foto y sobre el navy, el logotipo va en blanco. Es el mismo
+   arte, no una versión recoloreada a mano: existe en `/identidad`. */
+const logo = sobreHero ? sitio.logoHorizontalBlanco : sitio.logoHorizontal;
 
 const lang = resolverIdiomaServidor(
   Astro.url,
@@ -111,7 +126,23 @@ const logoAlt = {
 <header
   data-cabecera
   data-compacta="false"
-  class="group sticky top-0 z-40 border-b border-line bg-surface"
+  data-fija="false"
+  class:list={[
+    "group z-40 transition-[background-color,border-color] duration-300 ease-[var(--ease-out-soft)]",
+    sobreHero
+      ? /* Flotando sobre la foto, sin fondo. Va en el flujo de su
+           envoltorio —el que la portada pinta encima del hero— y no
+           posicionada ella sola: si se colocara en `top-0` por su cuenta,
+           se montaría sobre la cinta de precio, que ocupa esos píxeles.
+
+           Cuando el hero se acaba, `data-fija` la despega y la ancla arriba
+           en navy. La transición del fondo evita que aparezca de golpe. */
+        "relative border-b border-transparent bg-transparent " +
+        "data-[fija=true]:fixed data-[fija=true]:inset-x-0 data-[fija=true]:top-0 " +
+        "data-[fija=true]:border-primary-800 " +
+        "data-[fija=true]:bg-primary-950 data-[fija=true]:shadow-lg"
+      : "sticky top-0 border-b border-line bg-surface",
+  ]}
 >
   {/* ─── EL HEADER A 320 PX ─────────────────────────────────────────────────
       Con el acceso de alumnos dentro, la fila pasó a pedir 347 px en un
@@ -132,7 +163,12 @@ const logoAlt = {
       columna izquierda vacía y el logo centrado contra nada. Ahí se vuelve al
       reparto de siempre: marca a la izquierda, acciones a la derecha. */}
   <div
-    class="container-page flex h-[var(--header-h-grande)] items-center justify-between gap-2 transition-[height] duration-300 ease-[var(--ease-out-soft)] group-data-[compacta=true]:h-[var(--header-h)] max-[359px]:gap-1 sm:gap-4 lg:grid lg:h-[var(--header-h-grande-lg)] lg:grid-cols-[1fr_auto_1fr] lg:group-data-[compacta=true]:h-[var(--header-h-lg)]"
+    class:list={[
+      "container-page flex h-[var(--header-h-grande)] items-center justify-between gap-2 transition-[height] duration-300 ease-[var(--ease-out-soft)] group-data-[compacta=true]:h-[var(--header-h)] max-[359px]:gap-1 sm:gap-4 lg:h-[var(--header-h-grande-lg)] lg:group-data-[compacta=true]:h-[var(--header-h-lg)]",
+      /* Con logo centrado: rejilla de tres. Con logo a la izquierda (el
+         rediseño): flex, que es lo que ya trae la clase de arriba. */
+      !sobreHero && "lg:grid lg:grid-cols-[1fr_auto_1fr]",
+    ]}
   >
     {/* ─── IZQUIERDA: la navegación ──────────────────────────────────────
         En móvil este bloque no existe, y por eso el logo va antes en el
@@ -144,12 +180,20 @@ const logoAlt = {
           aria-label={copy.ui.menuPrincipal[lang]}
           data-aria-es={copy.ui.menuPrincipal.es}
           data-aria-en={copy.ui.menuPrincipal.en}
-          class="hidden lg:order-1 lg:flex lg:items-center lg:gap-1 lg:justify-self-start"
+          class:list={[
+            "hidden lg:flex lg:items-center lg:gap-1",
+            sobreHero ? "lg:order-2" : "lg:order-1 lg:justify-self-start",
+          ]}
         >
           {cta.navegacion.map((item) => (
             <a
               href={enlace(item.href)}
-              class="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold text-ink-muted transition-colors duration-200 hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              class:list={[
+                "inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2",
+                sobreHero
+                  ? "text-white/85 hover:text-white focus-visible:outline-focus-inverse"
+                  : "text-ink-muted hover:bg-surface-muted hover:text-ink focus-visible:outline-focus",
+              ]}
             >
               <T v={item.texto} />
             </a>
@@ -168,7 +212,16 @@ const logoAlt = {
         la nitidez manda sobre el ahorro de un fotograma. */}
     <a
       href={hrefLogo}
-      class="flex min-h-11 shrink-0 items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus lg:order-2 lg:justify-self-center"
+      class:list={[
+        "flex min-h-11 shrink-0 items-center focus-visible:outline-2 focus-visible:outline-offset-2",
+        /* Centrado en la barra blanca (lo pidió el cliente en su día) y a la
+           IZQUIERDA cuando flota sobre el hero, que es lo que pide el
+           rediseño. Sin este `order-1`, el logotipo empata en orden con el
+           menú y gana el que va antes en el marcado, que es el menú. */
+        sobreHero
+          ? "lg:order-1 focus-visible:outline-focus-inverse"
+          : "lg:order-2 lg:justify-self-center focus-visible:outline-focus",
+      ]}
     >
       <img
         src={logo.src}
@@ -189,10 +242,13 @@ const logoAlt = {
         768 px, donde la barra ya lleva logo, selector de idioma y CTA. Los tres
         enlaces no cabían y el header desbordaba 31 px, o sea scroll horizontal
         en toda la página justo en el ancho de una tablet en vertical. */}
-    <div class="flex shrink-0 items-center gap-2 sm:gap-3 lg:order-3 lg:justify-self-end">
+    <div class:list={[
+        "flex shrink-0 items-center gap-2 sm:gap-3 lg:order-3",
+        !sobreHero && "lg:justify-self-end",
+      ]}>
       {/* El selector va SIEMPRE visible, también en móvil: si alguien llega
           con ?lang= equivocado tiene que poder corregirlo sin buscar. */}
-      <LanguageSwitch client:load lang={lang} />
+      <LanguageSwitch client:load lang={lang} tono={sobreHero ? "oscuro" : "claro"} />
 
       {/* ─── ACCESO DE ALUMNOS ────────────────────────────────────────────────
           Va SIEMPRE visible, también en móvil, y ese es el punto: quien ya pagó
@@ -216,7 +272,12 @@ const logoAlt = {
         data-aria-es={cta.acceso.textoLargo.es}
         data-aria-en={cta.acceso.textoLargo.en}
         data-track="header-acceso"
-        class="inline-flex min-h-11 items-center gap-2 rounded-full px-2.5 text-sm font-semibold text-ink-muted transition-colors duration-200 hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus max-[359px]:px-1 sm:px-3"
+        class:list={[
+          "inline-flex min-h-11 items-center gap-2 rounded-full px-2.5 text-sm font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 max-[359px]:px-1 sm:px-3",
+          sobreHero
+            ? "text-white/85 hover:text-white focus-visible:outline-focus-inverse"
+            : "text-ink-muted hover:bg-surface-muted hover:text-ink focus-visible:outline-focus",
+        ]}
       >
         <Icono nombre="usuario" class="size-5 shrink-0" grosor={1.8} />
         <span class="max-sm:sr-only"><T v={cta.acceso.texto} /></span>
@@ -235,8 +296,13 @@ const logoAlt = {
           franja de 640 a 767 con los DOS CTA a la vez, que es justo lo que el
           comentario de arriba dice que no puede pasar. Ahora el relevo es
           exacto: por debajo de 768 manda la barra fija, por encima el header. */}
+      {/* ⚠️ SOBRE EL HERO NO HAY BOTÓN DE COMPRA, y es una decisión del
+          rediseño: la barra son enlaces de texto y ya está. El hero tiene
+          su propio botón tres centímetros más abajo, y la barra flotante
+          de móvil sigue llevándolo en todas las pantallas, así que la
+          acción no desaparece de la vista en ningún momento. */}
       {
-        !minimo && (
+        !minimo && !sobreHero && (
       <Button
         href={enlace(cta.primario.href)}
         variant="primary"
@@ -280,5 +346,35 @@ const logoAlt = {
       },
       { threshold: 0 },
     ).observe(centinela);
+
+    /* ─── Y CUÁNDO SE ACABA EL HERO ──────────────────────────────────
+       Solo existe en la portada. Mientras el hero esté a la vista, la barra
+       flota sobre la foto sin fondo; en cuanto sale, se ancla arriba y se
+       pinta de navy. Es el mismo mecanismo del centinela, con otro píxel.
+
+       Sin JavaScript la barra se queda flotando y transparente, que es
+       como se ve al cargar: no tapa nada ni desaparece.
+
+    ⚠️ Y SE BUSCA CUANDO EL DOM ESTÁ LISTO, NO AHORA. Este script se ejecuta
+       donde está escrito, o sea justo después de la barra, y el píxel del
+       final del hero está más abajo en la página: en ese instante todavía no
+       existe. Buscándolo aquí mismo salía `null`, el observador no se
+       enganchaba y la barra no volvía nunca. */
+    const observarFinHero = () => {
+      const finHero = document.querySelector("[data-fin-hero]");
+      if (!finHero) return;
+      new IntersectionObserver(
+        ([entrada]) => {
+          cabecera.dataset.fija = String(!entrada.isIntersecting);
+        },
+        { threshold: 0 },
+      ).observe(finHero);
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", observarFinHero, { once: true });
+    } else {
+      observarFinHero();
+    }
   })();
 </script>
