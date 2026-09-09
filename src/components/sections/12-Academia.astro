@@ -1,0 +1,124 @@
+---
+import T from "@components/i18n/T.astro";
+import Section from "@components/ui/Section.astro";
+import Reveal from "@components/motion/Reveal.astro";
+import Enfasis from "@components/ui/Enfasis.astro";
+import Button from "@components/ui/Button.astro";
+import { copy } from "@config/curso.config";
+import { resolverIdiomaServidor } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 12 · LA ACADEMIA
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * El texto a la izquierda, centrado respecto a las fotos; dos fotos a la
+ * derecha, una montada sobre la otra y sin marco.
+ *
+ * ─── EL RÓTULO SE QUEDA ARRIBA Y EL RESTO SE CENTRA ────────────────────────
+ *
+ * Es la única rareza de la maqueta, y tiene sentido: el rótulo ("LA ACADEMIA")
+ * hace de título de la fila entera, así que se alinea con el borde de arriba de
+ * la foto. Lo que se lee de verdad —titular, párrafos y botón— va centrado
+ * contra la foto, porque leer un bloque pegado al techo de una columna de 500
+ * px de alto deja un agujero debajo que no significa nada.
+ *
+ * Se resuelve con una rejilla de dos filas en la columna del texto: la primera
+ * mide lo que mide el rótulo, la segunda se come el resto y centra su contenido.
+ *
+ * ─── QUÉ NO DICE ESTA SECCIÓN ──────────────────────────────────────────────
+ *
+ * Ni "diez videos" ni el CRM ni el Ecosistema. Lo primero porque el temario ya
+ * lo cuenta entero un poco más arriba; lo segundo porque tiene su propia
+ * sección y repetirlo aquí diluye las dos.
+ *
+ * Y no promete cursos futuros. Ver la nota de `copy.academia`.
+ */
+
+const { academia } = copy;
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+/* Ver la nota de `03-Guias.astro` sobre las fotos de banco. */
+const FOTO_GRANDE = "/imagenes/secciones/temario.webp";
+const FOTO_CHICA = "/imagenes/resultados/04.webp";
+---
+
+<Section id="academia" tono="surface" ariaLabel={academia.aria}>
+  <div class="grid gap-12 lg:grid-cols-2 lg:items-stretch lg:gap-20">
+    {/* ─── El texto ───────────────────────────────────────────────────────
+        Dos filas: el rótulo arriba del todo, lo demás centrado en el hueco
+        que queda. Ver la nota de arriba. */}
+    <Reveal class="grid grid-rows-[auto_1fr]">
+      <p class="text-xs font-bold tracking-[0.18em] text-ink-brand uppercase">
+        <T v={academia.kicker} />
+      </p>
+
+      <div class="flex flex-col justify-center">
+        <h2 class="mt-6 text-3xl leading-tight font-extrabold text-balance text-ink sm:text-4xl lg:text-5xl">
+          {
+            academia.titulo.map((linea) => (
+              <span class="block">
+                {"enfasis" in linea && linea.enfasis ? (
+                  <Enfasis v={linea} />
+                ) : (
+                  <T v={linea} />
+                )}
+              </span>
+            ))
+          }
+        </h2>
+
+        {
+          academia.texto.map((parrafo) => (
+            <p class="mt-5 max-w-prose text-base text-pretty text-ink-muted sm:text-lg">
+              <T v={parrafo} />
+            </p>
+          ))
+        }
+
+        <div class="mt-8">
+          {/* A `/login`, el mismo sitio que "Acceso" en la barra. Quien ya
+              compró entra; quien no, ve la pantalla de acceso y sabe que esto
+              existe de verdad y tiene puerta. */}
+          <Button href="/login" trackId="academia-entrar">
+            <T v={academia.cta} />
+          </Button>
+        </div>
+      </div>
+    </Reveal>
+
+    {/* ─── Las dos fotos ──────────────────────────────────────────────────
+        La chica montada sobre la esquina de la grande, sin marco y sin
+        sombra. Igual que en la definición del Embajador: en cuanto una lleva
+        borde, las dos se leen como tarjetas apiladas. */}
+    <Reveal delay={0.1} class="relative">
+      <img
+        src={FOTO_GRANDE}
+        alt={academia.fotoGrande[lang]}
+        data-alt-es={academia.fotoGrande.es}
+        data-alt-en={academia.fotoGrande.en}
+        width={1000}
+        height={800}
+        loading="lazy"
+        decoding="async"
+        class="aspect-[4/3] w-full object-cover lg:aspect-auto lg:h-full"
+      />
+
+      <img
+        src={FOTO_CHICA}
+        alt={academia.fotoChica[lang]}
+        data-alt-es={academia.fotoChica.es}
+        data-alt-en={academia.fotoChica.en}
+        width={800}
+        height={600}
+        loading="lazy"
+        decoding="async"
+        class="absolute right-4 bottom-4 hidden aspect-[4/3] w-40 object-cover sm:block xl:w-48"
+      />
+    </Reveal>
+  </div>
+</Section>

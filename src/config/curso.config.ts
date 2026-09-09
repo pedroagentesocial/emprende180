@@ -2719,6 +2719,91 @@ export const copy = {
   },
 
   /**
+   * ─── LA ACADEMIA ───────────────────────────────────────────────────────
+   *
+   * ⚠️ AQUÍ NO SE PROMETE CONTENIDO FUTURO. La maqueta decía "cada curso de la
+   * Academia a medida que se publica", y eso es una promesa: si durante un año
+   * solo hay un curso, la frase pasa a ser mentira sin que nadie la haya
+   * tocado. Lo que se dice es lo que hay hoy, y lo que hay hoy ya es
+   * suficiente: el curso entero, cuando quieras y las veces que quieras.
+   *
+   * Tampoco habla del CRM ni del Ecosistema: eso tiene su sitio en
+   * `comoTrabajar`, y repetirlo aquí solo diluye las dos.
+   */
+  academia: {
+    aria: { es: "La Academia", en: "The Academy" },
+    kicker: { es: "La Academia", en: "The Academy" },
+    titulo: [
+      { es: "Tu curso te espera", en: "Your course is waiting" },
+      { es: "cuando puedas.", en: "whenever you can.", enfasis: true },
+    ],
+    texto: [
+      {
+        es: "Entras con tu correo y ahí está todo lo que compraste, en el orden en que hay que verlo.",
+        en: "Sign in with your email and everything you bought is there, in the order you need to watch it.",
+      },
+      {
+        es: "A las seis de la mañana o a medianoche. Las veces que haga falta, sin que caduque.",
+        en: "At six in the morning or at midnight. As many times as you need, with no expiry date.",
+      },
+    ],
+    cta: { es: "Entrar", en: "Log in" },
+    fotoGrande: {
+      es: "Una persona sentada a la mesa de su cocina, de noche, trabajando con su portátil",
+      en: "Somebody at their kitchen table at night, working on their laptop",
+    },
+    fotoChica: {
+      es: "Una mano anotando la semana en una agenda, junto a un teclado",
+      en: "A hand writing the week into a planner, next to a keyboard",
+    },
+  },
+
+  /**
+   * ─── LOS RECURSOS ──────────────────────────────────────────────────────
+   *
+   * La franja oscura que manda a `/recursos`. El enlace del menú apunta ahí
+   * desde antes que esta sección, así que la página tiene que existir: dos
+   * sitios llevando a un 404 es peor que uno.
+   */
+  recursos: {
+    aria: { es: "Recursos gratis", en: "Free resources" },
+    titulo: [
+      { es: "Guías,", en: "Guides," },
+      { es: "respuestas directas", en: "straight answers", enfasis: true },
+      { es: "y trucos para mover tu red.", en: "and shortcuts for working your network." },
+    ],
+    texto: {
+      es: "Gratis, y sin dejar el correo para leerlos.",
+      en: "Free, and you don't have to leave your email to read them.",
+    },
+    cta: { es: "Ver los recursos", en: "See the resources" },
+
+    /**
+     * ─── LA PÁGINA ───────────────────────────────────────────────────────
+     *
+     * ⚠️ AQUÍ NO HAY "DESCARGABLES" NI "CONTENIDO EXCLUSIVO", y no es por
+     * modestia: es que no existen. Lo que hay son los artículos publicados y
+     * el aviso cuando sale uno nuevo, y eso es lo que dice la página. El día
+     * que haya una plantilla o un PDF de verdad, se añade aquí y el texto
+     * cambia con él.
+     */
+    paginaTitulo: { es: "Recursos", en: "Resources" },
+    paginaEntradilla: {
+      es: "Todo lo que hay publicado, sin pedir nada a cambio.",
+      en: "Everything published so far, with nothing asked in return.",
+    },
+    paginaDescripcion: {
+      es: "Guías cortas para mover tu red sin incomodar a nadie. Gratis y sin registro.",
+      en: "Short guides on working your network without making it weird. Free, no sign-up.",
+    },
+    paginaArticulos: { es: "Los artículos", en: "The articles" },
+    paginaVacio: {
+      es: "Todavía no hay nada publicado. Déjame tu correo y te aviso con lo primero.",
+      en: "Nothing published yet. Leave me your email and I'll let you know about the first one.",
+    },
+  },
+
+  /**
    * ─── EL PLAN DE 90 DÍAS ────────────────────────────────────────────────
    *
    * Todo sale del documento "Plan de 90 Días — Prospección Diaria del

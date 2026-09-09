@@ -56,6 +56,8 @@ import Lista from "@components/sections/04-Lista.astro";
 import Embajador from "@components/sections/05-Embajador.astro";
 import ComoTrabajar from "@components/sections/06-ComoTrabajar.astro";
 import BlogPortada from "@components/sections/08-Blog.astro";
+import Academia from "@components/sections/12-Academia.astro";
+import Recursos from "@components/sections/13-Recursos.astro";
 import Problema from "@components/sections/02-Problema.astro";
 import QueVasALograr from "@components/sections/03-QueVasALograr.astro";
 import Temario from "@components/sections/05-Temario.astro";
@@ -163,6 +165,12 @@ import CtaFinal from "@components/sections/11-CtaFinal.astro";
         único gratis que demuestra criterio, y quien todavía duda lo lee antes
         de mirar cuánto cuesta. */}
     <BlogPortada />
+
+    {/* La Academia y los recursos, en el orden del brief: primero la puerta de
+        lo que ya se compró, después la de lo que es gratis. Las dos delante del
+        precio: quien llega a la cifra ya ha visto que hay algo detrás. */}
+    <Academia />
+    <Recursos />
 
     <Precio />
     <Faq />
