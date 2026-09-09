@@ -1,12 +1,12 @@
 ---
 import { resolverIdiomaServidor } from "@i18n/idioma";
 import T from "@components/i18n/T.astro";
-import { sitio, contacto, legal, copy, cta } from "@config/curso.config";
+import { contacto, legal, copy, cta } from "@config/curso.config";
 import { construirTxt } from "@i18n/idioma";
 import { interpolar } from "@i18n/formato";
 import { privacidad, terminos } from "@config/legal.config";
 import CookiePreferences from "@components/legal/CookiePreferences";
-import RedesMarca from "@components/layout/RedesMarca.astro";
+import BotonRed from "@components/ui/BotonRed.astro";
 import MarcaAgua from "@components/ui/MarcaAgua.astro";
 import Icono from "@components/ui/Icono.astro";
 import { getCollection } from "astro:content";
@@ -17,29 +17,37 @@ import { articulosPublicados, blogCopy } from "@lib/blog";
  * PIE
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * ─── ERA GRIS Y ESTABA MEDIO VACÍO ─────────────────────────────────────────
+ * ─── CUATRO COLUMNAS DE ENLACES Y NADA MÁS ─────────────────────────────────
  *
- * El pie anterior tenía dos bloques: el logo con una frase a la izquierda y una
- * columna de dos enlaces (correo y WhatsApp) empujada al borde derecho por un
- * `justify-between`. Entre los dos, 700 px de gris sin nada. Y el teléfono, que
- * es la vía por la que hoy se puede pagar de verdad, no estaba.
+ * Redes, la página, el contacto y lo legal. Sin logo, sin frase de marca y sin
+ * títulos de columna: es el pie que pidió Pedro en el rediseño, y la idea es que
+ * el último bloque de la página no vuelva a presentar la marca a quien acaba de
+ * recorrerla entera. Quien llega aquí busca UNA cosa concreta —un teléfono, los
+ * términos— y cuanto menos haya alrededor, antes la encuentra.
  *
- * Ahora son cuatro columnas con nombre: la marca, la página, el contacto y lo
- * legal. Un pie es el último sitio donde alguien busca algo concreto —"¿cómo
- * les llamo?", "¿dónde estaba el temario?"— y para eso hace falta que esté.
+ * ⚠️ LOS TÍTULOS DE COLUMNA SE FUERON DE LA VISTA, NO DEL DOCUMENTO. Cada
+ * columna sigue siendo un `<nav>` con su `aria-label`, así que para un lector de
+ * pantalla las cuatro siguen teniendo nombre y se pueden saltar. Quitar el
+ * rótulo visible es una decisión de diseño; dejar cuatro listas anónimas sería
+ * un fallo de accesibilidad.
  *
- * ─── Y SE FUE A NAVY ───────────────────────────────────────────────────────
+ * ─── QUÉ NO SE QUITÓ ───────────────────────────────────────────────────────
+ *
+ * El teléfono, el correo y el WhatsApp. La maqueta los dejaba en un enlace de
+ * "Contact us", y hoy el teléfono es la única vía por la que se puede pagar de
+ * verdad: esconderlo detrás de un clic más es perder la llamada.
+ *
+ * Y no hay enlace de "Disclaimer" aunque estuviera en la maqueta: esa página no
+ * existe. Un enlace a `#` en el pie legal es peor que no tenerlo.
+ *
+ * ─── Y ES NAVY ─────────────────────────────────────────────────────────────
  *
  * Venía de `bg-surface-muted`, un gris claro, justo debajo de la sección de
  * cierre, que es navy. El corte entre los dos partía la página en dos justo al
  * final. En navy, el cierre y el pie se leen como un solo bloque oscuro que
- * remata, y el logo puede ir en blanco, que es su versión buena.
- *
- * ─── LA MARCA, POR FIN, EN MÁS DE UN SITIO ─────────────────────────────────
- *
- * Va el lockup horizontal blanco arriba y el isotipo de marca de agua detrás.
- * Ver `MarcaAgua.astro`: el `relative isolate` de aquí es lo que hace que la
- * marca de agua se quede DETRÁS del contenido y no debajo del fondo.
+ * remata. El isotipo de marca de agua sigue detrás: ver `MarcaAgua.astro`, el
+ * `relative isolate` de aquí es lo que lo deja DETRÁS del contenido y no debajo
+ * del fondo.
  */
 
 /**
@@ -70,10 +78,6 @@ const whatsappUrl = contacto.whatsapp
 const copyright = construirTxt((l) =>
   interpolar(copy.ui.copyright[l], { anio, razonSocial: contacto.razonSocial }),
 );
-
-/* El lockup horizontal y no el cuadrado: en una fila de pie, la versión alta
-   obligaba a `h-24` y empujaba la columna entera. */
-const logo = sitio.logoHorizontalBlanco;
 
 /* Idioma de ESTA petición. Las islas de React lo necesitan como prop: en
    el servidor no pueden leerlo del DOM, así que sin esto se renderizarían
@@ -111,33 +115,13 @@ const hayBlog = (await articulosPublicados(getCollection)).length > 0;
   <MarcaAgua posicion="derecha" class="opacity-[0.06]" />
 
   <div class="container-page py-14">
-    <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr] lg:gap-8">
-      <!-- ── La marca ──────────────────────────────────────────────────────── -->
+    <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+      <!-- ── Las redes ─────────────────────────────────────────────────────── -->
+      {/* En fila y con el botón que se abre al pasar por encima. Es la primera
+          columna y va sin rótulo, igual que las otras tres: cinco círculos con
+          el logo de su red no necesitan que nadie los presente. */}
       <div>
-        <img
-          src={logo.src}
-          alt={sitio.nombre}
-          width={logo.w}
-          height={logo.h}
-          class="h-12 w-auto"
-          loading="lazy"
-          decoding="async"
-        />
-
-        {/* `max-w-sm` y no `max-w-xs`: en una columna de 1.6fr, 20rem partía la
-            frase en siete renglones cortos. */}
-        <p class="mt-5 max-w-sm text-sm text-pretty">
-          <T v={sitio.descripcion} />
-        </p>
-
-        <p class="mt-6 text-xs font-bold tracking-[0.14em] text-secondary-300 uppercase">
-          <T v={copy.ui.pieRedes} />
-        </p>
-        <RedesMarca
-          class="mt-3"
-          tono="oscuro"
-          pendingLabel={lang === "es" ? "Próximamente" : "Coming soon"}
-        />
+        <BotonRed tono="oscuro" etiquetaPendiente={copy.ui.proximamente[lang]} />
       </div>
 
       <!-- ── La página ─────────────────────────────────────────────────────── -->
@@ -145,10 +129,7 @@ const hayBlog = (await articulosPublicados(getCollection)).length > 0;
           quien llega hasta aquí ya ha leído, y volver a una sección concreta es
           justo lo que va a querer hacer. */}
       <nav aria-label={copy.ui.pieNavegar[lang]}>
-        <h2 class="text-xs font-bold tracking-[0.14em] text-secondary-300 uppercase">
-          <T v={copy.ui.pieNavegar} />
-        </h2>
-        <ul class="mt-3 grid text-sm">
+        <ul class="grid text-sm">
           {
             cta.navegacion.map((n) => (
               <li>
@@ -188,11 +169,8 @@ const hayBlog = (await articulosPublicados(getCollection)).length > 0;
           por la que se puede pagar, y estaba en la barra flotante, en el cierre
           y en preguntas — en todas menos en el sitio donde la gente busca un
           teléfono cuando ya ha decidido. */}
-      <div>
-        <h2 class="text-xs font-bold tracking-[0.14em] text-secondary-300 uppercase">
-          <T v={copy.ui.pieContacto} />
-        </h2>
-        <ul class="mt-3 grid text-sm">
+      <nav aria-label={copy.ui.pieContacto[lang]}>
+        <ul class="grid text-sm">
           {
             contacto.telefono && (
               <li>
@@ -241,7 +219,7 @@ const hayBlog = (await articulosPublicados(getCollection)).length > 0;
             )
           }
         </ul>
-      </div>
+      </nav>
 
       <!-- ── Lo legal ──────────────────────────────────────────────────────── -->
       {/* `data-legal` hace que se abran en modal sin salir de la landing. Sin
@@ -251,10 +229,7 @@ const hayBlog = (await articulosPublicados(getCollection)).length > 0;
         data-aria-es={copy.ui.enlacesLegales.es}
         data-aria-en={copy.ui.enlacesLegales.en}
       >
-        <h2 class="text-xs font-bold tracking-[0.14em] text-secondary-300 uppercase">
-          <T v={copy.ui.pieLegal} />
-        </h2>
-        <ul class="mt-3 grid text-sm">
+        <ul class="grid text-sm">
           <li>
             <a
               href={legal.privacidad}
@@ -283,8 +258,20 @@ const hayBlog = (await articulosPublicados(getCollection)).length > 0;
     {/* Aquí llegó a haber un isotipo pequeño a la derecha del copyright. Se fue:
         la marca de agua ya ocupa esa esquina, y dos veces el mismo símbolo en
         el mismo rincón no es marca, es repetición. */}
-    <div class="mt-12 border-t border-primary-800 pt-6 text-sm text-secondary-200/80">
+    <div
+      class="mt-12 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-primary-800 pt-6 text-sm text-secondary-200/80"
+    >
       <p><T v={copyright} /></p>
+
+      {/* El mapa del sitio, que existe de verdad como ruta (`sitemap.xml.ts`).
+          Es para buscadores más que para personas, y por eso vive aquí abajo y
+          no en ninguna de las cuatro columnas. */}
+      <a
+        href="/sitemap.xml"
+        class="inline-flex min-h-11 items-center transition-colors hover:text-ink-inverse"
+      >
+        <T v={copy.ui.pieSitemap} />
+      </a>
     </div>
   </div>
 </footer>

@@ -3529,6 +3529,9 @@ export const copy = {
        dentro del pie, con su propio ternario de idioma. */
     proximamente: { es: "Próximamente", en: "Coming soon" },
 
+    /* El enlace del mapa del sitio, en la franja de abajo del pie. */
+    pieSitemap: { es: "Mapa del sitio", en: "Sitemap" },
+
     placeholderAqui: { es: "Aquí va", en: "Goes here" },
     placeholderEnProduccion: {
       es: "Placeholder en producción",
