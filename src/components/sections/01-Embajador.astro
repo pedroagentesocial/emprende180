@@ -4,6 +4,7 @@ import Section from "@components/ui/Section.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Enfasis from "@components/ui/Enfasis.astro";
 import Button from "@components/ui/Button.astro";
+import ComoTrabajar from "@components/sections/02-ComoTrabajar.astro";
 import { copy } from "@config/curso.config";
 import { resolverIdiomaServidor } from "@i18n/idioma";
 
@@ -50,6 +51,15 @@ import { resolverIdiomaServidor } from "@i18n/idioma";
  * ⚠️ SOLO DE `lg` PARA ARRIBA. Por debajo no hay dos columnas ni hueco entre
  * ellas, así que la foto chica se esconde: encima de la grande taparía justo la
  * cara de las dos mujeres, que es lo único que esa foto tiene que enseñar.
+ *
+ * ─── Y AQUÍ DENTRO VIVE TAMBIÉN "CÓMO SE TRABAJA" ──────────────────────────
+ *
+ * Las dos eran secciones separadas, cada una con su fondo. Son la misma
+ * respuesta partida en dos —qué es una Embajadora y con qué trabaja— y el
+ * cambio de color en medio las convertía en dos temas que no se conocen.
+ *
+ * Van en la misma sección, sobre el mismo fondo y separadas solo por un filete.
+ * Es lo mismo que se hizo con los testimonios y los logos, y por lo mismo.
  */
 
 const { embajador } = copy;
@@ -144,6 +154,12 @@ const FOTO_CHICA = "/imagenes/resultados/06.webp";
           </Button>
         </div>
       </Reveal>
+    </div>
+
+    {/* El filete y el aire son toda la separación que hace falta: un cambio de
+        fondo aquí volvería a partir en dos lo que es una sola idea. */}
+    <div class="mt-16 border-t border-line pt-14 lg:mt-24 lg:pt-20">
+      <ComoTrabajar />
     </div>
   </div>
 </Section>

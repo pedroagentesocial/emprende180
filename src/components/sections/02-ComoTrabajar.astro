@@ -1,6 +1,5 @@
 ---
 import T from "@components/i18n/T.astro";
-import Section from "@components/ui/Section.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Enfasis from "@components/ui/Enfasis.astro";
 import Button from "@components/ui/Button.astro";
@@ -38,13 +37,29 @@ import { copy } from "@config/curso.config";
 const { comoTrabajar } = copy;
 ---
 
-<Section id="como-trabajar" tono="surface" ariaLabel={comoTrabajar.aria}>
+{/* ─── ESTO YA NO ES UNA SECCIÓN, ES UN BLOQUE ───────────────────────────
+    Vivía en su propia `<Section>`, con su fondo y su ritmo. Ahora se pinta
+    DENTRO de la del Embajador, y por eso no trae ni envoltorio ni color propio:
+    los hereda de quien lo incluye.
+
+    El motivo es de lectura, no de código. "Qué es una Embajadora" y "de qué se
+    compone esto" son la misma respuesta partida en dos, y con un cambio de
+    fondo en medio se leían como dos temas que no se conocen. Es la misma
+    operación que se hizo con los testimonios y los logos.
+
+    ⚠️ EL `id` SE QUEDA, Y NO ES OPCIONAL. Aquí llegan "Programas" del menú, el
+    botón del hero ("Ver cómo funciona") y un botón de /about. Sin él, los tres
+    se quedan sin destino. `scroll-mt` lo separa de la barra al saltar. */}
+<div id="como-trabajar" class="scroll-mt-24" aria-labelledby="como-trabajar-titulo">
   <div class="max-w-2xl">
     <p class="text-xs font-bold tracking-[0.18em] text-ink-brand uppercase">
       <T v={comoTrabajar.kicker} />
     </p>
 
-    <h2 class="mt-4 text-3xl leading-tight font-extrabold text-balance text-ink sm:text-4xl lg:text-5xl">
+    <h2
+      id="como-trabajar-titulo"
+      class="mt-4 text-3xl leading-tight font-extrabold text-balance text-ink sm:text-4xl lg:text-5xl"
+    >
       {
         comoTrabajar.titulo.map((linea) => (
           <span class="block">
@@ -63,7 +78,15 @@ const { comoTrabajar } = copy;
     {
       comoTrabajar.piezas.map((pieza, i) => (
         <Reveal as="li" delay={i * 0.08} class="h-full">
-          <article class="relative isolate flex h-full flex-col overflow-hidden rounded-3xl bg-surface-muted p-8">
+          {/* ⚠️ YA NO SON TARJETAS. Lo eran —fondo azul suave y esquinas
+              redondeadas— cuando este bloque vivía en una sección blanca. Al
+              fusionarse con la del Embajador, que ES azul suave, el fondo de la
+              tarjeta desapareció contra el de la sección y lo único que quedaba
+              del recuadro era su relleno: tres columnas de texto empezando 32 px
+              a la derecha del titular de arriba, sin motivo visible.
+
+              Un filete arriba hace el mismo trabajo de separar, y alinea. */}
+          <article class="relative isolate flex h-full flex-col border-t border-line pt-6">
             {/* El número, enorme y detrás de todo. Decorativo: lo que ordena
                 para un lector de pantalla es que esto sea una LISTA, y el
                 número lo cantaría dos veces.
@@ -73,7 +96,7 @@ const { comoTrabajar } = copy;
                 gráfico, se lee como algo que se ha desbordado. */}
             <span
               aria-hidden="true"
-              class="pointer-events-none absolute top-1 right-4 -z-10 text-[6rem] leading-none font-extrabold text-primary-900/[0.08] select-none sm:text-[7rem]"
+              class="pointer-events-none absolute top-2 right-0 -z-10 text-[6rem] leading-none font-extrabold text-primary-900/[0.07] select-none sm:text-[7rem]"
             >
               {pieza.numero}
             </span>
@@ -103,4 +126,4 @@ const { comoTrabajar } = copy;
       ))
     }
   </ul>
-</Section>
+</div>

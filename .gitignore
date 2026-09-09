@@ -17,6 +17,13 @@ node_modules/
 # ⚠️ Guarda una copia fuera del repo: aquí no hay red de seguridad.
 marca-originales/originales-sin-procesar/
 
+# Y lo mismo con la fotografía en bruto. Las cinco fotos que llegaron de Pedro
+# pesaban 113 MB y estaban dentro de /public, así que se habrían publicado tal
+# cual: cada visita cargando un PNG de 44 MB. Aquí se guardan los originales y
+# en /public/imagenes viven las versiones de 90-110 KB que se sirven.
+# ⚠️ Guarda una copia fuera del repo: aquí tampoco hay red de seguridad.
+/originales/
+
 # env
 .env
 .env.production

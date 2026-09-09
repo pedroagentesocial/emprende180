@@ -105,20 +105,41 @@ const iniciales = (nombre: string) =>
     .map((p) => p[0] ?? "")
     .join("")
     .toUpperCase();
+/**
+ * ⚠️ ¿HAY TARJETA DE CABECERA O NO?
+ *
+ * La rejilla reservaba SIEMPRE una columna de 22rem para el `slot`, viniera
+ * algo dentro o no. El día que la sección de testimonios se llevó su tarjeta
+ * azul al bloque de arriba, esa columna se quedó vacía: 22rem más 2,5 de hueco
+ * de blanco a la izquierda de la banda, y las reseñas empujadas fuera del
+ * borde. Se veía como un error de maquetación, y lo era.
+ *
+ * Con `Astro.slots.has` la rejilla solo se parte en dos cuando hay algo que
+ * poner en la primera columna. Sin cabecera, la banda ocupa el ancho entero y
+ * las tarjetas se ven completas desde el primer píxel.
+ */
+const conCabecera = Astro.slots.has("default");
 ---
 
 <div data-banda data-pausada="false" class:list={["relative", className]}>
   <div
-    class="grid items-stretch gap-8 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:gap-x-10"
+    class:list={[
+      "grid items-stretch gap-8",
+      conCabecera && "lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:gap-x-10",
+    ]}
   >
     {/* La tarjeta de cabecera, si la hay. Ver la nota de arriba: en móvil se
-        apila encima, que es el único orden posible en una sola columna. */}
-    {/* `py-1` igual que la pista: sin él la tarjeta de cabecera empieza
-        cuatro píxeles más arriba que las reseñas y las dos filas de arriba no
-        casan. */}
-    <div class="py-1 lg:col-start-1 lg:row-start-1">
-      <slot />
-    </div>
+        apila encima, que es el único orden posible en una sola columna.
+
+        `py-1` igual que la pista: sin él la tarjeta de cabecera empieza cuatro
+        píxeles más arriba que las reseñas y las dos filas no casan. */}
+    {
+      conCabecera && (
+        <div class="py-1 lg:col-start-1 lg:row-start-1">
+          <slot />
+        </div>
+      )
+    }
 
     {/* `overflow-hidden` recorta la pista sin sacar la banda del ancho de la
         página: nada de `100vw`, que incluye la barra de scroll y provoca scroll
@@ -129,7 +150,10 @@ const iniciales = (nombre: string) =>
         lleva la rejilla por delante. */}
     <div
       data-banda-viewport
-      class="min-w-0 overflow-hidden lg:col-start-2 lg:row-start-1 [mask-image:linear-gradient(to_right,transparent,black_2rem,black_calc(100%-2rem),transparent)]"
+      class:list={[
+        "min-w-0 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_2rem,black_calc(100%-2rem),transparent)]",
+        conCabecera && "lg:col-start-2 lg:row-start-1",
+      ]}
     >
       <ul
         data-banda-pista

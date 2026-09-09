@@ -3,33 +3,60 @@ import BaseLayout from "@layouts/BaseLayout.astro";
 import Header from "@components/layout/Header.astro";
 import Footer from "@components/layout/Footer.astro";
 import T from "@components/i18n/T.astro";
+
+import Enfasis from "@components/ui/Enfasis.astro";
+import Reveal from "@components/motion/Reveal.astro";
+import Estrellas from "@components/ui/Estrellas.astro";
+import IlustracionValor from "@components/ui/IlustracionValor.astro";
 import Icono from "@components/ui/Icono.astro";
-import Button from "@components/ui/Button.astro";
 import { copy, instructor, sitio } from "@config/curso.config";
 import { construirTxt, resolverIdiomaServidor } from "@i18n/idioma";
+import { faltaPorRellenar } from "@lib/pendientes";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
  * /about — quiénes somos
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * Existe porque ya la enlazaban dos sitios: "Quiénes somos" en el menú y el
- * botón de la sección del Embajador. Los dos llevaban antes a un ancla de la
- * propia portada, y una página de "quiénes somos" que es un salto a media
- * pantalla más abajo no responde la pregunta que la trae.
+ * Existe porque la enlazan el menú y el botón de la sección del Embajador, y
+ * antes los dos llevaban a un ancla de la propia portada. Una página de
+ * "quiénes somos" que es un salto a media pantalla más abajo no responde la
+ * pregunta que la trae.
+ *
+ * ─── EL ORDEN ES EL DE LA REFERENCIA, CON DOS PIEZAS SUYAS ─────────────────
+ *
+ * Hero corto y fuerte · franja con una frase entre dos fotos · presentación ·
+ * para quién es · en qué creemos · quién está detrás · llamada.
+ *
+ * De su "about" se copian dos formas concretas:
+ *
+ *   1. EL HERO NO OCUPA UNA PANTALLA. Es una franja corta con el titular muy
+ *      grande y nada más. La página empieza a contar cosas enseguida en vez de
+ *      hacer bajar una pantalla entera para llegar a la primera frase.
+ *   2. LA FRANJA DE LAS DOS FOTOS. Una sola línea centrada con una foto a cada
+ *      lado, y debajo los datos. Es su bloque de "supporting women around the
+ *      world": la frase dice a quién acompañamos y los datos son lo que
+ *      respalda que podamos decirlo.
+ *
+ * Lo que NO se copia son sus cifras. Ver la nota de `copy.about`.
+ *
+ * ─── Y LA ESCALA ES LO QUE COSE LA PÁGINA ──────────────────────────────────
+ *
+ * Hay cuatro tamaños y se repiten en el mismo orden en cada bloque: el rótulo
+ * pequeño en versalitas, el titular grande, el cuerpo y el dato. Cuando cuatro
+ * bloques distintos usan la misma escala en la misma secuencia, se leen como
+ * capítulos de una cosa y no como cuatro secciones pegadas.
  *
  * ─── AQUÍ NO SE ESCRIBE NI UN DATO NUEVO ───────────────────────────────────
  *
- * Todo sale de `instructor`, que es donde vive lo comprobable: la bio, las
- * cuatro credenciales y su enlace de prueba. Si algo falta, falta allí, y allí
- * está anotado cuál es el hueco que más pesa (dos frases suyas sobre de dónde
- * viene, incluido lo que le salió mal).
+ * La bio y las cuatro credenciales salen de `instructor`, que es donde vive lo
+ * comprobable. Si algo falta, falta allí.
  *
- * ─── LA MISMA ASIMETRÍA DE LA PORTADA ──────────────────────────────────────
- *
- * Contenedor ancho, columnas desiguales y el retrato pegado al borde. No es
- * decoración: si esta página vuelve al bloque centrado de siempre, se lee como
- * un documento legal y no como la continuación de la página de la que viene.
+ * Los años en el sector ya son un dato —más de 20, lo dio él— y viven en la
+ * ficha de arriba. Lo que sigue faltando es de dónde viene, incluido lo que le
+ * salió mal: ver la nota en `copy.about`. El filtro de `datosVisibles` se queda
+ * puesto, que es lo que impide que un `[COMPLETAR` se publique el día que
+ * alguien añada una ficha nueva sin rellenar.
  */
 export const prerender = false;
 
@@ -41,100 +68,792 @@ const lang = resolverIdiomaServidor(
 );
 
 const tituloPagina = construirTxt(
-  (l) => `${about.titulo[l]} · ${sitio.nombre}`,
+  (l) => `${about.kicker[l]} · ${sitio.nombre}`,
 );
+
+/**
+ * ─── LAS CUATRO FOTOS DE ESTA PÁGINA ───────────────────────────────────────
+ *
+ * El fondo del hero es el retrato de Pedro: es lo más "nuestro" que hay en el
+ * repositorio y es la única imagen de la web que no sale de un banco.
+ *
+ * ⚠️ EN CUANTO HAYA MÁS FOTOS SUYAS, ESTE ES EL SITIO. Basta con dejarlas en
+ * `/public/imagenes/instructor/` y cambiar estas rutas: no hay que tocar el
+ * marcado. La de fondo pide una horizontal y con aire a la izquierda, que es
+ * donde cae el texto; la pequeña de la esquina pide una escena, no un retrato,
+ * porque se ve entera y a tamaño de sello.
+ *
+ * Las otras tres siguen siendo de banco, y son las únicas de la carpeta en las
+ * que salen mujeres, que es de quien habla la página. Ver el README.
+ */
+const FOTO_FONDO = instructor.foto;
+const FOTO_ESQUINA = "/imagenes/resultados/03.webp";
+const FOTO_FRANJA_IZQ = "/imagenes/resultados/06.webp";
+const FOTO_INTRO = "/imagenes/resultados/02.webp";
+const FOTO_PORQUE = "/imagenes/resultados/01.webp";
+
+/**
+ * Ver la nota de arriba: lo pendiente se ve en local y no se publica.
+ *
+ * ⚠️ `import.meta.env.DEV` va SIEMPRE en la misma expresión y no a través de
+ * una variable: Vite lo sustituye por `false` al compilar y así el filtro se
+ * pliega solo en producción.
+ */
+const datosVisibles = about.datos.filter(
+  (d) => !faltaPorRellenar(d.valor) || import.meta.env.DEV,
+);
+
 ---
 
 <BaseLayout titulo={tituloPagina} descripcion={about.descripcion}>
   <Header />
 
-  <main id="contenido" class="section-y">
-    <div class="mx-auto w-full max-w-[88rem] px-5 sm:px-8">
-      {/* ─── El titular y el retrato ─────────────────────────────────────
-          Columnas desiguales y el texto abajo, igual que en la portada. */}
-      <div class="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end lg:gap-14">
-        <div class="lg:pb-6">
-          <h1 class="text-4xl leading-[1.05] font-extrabold text-balance text-ink sm:text-5xl lg:text-6xl">
-            <T v={about.titulo} />
-          </h1>
-          <p class="mt-6 max-w-prose text-lg text-pretty text-ink-muted">
-            <T v={about.entradilla} />
-          </p>
-        </div>
+  <main id="contenido">
+    {/* ─── HERO CORTO, SOBRE FOTO ─────────────────────────────────────────
+        Corto de verdad: no ocupa una pantalla, ocupa lo que mide su titular.
+        El fondo es el retrato de Pedro, oscurecido lo justo para que el blanco
+        se lea encima, y la foto pequeña se sienta en la esquina de abajo a la
+        derecha, entera y a tamaño de sello.
 
+        ⚠️ EL VELO NO ES DECORACIÓN, ES LO QUE HACE LEGIBLE EL TITULAR. Va más
+        cargado por la izquierda, que es donde cae el texto, y se apaga hacia la
+        derecha para que la cara siga viéndose. Sin él, el blanco sobre el fondo
+        claro del retrato no llega ni de lejos al contraste mínimo.
+
+        ⚠️ Y LA FOTO DE FONDO SE MUEVE MUY DESPACIO. Es un `scale` de treinta
+        segundos, que es transform y lo lleva el compositor: no recalcula nada
+        de la maquetación. Con `prefers-reduced-motion` se queda quieta. */}
+    {/* ⚠️ LA SECCIÓN NO RECORTA, RECORTA EL FONDO. Antes el `overflow-hidden`
+        estaba en la sección, y con él se comía la mitad de la foto que cuelga
+        por debajo: lo que sobresale de una caja que recorta, desaparece.
+
+        Ahora el recorte vive en el envoltorio del fondo, que es lo único que de
+        verdad necesita recortarse —la imagen crece un 6 % y sin `overflow` se
+        saldría por los lados—. La sección se queda sin recorte y lo que cuelga,
+        cuelga. */}
+    <section class="relative isolate bg-primary-950" aria-labelledby="about-titulo">
+      <div aria-hidden="true" class="absolute inset-0 -z-10 overflow-hidden">
         <img
-          src={instructor.foto}
-          alt={instructor.fotoAlt[lang]}
-          data-alt-es={instructor.fotoAlt.es}
-          data-alt-en={instructor.fotoAlt.en}
+          src={FOTO_FONDO}
+          alt=""
           width={800}
           height={1000}
           loading="eager"
           fetchpriority="high"
           decoding="async"
-          class="aspect-[4/3] w-full object-cover object-top lg:aspect-[16/10]"
+          data-fondo-about
+          class="size-full object-cover object-[70%_20%]"
         />
+
+        <div
+          class="absolute inset-0 bg-gradient-to-r from-primary-950 via-primary-950/85 to-primary-950/40"
+        >
+        </div>
       </div>
 
-      {/* ─── La bio, en su propia medida de lectura ──────────────────────
-          El texto largo NO se estira a las 88rem del contenedor: una línea de
-          1300 px se pierde al saltar de renglón. La sección es ancha; el
-          párrafo, no. */}
-      <div class="mt-16 grid gap-10 lg:mt-24 lg:grid-cols-[1fr_0.8fr] lg:gap-16">
-        <div>
-          <p class="text-sm font-semibold text-ink-brand">
-            {instructor.nombre}{", "}<T v={instructor.rol} />
+      <div class="mx-auto w-full max-w-[88rem] px-5 pt-16 pb-28 sm:px-8 sm:pt-20 sm:pb-32 lg:pb-40">
+        <Reveal>
+          <p class="text-xs font-bold tracking-[0.22em] text-secondary-300 uppercase">
+            <T v={about.kicker} />
           </p>
-          <p class="mt-4 max-w-prose text-lg leading-relaxed text-pretty text-ink">
-            <T v={instructor.bio} />
-          </p>
-        </div>
 
-        {/* ─── Las credenciales ──────────────────────────────────────────
-            Cada una con su palomita. La que tiene enlace de prueba lo lleva:
-            es lo que separa un dato de una afirmación. */}
-        <div>
-          <h2 class="text-xs font-bold tracking-[0.18em] text-ink-subtle uppercase">
-            <T v={about.credencialesTitulo} />
-          </h2>
-
-          <ul class="mt-5 grid gap-4">
+          <h1
+            id="about-titulo"
+            class="mt-5 max-w-[20ch] text-4xl leading-[1.02] font-extrabold text-balance text-ink-inverse sm:text-6xl lg:text-7xl"
+          >
             {
-              instructor.credenciales.map((c) => (
-                <li class="flex items-start gap-3 text-base text-pretty text-ink-muted">
-                  <span aria-hidden="true" class="marca-linea shrink-0 text-ink-brand">
-                    <Icono nombre="check" class="size-4" />
+              about.titulo.map((linea) => (
+                <span class="block">
+                  {"enfasis" in linea && linea.enfasis ? (
+                    <Enfasis v={linea} tono="inverso" />
+                  ) : (
+                    <T v={linea} />
+                  )}
+                </span>
+              ))
+            }
+          </h1>
+
+          <p class="mt-6 max-w-prose text-lg text-pretty text-secondary-100">
+            <T v={about.entradilla} />
+          </p>
+        </Reveal>
+
+        {/* ⚠️ ESTA FOTO CUELGA POR DEBAJO DEL HERO, Y ESE ES SU TRABAJO.
+            `bottom` negativo: la mitad de abajo se sale de la sección oscura y
+            cae sobre la clara de al lado, así que pertenece a las dos a la vez
+            y las cose. Sin ese solape, el hero termina en una línea recta y la
+            página se lee como dos bloques apilados.
+
+            El `z-10` es lo que la mantiene por encima de la sección siguiente:
+            sin él, el fondo de la franja la taparía por la mitad.
+
+            `object-cover` no: se ve ENTERA, que es lo que se pidió, así que
+            manda la proporción del archivo y no un recorte. En móvil no cabe
+            ninguna esquina, así que va en el flujo debajo del texto. */}
+        <div class="mt-10 lg:absolute lg:right-8 lg:bottom-[-4.5rem] lg:z-10 lg:mt-0">
+          <img
+            src={FOTO_ESQUINA}
+            alt={about.fotoIncrustada[lang]}
+            data-alt-es={about.fotoIncrustada.es}
+            data-alt-en={about.fotoIncrustada.en}
+            width={400}
+            height={300}
+            loading="lazy"
+            decoding="async"
+            class="w-40 shadow-2xl sm:w-48 lg:w-56"
+          />
+        </div>
+      </div>
+    </section>
+
+    {/* ─── LA FRANJA: UNA FRASE ENTRE DOS FOTOS, Y DEBAJO LOS DATOS ────────
+        Las dos fotos flanquean la frase en escritorio y desaparecen por debajo
+        de `lg`: en una columna estrecha no flanquean nada, se apilan encima y
+        el bloque deja de ser lo que es.
+
+        Los datos van justo debajo y en versalitas pequeñas, que es el contraste
+        de escala que hace que la frase de arriba pese: cuanto más pequeño el
+        dato, más grande se lee la afirmación que respalda. */}
+    <section class="section-y bg-surface-muted" aria-labelledby="about-franja">
+      <div class="mx-auto w-full max-w-[88rem] px-5 sm:px-8">
+        <Reveal>
+          {/* ⚠️ LAS DOS FOTOS SUBEN Y SE MONTAN SOBRE EL HERO. Ese solape es lo
+              que cose las dos secciones: sin él son dos bloques pegados, uno
+              oscuro y otro claro, y el corte entre ambos se lee como el final de
+              una página y el principio de otra. Con las fotos cruzando la línea,
+              la segunda sección empieza dentro de la primera.
+
+              Y van a los EXTREMOS del contenedor, no pegadas al texto: con
+              88rem de ancho, apretarlas contra la frase dejaba medio metro de
+              blanco a cada lado. Aquí el bloque ocupa lo que mide la sección. */}
+          {/* ⚠️ UNA SOLA FOTO, A LA IZQUIERDA. Eran dos, flanqueando la
+              frase. Con las dos, el bloque se leía como una balanza y el ojo no
+              sabía por dónde entrar; con una, entra por la foto y sigue por el
+              texto, que es el orden en que se lee. `justify-start` y no
+              `between`: sin la segunda foto, `between` empujaba la frase contra
+              el borde derecho. */}
+          <div class="flex items-center justify-start gap-8 xl:gap-14">
+            <img
+              src={FOTO_FRANJA_IZQ}
+              alt={about.franjaFotoIzq[lang]}
+              data-alt-es={about.franjaFotoIzq.es}
+              data-alt-en={about.franjaFotoIzq.en}
+              width={400}
+              height={500}
+              loading="lazy"
+              decoding="async"
+              class="-mt-32 hidden aspect-[4/5] w-40 shrink-0 object-cover shadow-2xl lg:block xl:-mt-40 xl:w-56"
+            />
+
+            <h2
+              id="about-franja"
+              class="max-w-[18ch] text-center text-3xl leading-[1.08] font-extrabold text-balance text-ink sm:text-4xl lg:text-5xl"
+            >
+              {
+                about.franja.map((linea) => (
+                  <span class="block">
+                    {"enfasis" in linea && linea.enfasis ? (
+                      <Enfasis v={linea} />
+                    ) : (
+                      <T v={linea} />
+                    )}
                   </span>
-                  <span>
-                    <T v={c.dato} />
-                    {c.prueba && (
+                ))
+              }
+            </h2>
+
+          </div>
+        </Reveal>
+
+        {/* ─── LOS DATOS ─────────────────────────────────────────────────
+            Cada uno con su etiqueta delante, que es lo que los convierte en una
+            ficha en vez de en cuatro frases sueltas.
+
+            ⚠️ Los que siguen pendientes no se publican: en producción la ficha
+            enseña los que hay. Ver la nota de la cabecera. */}
+        <Reveal delay={0.1}>
+          <p class="mt-14 text-center text-xs font-bold tracking-[0.22em] text-ink-subtle uppercase">
+            <T v={about.credencialesTitulo} />
+          </p>
+
+          <dl class="mt-6 grid gap-x-8 gap-y-8 border-t border-line pt-8 sm:grid-cols-2 lg:grid-cols-4">
+            {
+              datosVisibles.map((d) => (
+                <div>
+                  <dt class="text-xs font-bold tracking-[0.18em] text-ink-brand uppercase">
+                    <T v={d.etiqueta} />
+                  </dt>
+                  <dd class="mt-2 text-base text-pretty text-ink">
+                    <T v={d.valor} />
+                    {"prueba" in d && d.prueba && (
                       <>
                         {" "}
                         <a
-                          href={c.prueba}
+                          href={d.prueba}
                           target="_blank"
                           rel="noopener noreferrer"
                           class="font-semibold text-ink-brand underline underline-offset-4 hover:text-secondary-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                         >
-                          {new URL(c.prueba).hostname.replace(/^www\./, "")}
+                          {new URL(d.prueba).hostname.replace(/^www\./, "")}
                         </a>
                       </>
                     )}
-                  </span>
-                </li>
+                  </dd>
+                </div>
+              ))
+            }
+          </dl>
+        </Reveal>
+      </div>
+    </section>
+
+    {/* ─── LAS EMPRESAS DEL ECOSISTEMA ────────────────────────────────────
+        Tres tarjetas, cada una con el logotipo de la empresa y su comentario
+        debajo. La tercera va sobre color: rompe la fila de tres iguales, que es
+        justo lo que DESIGN.md llama la rejilla de tarjetas clonadas.
+
+        ⚠️ LOS COMENTARIOS NO ESTÁN Y NO SE INVENTAN. Poner palabras en boca de
+        otro negocio, con su nombre y su logotipo al lado, no es solo un
+        problema nuestro. Mientras falten, la tarjeta enseña el logotipo, el
+        rubro y el enlace a su web, que es todo verdad. Ver `copy.about.aliados`. */}
+    <section class="section-y" aria-labelledby="about-aliados">
+      <div class="mx-auto w-full max-w-[88rem] px-5 sm:px-8">
+        {/* ─── POR SI ACABAS DE LLEGAR ─────────────────────────────────────
+            Iba en su propia sección, con su fondo azul suave y su ritmo
+            completo. Ahora vive DENTRO de esta, sobre el mismo fondo y pegada a
+            lo que explica: el párrafo dice qué es Emprende180 y justo debajo
+            están las tres empresas que lo hacen posible. Con un cambio de color
+            en medio, eran dos temas; sin él, es una explicación y su prueba.
+
+            La foto no adorna: enseña la parte del Ecosistema que el párrafo no
+            puede enseñar, que es que al otro lado hay gente. */}
+        <Reveal>
+          <div class="grid items-center gap-8 lg:grid-cols-[1fr_0.85fr] lg:gap-14">
+            <div>
+              <p class="text-xs font-bold tracking-[0.22em] text-ink-subtle uppercase">
+                <T v={about.introTitulo} />
+              </p>
+              <p class="mt-4 max-w-prose text-xl leading-relaxed text-pretty text-ink sm:text-2xl">
+                <T v={about.introTexto} />
+              </p>
+            </div>
+
+            <img
+              src={FOTO_INTRO}
+              alt={about.fotoIntro[lang]}
+              data-alt-es={about.fotoIntro.es}
+              data-alt-en={about.fotoIntro.en}
+              width={800}
+              height={600}
+              loading="lazy"
+              decoding="async"
+              class="aspect-[4/3] w-full object-cover"
+            />
+          </div>
+        </Reveal>
+
+        {/* El titular de las empresas, pegado al párrafo de arriba: son la misma
+            idea, así que el aire entre los dos es el justo para separarlos, no
+            el de dos secciones distintas. */}
+        <Reveal>
+          <h2
+            id="about-aliados"
+            class="mx-auto mt-14 max-w-[16ch] text-center text-3xl leading-[1.05] font-extrabold text-balance text-ink sm:text-4xl lg:text-5xl"
+          >
+            {
+              about.aliadosTitulo.map((linea) => (
+                <span class="block">
+                  {"enfasis" in linea && linea.enfasis ? (
+                    <Enfasis v={linea} />
+                  ) : (
+                    <T v={linea} />
+                  )}
+                </span>
+              ))
+            }
+          </h2>
+
+          <p class="mx-auto mt-5 max-w-prose text-center text-base text-pretty text-ink-muted sm:text-lg">
+            <T v={about.aliadosEntradilla} />
+          </p>
+        </Reveal>
+
+        {/* ⚠️ SIN TARJETA. Lo eran —fondo, esquinas redondeadas y una en navy—
+            y se pidió quitarlas: tres recuadros iguales en fila son la rejilla
+            de tarjetas clonadas que DESIGN.md manda evitar, y aquí además
+            encerraban logotipos ajenos dentro de cajas nuestras.
+
+            Lo que separa ahora es un filete arriba, igual que las otras dos
+            listas de esta página. Eso también las cose: tres bloques distintos
+            con la misma manera de separarse se leen como el mismo documento. */}
+        <ul class="mt-12 grid gap-10 lg:grid-cols-3 lg:gap-12">
+          {
+            about.aliados.map((a, i) => (
+              <Reveal as="li" delay={i * 0.08} class="h-full">
+                <div class="flex h-full flex-col items-center border-t border-line pt-6 text-center">
+                  {/* ⚠️ LA PLACA SOLO LA LLEVA EL LOGOTIPO QUE LA NECESITA, Y
+                      ESO ES UN DATO DEL ARCHIVO. El de Car Injury Clinics está
+                      dibujado en blanco (color medio de sus píxeles opacos:
+                      246,243,247), así que sobre el fondo claro de la página
+                      desaparecería entero. Los otros dos son oscuros y se ven
+                      solos, sin caja alrededor. */}
+                  <div
+                    class:list={[
+                      "flex h-14 items-center justify-center",
+                      "logoClaro" in a && a.logoClaro && "rounded-xl bg-primary-900 px-4 py-2",
+                    ]}
+                  >
+                    <img
+                      src={a.logo}
+                      alt={a.nombre}
+                      width={640}
+                      height={320}
+                      loading="lazy"
+                      decoding="async"
+                      class="max-h-11 w-auto object-contain"
+                    />
+                  </div>
+
+                  <p class="mt-5 text-xs font-bold tracking-[0.18em] text-ink-subtle uppercase">
+                    <T v={a.rubro} />
+                  </p>
+
+                  {a.estrellas && (
+                    <div class="mt-3">
+                      <Estrellas valor={a.estrellas} sinTexto />
+                    </div>
+                  )}
+
+                  {/* Qué resuelven, en nuestra voz. La cita suya, si algún día
+                      llega, va debajo y entre comillas. Ver el config. */}
+                  <p class="mt-3 max-w-[34ch] flex-1 text-base text-pretty text-ink-muted">
+                    <T v={a.queResuelve} />
+                  </p>
+
+                  {!faltaPorRellenar(a.cita) && (
+                    <blockquote class="mt-4 text-base text-pretty text-ink">
+                      <T v={a.cita} />
+                    </blockquote>
+                  )}
+
+                  <a
+                    href={a.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="mt-auto inline-flex min-h-11 items-center pt-5 text-sm font-bold text-ink-brand underline underline-offset-4 hover:text-secondary-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                  >
+                    {new URL(a.url).hostname.replace(/^www\./, "")}
+                  </a>
+                </div>
+              </Reveal>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+
+    {/* ─── SI ESTÁS EN CASA ───────────────────────────────────────────────
+        Tres frases que empiezan igual. Ver la nota de `copy.about.paraTi`. */}
+    <section class="section-y" aria-labelledby="about-para-ti">
+      <div class="mx-auto w-full max-w-[88rem] px-5 sm:px-8">
+        <h2 id="about-para-ti" class="text-3xl font-extrabold text-balance text-ink sm:text-4xl">
+          <T v={about.paraTiTitulo} />
+        </h2>
+
+        <ul class="mt-10 grid gap-8 lg:grid-cols-3 lg:gap-12">
+          {
+            about.paraTi.map((p, i) => (
+              <Reveal as="li" delay={i * 0.08}>
+                {/* Sin tarjeta: es una lista de tres frases, no tres productos
+                    comparables. Un filete arriba las separa sin encajonarlas. */}
+                <div class="border-t border-line pt-5">
+                  <h3 class="text-xl font-extrabold text-pretty text-ink">
+                    <T v={p.titulo} />
+                  </h3>
+                  <p class="mt-2 text-base text-pretty text-ink-muted">
+                    <T v={p.texto} />
+                  </p>
+                </div>
+              </Reveal>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+
+    {/* ─── EN QUÉ CREEMOS ─────────────────────────────────────────────────
+        Titular centrado y cuatro valores en fila, cada uno con su dibujo. Es la
+        forma del bloque de valores de la referencia.
+
+        ⚠️ SIN TARJETA Y SIN RECUADRO. Siete cajas iguales con icono, titular y
+        párrafo son exactamente la rejilla de tarjetas clonadas que DESIGN.md
+        manda evitar. Lo que hay es una fila: el dibujo, la frase y el texto, sin
+        nada alrededor.
+
+        ─── Y SE MUEVE CON FLECHAS, NO SOLO ────────────────────────────────
+
+        Son siete y no caben. La fila es un contenedor con scroll horizontal y
+        `scroll-snap`, y las dos flechas lo empujan una tarjeta cada vez.
+
+        ⚠️ NO ES UN CARRUSEL QUE SE MUEVE SOLO, y esa es la diferencia que
+        importa: nada avanza sin que alguien lo pida, así que no hay contenido en
+        movimiento que haya que poder parar (WCAG 2.2.2) y quien lee despacio no
+        pierde la frase a media lectura.
+
+        ⚠️ SIN JAVASCRIPT SIGUE FUNCIONANDO. Lo de debajo es una lista con
+        scroll: se arrastra con el dedo, con la rueda o con el teclado aunque el
+        script no llegue. Las flechas son una comodidad encima, no el mecanismo.
+
+        ⚠️ Y LOS DIBUJOS SON NUESTROS, pero ya no son iconos de línea: son
+        ilustraciones macizas de dos tintas, hechas para este bloque. A 40 px un
+        trazo de 1,5 se ve escuálido y parece un icono de interfaz metido donde
+        no toca. Ver `IlustracionValor.astro`.
+
+        ⚠️ Y LA SECCIÓN ES CLARA. Fue navy, y en una página que ya abre con un
+        hero oscuro, un segundo bloque oscuro a media altura la partía en tres.
+        El azul suave separa igual sin romper la página. */}
+    <section class="section-y bg-surface-muted" aria-labelledby="about-creemos">
+      <div class="mx-auto w-full max-w-[88rem] px-5 sm:px-8">
+        <Reveal>
+          <p class="text-center text-xs font-bold tracking-[0.22em] text-ink-brand uppercase">
+            <T v={about.creemosKicker} />
+          </p>
+
+          <h2
+            id="about-creemos"
+            class="mx-auto mt-4 max-w-[16ch] text-center text-3xl leading-[1.05] font-extrabold text-balance text-ink sm:text-4xl lg:text-5xl"
+          >
+            <T v={about.creemosTitulo} />
+          </h2>
+        </Reveal>
+
+        <div class="relative mt-14" data-valores>
+          {/* Los mandos, arriba a la derecha y fuera del carril: dentro se
+              montarían sobre el texto de la primera y la última. */}
+          <div class="mb-6 flex justify-end gap-3">
+            <button
+              type="button"
+              data-valores-antes
+              aria-label={about.creemosAnterior[lang]}
+              data-aria-es={about.creemosAnterior.es}
+              data-aria-en={about.creemosAnterior.en}
+              class="grid size-11 place-items-center rounded-full border border-line text-ink-muted transition-colors duration-200 hover:border-ink hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-35 disabled:hover:border-line disabled:hover:text-ink-muted"
+            >
+              <Icono nombre="flecha" class="size-5 rotate-180" grosor={2} />
+            </button>
+
+            <button
+              type="button"
+              data-valores-despues
+              aria-label={about.creemosSiguiente[lang]}
+              data-aria-es={about.creemosSiguiente.es}
+              data-aria-en={about.creemosSiguiente.en}
+              class="grid size-11 place-items-center rounded-full border border-line text-ink-muted transition-colors duration-200 hover:border-ink hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-35 disabled:hover:border-line disabled:hover:text-ink-muted"
+            >
+              <Icono nombre="flecha" class="size-5" grosor={2} />
+            </button>
+          </div>
+
+          {/* `scroll-px` y `snap-start` para que al empujar, la tarjeta quede
+              alineada con el borde y no a medias. */}
+          <ul
+            data-valores-carril
+            class="flex snap-x snap-mandatory gap-8 overflow-x-auto scroll-smooth pb-2 [scrollbar-width:none] lg:gap-10 [&::-webkit-scrollbar]:hidden"
+          >
+            {
+              about.creemos.map((c, i) => (
+                <Reveal
+                  as="li"
+                  delay={i * 0.06}
+                  class="w-[15rem] shrink-0 snap-start sm:w-[17rem] lg:w-[19rem]"
+                >
+                <div class="text-center">
+                  <IlustracionValor nombre={c.ilustracion} class="mx-auto size-20" />
+
+                  <h3 class="mt-5 text-lg font-extrabold text-pretty text-ink">
+                    <T v={c.titulo} />
+                  </h3>
+
+                  <p class="mx-auto mt-2 max-w-[32ch] text-base text-pretty text-ink-muted">
+                    <T v={c.texto} />
+                  </p>
+                </div>
+                </Reveal>
               ))
             }
           </ul>
-
-          <div class="mt-10">
-            <Button href="/#como-trabajar" trackId="about-metodo">
-              <T v={about.volver} />
-            </Button>
-          </div>
         </div>
       </div>
-    </div>
+    </section>
+
+    {/* ─── POR QUÉ HACEMOS ESTO ───────────────────────────────────────────
+        El rótulo pequeño arriba a la izquierda, cruzando las dos columnas: es
+        el que anuncia el bloque entero, así que no puede vivir dentro de una de
+        las dos.
+
+        Debajo, la foto a la izquierda con su párrafo colgando, y el titular a la
+        derecha con la lista debajo. Las dos columnas empiezan a la misma altura
+        y bajan a ritmos distintos, que es lo que evita que se lea como una
+        tabla de dos celdas.
+
+        ⚠️ EL PÁRRAFO VA CON LA FOTO Y LA LISTA CON EL TITULAR, y no al revés.
+        El párrafo cuenta una escena —alguien de tu agenda, esta semana— y la
+        foto es esa escena; la lista dice a quién le hablamos y el titular es a
+        quién le hablamos. Cada columna es una sola idea de arriba abajo. */}
+    <section class="section-y" aria-labelledby="about-porque">
+      <div class="mx-auto w-full max-w-[88rem] px-5 sm:px-8">
+        <Reveal>
+          <p class="text-xs font-bold tracking-[0.22em] text-ink-brand uppercase">
+            <T v={about.porqueKicker} />
+          </p>
+        </Reveal>
+
+        {/* ⚠️ LAS DOS COLUMNAS NO ARRANCAN A LA MISMA ALTURA. La foto baja
+            veinte unidades respecto al titular, así que la fila deja de ser una
+            tabla de dos celdas y pasa a ser una composición. Es el mismo recurso
+            del resto del rediseño, y es lo único que separa "asimétrico" de
+            "dos columnas". */}
+        <div class="mt-8 grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
+          {/* ─── Izquierda: la foto y, debajo, la escena ──────────────────── */}
+          <Reveal class="lg:mt-24">
+            <img
+              src={FOTO_PORQUE}
+              alt={about.porqueFoto[lang]}
+              data-alt-es={about.porqueFoto.es}
+              data-alt-en={about.porqueFoto.en}
+              width={800}
+              height={600}
+              loading="lazy"
+              decoding="async"
+              class="aspect-[4/3] w-full object-cover"
+            />
+
+            <p class="mt-6 max-w-prose text-base text-pretty text-ink-muted sm:text-lg">
+              <T v={about.porqueTexto} />
+            </p>
+          </Reveal>
+
+          {/* ─── Derecha: el titular y, debajo, a quién ───────────────────── */}
+          <Reveal delay={0.1}>
+            <h2
+              id="about-porque"
+              class="max-w-[18ch] text-3xl leading-[1.05] font-extrabold text-balance text-ink sm:text-4xl lg:text-5xl"
+            >
+              {
+                about.porqueTitulo.map((linea) => (
+                  <span class="block">
+                    {"enfasis" in linea && linea.enfasis ? (
+                      <Enfasis v={linea} />
+                    ) : (
+                      <T v={linea} />
+                    )}
+                  </span>
+                ))
+              }
+            </h2>
+
+            {/* Un filete ancho separa el titular de la lista: son dos ideas
+                distintas —por qué existe esto y para quién— y sin la raya se
+                leen como un párrafo largo. */}
+            <hr class="mt-10 border-t border-line" />
+
+            <p class="mt-6 text-xs font-bold tracking-[0.18em] text-ink-subtle uppercase">
+              <T v={about.porqueListaTitulo} />
+            </p>
+
+            {/* ⚠️ CON VIÑETA Y ALINEADAS POR EL TEXTO, NO POR EL PUNTO. La
+                viñeta va fuera del flujo del texto (`shrink-0` en su propia
+                columna flex), así que cuando una línea pasa a dos renglones el
+                segundo arranca debajo del primero y no debajo del punto. Con
+                `list-disc` a secas eso no pasa y la lista se ve descuadrada.
+
+                El punto va a `mt-2.5` para caer en la mitad de la primera línea
+                y no en su borde de arriba. */}
+            <ul class="mt-4">
+              {
+                about.porqueLista.map((linea, i) => (
+                  <li
+                    class:list={[
+                      "flex gap-4 py-4 text-base text-pretty text-ink sm:text-lg",
+                      i > 0 && "border-t border-line",
+                    ]}
+                  >
+                    <span
+                      aria-hidden="true"
+                      class="mt-2.5 size-1.5 shrink-0 rounded-full bg-secondary-500 sm:mt-3"
+                    />
+                    <span>
+                      <T v={linea} />
+                    </span>
+                  </li>
+                ))
+              }
+            </ul>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+
+    {/* ─── QUIÉN ESTÁ DETRÁS ──────────────────────────────────────────────
+        Dos filas, y en cada una la foto cambia de lado: retrato a la izquierda
+        con la cita al lado, y debajo la biografía a la izquierda con la foto de
+        su oficina a la derecha. La lectura baja en zigzag en vez de recorrer
+        dos columnas paralelas que terminan a la vez.
+
+        ⚠️ LA CITA VA ARRIBA, PEGADA A SU CARA, Y LA BIOGRAFÍA DEBAJO. No es
+        orden alfabético: la cita es el porqué y se lee en diez segundos; la
+        biografía es el detalle y se lee si la cita ha enganchado. Al revés,
+        casi nadie llega a la cita.
+
+        ⚠️ Y LA FIRMA CIERRA LA CITA, no la sección. Una firma después de un
+        párrafo de tercera persona no firma nada; después de sus palabras, sí. */}
+    <section class="section-y bg-surface-muted" aria-labelledby="about-fundador">
+      <div class="mx-auto w-full max-w-[88rem] px-5 sm:px-8">
+        {/* ─── Fila 1: el retrato y, al lado, la cita ─────────────────────── */}
+        <div class="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-center lg:gap-16">
+          <Reveal>
+            <img
+              src={instructor.foto}
+              alt={about.fotoRetrato[lang]}
+              data-alt-es={about.fotoRetrato.es}
+              data-alt-en={about.fotoRetrato.en}
+              width={1200}
+              height={1500}
+              loading="lazy"
+              decoding="async"
+              class="aspect-[4/5] w-full max-w-sm object-cover lg:max-w-none"
+            />
+          </Reveal>
+
+          <Reveal delay={0.1}>
+            <p class="text-xs font-bold tracking-[0.22em] text-ink-brand uppercase">
+              <T v={about.fundadorKicker} />
+            </p>
+
+            {/* El saludo, en la serifa de acento: es la única línea de la
+                página en la que habla una persona sola. */}
+            <p class="mt-5 font-acento text-2xl leading-snug text-pretty text-ink italic sm:text-3xl">
+              <T v={about.fundadorSaludo} />
+            </p>
+
+            <blockquote class="mt-7 text-xl leading-relaxed text-pretty text-ink sm:text-2xl">
+              <span aria-hidden="true" class="font-acento text-ink-brand">&ldquo;</span>
+              <T v={about.fundadorCita} />
+              <span aria-hidden="true" class="font-acento text-ink-brand">&rdquo;</span>
+            </blockquote>
+
+            {/* ⚠️ LA FIRMA NO ES UNA FIRMA ESCANEADA. Es su nombre en la serifa
+                de acento: un remate tipográfico, no una imitación de su puño y
+                letra. Falsificar una firma en la página que existe para que
+                alguien se fíe sería exactamente el error que evita. */}
+            <p class="mt-8 font-acento text-3xl text-ink-brand italic sm:text-4xl">
+              {instructor.nombre}
+            </p>
+
+            <p class="mt-1 text-sm text-ink-muted">
+              <T v={instructor.rol} />
+            </p>
+          </Reveal>
+        </div>
+
+        {/* ─── Fila 2: la biografía y su oficina ──────────────────────────── */}
+        <div class="mt-16 grid gap-10 lg:mt-24 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
+          <Reveal>
+            <h2 id="about-fundador" class="sr-only">
+              {instructor.nombre}
+            </h2>
+
+            <p class="max-w-prose text-lg leading-relaxed text-pretty text-ink">
+              <T v={instructor.bio} />
+            </p>
+
+          </Reveal>
+
+          <Reveal delay={0.1} class="lg:pt-6">
+            <img
+              src={instructor.fotoOficina}
+              alt={about.fotoRetrato[lang]}
+              data-alt-es={about.fotoRetrato.es}
+              data-alt-en={about.fotoRetrato.en}
+              width={1800}
+              height={1200}
+              loading="lazy"
+              decoding="async"
+              class="aspect-[3/2] w-full object-cover"
+            />
+          </Reveal>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <Footer />
 </BaseLayout>
+
+<script>
+  /**
+   * Las flechas del bloque de valores.
+   *
+   * Empujan el carril el ancho de UNA tarjeta, medido del propio DOM y no
+   * escrito a mano: si mañana la tarjeta cambia de ancho en un punto de corte,
+   * esto sigue funcionando sin tocarlo.
+   *
+   * ⚠️ LOS BOTONES SE DESACTIVAN EN LOS EXTREMOS. Un botón que se pulsa y no
+   * hace nada es peor que un botón apagado: el apagado dice dónde estás.
+   *
+   * ⚠️ Y SE RECALCULAN AL HACER SCROLL A MANO, no solo al pulsar. El carril se
+   * puede arrastrar con el dedo, así que el estado de las flechas tiene que
+   * seguir a la posición real, venga de donde venga.
+   */
+  const bloque = document.querySelector("[data-valores]");
+  const carril = bloque?.querySelector<HTMLElement>("[data-valores-carril]");
+  const antes = bloque?.querySelector<HTMLButtonElement>("[data-valores-antes]");
+  const despues = bloque?.querySelector<HTMLButtonElement>("[data-valores-despues]");
+
+  if (carril && antes && despues) {
+    const paso = () => {
+      const tarjeta = carril.querySelector<HTMLElement>("li");
+      if (!tarjeta) return carril.clientWidth;
+      const hueco = parseFloat(getComputedStyle(carril).columnGap || "0");
+      return tarjeta.getBoundingClientRect().width + hueco;
+    };
+
+    const revisar = () => {
+      const fin = carril.scrollWidth - carril.clientWidth;
+      antes.disabled = carril.scrollLeft <= 2;
+      despues.disabled = carril.scrollLeft >= fin - 2;
+    };
+
+    antes.addEventListener("click", () => carril.scrollBy({ left: -paso() }));
+    despues.addEventListener("click", () => carril.scrollBy({ left: paso() }));
+    carril.addEventListener("scroll", revisar, { passive: true });
+    window.addEventListener("resize", revisar);
+    revisar();
+  }
+</script>
+
+<style>
+  /* El fondo del hero crece un 6 % en treinta segundos y vuelve. Es lento a
+     propósito: si se nota que se mueve, distrae del titular; lo que tiene que
+     notarse es que la imagen no está muerta. */
+  @keyframes about-fondo {
+    from {
+      transform: scale(1);
+    }
+    to {
+      transform: scale(1.06);
+    }
+  }
+
+  [data-fondo-about] {
+    animation: about-fondo 30s ease-in-out infinite alternate;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-fondo-about] {
+      animation: none;
+    }
+  }
+</style>

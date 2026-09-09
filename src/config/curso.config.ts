@@ -1053,8 +1053,20 @@ export const instructor = {
     },
   ] satisfies Txt[],
 
-  foto: "/imagenes/instructor/instructor.webp",
+  /**
+   * ⚠️ LLEGARON CINCO FOTOS Y SOLO SE USAN DOS. En las otras tres sale una
+   * persona distinta —más joven, otra cara— y sus nombres de archivo decían
+   * "para diseño", así que pueden ser de banco o de otro miembro del equipo.
+   * Publicar cualquiera de ellas con "Retrato de Pedro Lira" en el `alt` sería
+   * afirmar quién es alguien sin saberlo. Están guardadas en /originales.
+   *
+   * Los archivos en bruto pesaban 113 MB y estaban dentro de /public, o sea que
+   * se habrían servido tal cual. Aquí viven las versiones de 90-110 KB.
+   */
+  foto: "/imagenes/instructor/pedro-retrato.webp",
   fotoCuadrada: "/imagenes/instructor/instructor-cuadrado.webp",
+  /** Horizontal, con su oficina detrás. Para los huecos anchos. */
+  fotoOficina: "/imagenes/instructor/pedro-oficina.webp",
   fotoAlt: {
     es: "Retrato de Pedro Lira, fundador de Emprende180",
     en: "Portrait of Pedro Lira, founder of Emprende180",
@@ -2234,6 +2246,7 @@ export const copy = {
     aria: { es: "Quién imparte el curso", en: "Who teaches the course" },
     kicker: { es: "Quién te enseña", en: "Who's teaching" },
     credencialesTitulo: { es: "Los datos", en: "The receipts" },
+
     ensenaTitulo: { es: "Lo que enseño bien", en: "What I'm good at teaching" },
     /**
      * ⚠️ ESTE BLOQUE NO SE BORRA. Se rediseñó porque no gustaba cómo se veía
@@ -2734,29 +2747,510 @@ export const copy = {
   },
 
   /**
-   * ─── LA PÁGINA DE QUIÉNES SOMOS ────────────────────────────────────────
+   * ═══════════════════════════════════════════════════════════════════════
+   * LA PÁGINA DE QUIÉNES SOMOS
+   * ═══════════════════════════════════════════════════════════════════════
    *
-   * Existe porque el botón de la sección del Embajador y el enlace del menú
-   * llevan aquí, y hasta ahora los dos llevaban a un ancla de la propia
-   * portada. Una página de "quiénes somos" que es un salto a media pantalla
-   * más abajo no responde la pregunta que la trae.
+   * ─── DE DÓNDE SALE LA ESTRUCTURA ───────────────────────────────────────
    *
-   * ⚠️ TODO LO QUE DICE SALE DE `instructor`, que es donde vive lo comprobable.
-   * Aquí no se escribe ni un dato nuevo: si falta algo, falta allí.
+   * Del "about" de bossbabe, que es la referencia que pasó el cliente. Su orden
+   * es: repetir la promesa arriba del todo, presentarse ("in case you're new
+   * here, allow us to introduce ourselves"), enseñar en qué creen, presentar a
+   * la fundadora con su foto y su historia, y rematar con una llamada.
+   *
+   * Se toma ese orden. No se toma nada más, y hay un motivo por cada cosa que
+   * se queda fuera:
+   *
+   *   · "SINCE 2018, WE'VE GROWN: 146K students, 96M video views" — son cifras
+   *     suyas. Las nuestras no existen: `cifras.sonReales` sigue en `false`.
+   *   · "Only 18% of women business owners make 6 figures" — un dato de
+   *     mercado con fuente. Si el cliente tiene uno equivalente y comprobable,
+   *     este es el sitio; inventarlo sería peor que no tenerlo.
+   *
+   * ─── LOS AÑOS DE EXPERIENCIA ───────────────────────────────────────────
+   *
+   * ⚠️ ES UN HECHO Y NO SE INVENTA. El cliente pidió que la página presente sus
+   * años en el sector, y ese número no está en ninguna parte del proyecto: ni
+   * en su web, ni en el brief, ni en los documentos que pasó. Así que el bloque
+   * está montado y esperando, marcado con `[COMPLETAR`, y NO SE PUBLICA hasta
+   * que lo rellene: en producción no se pinta (ver `09-About`), en local sale
+   * resaltado en ámbar para que se vea que falta.
+   *
+   * Un número inventado aquí no es un titular flojo, es publicidad engañosa, y
+   * encima en la página cuyo único trabajo es que alguien se fíe.
    */
   about: {
     aria: { es: "Quiénes somos", en: "About us" },
-    titulo: { es: "Quiénes somos", en: "About us" },
+    kicker: { es: "Quiénes somos", en: "About us" },
+
+    /**
+     * ─── EL HERO ES CORTO Y EMPIEZA POR UN NO ──────────────────────────
+     *
+     * La referencia abre su "about" repitiendo su promesa. Aquí se abre con lo
+     * contrario, y es a propósito: quien llega a esta página ya ha leído la
+     * promesa en la portada, y a una mujer a la que le han vendido diez veces
+     * "gana dinero desde casa" lo que la para en seco no es una promesa más,
+     * es alguien que empieza diciendo que no se la va a hacer.
+     *
+     * ⚠️ Y ES UNA FRASE QUE HAY QUE PODER SOSTENER. Se sostiene: no hay una
+     * sola cifra de ingresos en toda la web, y el bloque "en qué creemos" de
+     * más abajo la desarrolla. El día que la página ponga un número, esta
+     * frase pasa a ser una mentira que el propio sitio desmiente.
+     *
+     * `conFoto` marca la línea que lleva la foto incrustada dentro del propio
+     * titular. Ver `09-About`.
+     */
+    titulo: [
+      { es: "Nadie te va a prometer", en: "Nobody here is going to promise" },
+      { es: "una cifra.", en: "you a number.", conFoto: true },
+      { es: "Te damos un método.", en: "We give you a method.", enfasis: true },
+    ],
     entradilla: {
-      es: "Emprende180 es un método y un Ecosistema. Esto es quién está detrás y por qué existe.",
-      en: "Emprende180 is a method and an ecosystem. This is who's behind it and why it exists.",
+      es: "Y un Ecosistema detrás. El resto lo decides tú.",
+      en: "And an ecosystem behind you. The rest is yours to decide.",
+    },
+    fotoIncrustada: {
+      es: "Dos mujeres conversando en la calle con un café en la mano",
+      en: "Two women talking on the street holding coffee",
+    },
+
+    /**
+     * ─── LA FRANJA CON LAS DOS FOTOS ───────────────────────────────────
+     *
+     * Es el bloque que en la referencia dice "supporting women around the
+     * world in building a life + business they love": una sola línea centrada
+     * con una foto a cada lado. Se toma la forma, no la frase.
+     *
+     * Debajo van los datos, que antes vivían al final de la página, junto a la
+     * bio. Aquí trabajan mejor: la línea afirma a quién acompañamos y los
+     * cuatro datos son lo que respalda que podamos decirlo.
+     */
+    franja: [
+      { es: "Acompañamos a mujeres", en: "We walk with women" },
+      { es: "con la agenda llena", en: "whose contacts are full" },
+      { es: "a hacer algo con ella.", en: "to finally do something with them.", enfasis: true },
+    ],
+    franjaFotoIzq: {
+      es: "Una mujer hablando por teléfono en la calle",
+      en: "A woman on a phone call out in the street",
+    },
+    franjaFotoDer: {
+      es: "Una mujer escribiendo la semana en una agenda",
+      en: "A woman writing her week into a planner",
     },
     descripcion: {
-      es: "Quién está detrás de Emprende180, por qué existe el Ecosistema y qué hace una Embajadora.",
-      en: "Who is behind Emprende180, why the ecosystem exists and what an Ambassador does.",
+      es: "Quién está detrás de Emprende180, por qué existe y cómo ayuda a quien tiene el tiempo y le falta el método.",
+      en: "Who is behind Emprende180, why it exists, and how it helps someone who has the time but not the method.",
     },
+
+    /* El bloque de "por si acabas de llegar". */
+    introTitulo: { es: "Por si acabas de llegar", en: "In case you're new here" },
+    fotoIntro: {
+      es: "Dos personas hablando apoyadas en la barra de una cafetería",
+      en: "Two people talking, leaning on a coffee shop counter",
+    },
+    introTexto: {
+      es: "Emprende180 es un método y un Ecosistema. El método es el reto de 90 días: qué hacer cada mañana, en orden, sin tener que decidirlo tú. El Ecosistema es lo que hay detrás cuando alguien de tu agenda necesita algo de verdad.",
+      en: "Emprende180 is a method and an ecosystem. The method is the 90 day challenge: what to do each morning, in order, without having to decide it yourself. The ecosystem is what stands behind you when someone in your contacts actually needs something.",
+    },
+
+    /**
+     * ─── PARA QUIEN ESTÁ EN CASA ─────────────────────────────────────────
+     *
+     * Tres frases y las tres empiezan igual: "no tienes que". Es a propósito.
+     * A quien lleva una casa no le convence una lista de lo que va a
+     * conseguir; le convence que le quiten de encima las tres cosas que da por
+     * imposibles antes de empezar. Son las mismas tres objeciones que responde
+     * el hero, aquí en su forma corta.
+     */
+    paraTiTitulo: { es: "Si estás en casa", en: "If you're at home" },
+    paraTi: [
+      {
+        titulo: { es: "No tienes que salir.", en: "You don't have to leave." },
+        texto: {
+          es: "Todo se hace desde donde estés y con el teléfono que ya usas.",
+          en: "It all happens from wherever you are, on the phone you already use.",
+        },
+      },
+      {
+        titulo: { es: "No tienes que saber del sector.", en: "You don't have to know the industry." },
+        texto: {
+          es: "Se empieza desde cero. Lo que hace falta lo enseña la Academia.",
+          en: "You start from zero. What you need is what the Academy teaches.",
+        },
+      },
+      {
+        titulo: { es: "No tienes que inventarte nada.", en: "You don't have to invent anything." },
+        texto: {
+          es: "El reto de 90 días te dice qué toca cada día, y son dos horas.",
+          en: "The 90 day challenge tells you what's on for each day, and it's two hours.",
+        },
+      },
+    ],
+
+    /**
+     * ─── EN QUÉ CREEMOS ──────────────────────────────────────────────────
+     *
+     * El equivalente al "OUR VALUES" de la referencia, y la parte de esta
+     * página que más trabaja. No son valores de folleto: las cuatro son
+     * decisiones que ya están tomadas y que se pueden comprobar en el propio
+     * sitio, y las cuatro dicen lo mismo por dentro: aquí no se promete lo que
+     * no se puede sostener.
+     *
+     * Para alguien a quien le han vendido diez veces "gana dinero desde casa",
+     * esto no es relleno: es la única diferencia que se nota antes de pagar.
+     *
+     * ⚠️ CADA UNA TIENE QUE SEGUIR SIENDO VERDAD. Si algún día la página pone
+     * una cifra de ingresos, la primera se cae y con ella las otras tres.
+     */
+    creemosKicker: {
+      es: "Lo que damos por cierto",
+      en: "What we believe to be true",
+    },
+    creemosTitulo: { es: "En qué creemos", en: "What we believe" },
+    creemos: [
+      {
+        ilustracion: "cifra",
+        titulo: { es: "No te vamos a prometer una cifra.", en: "We won't promise you a number." },
+        texto: {
+          es: "Ni aquí ni por teléfono. No sabemos cuánto vas a hacer tú, y quien te dé un número se lo está inventando.",
+          en: "Not here and not on a call. We don't know what you'll make, and anyone who gives you a number is making it up.",
+        },
+      },
+      {
+        ilustracion: "limites",
+        titulo: { es: "Te decimos lo que no cubrimos.", en: "We tell you what we don't cover." },
+        texto: {
+          es: "Antes de que pagues, no después. Preferimos que no compres a que pidas la devolución en un mes.",
+          en: "Before you pay, not after. We'd rather you didn't buy than have you asking for a refund in a month.",
+        },
+      },
+      {
+        ilustracion: "parte",
+        titulo: { es: "Tu parte acaba donde acaba.", en: "Your part ends where it ends." },
+        texto: {
+          es: "Tú conectas a la persona; el Ecosistema resuelve. No tienes que vender nada que no sepas explicar.",
+          en: "You connect the person; the ecosystem handles it. You never have to sell anything you can't explain.",
+        },
+      },
+      {
+        ilustracion: "horario",
+        titulo: { es: "Se aprende en tu horario.", en: "You learn on your schedule." },
+        texto: {
+          es: "Sin clases en directo y sin grupos a las nueve de la noche. Si hoy no puedes, mañana sigue ahí.",
+          en: "No live classes and no group calls at nine at night. If today isn't the day, it's still there tomorrow.",
+        },
+      },
+
+      /**
+       * ─── LOS TRES QUE HABLAN DE SU CASA ────────────────────────────────
+       *
+       * Los cuatro de arriba son compromisos sobre cómo vendemos. Estos tres
+       * son sobre lo que NO le va a pasar a ella, y son los que de verdad
+       * separan esto de lo que le han ofrecido antes: quien ha estado cerca de
+       * una venta por catálogo reconoce las tres a la primera.
+       *
+       * ⚠️ LAS TRES SON COMPROBABLES EN EL PROPIO PRODUCTO, y por eso se pueden
+       * escribir: no hay producto que revender porque lo que se conecta son
+       * servicios del Ecosistema; no hay clases en directo, así que no hay
+       * reunión obligatoria; y el acceso no caduca ni hay suscripción, así que
+       * parar no cuesta nada.
+       *
+       * Si algún día aparece un pedido mínimo, una reunión semanal o una cuota,
+       * estas tres frases hay que quitarlas el mismo día.
+       */
+      {
+        ilustracion: "inventario",
+        titulo: { es: "No compras nada para revender.", en: "You buy nothing to resell." },
+        texto: {
+          es: "Ni inventario, ni cajas en el garaje, ni pedido mínimo al mes. Lo que conectas son servicios, no productos.",
+          en: "No inventory, no boxes in the garage, no monthly minimum. What you connect are services, not products.",
+        },
+      },
+      {
+        ilustracion: "casa",
+        titulo: { es: "Tu casa sigue siendo tu casa.", en: "Your home stays your home." },
+        texto: {
+          es: "No hay reuniones obligatorias ni grupos que escriben a deshoras. Nadie va a contar las horas que le dedicas.",
+          en: "No mandatory meetings and no groups messaging at odd hours. Nobody is counting the hours you put in.",
+        },
+      },
+      {
+        ilustracion: "volver",
+        titulo: { es: "Puedes parar y volver.", en: "You can stop and come back." },
+        texto: {
+          es: "El acceso no caduca y no hay suscripción. Si este mes no puedes, no pierdes nada de lo que llevas.",
+          en: "Access doesn't expire and there's no subscription. If this month isn't the one, you lose nothing.",
+        },
+      },
+    ],
+
+    /* Los mandos del carrusel. Son botones, así que dicen lo que hacen. */
+    creemosAnterior: { es: "Ver los anteriores", en: "See previous" },
+    creemosSiguiente: { es: "Ver los siguientes", en: "See next" },
+
+    /**
+     * ═════════════════════════════════════════════════════════════════════
+     * POR QUÉ HACEMOS ESTO
+     * ═════════════════════════════════════════════════════════════════════
+     *
+     * El equivalente al "WHY WE DO WHAT WE DO" de la referencia. De ahí se toma
+     * el mecanismo, que son dos cosas y muy concretas:
+     *
+     *   1. Una frase de existencia: "[la marca] existe para que…". No dice qué
+     *      vende, dice qué tiene que dejar de pasar en el mundo. Es lo que
+     *      convierte un catálogo en una postura.
+     *   2. UNA LISTA DE A QUIÉN AYUDAMOS, en cuatro perfiles. Ellos ponen
+     *      cuatro etapas de negocio; aquí son cuatro versiones de la misma
+     *      mujer, para que se reconozca en una sin tener que leerse las cuatro.
+     *
+     * ⚠️ NINGUNO DE LOS CUATRO PERFILES PROMETE NADA. Describen de dónde viene
+     * ella, no a dónde llega. La diferencia se juega en una palabra: "ya
+     * recomienda a todo el mundo sin que nadie se entere" es una descripción;
+     * "sin sacar nada a cambio" habría sido una insinuación de ingresos, y esa
+     * frase no se puede escribir sin datos.
+     *
+     * ⚠️ Y EL TERCERO NOMBRA LA VENTA POR CATÁLOGO SIN NOMBRARLA. Es el perfil
+     * que más se reconoce y el que más desconfía, y por eso está: si no lo
+     * decimos nosotros, lo piensa ella igual.
+     */
+    porqueKicker: { es: "Por qué hacemos esto", en: "Why we do what we do" },
+    porqueTitulo: [
+      { es: "Emprende180 existe para que", en: "Emprende180 exists so that" },
+      { es: "conocer a la gente adecuada", en: "knowing the right people" },
+      { es: "no acabe en un WhatsApp.", en: "stops ending in a text.", enfasis: true },
+    ],
+    porqueTexto: {
+      es: "Cada semana alguien de tu agenda tiene delante algo que se puede resolver: una hipoteca, una obra, un accidente. Hoy contestas lo que puedes y ahí acaba todo. Nosotros ponemos el método para que no acabe ahí y el Ecosistema que se encarga del resto.",
+      en: "Every week someone in your contacts is facing something that can be solved: a mortgage, a build, an accident. Today you answer what you can and that's where it ends. We bring the method so it doesn't end there, and the ecosystem that handles the rest.",
+    },
+    porqueListaTitulo: { es: "A quién ayudamos", en: "Who we help" },
+    porqueLista: [
+      {
+        es: "A la que está en casa, tiene el tiempo y no sabe por dónde se empieza.",
+        en: "The one who's at home, has the time and doesn't know where to start.",
+      },
+      {
+        es: "A la que ya recomienda a todo el mundo sin que nadie se entere.",
+        en: "The one who already refers everyone, with nobody noticing.",
+      },
+      {
+        es: "A la que probó una venta por catálogo y acabó con cajas en el garaje.",
+        en: "The one who tried catalog sales and ended up with boxes in the garage.",
+      },
+      {
+        es: "A la que tiene un trabajo que no la llena y quiere algo suyo sin dejarlo todo.",
+        en: "The one with a job that doesn't fulfil her, who wants something of her own without dropping everything.",
+      },
+    ],
+    porqueFoto: {
+      es: "Una mano escribiendo a lápiz en una mesa, con una taza al lado",
+      en: "A hand writing in pencil at a table, a mug beside it",
+    },
+
+    /**
+     * ─── EL BLOQUE DEL FUNDADOR ──────────────────────────────────────────
+     *
+     * La referencia abre el suyo con una línea suelta y personal antes de la
+     * biografía ("hey love - i'm so happy you're here!"). No es adorno: cambia
+     * quién habla. Hasta ese punto la página habla en plural y de repente hay
+     * una persona sola dirigiéndose a ti, y eso es lo que hace que se lea la
+     * biografía en vez de saltarla.
+     *
+     * La nuestra es más seca porque el tono de la marca lo es. Y sigue siendo
+     * suya: el resto del bloque va en primera persona.
+     */
+    /**
+     * ─── LA CITA DE PEDRO ────────────────────────────────────────────────
+     *
+     * ✅ CONFIRMADA POR ÉL el 9 de septiembre de 2026. Se redactó en su voz y
+     * él la leyó y la firmó, así que ya son sus palabras y se pueden publicar
+     * entrecomilladas y con su nombre debajo.
+     *
+     * ⚠️ Y POR ESO NO SE TOCA SIN VOLVER A PREGUNTARLE. Lo que está aprobado es
+     * este texto, no la idea: cambiarle una frase "para que quede mejor"
+     * devuelve la cita al estado en el que estaba antes de que él la leyera, y
+     * una cita con su nombre que él no ha dicho es exactamente lo que esta
+     * página no puede permitirse.
+     *
+     * Está construida solo con lo que ya decía su biografía —que en su otro
+     * trabajo ve cada semana a alguien con una oportunidad delante que no sabe
+     * a quién llamar— extendido a por qué el público son mujeres en casa. No
+     * lleva ni una cifra, ni años, ni un episodio privado.
+     */
+    fundadorCita: {
+      es: "Cada semana veo lo mismo: quien resuelve no es el que más sabe, es el que conoce a alguien. Y las que más gente conocen casi nunca están en una oficina. Están en casa, organizando la vida de todos, con media ciudad en el teléfono. A ellas nadie les había dicho que eso vale, ni qué hacer con ello. Emprende180 es el qué hacer.",
+      en: "Every week I see the same thing: the one who solves it isn't the one who knows the most, it's the one who knows somebody. And the people who know the most people are almost never in an office. They're at home, running everyone's life, with half the city in their phone. Nobody had told them that's worth something, or what to do with it. Emprende180 is the what to do.",
+    },
+    fundadorSaludo: {
+      es: "Hola. Si has llegado hasta aquí, esto es lo mío.",
+      en: "Hi. If you've made it this far, here's my part.",
+    },
+    fundadorKicker: { es: "Quién está detrás", en: "Who's behind it" },
+
+    /**
+     * ⚠️ AQUÍ HUBO UN BLOQUE DE "LOS AÑOS" Y SE QUITÓ, PERO EL HUECO SIGUE.
+     *
+     * Los años ya son un dato y viven en la ficha de arriba: más de 20. Lo que
+     * pedía este bloque era la otra mitad, y esa no ha llegado: de dónde viene
+     * él, incluido lo que le salió mal.
+     *
+     * Sigue siendo lo único de esta página que un lector no puede deducir del
+     * producto, y por eso lo que más convertiría. Dos frases suyas, en primera
+     * persona, y esta página pasa de correcta a buena. Cuando existan, el sitio
+     * es justo debajo de la cita.
+     */
+
     credencialesTitulo: { es: "Los datos", en: "The receipts" },
+    /**
+     * ─── LOS DATOS, CON SU ETIQUETA ──────────────────────────────────────
+     *
+     * Cada dato lleva delante lo que ES: años en el sector, qué fundó, qué
+     * escribió, qué dirige. Sin la etiqueta, los cuatro se leían como cuatro
+     * frases sueltas; con ella se leen como una ficha, que es lo que el cliente
+     * pidió al decir "datos de tipo años de experiencia".
+     *
+     * ⚠️ EL PRIMERO ES EL QUE FALTA Y ES EL QUE MÁS PESA. Los años en el sector
+     * son un HECHO y no se inventan: mientras siga con `[COMPLETAR`, el dato no
+     * se publica. En local sale resaltado en ámbar; en producción, la ficha
+     * enseña tres en vez de cuatro. Ver `09-About`.
+     */
+    datos: [
+      {
+        /**
+         * ✅ LO DIO EL CLIENTE el 9 de septiembre de 2026: más de 20 años.
+         *
+         * ⚠️ "MÁS DE 20" Y NO UN NÚMERO EXACTO, porque eso es lo que dijo. Si
+         * mañana alguien lo convierte en "23 años" para que suene más
+         * concreto, está inventando una precisión que nadie ha dado: un dato
+         * redondeado es cierto, uno afinado a ojo no.
+         */
+        etiqueta: { es: "Años en el sector", en: "Years in the industry" },
+        valor: { es: "Más de 20", en: "More than 20" },
+      },
+      {
+        etiqueta: { es: "Fundador", en: "Founder" },
+        valor: {
+          es: "Emprende180 y el Ecosistema por el que pasa cada oportunidad",
+          en: "Emprende180 and the ecosystem every opportunity runs through",
+        },
+      },
+      {
+        etiqueta: { es: "Autor", en: "Author" },
+        valor: {
+          es: "De la formación de Embajador y de la certificación",
+          en: "Of the Ambassador training and its certification",
+        },
+      },
+      {
+        etiqueta: { es: "También dirige", en: "Also runs" },
+        valor: {
+          es: "El Señor de las Casas, financiamiento inmobiliario en Utah",
+          en: "El Señor de las Casas, real estate financing in Utah",
+        },
+        prueba: "https://senordelascasas.com",
+      },
+    ],
+
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     * LAS EMPRESAS DEL ECOSISTEMA
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Tres de los negocios que resuelven lo que un Embajador conecta, cada uno
+     * con su logotipo y su comentario. Los dos logotipos que faltaban se
+     * bajaron de sus propias webs y viven ya en `/public/imagenes/aliados/`.
+     *
+     * ⚠️ LO QUE HAY DEBAJO DE CADA LOGOTIPO NO ES UNA CITA SUYA, Y LA
+     * DIFERENCIA ES TODA LA DIFERENCIA.
+     *
+     * Un testimonio entrecomillado de una empresa que esa empresa no ha escrito
+     * es publicidad engañosa (FTC 16 CFR 465), y encima con su nombre y su
+     * logotipo al lado: no es solo un problema nuestro, es poner palabras en
+     * boca de otro negocio.
+     *
+     * Lo que sí podemos escribir —y es lo que hay— es QUÉ RESUELVE CADA UNO
+     * cuando le llega alguien del Ecosistema. Va en nuestra voz, sin comillas y
+     * sin firmar por ellos: es una descripción de la relación, no un elogio que
+     * nadie ha dicho.
+     *
+     * `cita` queda preparada para el día que alguno mande un texto suyo, con
+     * permiso por escrito. Mientras siga con `[COMPLETAR`, no se pinta.
+     *
+     * ⚠️ LO MISMO CON LAS ESTRELLAS. `estrellas: null` significa que nadie ha
+     * puntuado nada. Cinco estrellas que no ha dado nadie son una valoración
+     * inventada, exactamente la misma categoría de error que la cita inventada.
+     * Cuando haya puntuación real, se pone el número y salen.
+     */
+    aliadosTitulo: [
+      { es: "El Ecosistema", en: "The ecosystem" },
+      { es: "que resuelve.", en: "that handles it.", enfasis: true },
+    ],
+    aliadosEntradilla: {
+      es: "Tú conectas a la persona. Esto es lo que hay al otro lado.",
+      en: "You connect the person. This is what's waiting on the other side.",
+    },
+    aliados: [
+      {
+        nombre: "Broker Lenders",
+        /* Nuestra descripción de qué resuelven, no una cita suya. Ver arriba. */
+        queResuelve: {
+          es: "Cuando alguien de tu agenda necesita una hipoteca, la trabajan ellos. Tú solo hiciste la presentación.",
+          en: "When someone in your contacts needs a mortgage, they handle it. All you did was make the introduction.",
+        },
+        logo: "/imagenes/aliados/brokerlenders.webp",
+        url: "https://www.brokerlenders.com",
+        rubro: { es: "Préstamos hipotecarios", en: "Mortgage lending" },
+        estrellas: null as number | null,
+        cita: {
+          es: "[COMPLETAR (HECHO): cita textual de Broker Lenders sobre trabajar con Emprende180, con permiso por escrito de quien lo firma.]",
+          en: "[COMPLETAR (FACT): verbatim quote from Broker Lenders about working with Emprende180, with written permission from whoever signs it.]",
+        },
+      },
+      {
+        nombre: "BoltWatts",
+        /* Nuestra descripción de qué resuelven, no una cita suya. Ver arriba. */
+        queResuelve: {
+          es: "Obra, reforma y eléctrico. Lo que en una conversación normal acaba en «conozco a alguien», aquí acaba resuelto.",
+          en: "Building, remodeling and electrical. What in a normal conversation ends in a vague promise, here ends solved.",
+        },
+        logo: "/imagenes/aliados/boltwatts.webp",
+        url: "https://www.boltwatts.com",
+        rubro: { es: "Construcción y remodelación", en: "Construction and remodeling" },
+        estrellas: null as number | null,
+        cita: {
+          es: "[COMPLETAR (HECHO): cita textual de BoltWatts sobre trabajar con Emprende180, con permiso por escrito de quien lo firma.]",
+          en: "[COMPLETAR (FACT): verbatim quote from BoltWatts about working with Emprende180, with written permission from whoever signs it.]",
+        },
+      },
+      {
+        nombre: "Car Injury Clinics",
+        /* Nuestra descripción de qué resuelven, no una cita suya. Ver arriba. */
+        queResuelve: {
+          es: "Atención médica y apoyo legal después de un accidente, en el mismo sitio. Es de lo primero que aprende un Embajador a reconocer.",
+          en: "Medical care and legal support after an accident, in one place. It's one of the first things an Ambassador learns to spot.",
+        },
+        logo: "/imagenes/aliados/carinjuryclinics.webp",
+        /* ⚠️ SU LOGOTIPO ES BLANCO. Medido: el color medio de los píxeles
+           opacos es 246,243,247, o sea que está dibujado para fondos oscuros.
+           Sobre la placa blanca que llevan los otros dos, desaparecía entero y
+           la tarjeta se veía vacía. Con esto, su placa es navy. */
+        logoClaro: true,
+        url: "https://carinjuryclinics.com",
+        rubro: { es: "Atención médica y apoyo legal", en: "Medical care and legal support" },
+        estrellas: null as number | null,
+        cita: {
+          es: "[COMPLETAR (HECHO): cita textual de Car Injury Clinics sobre trabajar con Emprende180, con permiso por escrito de quien lo firma.]",
+          en: "[COMPLETAR (FACT): verbatim quote from Car Injury Clinics about working with Emprende180, with written permission from whoever signs it.]",
+        },
+      },
+    ],
     volver: { es: "Ver cómo funciona el método", en: "See how the method works" },
+    empezar: { es: "Quiero empezar", en: "I want to start" },
+    fotoRetrato: {
+      es: "Retrato de Pedro Lira, fundador de Emprende180",
+      en: "Portrait of Pedro Lira, founder of Emprende180",
+    },
   },
 
   /**
