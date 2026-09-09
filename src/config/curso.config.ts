@@ -2675,6 +2675,50 @@ export const copy = {
   },
 
   /**
+   * ─── EL BLOG EN LA PORTADA ─────────────────────────────────────────────
+   *
+   * Los títulos que se ven aquí NO se escriben aquí: salen de
+   * `getCollection("blog")`. Es la misma regla del teléfono de la lista, y por
+   * el mismo motivo: una portada que anuncia artículos que no existen se cae
+   * sola en cuanto alguien pulsa.
+   *
+   * Lo único que vive en el config es lo de alrededor.
+   */
+  blogPortada: {
+    aria: { es: "Lo último del blog", en: "Latest from the blog" },
+    kicker: { es: "El blog", en: "The blog" },
+    titulo: [
+      { es: "Lo que escribo", en: "What I write" },
+      { es: "entre semana.", en: "during the week.", enfasis: true },
+    ],
+    texto: {
+      es: "Casos que pasan de verdad, y qué se contesta en cada uno. Se leen en cinco minutos.",
+      en: "Things that actually happen, and what to answer in each one. Five minute reads.",
+    },
+    /* El botón de cada título. No dice "leer más": dice qué va a pasar al
+       pulsar, que es que el artículo se abre encima sin salir de la página. */
+    abrir: { es: "Abrir", en: "Open" },
+    cerrar: { es: "Cerrar", en: "Close" },
+    /* Dentro del diálogo, para quien quiera la dirección de verdad: la que se
+       comparte y la que indexa Google. */
+    verEnBlog: { es: "Ver en el blog", en: "View on the blog" },
+    verTodos: { es: "Todos los artículos", en: "All articles" },
+    redes: { es: "Dónde publico", en: "Where I post" },
+    fotoCentro: {
+      es: "Retrato de Pedro Lira, fundador de Emprende180",
+      en: "Portrait of Pedro Lira, founder of Emprende180",
+    },
+    fotoLado: {
+      es: "Una persona hablando por teléfono, de pie en la calle",
+      en: "Somebody on a phone call, standing in the street",
+    },
+    vacio: {
+      es: "Todavía no hay artículos publicados.",
+      en: "No articles published yet.",
+    },
+  },
+
+  /**
    * ─── EL PLAN DE 90 DÍAS ────────────────────────────────────────────────
    *
    * Todo sale del documento "Plan de 90 Días — Prospección Diaria del
@@ -3395,6 +3439,10 @@ export const copy = {
     pieLegal: { es: "Legal", en: "Legal" },
     pieLlamar: { es: "Llamar", en: "Call" },
     pieRedes: { es: "Síguenos", en: "Follow us" },
+
+    /* El rótulo de los perfiles que todavía no existen. Estaba escrito a mano
+       dentro del pie, con su propio ternario de idioma. */
+    proximamente: { es: "Próximamente", en: "Coming soon" },
 
     placeholderAqui: { es: "Aquí va", en: "Goes here" },
     placeholderEnProduccion: {

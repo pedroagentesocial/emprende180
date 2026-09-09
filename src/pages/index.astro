@@ -55,6 +55,7 @@ import Guias from "@components/sections/03-Guias.astro";
 import Lista from "@components/sections/04-Lista.astro";
 import Embajador from "@components/sections/05-Embajador.astro";
 import ComoTrabajar from "@components/sections/06-ComoTrabajar.astro";
+import BlogPortada from "@components/sections/08-Blog.astro";
 import Problema from "@components/sections/02-Problema.astro";
 import QueVasALograr from "@components/sections/03-QueVasALograr.astro";
 import Temario from "@components/sections/05-Temario.astro";
@@ -157,6 +158,12 @@ import CtaFinal from "@components/sections/11-CtaFinal.astro";
     <CintaAnuncio />
 
     <PruebaSocial />
+
+    {/* El blog va detrás de los testimonios y delante del precio: es lo
+        único gratis que demuestra criterio, y quien todavía duda lo lee antes
+        de mirar cuánto cuesta. */}
+    <BlogPortada />
+
     <Precio />
     <Faq />
 
