@@ -22,8 +22,7 @@ import CintaPrecio from "@components/ui/CintaPrecio.astro";
 
     Hero .............. de qué va esto
     Aliados ........... ¿existe de verdad?
-    Guías ............. deja tu correo y te llegan
-    Lista ............. y esto es lo que llega
+    Lista ............. deja tu correo y te llegan los artículos
     Embajador ......... en quién te conviertes
     Cómo se trabaja ... de qué se compone
     Prueba social ..... le funciona a gente como yo
@@ -33,13 +32,13 @@ import CintaPrecio from "@components/ui/CintaPrecio.astro";
     Cierre ............ pedir el precio, o llamar
 
    ───────────────────────────────────────────────────────────────────────────
-   ⚠️ SE QUITARON SIETE SECCIONES DE GOLPE, Y NO ES UNA LIMPIEZA: ES LA PÁGINA
-   QUE PIDIÓ EL CLIENTE. Se fueron el problema, "qué sabrás hacer", el plan de
-   90 días, el temario, el instructor, el precio con su desglose y las
-   preguntas frecuentes; también las tres tiras de anuncios y la barra
-   flotante. Los archivos no están borrados a medias: están fuera del árbol y
-   en el historial de git, así que volver a poner cualquiera es un `git revert`
-   y una línea aquí.
+   ⚠️ SE QUITARON OCHO SECCIONES, Y NO ES UNA LIMPIEZA: ES LA PÁGINA QUE PIDIÓ
+   EL CLIENTE. Se fueron el problema, "qué sabrás hacer", el plan de 90 días,
+   el temario, el instructor, el precio con su desglose, las preguntas
+   frecuentes y la isla de "Conviértete en Embajador"; también las tres tiras
+   de anuncios y la barra flotante. Los archivos no están borrados a medias:
+   están fuera del árbol y en el historial de git, así que volver a poner
+   cualquiera es un `git revert` y una línea aquí.
 
    Lo que eso cambió de verdad, y hay que saberlo antes de tocar nada: la
    página ya no VENDE, CAPTA. No queda ninguna sección donde se explique el
@@ -54,7 +53,6 @@ import CintaPrecio from "@components/ui/CintaPrecio.astro";
    vez cuando el rediseño esté cerrado. */
 import Hero from "@components/hero/HeroSlider.astro";
 import Aliados from "@components/sections/01-Aliados.astro";
-import Guias from "@components/sections/03-Guias.astro";
 import Lista from "@components/sections/04-Lista.astro";
 import Embajador from "@components/sections/05-Embajador.astro";
 import ComoTrabajar from "@components/sections/06-ComoTrabajar.astro";
@@ -62,7 +60,7 @@ import PruebaSocial from "@components/sections/07-PruebaSocial.astro";
 import BlogPortada from "@components/sections/08-Blog.astro";
 import Academia from "@components/sections/12-Academia.astro";
 import Recursos from "@components/sections/13-Recursos.astro";
-import CtaFinal from "@components/sections/11-CtaFinal.astro";
+import Cierre from "@components/sections/14-Cierre.astro";
 
 /* Esta página no prepara datos para nadie: solo decide QUÉ va y en qué ORDEN,
    que es lo único que debería decidir un archivo de página. */
@@ -91,12 +89,9 @@ import CtaFinal from "@components/sections/11-CtaFinal.astro";
         existe de verdad?" mientras todavía hay atención. Ver 01-Aliados. */}
     <Aliados />
 
-    {/* Dos secciones que piden correo, una detrás de otra, y es a propósito:
-        la primera lo PIDE, la segunda ENSEÑA lo que llega. Aun así, dos
-        formularios seguidos se pueden leer como un fallo; si sobra uno, el que
-        sobra es este primero, porque el teléfono de la lista explica solo lo
-        que el otro tiene que contar con texto. */}
-    <Guias />
+    {/* La lista, con el teléfono en el que pasan los correos. Es la única
+        captura de correo que queda arriba: el formulario simple que estaba
+        aquí al lado se fue al final de la página. */}
     <Lista />
 
     {/* Quién es un Embajador y de qué se compone esto. Van juntas y en este
@@ -115,9 +110,10 @@ import CtaFinal from "@components/sections/11-CtaFinal.astro";
     <Academia />
     <Recursos />
 
-    {/* El cierre es ahora el ÚNICO desenlace de la página: es donde se pide el
-        precio y donde está el teléfono. Ver 11-CtaFinal. */}
-    <CtaFinal />
+    {/* El formulario simple, al final. Es el ÚNICO desenlace de la página: el
+        único sitio donde se puede preguntar el precio y donde está el
+        teléfono. Ver 14-Cierre. */}
+    <Cierre />
   </main>
 
   <Footer />

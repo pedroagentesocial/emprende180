@@ -1,0 +1,198 @@
+---
+import T from "@components/i18n/T.astro";
+import Section from "@components/ui/Section.astro";
+import Reveal from "@components/motion/Reveal.astro";
+import Icono from "@components/ui/Icono.astro";
+import LeadForm from "@components/ui/LeadForm";
+import { copy, contacto, garantia, curso, cta } from "@config/curso.config";
+import { construirTxt, resolverIdiomaServidor } from "@i18n/idioma";
+import { interpolar } from "@i18n/formato";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 14 · EL CIERRE — pedir el precio
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * El formulario simple, con la foto a sangre al lado. Es la última sección de
+ * la página y la única que remata.
+ *
+ * ─── DE DÓNDE SALE ─────────────────────────────────────────────────────────
+ *
+ * Del formulario simple que estaba arriba, entre los aliados y la lista: se
+ * pidió moverlo al final, y en el final estaba "Conviértete en Embajador
+ * Emprende180", que se quitó. Lo que vino con la mudanza fue el CONTENIDO del
+ * cierre viejo, no el suyo.
+ *
+ * ⚠️ ESTE ES EL ÚNICO SITIO DE LA WEB DONDE SE PUEDE PREGUNTAR EL PRECIO. La
+ * sección de precio con su desglose ya no está, así que todos los "Pedir el
+ * precio" del sitio —la cabecera, la cinta de arriba, las tarjetas de "cómo se
+ * trabaja", el botón del Embajador— acaban aquí, en `#empezar`. Si alguien
+ * cambia ese `id` o quita este formulario, cinco botones se quedan sin
+ * destino.
+ *
+ * Arriba se sigue pidiendo el correo, pero para otra cosa: la lista manda los
+ * artículos. Son dos peticiones distintas y con permisos distintos, y por eso
+ * pueden convivir sin repetirse.
+ *
+ * ─── LO QUE SÍ SE PUEDE DECIR DE DINERO ────────────────────────────────────
+ *
+ * Debajo del formulario, cuatro frases: un solo pago, el acceso no caduca, se
+ * puede fraccionar y la garantía. Que la cifra no esté no significa que no
+ * haya nada que contar, y son las cuatro respuestas a los cuatro miedos que
+ * aparecen justo antes de dejar un teléfono.
+ *
+ * ─── Y EL TELÉFONO, QUE ES COMO SE COMPRA DE VERDAD ────────────────────────
+ *
+ * Mientras no haya pasarela, la venta ocurre hablando. Quien llega hasta aquí
+ * y no quiere escribir tiene que poder llamar sin buscar el número en el pie.
+ */
+
+const { informes } = copy;
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+/* Las cuatro frases de dinero. Las mensualidades solo si las hay, y la
+   garantía solo si está activa: ninguna se escribe aquí a mano. */
+const hechos = [
+  informes.hechos[0]!,
+  informes.hechos[1]!,
+  ...(curso.precio.cuotas
+    ? [
+        construirTxt((l) =>
+          interpolar(informes.hechos[2]![l], { n: curso.precio.cuotas!.numero }),
+        ),
+      ]
+    : []),
+  ...(garantia.activa ? [garantia.titulo] : []),
+];
+
+/* ⚠️ Foto de banco, como el resto. Ver la nota de `05-Embajador.astro`.
+
+   Y elegida por cómo SE RECORTA, no por lo que enseña. Esta columna mide unos
+   700 px de ancho por 1.400 de alto, así que a una foto apaisada se le queda
+   una tira vertical del centro: la que había antes era un retrato y el recorte
+   dejaba una cara gigante ocupando media pantalla. Una escena sin caras
+   aguanta ese corte sin que se note. */
+const FOTO: string | null = "/imagenes/resultados/01.webp";
+---
+
+<Section id="empezar" tono="surface" ariaLabel={copy.cierre.aria} sinContenedor>
+  <div class="grid items-stretch gap-10 lg:grid-cols-2 lg:gap-0">
+    {/* ─── El texto y el formulario ───────────────────────────────────────
+        Su propio contenedor, alineado con el resto de la página. La foto de al
+        lado no lo lleva: por eso llega hasta el borde. */}
+    <div class="container-page flex flex-col justify-center lg:py-20">
+      <Reveal>
+        <p class="text-xs font-bold tracking-[0.18em] text-ink-brand uppercase">
+          <T v={informes.kicker} />
+        </p>
+
+        <h2 class="mt-4 text-3xl font-extrabold text-balance text-ink sm:text-4xl">
+          <T v={informes.titulo} />
+        </h2>
+
+        {/* El PORQUÉ, y va antes del formulario. Una página que esconde la
+            cifra sin explicarse se lee como "es caro y no te lo quiero decir",
+            que es justo la conclusión que hay que evitar. */}
+        <p class="mt-4 max-w-md text-base text-pretty text-ink-muted sm:text-lg">
+          <T v={informes.porQue} />
+        </p>
+
+        <div class="mt-8 max-w-md">
+          <LeadForm
+            client:visible
+            lang={lang}
+            origen="informes"
+            variante="informes"
+            cta={informes.ctaBoton}
+            aviso={informes.aviso}
+            exitoTitulo={informes.exitoTitulo}
+            exitoTexto={informes.exitoTexto}
+          />
+        </div>
+
+        <ul class="mt-8 grid max-w-md gap-2 text-sm text-ink-muted">
+          {
+            hechos.map((h) => (
+              <li class="flex items-start gap-2">
+                <span aria-hidden="true" class="marca-linea shrink-0 text-ink-brand">
+                  <Icono nombre="check" class="size-4" />
+                </span>
+                <T v={h} />
+              </li>
+            ))
+          }
+        </ul>
+
+        {/* Llamar y entrar. Los dos son ENLACES y no botones: la regla del
+            proyecto es un solo color de acción por pantalla, y el que convierte
+            es el del formulario. */}
+        <div class="mt-8 flex max-w-md flex-wrap items-center gap-x-6 gap-y-2">
+          {
+            contacto.telefono && (
+              <a
+                href={`tel:${contacto.telefono}`}
+                data-track="cierre-llamada"
+                class="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-ink-brand underline underline-offset-4 hover:text-secondary-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              >
+                <span aria-hidden="true" class="marca-linea shrink-0">
+                  <Icono nombre="telefono" class="size-4" grosor={2} />
+                </span>
+                <T v={informes.llamar} />
+              </a>
+            )
+          }
+
+          {/* Quien ya compró no viene a decidir, viene a entrar. */}
+          <a
+            href={cta.acceso.href}
+            data-track="ya-compre"
+            class="inline-flex min-h-11 items-center gap-2 text-sm text-ink-muted underline underline-offset-4 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          >
+            <Icono nombre="usuario" class="size-4 shrink-0" grosor={1.8} />
+            <T v={copy.ui.yaCompraste} />
+          </a>
+        </div>
+      </Reveal>
+    </div>
+
+    {/* ─── La foto, de borde a borde ──────────────────────────────────────
+        `h-full` con `object-cover` y sin radio: la imagen se corta contra el
+        borde de la pantalla, que es el recurso de esta sección.
+
+        En móvil no sangra a media pantalla —quedaría una tira rara encima del
+        texto— sino que ocupa el ancho completo con una altura fija. */}
+    <div class="relative order-first h-64 w-full bg-primary-950 sm:h-80 lg:order-none lg:h-auto">
+      {
+        FOTO && (
+          <img
+            src={FOTO}
+            alt={copy.cierre.foto[lang]}
+            data-alt-es={copy.cierre.foto.es}
+            data-alt-en={copy.cierre.foto.en}
+            width={800}
+            height={600}
+            loading="lazy"
+            decoding="async"
+            class="absolute inset-0 size-full object-cover"
+          />
+        )
+      }
+
+      {/* La trama de puntos de la guía de marca. Sin foto es el fondo entero;
+          con foto, una textura mínima que la ata al resto de la página. */}
+      <div
+        aria-hidden="true"
+        class:list={[
+          "pointer-events-none absolute inset-0",
+          FOTO ? "opacity-[0.08]" : "opacity-[0.14]",
+        ]}
+        style="background-image:radial-gradient(currentColor 1px,transparent 1px);background-size:16px 16px;color:var(--color-secondary-200)"
+      >
+      </div>
+    </div>
+  </div>
+</Section>

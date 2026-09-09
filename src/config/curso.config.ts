@@ -3448,8 +3448,22 @@ export const copy = {
     reanudar: { es: "Reanudar los testimonios", en: "Resume the testimonials" },
   },
 
+  /**
+   * ⚠️ DE ESTE BLOQUE SOLO QUEDAN EN PIE `aria` Y `foto`. El cierre dejó de
+   * ser la isla navy de "Conviértete en Embajador" con el mini-curso al lado:
+   * ahora es el formulario simple con la foto a sangre, y todo lo que dice
+   * sale de `copy.informes`, que es lo que de verdad se pide ahí.
+   *
+   * `kicker`, `dudaTitulo` y `dudaTexto` se conservan sin usarse porque
+   * describen una alternativa que puede volver: el día que el mini-curso
+   * vuelva a ser la segunda salida del final, ya está escrito. Ver 14-Cierre.
+   */
   cierre: {
     aria: { es: "Empezar", en: "Get started" },
+    foto: {
+      es: "Una mano escribiendo a lápiz en una mesa, con una taza al lado",
+      en: "A hand writing in pencil at a table, a mug beside it",
+    },
     /** Distintivo sobre el titular. Dice dónde está: es el final de la página. */
     kicker: { es: "Último paso", en: "Last step" },
     dudaTitulo: { es: "¿Todavía no lo tienes claro?", en: "Still not sure?" },
