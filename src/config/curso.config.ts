@@ -2569,6 +2569,112 @@ export const copy = {
   },
 
   /**
+   * ─── QUÉ ES UN EMBAJADOR ───────────────────────────────────────────────
+   *
+   * La sección de identidad del rediseño. El titular no lo inventé: sale de la
+   * frase con la que ya empieza la sección del problema, "Visto. Sin
+   * responder.". Si allí duele que nadie conteste, aquí la definición tiene
+   * que ser exactamente la contraria, con las mismas palabras.
+   *
+   * ⚠️ DEFINE UN PAPEL, NO PROMETE UN RESULTADO. "A quien sí le contestan" es
+   * una descripción de cómo trabaja alguien; "vas a cerrar más" sería una
+   * promesa de ingresos, que es justo lo que PRODUCT.md prohíbe y la FTC
+   * persigue. La diferencia está en una línea de texto, así que cuidado al
+   * reescribir esto.
+   *
+   * El botón va a `#instructor` y no a un `/about` que no existe: es la
+   * sección donde ya se cuenta quién está detrás, y es adonde manda el mismo
+   * enlace del menú.
+   */
+  embajador: {
+    aria: { es: "Qué es un Embajador", en: "What an Ambassador is" },
+    kicker: { es: "Quiénes somos", en: "Who we are" },
+    titulo: [
+      { es: "Un Embajador Emprende180", en: "An Emprende180 Ambassador" },
+      {
+        es: "es a quien sí le contestan.",
+        en: "is the one who gets answered.",
+        enfasis: true,
+      },
+    ],
+    texto: [
+      {
+        es: "No vende: contesta. Su gente le pregunta antes de decidir, y ahí no llega ningún anuncio.",
+        en: "They don't sell, they answer. Their people ask them before deciding, and no ad reaches that place.",
+      },
+      {
+        es: "Eso no se compra. Se construye contestando bien, una vez y otra.",
+        en: "That isn't bought. It's built by answering well, once and then again.",
+      },
+    ],
+    cta: { es: "Quiénes somos", en: "Who we are" },
+    fotoGrande: {
+      es: "Una persona hablando por teléfono en la calle, de camino a algún sitio",
+      en: "Somebody on a phone call out in the street, on their way somewhere",
+    },
+    fotoChica: {
+      es: "Dos personas conversando en la calle con un café en la mano",
+      en: "Two people talking on the street holding coffee",
+    },
+  },
+
+  /**
+   * ─── CÓMO TRABAJAR CON EMPRENDE180 ─────────────────────────────────────
+   *
+   * Las tres piezas, numeradas. No son tres productos que se compren por
+   * separado: son las tres cosas que se reciben con lo mismo, y por eso
+   * ninguna tarjeta lleva precio ni "contratar".
+   *
+   * ⚠️ CADA BOTÓN VA A UN SITIO DISTINTO Y A UN SITIO QUE EXISTE. La maqueta
+   * llevaba los tres a páginas nuevas; aquí van a las tres secciones de esta
+   * misma página que ya responden a cada una. Las plataformas de verdad
+   * (`plataformas.crm.url`, `plataformas.academia.url`) todavía no tienen
+   * dirección, y hasta que la tengan no se enlazan desde fuera del área de
+   * alumnos: un botón que se pulsa y no lleva a ningún sitio hace más daño
+   * que no estar.
+   */
+  comoTrabajar: {
+    aria: { es: "Cómo trabajar con Emprende180", en: "How to work with Emprende180" },
+    kicker: { es: "Cómo se trabaja", en: "How it works" },
+    titulo: [
+      { es: "Tres piezas.", en: "Three pieces." },
+      { es: "Una forma de trabajar.", en: "One way of working.", enfasis: true },
+    ],
+    piezas: [
+      {
+        numero: "01",
+        titulo: { es: "La Academia", en: "The Academy" },
+        texto: {
+          es: "Diez videos en orden, con un quiz en cada uno. Se ven cuando puedas.",
+          en: "Ten videos in order, with a quiz in each one. Watch them when you can.",
+        },
+        cta: { es: "Ver el temario", en: "See what's inside" },
+        href: "#temario",
+      },
+      {
+        numero: "02",
+        titulo: { es: "El CRM", en: "The CRM" },
+        texto: {
+          es: "Tus contactos y tus oportunidades en un sitio, con su estado al día. Va incluido.",
+          en: "Your contacts and opportunities in one place, status current. It comes included.",
+        },
+        cta: { es: "Qué entra", en: "What's included" },
+        href: "#precio",
+      },
+      {
+        numero: "03",
+        titulo: { es: "El plan de 90 días", en: "The 90 day plan" },
+        texto: {
+          es: "Qué haces cada día desde el primero. No tienes que inventarte la agenda.",
+          en: "What you do each day from day one. You don't have to invent the schedule.",
+        },
+        cta: { es: "Ver el plan", en: "See the plan" },
+        href: "#plan",
+      },
+    ],
+  },
+
+  /**
    * ─── EL PLAN DE 90 DÍAS ────────────────────────────────────────────────
    *
    * Todo sale del documento "Plan de 90 Días — Prospección Diaria del

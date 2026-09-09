@@ -53,6 +53,8 @@ import Hero from "@components/hero/HeroSlider.astro";
 import Aliados from "@components/sections/01-Aliados.astro";
 import Guias from "@components/sections/03-Guias.astro";
 import Lista from "@components/sections/04-Lista.astro";
+import Embajador from "@components/sections/05-Embajador.astro";
+import ComoTrabajar from "@components/sections/06-ComoTrabajar.astro";
 import Problema from "@components/sections/02-Problema.astro";
 import QueVasALograr from "@components/sections/03-QueVasALograr.astro";
 import Temario from "@components/sections/05-Temario.astro";
@@ -124,6 +126,20 @@ import CtaFinal from "@components/sections/11-CtaFinal.astro";
         la lista explica solo lo que el otro tiene que contar con texto. */}
     <Guias />
     <Lista />
+
+    {/* La definición va JUSTO ANTES del problema, y en ese orden se leen
+        como una sola cosa: aquí se dice a quién sí le contestan, y en la
+        siguiente, a quién no. Al revés, la definición llegaría a alguien que
+        todavía no sabe por qué le haría falta. */}
+    <Embajador />
+
+    {/* Las tres piezas, en el sitio que les da el brief: justo detrás de la
+        definición. Enseña de qué se compone esto antes de entrar en el
+        problema, que es al revés de como estaba la página.
+        Si al leerlo entero se ve que la oferta llega antes de que a nadie le
+        duela nada, esto se mueve debajo de `QueVasALograr` y ya está: es una
+        línea. */}
+    <ComoTrabajar />
 
     <Problema />
     <QueVasALograr />

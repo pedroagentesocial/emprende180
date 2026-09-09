@@ -1,0 +1,106 @@
+---
+import T from "@components/i18n/T.astro";
+import Section from "@components/ui/Section.astro";
+import Reveal from "@components/motion/Reveal.astro";
+import Enfasis from "@components/ui/Enfasis.astro";
+import Button from "@components/ui/Button.astro";
+import { copy } from "@config/curso.config";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 06 · CÓMO SE TRABAJA — las tres piezas
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Academia, CRM y plan de 90 días, numeradas, con el número enorme detrás.
+ *
+ * ─── POR QUÉ ESTO NO ES "OTRA REJILLA DE TARJETAS IGUALES" ─────────────────
+ *
+ * DESIGN.md prohíbe la rejilla de tarjetas clonadas (icono, titular, párrafo,
+ * repetido tres veces) porque es el relleno por defecto de cualquier página. La
+ * diferencia aquí es que las tres piezas SON tres y no cinco, cada una lleva su
+ * número y cada botón va a un sitio distinto: la rejilla no está adornando un
+ * hueco, está enumerando algo que de verdad tiene tres partes.
+ *
+ * Si algún día se le añade una cuarta "porque queda mejor de a cuatro", esto se
+ * convierte justo en lo que la regla prohíbe.
+ *
+ * ─── LOS BOTONES ACABAN A LA MISMA ALTURA ──────────────────────────────────
+ *
+ * `flex flex-col` en la tarjeta y `mt-auto` en el pie. Con tres textos de largo
+ * distinto, un botón detrás de cada párrafo deja tres botones a tres alturas, y
+ * eso se lee como un descuadre, no como tres opciones.
+ *
+ * ⚠️ POR ESO EL TEXTO DE CADA PIEZA CABE EN DOS RENGLONES. El `mt-auto` iguala
+ * los botones, pero si una pieza se va a cuatro líneas, las otras dos se quedan
+ * con un agujero blanco en medio.
+ */
+
+const { comoTrabajar } = copy;
+---
+
+<Section id="como-trabajar" tono="surface" ariaLabel={comoTrabajar.aria}>
+  <div class="max-w-2xl">
+    <p class="text-xs font-bold tracking-[0.18em] text-ink-brand uppercase">
+      <T v={comoTrabajar.kicker} />
+    </p>
+
+    <h2 class="mt-4 text-3xl leading-tight font-extrabold text-balance text-ink sm:text-4xl lg:text-5xl">
+      {
+        comoTrabajar.titulo.map((linea) => (
+          <span class="block">
+            {"enfasis" in linea && linea.enfasis ? (
+              <Enfasis v={linea} />
+            ) : (
+              <T v={linea} />
+            )}
+          </span>
+        ))
+      }
+    </h2>
+  </div>
+
+  <ul class="mt-12 grid gap-6 lg:grid-cols-3">
+    {
+      comoTrabajar.piezas.map((pieza, i) => (
+        <Reveal as="li" delay={i * 0.08} class="h-full">
+          <article class="relative isolate flex h-full flex-col overflow-hidden rounded-3xl bg-surface-muted p-8">
+            {/* El número, enorme y detrás de todo. Decorativo: lo que ordena
+                para un lector de pantalla es que esto sea una LISTA, y el
+                número lo cantaría dos veces.
+
+                ⚠️ ENTERO DENTRO DE LA TARJETA, sin salirse por el borde. Medio
+                número cortado contra el canto no se lee como un recurso
+                gráfico, se lee como algo que se ha desbordado. */}
+            <span
+              aria-hidden="true"
+              class="pointer-events-none absolute top-1 right-4 -z-10 text-[6rem] leading-none font-extrabold text-primary-900/[0.08] select-none sm:text-[7rem]"
+            >
+              {pieza.numero}
+            </span>
+
+            <h3 class="text-xl font-extrabold text-ink sm:text-2xl">
+              <T v={pieza.titulo} />
+            </h3>
+
+            <p class="mt-3 text-base text-pretty text-ink-muted">
+              <T v={pieza.texto} />
+            </p>
+
+            {/* `mt-auto` es lo que empuja el pie hasta abajo del todo, que es
+                lo que alinea los tres botones entre sí. Ver la nota de arriba. */}
+            <div class="mt-auto pt-8">
+              <Button
+                href={pieza.href}
+                variant="secondary"
+                size="md"
+                trackId={`como-trabajar-${pieza.numero}`}
+              >
+                <T v={pieza.cta} />
+              </Button>
+            </div>
+          </article>
+        </Reveal>
+      ))
+    }
+  </ul>
+</Section>
