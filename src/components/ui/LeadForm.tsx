@@ -88,6 +88,19 @@ interface LeadFormProps {
    * para una cosa y entrega otra, y ese permiso no vale.
    */
   variante?: "minicurso" | "informes" | "lista";
+  /**
+   * Deja el formulario en lo mínimo: nombre, correo, casilla y botón.
+   *
+   * ⚠️ NO CAMBIA A QUÉ SE CONSIENTE. Eso lo sigue decidiendo `variante`: con
+   * `informes` la casilla habla del precio aunque el teléfono no esté. Lo que
+   * quita son los campos opcionales, y solo son eso, opcionales.
+   *
+   * Existe para el cierre de la portada, donde el formulario tiene que ser el
+   * de la maqueta: dos campos y un botón. Con cuatro campos deja de ser un
+   * remate y pasa a ser un trámite, que es justo lo que nadie rellena al final
+   * de una página.
+   */
+  minimo?: boolean;
   /** Idioma resuelto en el servidor (ver src/i18n/react.ts). */
   lang?: Idioma;
 }
@@ -101,6 +114,7 @@ export function LeadForm({
   tono = "claro",
   compacto = false,
   variante = "minicurso",
+  minimo = false,
   lang: langServidor,
 }: LeadFormProps) {
   const [estado, setEstado] = useState<Estado>("inactivo");
@@ -126,7 +140,6 @@ export function LeadForm({
   } as const;
 
   const inverso = tono === "inverso";
-  const esInformes = variante === "informes";
 
   /* A qué se consiente, según el formulario. Ver la nota de `variante`. */
   const textoConsentimiento =
@@ -383,7 +396,7 @@ export function LeadForm({
           Los dos opcionales. Quien llega aquí ya está preguntando cuánto
           cuesta; ponerle un campo obligatorio de más es perderlo en el sitio
           donde más caro sale perderlo. */}
-      {variante === "informes" && (
+      {variante === "informes" && !minimo && (
         <>
           <div className="mt-4">
             <label

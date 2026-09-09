@@ -3021,8 +3021,8 @@ export const copy = {
     },
     /* El porqué, sin rodeos: es lo que separa "reservado" de "sospechoso". */
     porQue: {
-      es: "Quien llega recomendado por un Embajador no paga lo mismo que quien llega solo. Dinos quién te recomendó, si es que alguien lo hizo, y te decimos tu precio.",
-      en: "Someone referred by an Ambassador doesn't pay the same as someone arriving on their own. Tell us who referred you, if anyone did, and we'll tell you your price.",
+      es: "Quien llega recomendado por un Embajador no paga lo mismo que quien llega solo. Déjanos tu correo y te decimos el tuyo.",
+      en: "Someone referred by an Ambassador doesn't pay the same as someone arriving on their own. Leave us your email and we'll tell you yours.",
     },
     /* Lo que SÍ se puede decir de dinero sin dar la cifra. */
     hechos: [

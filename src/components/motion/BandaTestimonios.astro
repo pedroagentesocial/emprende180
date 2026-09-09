@@ -147,7 +147,14 @@ const iniciales = (nombre: string) =>
                 aria-hidden={copia === 1 ? "true" : undefined}
                 data-banda-clon={copia === 1 ? "" : undefined}
               >
-                <figure class="flex h-full flex-col rounded-2xl border border-line bg-surface p-6">
+                {/* ⚠️ LA TARJETA ES LA CLARA Y EL FONDO EL BLANCO, al revés que en
+                    el resto de la página. Es a propósito y viene del rediseño:
+                    con la sección en azul suave y las tarjetas en blanco, la
+                    banda parecía una fila de papeles pegados encima; al
+                    invertirlo, lo que se mueve es el color y el fondo se queda
+                    quieto. Sin borde por lo mismo: el contraste de superficie ya
+                    dibuja el canto. */}
+                <figure class="flex h-full flex-col rounded-2xl bg-surface-muted p-6">
                   {/* ─── LA LÍNEA DE CREDIBILIDAD ────────────────────────────
                       Estrellas a la izquierda, de dónde sale la reseña a la
                       derecha. Va ARRIBA del todo porque es lo que decide si se
@@ -162,13 +169,32 @@ const iniciales = (nombre: string) =>
                       (Los comentarios van AQUÍ arriba y no dentro de cada
                       `{cond && (…)}`: un comentario JSX dentro de una expresión
                       rompe el parser de Astro.) */}
-                  {(t.estrellas || t.fuente === "google") && (
-                    <div class="mb-4 flex items-center justify-between gap-3">
-                      {t.estrellas ? (
-                        <Estrellas valor={t.estrellas} sinTexto />
+                  {/* ─── ARRIBA: QUIÉN LO DICE ──────────────────────────────
+                      El avatar sube aquí desde el pie. En una banda que pasa de
+                      largo, la cara (o las iniciales) es lo que dice de un
+                      vistazo que esto lo escribió una persona, y llegaba al
+                      final de la tarjeta, cuando ya se había ido. */}
+                  <div class="mb-4 flex items-center justify-between gap-3">
+                    <div class="flex min-w-0 items-center gap-3">
+                      {t.foto ? (
+                        <img
+                          src={t.foto}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                          class="size-11 shrink-0 rounded-full object-cover"
+                        />
                       ) : (
-                        <span />
+                        <span
+                          aria-hidden="true"
+                          class="grid size-11 shrink-0 place-items-center rounded-full bg-secondary-100 text-sm font-bold text-secondary-700"
+                        >
+                          {iniciales(t.nombre)}
+                        </span>
                       )}
+
+                      {t.estrellas && <Estrellas valor={t.estrellas} sinTexto />}
+                    </div>
 
                       {t.fuente === "google" && t.url && (
                         <a
@@ -185,8 +211,7 @@ const iniciales = (nombre: string) =>
                           <span><T v={copy.pruebaSocial.enGoogle} /></span>
                         </a>
                       )}
-                    </div>
-                  )}
+                  </div>
 
                   {/* El distintivo del resultado va a `text-sm` y no a
                       `text-xs`: es la frase por la que existe la tarjeta, y a
@@ -198,33 +223,31 @@ const iniciales = (nombre: string) =>
                     </p>
                   )}
 
+                  {/* La comilla grande. Decorativa y `aria-hidden`: un lector de
+                      pantalla ya sabe que esto es una cita porque es un
+                      `<blockquote>`, y oír «comillas» antes de cada una es
+                      ruido. Va en la serifa de acento, que es donde ese glifo
+                      está dibujado de verdad. */}
+                  <span
+                    aria-hidden="true"
+                    class="mb-1 block font-acento text-5xl leading-none text-ink-brand/25 select-none"
+                  >
+                    &ldquo;
+                  </span>
+
                   <blockquote class="flex-1 text-base text-pretty text-ink">
                     <T v={t.cita} resaltar />
                   </blockquote>
 
-                  <figcaption class="mt-6 flex items-center gap-3 border-t border-line pt-5">
-                    {t.foto ? (
-                      <img
-                        src={t.foto}
-                        alt=""
-                        loading="lazy"
-                        decoding="async"
-                        class="size-11 shrink-0 rounded-full object-cover"
-                      />
-                    ) : (
-                      <span
-                        aria-hidden="true"
-                        class="grid size-11 shrink-0 place-items-center rounded-full bg-secondary-100 text-sm font-bold text-secondary-700"
-                      >
-                        {iniciales(t.nombre)}
-                      </span>
-                    )}
-                    <span class="min-w-0">
-                      <span class="block font-semibold text-ink">{t.nombre}</span>
-                      <span class="block text-sm text-ink-subtle">
-                        <T v={t.contexto} resaltar />
-                      </span>
-                    </span>
+                  {/* Una sola línea, sin raya larga delante: el cliente las tiene
+                      prohibidas en el texto de cara al usuario. El nombre en
+                      negrita y el contexto detrás, que es como se firma una cita
+                      cuando ya se sabe de quién es la cara de arriba. */}
+                  <figcaption class="mt-5 text-sm text-ink-subtle">
+                    <span class="font-bold text-ink">{t.nombre}</span>{", "}<T
+                      v={t.contexto}
+                      resaltar
+                    />
                   </figcaption>
                 </figure>
               </li>

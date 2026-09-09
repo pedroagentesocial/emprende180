@@ -4,9 +4,8 @@ import Section from "@components/ui/Section.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Icono from "@components/ui/Icono.astro";
 import LeadForm from "@components/ui/LeadForm";
-import { copy, contacto, garantia, curso, cta } from "@config/curso.config";
-import { construirTxt, resolverIdiomaServidor } from "@i18n/idioma";
-import { interpolar } from "@i18n/formato";
+import { copy, contacto, cta } from "@config/curso.config";
+import { resolverIdiomaServidor } from "@i18n/idioma";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -34,12 +33,15 @@ import { interpolar } from "@i18n/formato";
  * artículos. Son dos peticiones distintas y con permisos distintos, y por eso
  * pueden convivir sin repetirse.
  *
- * ─── LO QUE SÍ SE PUEDE DECIR DE DINERO ────────────────────────────────────
+ * ─── DOS CAMPOS, UNA CASILLA Y UN BOTÓN ────────────────────────────────────
  *
- * Debajo del formulario, cuatro frases: un solo pago, el acceso no caduca, se
- * puede fraccionar y la garantía. Que la cifra no esté no significa que no
- * haya nada que contar, y son las cuatro respuestas a los cuatro miedos que
- * aparecen justo antes de dejar un teléfono.
+ * Lo que dice la maqueta y ni uno más. Llegó a tener cuatro campos —el teléfono
+ * y quién te recomendó, los dos opcionales— y debajo una lista de cuatro frases
+ * sobre el pago. Con eso, el remate de la página se leía como un trámite, y un
+ * trámite al final de una página no lo rellena nadie.
+ *
+ * Lo que preguntaban esos campos se pregunta ahora en la llamada, que es donde
+ * se cierra de verdad. Ver `minimo` en `LeadForm`.
  *
  * ─── Y EL TELÉFONO, QUE ES COMO SE COMPRA DE VERDAD ────────────────────────
  *
@@ -53,21 +55,6 @@ const lang = resolverIdiomaServidor(
   Astro.url,
   Astro.request.headers.get("accept-language"),
 );
-
-/* Las cuatro frases de dinero. Las mensualidades solo si las hay, y la
-   garantía solo si está activa: ninguna se escribe aquí a mano. */
-const hechos = [
-  informes.hechos[0]!,
-  informes.hechos[1]!,
-  ...(curso.precio.cuotas
-    ? [
-        construirTxt((l) =>
-          interpolar(informes.hechos[2]![l], { n: curso.precio.cuotas!.numero }),
-        ),
-      ]
-    : []),
-  ...(garantia.activa ? [garantia.titulo] : []),
-];
 
 /* ⚠️ Foto de banco, como el resto. Ver la nota de `05-Embajador.astro`.
 
@@ -107,25 +94,13 @@ const FOTO: string | null = "/imagenes/resultados/01.webp";
             lang={lang}
             origen="informes"
             variante="informes"
+            minimo
             cta={informes.ctaBoton}
             aviso={informes.aviso}
             exitoTitulo={informes.exitoTitulo}
             exitoTexto={informes.exitoTexto}
           />
         </div>
-
-        <ul class="mt-8 grid max-w-md gap-2 text-sm text-ink-muted">
-          {
-            hechos.map((h) => (
-              <li class="flex items-start gap-2">
-                <span aria-hidden="true" class="marca-linea shrink-0 text-ink-brand">
-                  <Icono nombre="check" class="size-4" />
-                </span>
-                <T v={h} />
-              </li>
-            ))
-          }
-        </ul>
 
         {/* Llamar y entrar. Los dos son ENLACES y no botones: la regla del
             proyecto es un solo color de acción por pantalla, y el que convierte
