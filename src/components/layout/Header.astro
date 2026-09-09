@@ -127,6 +127,7 @@ const logoAlt = {
   data-cabecera
   data-compacta="false"
   data-fija="false"
+  data-oculta="false"
   class:list={[
     "group z-40 transition-[background-color,border-color] duration-300 ease-[var(--ease-out-soft)]",
     sobreHero
@@ -140,7 +141,17 @@ const logoAlt = {
         "relative border-b border-transparent bg-transparent " +
         "data-[fija=true]:fixed data-[fija=true]:inset-x-0 data-[fija=true]:top-0 " +
         "data-[fija=true]:border-primary-800 " +
-        "data-[fija=true]:bg-primary-950 data-[fija=true]:shadow-lg"
+        "data-[fija=true]:bg-primary-950 data-[fija=true]:shadow-lg " +
+        /* ─── SE VA HACIA ARRIBA AL BAJAR Y VUELVE AL SUBIR ──────────
+           Anclada y quieta, la barra se come 80 px de pantalla durante toda
+           la visita. Escondiéndose mientras se baja, la página se lee entera;
+           y como vuelve en cuanto se sube un poco, nunca hay que llegar
+           arriba del todo para tenerla.
+
+           Se mueve con `translate`, que es lo que el compositor mueve solo:
+           ni un recálculo de maquetación por cada scroll. */
+        "motion-safe:transition-transform motion-safe:duration-300 " +
+        "data-[oculta=true]:-translate-y-full"
       : "sticky top-0 border-b border-line bg-surface",
   ]}
 >
@@ -376,5 +387,49 @@ const logoAlt = {
     } else {
       observarFinHero();
     }
+
+    /* ─── LA BARRA SE ESCONDE AL BAJAR Y VUELVE AL SUBIR ─────────────────
+
+       Solo cuando está anclada: mientras flota sobre el hero no hay nada que
+       esconder, porque se va sola con el scroll.
+
+       ⚠️ AQUÍ SÍ HAY UN LISTENER DE SCROLL, y es la excepción a la nota de
+       arriba. La dirección del scroll no se puede observar con un
+       IntersectionObserver: no es «se ve o no se ve», es «hacia dónde va». Lo
+       que se puede es no hacer trabajo en cada evento, y por eso el listener
+       solo apunta la posición y el trabajo ocurre una vez por fotograma con
+       `requestAnimationFrame`. Y es `passive`, así que no bloquea el scroll.
+
+       El umbral de 6 px existe porque en un móvil el dedo nunca sube o baja
+       en línea recta: sin él, la barra parpadearía con el temblor de la mano.
+
+       Los 120 px de gracia son para que no se esconda justo al despegar, que
+       se lee como un salto en vez de como una barra que se va. */
+    let ultimo = window.scrollY;
+    let pendiente = false;
+
+    const revisar = () => {
+      pendiente = false;
+      const y = window.scrollY;
+      const diferencia = y - ultimo;
+
+      if (cabecera.dataset.fija !== "true") {
+        cabecera.dataset.oculta = "false";
+      } else if (Math.abs(diferencia) > 6) {
+        cabecera.dataset.oculta = String(diferencia > 0 && y > 120);
+      }
+
+      ultimo = y;
+    };
+
+    window.addEventListener(
+      "scroll",
+      () => {
+        if (pendiente) return;
+        pendiente = true;
+        requestAnimationFrame(revisar);
+      },
+      { passive: true },
+    );
   })();
 </script>
