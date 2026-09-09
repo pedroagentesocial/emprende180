@@ -180,7 +180,7 @@ const claseEnlace =
 const barraPulsable = variante === "barra" && conEnlace;
 const Envoltorio = barraPulsable ? "a" : "div";
 const propsEnvoltorio = barraPulsable
-  ? { href: "#precio", "data-track": "cinta-barra" }
+  ? { href: "#empezar", "data-track": "cinta-barra" }
   : {};
 ---
 
@@ -267,7 +267,7 @@ const propsEnvoltorio = barraPulsable
             mínima de 44 px porque ahí no hay bloque pulsable que lo envuelva. */}
         {conEnlace && !barraPulsable && (
           <a
-            href="#precio"
+            href="#empezar"
             data-track={`cinta-${variante}`}
             class:list={[
               "inline-flex min-h-11 items-center font-semibold underline underline-offset-2",

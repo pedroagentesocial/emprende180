@@ -2,189 +2,123 @@
 import BaseLayout from "@layouts/BaseLayout.astro";
 import Header from "@components/layout/Header.astro";
 import Footer from "@components/layout/Footer.astro";
-import BarraFlotante from "@components/layout/BarraFlotante.astro";
 import CintaPrecio from "@components/ui/CintaPrecio.astro";
-import CintaAnuncio from "@components/ui/CintaAnuncio.astro";
 
 /* ───────────────────────────────────────────────────────────────────────────
    DÓNDE VIVE CADA COSA
 
-     components/layout/   Header, Footer, BarraFlotante, RedesMarca. El armazón
-                          que rodea a la página y se repite en las legales.
-     components/hero/     El hero y sus piezas (fondo de vídeo, franja de datos).
-                          Tiene carpeta propia porque no es "una sección más":
-                          es la única con vídeo, con velos y con animación de
-                          entrada sin observador.
-     components/sections/ El resto del argumento, numerado en orden de lectura.
-                          Empieza en 02 porque el 01 es el hero, que está en su
-                          carpeta. Falta el 08: la garantía dejó de ser sección
-                          propia y vive dentro de la tarjeta de precio.
+     components/layout/   Header, Footer, RedesMarca. El armazón que rodea a la
+                          página y se repite en las legales.
+     components/hero/     El hero y sus piezas. Tiene carpeta propia porque no
+                          es "una sección más": es la única a pantalla completa,
+                          con velos y con animación de entrada sin observador.
+     components/sections/ El resto de la página.
      components/ui/       Primitivos sin opinión de contenido: Button, Pill,
-                          Input, Modal, Section, SectionHeading, LeadForm.
+                          Input, Section, SectionHeading, LeadForm.
      components/motion/   Lo que orquesta movimiento de verdad.
 
    ───────────────────────────────────────────────────────────────────────────
-   ORDEN DE DECISIÓN
-   No es un orden estético: es la secuencia de preguntas que se hace quien
-   entra, en el orden en que se las hace. Cambiar el orden rompe el argumento.
+   ORDEN DE LECTURA
 
-    01 Hero ............ ¿de qué va esto y es para mí?      → CTA: email gratis
-    02 Problema ........ ¿me entiende? ¿es para mí de verdad?
-    03 Qué vas a lograr  ¿qué me llevo?                     (resultado, no temario)
-    04 Plan de 90 días  vale, ¿y qué hago yo exactamente?  → CTA: email gratis
-    05 Temario ......... ¿qué incluye exactamente?
-    06 Instructor ...... ¿quién eres tú? ¿qué NO cubres?
-    07 Prueba social ... ¿le funciona a gente como yo?
-    08 Precio .......... ¿cuánto?                           → CTA: comprar
-    09 FAQ ............. última objeción
-    10 Cierre .......... decido                             → comprar + email
+    Hero .............. de qué va esto
+    Aliados ........... ¿existe de verdad?
+    Guías ............. deja tu correo y te llegan
+    Lista ............. y esto es lo que llega
+    Embajador ......... en quién te conviertes
+    Cómo se trabaja ... de qué se compone
+    Prueba social ..... le funciona a gente como yo
+    Blog .............. lo que se escribe, gratis
+    Academia .......... la puerta de lo que ya se compró
+    Recursos .......... la puerta de lo que es gratis
+    Cierre ............ pedir el precio, o llamar
 
-   La garantía YA NO es una sección propia: ocupaba una pantalla entera para
-   decir una frase. Ahora vive dentro de la tarjeta de precio, que es donde
-   aparece el miedo que neutraliza, y en una línea del cierre.
-   ─────────────────────────────────────────────────────────────────────────── */
-/* ⚠️ LA NUMERACIÓN DE LOS ARCHIVOS ESTÁ A MEDIAS, Y SE SABE.
-   El rediseño del brief va entrando sección a sección, de arriba abajo, y
-   renumerar diez archivos con cada una sería diez veces el mismo commit de
-   ruido. Cuando la columna nueva esté completa se renumera todo de una vez.
-   Mientras tanto manda ESTE archivo: el orden de la página es el orden en que
-   se escriben los componentes aquí abajo, no el número de su nombre. */
+   ───────────────────────────────────────────────────────────────────────────
+   ⚠️ SE QUITARON SIETE SECCIONES DE GOLPE, Y NO ES UNA LIMPIEZA: ES LA PÁGINA
+   QUE PIDIÓ EL CLIENTE. Se fueron el problema, "qué sabrás hacer", el plan de
+   90 días, el temario, el instructor, el precio con su desglose y las
+   preguntas frecuentes; también las tres tiras de anuncios y la barra
+   flotante. Los archivos no están borrados a medias: están fuera del árbol y
+   en el historial de git, así que volver a poner cualquiera es un `git revert`
+   y una línea aquí.
+
+   Lo que eso cambió de verdad, y hay que saberlo antes de tocar nada: la
+   página ya no VENDE, CAPTA. No queda ninguna sección donde se explique el
+   temario ni donde se vea una cifra, así que el único desenlace posible es
+   pedir el precio, y por eso el formulario de informes se mudó al cierre. Cada
+   enlace que apuntaba a una sección que ya no está se cambió de destino, no se
+   dejó apuntando al vacío: ver `cta.navegacion` y `copy.comoTrabajar`.
+   ───────────────────────────────────────────────────────────────────────────
+   ⚠️ LA NUMERACIÓN DE LOS ARCHIVOS ESTÁ A MEDIAS, Y SE SABE.
+   Manda ESTE archivo: el orden de la página es el orden en que se escriben los
+   componentes aquí abajo, no el número de su nombre. Se renumerará todo de una
+   vez cuando el rediseño esté cerrado. */
 import Hero from "@components/hero/HeroSlider.astro";
 import Aliados from "@components/sections/01-Aliados.astro";
 import Guias from "@components/sections/03-Guias.astro";
 import Lista from "@components/sections/04-Lista.astro";
 import Embajador from "@components/sections/05-Embajador.astro";
 import ComoTrabajar from "@components/sections/06-ComoTrabajar.astro";
+import PruebaSocial from "@components/sections/07-PruebaSocial.astro";
 import BlogPortada from "@components/sections/08-Blog.astro";
 import Academia from "@components/sections/12-Academia.astro";
 import Recursos from "@components/sections/13-Recursos.astro";
-import Problema from "@components/sections/02-Problema.astro";
-import QueVasALograr from "@components/sections/03-QueVasALograr.astro";
-import Temario from "@components/sections/05-Temario.astro";
-import Instructor from "@components/sections/06-Instructor.astro";
-import PruebaSocial from "@components/sections/07-PruebaSocial.astro";
-import Plan90 from "@components/sections/04-Plan90.astro";
-import Precio from "@components/sections/09-Precio.astro";
-import Faq from "@components/sections/10-Faq.astro";
 import CtaFinal from "@components/sections/11-CtaFinal.astro";
 
-/* Esta página ya no prepara datos para nadie.
-   Las tiras de anuncios resuelven sus seis frases desde el config, y la barra
-   flotante resuelve la suya. Aquí solo se decide QUÉ va y en qué ORDEN, que es
-   lo único que debería decidir un archivo de página.
-
-   Tampoco necesita el idioma de la petición: lo necesitaban las islas de React,
-   que en el servidor no podían leerlo del DOM. Ya no queda ninguna en esta
-   página salvo el formulario, que lo resuelve él. */
+/* Esta página no prepara datos para nadie: solo decide QUÉ va y en qué ORDEN,
+   que es lo único que debería decidir un archivo de página. */
 ---
 
 <BaseLayout>
-  {/* Cinta de precio, arriba del todo.
-      Va ENCIMA del header y dentro del flujo, así que se va con el scroll igual
-      que la barra: nada queda pegado a la pantalla. Es lo primero que se ve y lo
-      único de la página que da una razón para no dejarlo para mañana.
-      Si `precio.urgencia.fechaCierre` se pone a `null`, desaparece sola. */}
   {/* ─── LA CINTA Y LA BARRA, FLOTANDO SOBRE EL HERO ─────────────────────
-      Las dos van dentro de un envoltorio ABSOLUTO, así que el hero empieza
-      en el píxel cero de la página y la foto se ve por detrás de ambas.
+      Las dos van dentro de un envoltorio ABSOLUTO, así que el hero empieza en
+      el píxel cero de la página y la foto se ve por detrás de ambas.
 
-      Absoluto y no fijo: las dos tienen que irse con el scroll. La barra
-      vuelve sola, pegada arriba y en navy, cuando el hero se acaba (ver
-      `data-fin-hero` más abajo). */}
+      La cinta se va con el scroll y no vuelve. La barra sí vuelve: en cuanto
+      el scroll pasa de la cinta, se despega, se ancla arriba en navy y ya no
+      se mueve de ahí. Ver `Header.astro`.
+
+      Si `precio.urgencia.fechaCierre` se pone a `null`, la cinta desaparece
+      sola y la barra pasa a anclarse desde el primer píxel. */}
   <div class="absolute inset-x-0 top-0 z-40">
     <CintaPrecio variante="barra" />
     <Header sobreHero />
   </div>
 
-  {/* ─────────────────────────────────────────────────────────────────────────
-      LAS TIRAS DE ANUNCIOS VAN ENTRE SECCIONES, NO DENTRO DE ELLAS.
-
-      Aquí y no en el archivo de cada sección, por dos motivos. Uno: una sección
-      no tiene por qué saber quién va detrás de ella, y estas tiras son
-      transiciones, no contenido de nadie. Dos: puestas en fila en este archivo
-      se ve de un vistazo cuántas hay, que es lo único que impide que acaben
-      siendo seis.
-
-      Las tres son el MISMO componente y dicen lo mismo, en bucle: precio,
-      subida, plazo, contenido, garantía, cuotas. Antes eran tres cintas
-      distintas, cada una con un mensaje y con el detalle escondido detrás del
-      cursor; ahora las seis frases pasan en todas. Ver `CintaAnuncio.astro`.
-      ───────────────────────────────────────────────────────────────────────── */}
   <main id="contenido">
     <Hero />
-
-    {/* El píxel que le dice a la barra que el hero se acabó: a partir de
-        aquí deja de flotar y se ancla arriba en navy. Ver Header.astro. */}
-    <div data-fin-hero aria-hidden="true" class="h-px w-full"></div>
 
     {/* Franja de negocios del Ecosistema, pegada al hero: responde "¿esto
         existe de verdad?" mientras todavía hay atención. Ver 01-Aliados. */}
     <Aliados />
 
-    {/* ─── LA COLUMNA DEL REDISEÑO EMPIEZA AQUÍ ───────────────────────────
-        Dos secciones que piden correo, una detrás de otra, y es a propósito:
+    {/* Dos secciones que piden correo, una detrás de otra, y es a propósito:
         la primera lo PIDE, la segunda ENSEÑA lo que llega. Aun así, dos
-        formularios seguidos se pueden leer como un fallo; si al ver la página
-        entera sobra uno, el que sobra es este primero, porque el teléfono de
-        la lista explica solo lo que el otro tiene que contar con texto. */}
+        formularios seguidos se pueden leer como un fallo; si sobra uno, el que
+        sobra es este primero, porque el teléfono de la lista explica solo lo
+        que el otro tiene que contar con texto. */}
     <Guias />
     <Lista />
 
-    {/* La definición va JUSTO ANTES del problema, y en ese orden se leen
-        como una sola cosa: aquí se dice a quién sí le contestan, y en la
-        siguiente, a quién no. Al revés, la definición llegaría a alguien que
-        todavía no sabe por qué le haría falta. */}
+    {/* Quién es un Embajador y de qué se compone esto. Van juntas y en este
+        orden: primero en quién te conviertes, después con qué. */}
     <Embajador />
-
-    {/* Las tres piezas, en el sitio que les da el brief: justo detrás de la
-        definición. Enseña de qué se compone esto antes de entrar en el
-        problema, que es al revés de como estaba la página.
-        Si al leerlo entero se ve que la oferta llega antes de que a nadie le
-        duela nada, esto se mueve debajo de `QueVasALograr` y ya está: es una
-        línea. */}
     <ComoTrabajar />
-
-    <Problema />
-    <QueVasALograr />
-
-    <CintaAnuncio />
-
-    {/* El plan de 90 días ocupa el sitio donde estaba la captura del imán:
-        dos plazos compitiendo —7 días y 90 días— hacían que ninguno
-        significara nada. El imán no se pierde, baja de rango: es el último
-        bloque de esta sección. Ver 04-Plan90. */}
-    <Plan90 />
-    <Temario />
-    <Instructor />
-
-    <CintaAnuncio />
 
     <PruebaSocial />
 
-    {/* El blog va detrás de los testimonios y delante del precio: es lo
-        único gratis que demuestra criterio, y quien todavía duda lo lee antes
-        de mirar cuánto cuesta. */}
+    {/* El blog es lo único gratis que demuestra criterio, así que va antes de
+        las dos puertas y del cierre. */}
     <BlogPortada />
 
-    {/* La Academia y los recursos, en el orden del brief: primero la puerta de
-        lo que ya se compró, después la de lo que es gratis. Las dos delante del
-        precio: quien llega a la cifra ya ha visto que hay algo detrás. */}
+    {/* Primero la puerta de lo que ya se compró, después la de lo que es
+        gratis. */}
     <Academia />
     <Recursos />
 
-    <Precio />
-    <Faq />
-
-    <CintaAnuncio />
-
+    {/* El cierre es ahora el ÚNICO desenlace de la página: es donde se pide el
+        precio y donde está el teléfono. Ver 11-CtaFinal. */}
     <CtaFinal />
   </main>
 
   <Footer />
-
-  {/* Barra flotante: teletipo de ofertas y acciones. Aparece al dejar atrás el
-      hero, salvo mientras #precio está en pantalla: ahí ya hay un CTA grande
-      a la vista y dos botones idénticos a la vez compiten entre sí.
-      Ver BarraFlotante.astro. */}
-  <BarraFlotante />
 </BaseLayout>

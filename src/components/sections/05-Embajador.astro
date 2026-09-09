@@ -31,10 +31,11 @@ import { resolverIdiomaServidor } from "@i18n/idioma";
  *
  * ─── ADÓNDE VA EL BOTÓN ────────────────────────────────────────────────────
  *
- * A `#instructor`, que es la sección donde ya se cuenta quién está detrás, y
- * es adonde manda "Quiénes somos" en el menú. La maqueta apuntaba a `/about`,
- * una página que no existe: un botón de identidad que lleva a un 404 hace
- * exactamente el daño contrario al que busca esta sección.
+ * Al cierre. La maqueta apuntaba a `/about`, una página que no existe, y
+ * después estuvo apuntando a `#instructor`, que ya tampoco: esa sección se
+ * quitó junto con el temario, el precio y las preguntas. Como no queda ningún
+ * sitio donde ampliar, el botón lleva a lo único que se puede hacer en esta
+ * página, que es preguntar el precio.
  */
 
 const { embajador } = copy;
@@ -114,7 +115,7 @@ const FOTO_CHICA = "/imagenes/resultados/03.webp";
       }
 
       <div class="mt-8">
-        <Button href="#instructor" trackId="embajador-quienes-somos">
+        <Button href="#empezar" trackId="embajador-precio">
           <T v={embajador.cta} />
         </Button>
       </div>

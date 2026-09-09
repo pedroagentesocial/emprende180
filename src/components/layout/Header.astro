@@ -127,31 +127,26 @@ const logoAlt = {
   data-cabecera
   data-compacta="false"
   data-fija="false"
-  data-oculta="false"
   class:list={[
     "group z-40 transition-[background-color,border-color] duration-300 ease-[var(--ease-out-soft)]",
     sobreHero
-      ? /* Flotando sobre la foto, sin fondo. Va en el flujo de su
-           envoltorio —el que la portada pinta encima del hero— y no
-           posicionada ella sola: si se colocara en `top-0` por su cuenta,
-           se montaría sobre la cinta de precio, que ocupa esos píxeles.
+      ? /* ─── ARRIBA FLOTA SOBRE LA FOTO; EN CUANTO SE MUEVE, SE ANCLA ───
+           En reposo va en el flujo de su envoltorio —el que la portada pinta
+           encima del hero— y sin fondo, para que se vea la foto por detrás. No
+           se posiciona ella sola: en `top-0` por su cuenta se montaría sobre la
+           cinta de precio, que ocupa esos píxeles.
 
-           Cuando el hero se acaba, `data-fija` la despega y la ancla arriba
-           en navy. La transición del fondo evita que aparezca de golpe. */
+           `data-fija` la despega y la ancla arriba en navy, y se enciende en
+           cuanto el scroll pasa la cinta, no al final del hero. Es lo que hace
+           que la barra BAJE CONTIGO en vez de quedarse arriba: a partir del
+           primer dedo de scroll está siempre a la vista.
+
+           Y no se esconde al bajar. Llegó a hacerlo, para ganar 80 px de
+           pantalla, pero eso es justo lo contrario de tenerla siempre. */
         "relative border-b border-transparent bg-transparent " +
         "data-[fija=true]:fixed data-[fija=true]:inset-x-0 data-[fija=true]:top-0 " +
         "data-[fija=true]:border-primary-800 " +
-        "data-[fija=true]:bg-primary-950 data-[fija=true]:shadow-lg " +
-        /* ─── SE VA HACIA ARRIBA AL BAJAR Y VUELVE AL SUBIR ──────────
-           Anclada y quieta, la barra se come 80 px de pantalla durante toda
-           la visita. Escondiéndose mientras se baja, la página se lee entera;
-           y como vuelve en cuanto se sube un poco, nunca hay que llegar
-           arriba del todo para tenerla.
-
-           Se mueve con `translate`, que es lo que el compositor mueve solo:
-           ni un recálculo de maquetación por cada scroll. */
-        "motion-safe:transition-transform motion-safe:duration-300 " +
-        "data-[oculta=true]:-translate-y-full"
+        "data-[fija=true]:bg-primary-950 data-[fija=true]:shadow-lg"
       : "sticky top-0 border-b border-line bg-surface",
   ]}
 >
@@ -358,69 +353,48 @@ const logoAlt = {
       { threshold: 0 },
     ).observe(centinela);
 
-    /* ─── Y CUÁNDO SE ACABA EL HERO ──────────────────────────────────
-       Solo existe en la portada. Mientras el hero esté a la vista, la barra
-       flota sobre la foto sin fondo; en cuanto sale, se ancla arriba y se
-       pinta de navy. Es el mismo mecanismo del centinela, con otro píxel.
+    /* ─── Y CUÁNDO SE ANCLA ARRIBA ───────────────────────────────────────
 
-       Sin JavaScript la barra se queda flotando y transparente, que es
-       como se ve al cargar: no tapa nada ni desaparece.
+       Solo en la portada, que es la única donde la barra empieza flotando
+       sobre la foto. En reposo va transparente y dentro del flujo; en cuanto
+       el scroll pasa de su propia posición, se despega, se ancla arriba y se
+       pinta de navy. A partir de ahí ESTÁ SIEMPRE: baja contigo hasta el pie.
 
-    ⚠️ Y SE BUSCA CUANDO EL DOM ESTÁ LISTO, NO AHORA. Este script se ejecuta
-       donde está escrito, o sea justo después de la barra, y el píxel del
-       final del hero está más abajo en la página: en ese instante todavía no
-       existe. Buscándolo aquí mismo salía `null`, el observador no se
-       enganchaba y la barra no volvía nunca. */
-    const observarFinHero = () => {
-      const finHero = document.querySelector("[data-fin-hero]");
-      if (!finHero) return;
-      new IntersectionObserver(
-        ([entrada]) => {
-          cabecera.dataset.fija = String(!entrada.isIntersecting);
-        },
-        { threshold: 0 },
-      ).observe(finHero);
-    };
+       ⚠️ EL UMBRAL ES SU PROPIO `offsetTop`, o sea el alto de la cinta de
+       precio que tiene encima. No es un número elegido a ojo: en ese punto
+       exacto la barra ya está tocando el borde de arriba de la pantalla, así
+       que al pasar a `fixed` se queda donde ya estaba y no hay salto. Con
+       cualquier otro valor, la barra pega un brinco al cambiar de modo.
 
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", observarFinHero, { once: true });
-    } else {
-      observarFinHero();
-    }
-
-    /* ─── LA BARRA SE ESCONDE AL BAJAR Y VUELVE AL SUBIR ─────────────────
-
-       Solo cuando está anclada: mientras flota sobre el hero no hay nada que
-       esconder, porque se va sola con el scroll.
+       Llegó a esconderse al bajar y volver al subir, para ganar 80 px de
+       pantalla. Se quitó: lo que se pidió es tenerla siempre, y una barra que
+       aparece y desaparece es justo lo contrario aunque ocupe menos.
 
        ⚠️ AQUÍ SÍ HAY UN LISTENER DE SCROLL, y es la excepción a la nota de
-       arriba. La dirección del scroll no se puede observar con un
-       IntersectionObserver: no es «se ve o no se ve», es «hacia dónde va». Lo
-       que se puede es no hacer trabajo en cada evento, y por eso el listener
-       solo apunta la posición y el trabajo ocurre una vez por fotograma con
-       `requestAnimationFrame`. Y es `passive`, así que no bloquea el scroll.
+       arriba. Un IntersectionObserver sobre un centinela habría valido, pero
+       el centinela tendría que estar exactamente a la altura de la cinta, y
+       eso es un píxel más que mantener sincronizado con un alto que cambia
+       con el idioma y con el tamaño de pantalla. El listener es `passive` y
+       no hace trabajo en cada evento: apunta y deja que
+       `requestAnimationFrame` lo resuelva una vez por fotograma.
 
-       El umbral de 6 px existe porque en un móvil el dedo nunca sube o baja
-       en línea recta: sin él, la barra parpadearía con el temblor de la mano.
-
-       Los 120 px de gracia son para que no se esconda justo al despegar, que
-       se lee como un salto en vez de como una barra que se va. */
-    let ultimo = window.scrollY;
+       Sin JavaScript la barra se queda flotando y transparente, que es como se
+       ve al cargar: no tapa nada ni desaparece. */
     let pendiente = false;
+    let tope = cabecera.offsetTop;
 
     const revisar = () => {
       pendiente = false;
-      const y = window.scrollY;
-      const diferencia = y - ultimo;
-
-      if (cabecera.dataset.fija !== "true") {
-        cabecera.dataset.oculta = "false";
-      } else if (Math.abs(diferencia) > 6) {
-        cabecera.dataset.oculta = String(diferencia > 0 && y > 120);
-      }
-
-      ultimo = y;
+      /* El tope solo se vuelve a medir MIENTRAS ESTÁ EN REPOSO. Anclada es
+         `fixed`, y ahí `offsetTop` vale 0: releerlo en ese estado dejaría el
+         umbral en cero y la barra no volvería a soltarse nunca. Medido así, un
+         cambio de tamaño de pantalla se recoge solo la próxima vez que se llega
+         arriba, que es justo cuando importa. */
+      if (cabecera.dataset.fija !== "true") tope = cabecera.offsetTop;
+      cabecera.dataset.fija = String(window.scrollY > tope);
     };
+
+    revisar();
 
     window.addEventListener(
       "scroll",

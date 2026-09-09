@@ -196,18 +196,28 @@ const lang = resolverIdiomaServidor(
         />
 
         <div class="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4 lg:justify-start">
-          {/* Mientras no haya pasarela, el botón lleva a la sección de precio
-              en lugar de a un href="#" que saltaría al inicio de la página. */}
-          <Button
-            href={checkoutPendiente ? cta.primario.href : curso.precio.urlCheckout}
-            variant="primary"
-            size="lg"
-            sobre="oscuro"
-            trackId="cierre"
-            class="w-full sm:w-auto"
-          >
-            <T v={cta.primario.texto} />
-          </Button>
+          {/* ⚠️ EL BOTÓN DE "PEDIR EL PRECIO" YA NO ESTÁ AQUÍ, y no es un
+              olvido: el formulario que lo hacía está en la isla de al lado, a
+              dos centímetros. Un botón cuyo destino es la sección en la que ya
+              estás no lleva a ningún sitio, solo hace parpadear la página.
+
+              Vuelve solo el día que haya pasarela: entonces el destino deja de
+              ser un ancla y pasa a ser `curso.precio.urlCheckout`, que sí es
+              otro sitio. */}
+          {
+            !checkoutPendiente && (
+              <Button
+                href={curso.precio.urlCheckout}
+                variant="primary"
+                size="lg"
+                sobre="oscuro"
+                trackId="cierre"
+                class="w-full sm:w-auto"
+              >
+                <T v={cta.primario.texto} />
+              </Button>
+            )
+          }
 
           {/* El botón de llamar, aquí también: quien llega al final y no compra
               suele tener UNA duda concreta, y una llamada la resuelve en el
@@ -276,39 +286,50 @@ const lang = resolverIdiomaServidor(
       </Reveal>
     </div>
 
-    {/* ─── SALIDA 2 · EL MINI-CURSO GRATIS ──────────────────────────────────
-        Para quien llega al final y todavía no compra. Sin esto, ese visitante
-        se pierde entero.
+    {/* ─── SALIDA 2 · PEDIR EL PRECIO ───────────────────────────────────────
+
+        ⚠️ ESTE FORMULARIO SE MUDÓ AQUÍ DESDE LA SECCIÓN DE PRECIO, que ya no
+        existe. Con ella se fueron el desglose y las preguntas frecuentes, así
+        que este es el ÚNICO sitio de la página donde se puede preguntar cuánto
+        cuesta. Si alguien lo quita, todos los "Pedir el precio" del sitio
+        —cabecera, cinta de arriba, tarjetas de "cómo se trabaja"— se quedan
+        apuntando a una sección sin desenlace.
+
+        Antes aquí estaba el mini-curso gratis. Se fue porque el correo ya se
+        pide dos veces más arriba, en las guías y en la lista: tres capturas del
+        mismo dato en una página que ya no vende nada más era pedir por pedir.
 
         La isla es CLARA, y es la única de la página que se apoya en el
-        contraste con su pareja: al lado del navy de comprar, el blanco dice
-        "esto es lo otro, y no cuesta nada" sin escribirlo. Antes era un azul
-        casi igual al del fondo, o sea la alternativa disfrazada de lo mismo.
-
-        Se fue el `sticky`. Acompañaba mientras se leía la columna de al lado, y
-        ahora las dos islas miden lo mismo y terminan a la vez: no hay nada que
-        acompañar. Y se fue también el halo teal de detrás, que existía para
-        despegar la tarjeta del azul; sobre blanco no despega nada, solo
-        ensucia. */}
+        contraste con su pareja: al lado del navy, el blanco dice "esta es la
+        otra forma" sin escribirlo. */}
     <Reveal delay={0.16} class="lg:h-full">
       <div
         class="flex h-full flex-col justify-center rounded-3xl border border-line bg-surface p-6 shadow-lg sm:p-8"
       >
-        <p class="text-center text-lg font-semibold text-balance text-ink">
-          <T v={copy.cierre.dudaTitulo} />
+        <p class="text-center text-xs font-bold tracking-[0.18em] text-ink-brand uppercase">
+          <T v={copy.informes.kicker} />
         </p>
+
+        <p class="mt-3 text-center text-lg font-semibold text-balance text-ink">
+          <T v={copy.informes.titulo} />
+        </p>
+
+        {/* El PORQUÉ, y va antes del formulario. Una página que esconde la
+            cifra sin explicarse se lee como "es caro y no te lo quiero decir",
+            que es justo la conclusión que hay que evitar. */}
         <p class="mt-2 text-center text-base text-pretty text-ink-muted">
-          <T v={copy.cierre.dudaTexto} vars={{ formato: leadMagnet.formato }} />
+          <T v={copy.informes.porQue} />
         </p>
 
         <div class="mt-7">
           <LeadForm
             client:visible lang={lang}
-            origen="cierre"
-            cta={leadMagnet.cta}
-            aviso={leadMagnet.aviso}
-            exitoTitulo={leadMagnet.exito.titulo}
-            exitoTexto={leadMagnet.exito.texto}
+            origen="informes"
+            variante="informes"
+            cta={copy.informes.ctaBoton}
+            aviso={copy.informes.aviso}
+            exitoTitulo={copy.informes.exitoTitulo}
+            exitoTexto={copy.informes.exitoTexto}
           />
         </div>
       </div>

@@ -22,18 +22,11 @@
     -webkit-text-size-adjust: 100%;
   }
 
-  /* ⚠️ AQUÍ HABÍA DOS BLOQUES `body` Y EL SEGUNDO ANULABA AL PRIMERO.
-     El de arriba reservaba `calc(5rem + env(safe-area-inset-bottom))` para la
-     barra flotante; el de abajo, resto de cuando la barra era solo de móvil,
-     volvía a declarar `padding-bottom: env(safe-area-inset-bottom)`. Misma
-     especificidad y más abajo en el archivo, así que ganaba: en escritorio el
-     hueco reservado era de CERO píxeles y la barra tapaba los últimos 69 px de
-     la página — justo donde está el copyright.
-
-     La reserva ya no vive aquí. Se la queda el propio `<footer>`, porque el
-     hueco tiene que ser DEL COLOR DEL PIE: puesto en el body, esos 80 px eran
-     una franja blanca asomando por debajo de un pie navy.
-     Ver `Footer.astro`. */
+  /* Aquí hubo una reserva de espacio al final de la página para la barra
+     flotante, que era `fixed` y tapaba el copyright. La barra ya no existe y la
+     reserva tampoco; el poco hueco que queda lo pone el propio `<footer>`,
+     porque tiene que ser DEL COLOR DEL PIE: puesto en el body, esos píxeles
+     eran una franja blanca asomando por debajo de un pie navy. */
   body {
     background-color: var(--color-surface);
     color: var(--color-ink);

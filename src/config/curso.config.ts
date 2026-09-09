@@ -1902,11 +1902,15 @@ export const cta = {
    */
   primario: {
     texto: { es: "Pedir el precio", en: "Ask for the price" },
-    href: "#precio",
+    /* Al cierre, que es donde vive el formulario desde que la sección de
+       precio se quitó de la página. Ver 11-CtaFinal. */
+    href: "#empezar",
   },
   secundario: {
     texto: leadMagnet.cta,
-    href: "#gratis",
+    /* Iba a "#gratis", el bloque del mini-curso dentro del plan de 90 días.
+       Esa sección ya no está: el correo se pide ahora en las guías. */
+    href: "#guias",
   },
   /**
    * ─── ACCESO DE ALUMNOS ────────────────────────────────────────────────────
@@ -1930,7 +1934,7 @@ export const cta = {
   /** Cierre de la página. Más directo que los anteriores: ya ha leído todo. */
   final: {
     texto: { es: "Quiero empezar ahora", en: "I want to start now" },
-    href: "#precio",
+    href: "#empezar",
   },
   /** Coletilla del CTA fijo de móvil. `{n}` = número de mensualidades. */
   notaCuotas: { es: "o {n} pagos", en: "or {n} payments" },
@@ -1960,8 +1964,8 @@ export const cta = {
    */
   navegacion: [
     { texto: { es: "Inicio", en: "Home" }, href: "#inicio" },
-    { texto: { es: "Quiénes somos", en: "About" }, href: "#instructor" },
-    { texto: { es: "Programas", en: "Programs" }, href: "#plan" },
+    { texto: { es: "Quiénes somos", en: "About" }, href: "#embajador" },
+    { texto: { es: "Programas", en: "Programs" }, href: "#como-trabajar" },
     { texto: { es: "Recursos", en: "Resources" }, href: "/recursos" },
     /* El plan entra en el menú y no se queda solo en el scroll: es la
        respuesta a "¿qué hago yo exactamente?", que es la pregunta que trae
@@ -2476,7 +2480,7 @@ export const copy = {
        mueve. */
     cta: {
       texto: { es: "Construyamos tu red", en: "Let's build your network" },
-      href: "#precio",
+      href: "#empezar",
     },
 
     /* Los mandos. La rotación es contenido en movimiento de más de cinco
@@ -2582,9 +2586,11 @@ export const copy = {
    * persigue. La diferencia está en una línea de texto, así que cuidado al
    * reescribir esto.
    *
-   * El botón va a `#instructor` y no a un `/about` que no existe: es la
-   * sección donde ya se cuenta quién está detrás, y es adonde manda el mismo
-   * enlace del menú.
+   * ⚠️ EL BOTÓN YA NO VA A `#instructor`. Esa sección se quitó de la página,
+   * y con ella el temario, el precio y las preguntas: no queda ningún sitio
+   * donde ampliar, así que el botón lleva a lo único que se puede hacer aquí,
+   * que es preguntar cuánto cuesta. En el menú, "Quiénes somos" apunta ahora
+   * a esta misma sección, que es la que cuenta quién está detrás.
    */
   embajador: {
     aria: { es: "Qué es un Embajador", en: "What an Ambassador is" },
@@ -2607,7 +2613,7 @@ export const copy = {
         en: "That isn't bought. It's built by answering well, once and then again.",
       },
     ],
-    cta: { es: "Quiénes somos", en: "Who we are" },
+    cta: { es: "Pedir el precio", en: "Ask for the price" },
     fotoGrande: {
       es: "Una persona hablando por teléfono en la calle, de camino a algún sitio",
       en: "Somebody on a phone call out in the street, on their way somewhere",
@@ -2648,8 +2654,8 @@ export const copy = {
           es: "Diez videos en orden, con un quiz en cada uno. Se ven cuando puedas.",
           en: "Ten videos in order, with a quiz in each one. Watch them when you can.",
         },
-        cta: { es: "Ver el temario", en: "See what's inside" },
-        href: "#temario",
+        cta: { es: "Ver la Academia", en: "See the Academy" },
+        href: "#academia",
       },
       {
         numero: "02",
@@ -2658,8 +2664,8 @@ export const copy = {
           es: "Tus contactos y tus oportunidades en un sitio, con su estado al día. Va incluido.",
           en: "Your contacts and opportunities in one place, status current. It comes included.",
         },
-        cta: { es: "Qué entra", en: "What's included" },
-        href: "#precio",
+        cta: { es: "Pedir el precio", en: "Ask for the price" },
+        href: "#empezar",
       },
       {
         numero: "03",
@@ -2668,8 +2674,8 @@ export const copy = {
           es: "Qué haces cada día desde el primero. No tienes que inventarte la agenda.",
           en: "What you do each day from day one. You don't have to invent the schedule.",
         },
-        cta: { es: "Ver el plan", en: "See the plan" },
-        href: "#plan",
+        cta: { es: "Pedir el precio", en: "Ask for the price" },
+        href: "#empezar",
       },
     ],
   },
@@ -3015,8 +3021,8 @@ export const copy = {
     },
     /* El porqué, sin rodeos: es lo que separa "reservado" de "sospechoso". */
     porQue: {
-      es: "Quien llega recomendado por un Embajador no paga lo mismo que quien llega solo, así que una cifra suelta aquí sería falsa para la mitad de los que la leen. Dinos quién te recomendó —si es que alguien lo hizo— y te decimos tu precio.",
-      en: "Someone referred by an Ambassador doesn't pay the same as someone arriving on their own, so a single figure here would be wrong for half the people reading it. Tell us who referred you, if anyone did, and we'll tell you your price.",
+      es: "Quien llega recomendado por un Embajador no paga lo mismo que quien llega solo. Dinos quién te recomendó, si es que alguien lo hizo, y te decimos tu precio.",
+      en: "Someone referred by an Ambassador doesn't pay the same as someone arriving on their own. Tell us who referred you, if anyone did, and we'll tell you your price.",
     },
     /* Lo que SÍ se puede decir de dinero sin dar la cifra. */
     hechos: [
