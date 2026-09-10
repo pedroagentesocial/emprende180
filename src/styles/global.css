@@ -236,15 +236,56 @@ html[lang="en"] [data-t="es"] {
    UTILIDADES DE PROYECTO
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   LA REGLA DEL ANCHO — la página ocupa la pantalla que hay
+   ═══════════════════════════════════════════════════════════════════════════
+
+   ⚠️ ESTO CAMBIÓ, Y CAMBIÓ ENTERO. Antes esta utilidad era una caja de 72rem
+   centrada: en un monitor de 2560 px eso dejaba 700 px de blanco a cada lado y
+   la página entera vivía en el 45 % del centro. Ahora no hay tope y no hay
+   centrado. El contenido llega hasta donde llegue la pantalla.
+
+   LO QUE ESTO NO ES. No es "quitar el margen". El margen sigue —y encima
+   crece— porque un texto pegado al canto no se lee. Lo que se quita es el
+   TOPE: el ancho ya no lo decide un número escrito aquí, lo decide el monitor.
+
+   ─── LO ÚNICO QUE CONSERVA MEDIDA, Y NO ES NEGOCIABLE ──────────────────────
+
+   Una COLUMNA DE TEXTO SEGUIDO. Pasados unos 90 caracteres por línea, el ojo
+   pierde el salto de renglón y hay que releer: es un límite del ojo, no una
+   preferencia de diseño, y no se arregla estirando la caja. Por eso sigue
+   existiendo "--container-read" (42rem, ~68 caracteres) y por eso lo usan el
+   blog, las legales y los párrafos largos.
+
+   ⚠️ PERO UNA COLUMNA CON MEDIDA NO SE CENTRA EN UN VACÍO. Esa es la
+   diferencia entre esta regla y la que había. Una columna de 42rem sola en el
+   centro de 2560 px es exactamente el problema que veníamos a quitar. Si un
+   bloque conserva medida, se coloca en una REJILLA que usa el resto del ancho
+   —el titular al lado, la ficha al lado, la foto al lado—, no en el medio con
+   dos desiertos.
+
+   La pregunta al escribir una sección nueva no es "¿de qué ancho la hago?"
+   sino "¿QUÉ PONGO en el ancho que hay?". Si la respuesta es "nada", la
+   sección está pidiendo más columnas, no menos ancho.
+
+   ─── CÓMO SE APLICA ────────────────────────────────────────────────────────
+
+   · Toda sección de página pasa por "container-page". No hay una segunda
+     medida: antes convivían esta y un "max-w-[88rem]" escrito a mano en media
+     docena de sitios, que es como se acaba con dos páginas de anchos
+     distintos en la misma web.
+   · Lo que sangra de borde a borde (bandas, sliders, mitades de pantalla) no
+     lleva contenedor y se pone el margen con "px-[--gutter-page]", para que su
+     texto siga alineado con el del resto de la página.
+   · Y sigue siendo MOBILE FIRST. Nada de esto es una excepción de escritorio:
+     el margen arranca en 20 px y sube solo. Lo que hay que vigilar al añadir
+     algo es lo de siempre —que quepa a 320— y ahora además que a 2560 no se
+     quede una fila de tres tarjetas nadando en el centro.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 @utility container-page {
   width: 100%;
-  max-width: var(--container-page);
-  margin-inline: auto;
-  padding-inline: 1.25rem;
-
-  @media (width >= 40rem) {
-    padding-inline: 2rem;
-  }
+  padding-inline: var(--gutter-page);
 }
 
 /* Ritmo vertical. Tres pesos en vez de uno: si todas las secciones respiran

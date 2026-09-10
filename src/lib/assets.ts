@@ -252,3 +252,38 @@ if (import.meta.env.DEV && vsl.disponible && !vsl.subtitulos) {
       "que hace el vídeo accesible para quien no oye.",
   );
 }
+
+/**
+ * ─── LAS DOS FOTOS DEL DÍPTICO DEL HERO ────────────────────────────────────
+ *
+ * `ella.webp` y `el.webp` en `/public/imagenes/hero/`. Si están, mandan ellas;
+ * si no, cada mitad usa la foto de banco que trae escrita en el config.
+ *
+ * Es el mismo patrón que el vídeo, la portada y los logos de aliados, y sirve
+ * para lo mismo: que el día de la sesión de fotos no haya que tocar código ni
+ * config. Se dejan los dos archivos en su carpeta y entran solos.
+ *
+ * ⚠️ LAS DOS SON VERTICALES, no horizontales recortadas. Cada una ocupa MEDIA
+ * pantalla de alto completo, así que una horizontal de 16:9 se recorta a una
+ * franja central y se pierde la persona. 1400×1800 px para arriba, la persona
+ * mirando HACIA EL CENTRO del díptico (ella a su derecha, él a su izquierda) y
+ * con aire en el lado de FUERA, que es donde cae el texto.
+ *
+ * ⚠️ Y OSCURAS EN EL LADO DE FUERA. El texto blanco se sostiene con un velo
+ * que arranca en ese borde; si la foto es clara de lado a lado, el velo tiene
+ * que taparla entera para que se lea y entonces ya no se ve la foto. Ver la
+ * nota del contraste en `HeroDiptico.astro`.
+ */
+const archivosHero = Object.keys(
+  import.meta.glob("../../public/imagenes/hero/*.{webp,avif,jpg,png}"),
+);
+
+export function fotoHero(lado: string): string | null {
+  const nombre = [
+    `${lado}.webp`,
+    `${lado}.avif`,
+    `${lado}.jpg`,
+    `${lado}.png`,
+  ].find((n) => tiene(archivosHero, n));
+  return nombre ? `/imagenes/hero/${nombre}` : null;
+}

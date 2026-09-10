@@ -2,6 +2,7 @@
 import T from "@components/i18n/T.astro";
 import Section from "@components/ui/Section.astro";
 import SectionHeading from "@components/ui/SectionHeading.astro";
+import Editorial from "@components/ui/Editorial.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import BandaTestimonios from "@components/motion/BandaTestimonios.astro";
 import Aliados from "@components/sections/05-Aliados.astro";
@@ -190,7 +191,7 @@ const puntos = puntosBase.map((p) => ({
             empieza a leerse, y el resumen de estrellas se le pone al lado en
             escritorio. Centrarlo dejaría una línea sola en medio de una
             pantalla vacía. */}
-        <div class="mx-auto w-full max-w-[88rem] px-5 sm:px-8">
+        <div class="container-page">
           <Reveal>
             <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between lg:gap-12">
               <div>
@@ -253,17 +254,24 @@ const puntos = puntosBase.map((p) => ({
       </>
     ) : (
       <div class="container-page">
-        <SectionHeading
-          align="center"
-          titulo={fundador.titulo}
-          entradilla={fundador.entradilla}
-        />
+        {/* ⚠️ ESTE BLOQUE ESTABA CENTRADO —titular al medio y lista de 42rem
+            con `mx-auto`— y lo cambia la regla del ancho (ver global.css). La
+            lista SÍ conserva medida, porque es un argumento que se lee
+            renglón a renglón; lo que se va es el centrado, que dejaba media
+            pantalla en blanco a los dos lados. Ahora el titular ocupa ese
+            lado. */}
+        <Editorial>
+          <SectionHeading
+            slot="rail"
+            titulo={fundador.titulo}
+            entradilla={fundador.entradilla}
+          />
 
         {/* Deliberadamente NO son tres tarjetas iguales. Una rejilla de
             tarjetas gemelas es lo que el lector ya ha aprendido a saltarse, y
             aquí el contenido es un argumento seguido, no tres elementos
             comparables. Una lista con filete entre puntos se lee. */}
-        <dl class="mx-auto mt-12 max-w-read">
+        <dl>
           {puntos.map((p, i) => (
             <Reveal delay={i * 0.08}>
               <div class="flex gap-5 border-t border-line py-6 first:border-t-0 first:pt-0">
@@ -292,10 +300,11 @@ const puntos = puntosBase.map((p) => ({
               una superficie propia: leerlo como una frase aparte es justo lo
               que se busca, y una raya de color no lo consigue mejor que un
               fondo. */}
-          <p class="mx-auto mt-10 max-w-read rounded-2xl bg-surface-muted px-6 py-5 text-base font-medium text-pretty text-ink">
+          <p class="mt-10 rounded-2xl bg-surface-muted px-6 py-5 text-base font-medium text-pretty text-ink">
             <T v={fundador.remate} />
           </p>
         </Reveal>
+        </Editorial>
       </div>
     )
   }

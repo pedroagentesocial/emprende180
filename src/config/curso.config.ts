@@ -2527,25 +2527,115 @@ export const copy = {
      * ancho para arriba.
      */
     slides: [
+      /**
+       * ─── EL DÍPTICO: DOS PÚBLICOS EN LA MISMA PANTALLA ──────────────────
+       *
+       * La primera imagen no es UNA foto: son DOS, partidas por la mitad, y
+       * cada mitad le habla a una persona distinta. Ella a la izquierda, él a
+       * la derecha, el botón en medio y la promesa debajo.
+       *
+       * POR QUÉ SE RECONOCE EN TRES SEGUNDOS. Un hero normal elige un público
+       * y el otro se va. Aquí los dos ganchos se ven a la vez y cada uno
+       * encuentra el suyo por el lado en el que está mirando: no hay que leer
+       * los dos para saber cuál te toca.
+       *
+       * ⚠️ LAS DOS FRASES NO SON LA MISMA IDEA EN DOS VOCES. La de ella
+       * desmonta "tendría que montar un negocio fuera de casa"; la de él
+       * desmonta "hace falta un título o experiencia en ventas". Si algún día
+       * se reescriben, esa es la pareja de objeciones que tienen que seguir
+       * tumbando, no el género de la foto.
+       *
+       * ⚠️ LA TIPOGRAFÍA CAMBIA DE UN LADO A OTRO, Y ES DELIBERADO. `voz`
+       * decide cómo se pinta cada mitad: `editorial` va en caja baja, peso
+       * medio y remata en Fraunces itálica; `directa` va apretada, en
+       * extrabold y sin cursiva. Dos sistemas tipográficos, no dos tamaños.
+       * Ver `HeroDiptico.astro`.
+       *
+       * ⚠️ Y LAS DOS FOTOS SIGUEN SIENDO DE BANCO. Ninguna está hecha en una
+       * casa y ninguna es de un Embajador de verdad. En cuanto haya sesión,
+       * las dos que hacen falta son VERTICALES (cada una ocupa media
+       * pantalla, no una horizontal recortada): 1400×1800 px para arriba, la
+       * persona mirando HACIA EL CENTRO y con aire en el lado de fuera, que
+       * es donde cae el texto. Se dejan en /public/imagenes/hero/ como
+       * `ella.webp` y `el.webp` y entran solas, sin tocar código.
+       */
       {
-        foto: "/imagenes/resultados/03.webp",
-        alt: {
-          es: "Dos mujeres conversando en la calle con un café en la mano",
-          en: "Two women talking on the street holding coffee",
-        },
-        posicion: "derecha-centro",
-        kicker: {
-          es: "Ayudamos a mujeres que están en casa",
-          en: "We help women at home",
-        },
-        titulo: [
-          { es: "a construir", en: "build something" },
-          { es: "algo propio", en: "of their own" },
-          { es: "sin salir de ella.", en: "without leaving it.", enfasis: true },
+        tipo: "diptico",
+        paneles: [
+          {
+            lado: "ella",
+            foto: "/imagenes/resultados/03.webp",
+            /* El recorte deja a la mujer de la izquierda, que mira hacia el
+               centro del díptico. Si se cambia la foto, hay que volver a
+               mirar este número: es lo único que decide a quién se ve. */
+            encuadre: "30% center",
+            alt: {
+              es: "Una mujer conversando en la calle con un café en la mano",
+              en: "A woman talking on the street holding a coffee",
+            },
+            voz: "editorial",
+            titulo: [
+              {
+                es: "Tu casa ya es tu oficina.",
+                en: "Your home is already your office.",
+                estilo: "lead",
+              },
+              { es: "Que también sea", en: "Make it your" },
+              {
+                es: "tu punto de partida.",
+                en: "starting line too.",
+                estilo: "acento",
+              },
+            ],
+          },
+          {
+            lado: "el",
+            foto: "/imagenes/secciones/resultados.webp",
+            /* Él está en la mitad derecha del original y mira hacia la
+               izquierda, o sea hacia ella. */
+            encuadre: "58% center",
+            alt: {
+              es: "Un hombre riéndose mientras habla por teléfono en la calle",
+              en: "A man laughing on a phone call out in the street",
+            },
+            voz: "directa",
+            titulo: [
+              {
+                es: "Si sabes hablar con la gente,",
+                en: "If you know how to talk to people,",
+                estilo: "lead",
+              },
+              { es: "ya tienes lo que", en: "you already have" },
+              { es: "se necesita.", en: "what it takes.", estilo: "acento" },
+            ],
+          },
         ],
+
+        /**
+         * ⚠️ ESTA FRASE DICE "GENERA INGRESOS EXTRA" Y ESO ES UNA PROMESA DE
+         * INGRESO. Va tal cual la pidió el cliente y se queda, pero conviene
+         * saber dónde está el límite: la FTC (16 CFR 465) y la PROFECO
+         * permiten describir la OPORTUNIDAD y prohíben afirmar un RESULTADO
+         * que no se pueda documentar con datos de Embajadores normales.
+         *
+         * "Genera ingresos extra" está del lado seguro mientras NO se le
+         * ponga cifra, plazo ni frecuencia. En cuanto alguien escriba "hasta
+         * 2.000 al mes" o "desde la primera semana", hace falta el respaldo
+         * documental. Ver la regla 3 de la cabecera del archivo.
+         */
         subtitulo: {
-          es: "Con experiencia o sin ninguna. Lo que falta no eres tú, es el método.",
-          en: "With experience or none at all. What's missing isn't you, it's the method.",
+          es: "Únete a la comunidad de Embajadores Emprende180 y genera ingresos extra ayudando a tu gente a conseguir su casa o recuperarse de un accidente.",
+          en: "Join the Emprende180 Ambassador community and earn extra income helping your people get their home or recover from an accident.",
+        },
+
+        /* ⚠️ "QUIERO SER EMBAJADOR" Y NO "REGÍSTRATE", y no es cuestión de
+           gusto: uno nombra a quién te conviertes y el otro nombra el
+           trámite. Lleva al cierre, que es el único sitio de la página donde
+           se puede pedir información. Sustituye al CTA común de las otras dos
+           imágenes, que va a ver cómo funciona. */
+        cta: {
+          texto: { es: "Quiero ser Embajador", en: "I want to be an Ambassador" },
+          href: "#empezar",
         },
       },
       {

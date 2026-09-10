@@ -300,8 +300,35 @@
   /* ─── ESPACIADO Y LAYOUT ───────────────────────────────────────────────── */
   --spacing: 0.25rem;
 
-  --container-read: 42rem; /* ~68 caracteres por línea */
-  --container-page: 72rem;
+  /* ─── EL ANCHO DE LA PÁGINA ──────────────────────────────────────────────
+     ⚠️ AQUÍ HABÍA UN "--container-page: 72rem" Y SE HA QUITADO A PROPÓSITO.
+     La página ya NO se estrecha ni se centra: ocupa el ancho que haya. Lo
+     único que queda es el margen de los lados, y crece con la pantalla.
+
+     La regla entera —qué conserva medida, qué no, y por qué— está escrita en
+     global.css sobre la utilidad "container-page", y en DESIGN.md. Si alguien
+     vuelve a poner aquí un ancho máximo de página, que lea eso antes.
+
+     Los números del clamp, medidos: 20 px a 375, 30 a 640, 44 a 1024, 58 a
+     1440, 75 a 1920 y el tope de 96 a partir de 2560. El margen sube con la
+     pantalla porque un margen fijo de 20 px en un monitor de 4K no se lee como
+     margen: se lee como que el texto se ha caído por el borde. */
+  --gutter-page: clamp(1.25rem, 0.5rem + 3.5vw, 6rem);
+
+  /* La MEDIDA DE LECTURA, que es lo único que sigue teniendo tope. Ojo: NO es
+     un ancho de página, es el ancho de UNA COLUMNA de texto seguido, y por eso
+     sobrevive a la regla de arriba. Ver global.css.
+
+     ⚠️ Y AHORA CRECE, que es la mitad de la regla nueva. Un tope fijo de 42rem
+     hacía que a partir de 1440 px la columna se quedara igual de estrecha por
+     mucha pantalla que hubiera: era el centrado disfrazado de tipografía.
+
+     Crece POCO y con tope, porque lo que se defiende no es un ancho sino los
+     CARACTERES POR LÍNEA: pasados unos 90, el ojo pierde el salto de renglón.
+     Medido a 18 px de cuerpo: 672 px hasta 1440 (~68 caracteres), 700 a 1920
+     (~71) y el tope de 864 a partir de 3840 (~86). Subir el tope sin subir el
+     cuerpo de letra rompe justo lo que esto protege. */
+  --container-read: clamp(42rem, 33rem + 9vw, 54rem);
 
   /* Alto del header, EN SUS DOS ESTADOS.
      La barra se queda arriba al bajar (`sticky`) y tiene dos tamaños: alta

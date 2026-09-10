@@ -5,6 +5,7 @@ import Header from "@components/layout/Header.astro";
 import Footer from "@components/layout/Footer.astro";
 import T from "@components/i18n/T.astro";
 import Icono from "@components/ui/Icono.astro";
+import Editorial from "@components/ui/Editorial.astro";
 import { blogCopy, articulosPublicados, formatearFecha } from "@lib/blog";
 import { construirTxt } from "@i18n/idioma";
 import { sitio } from "@config/curso.config";
@@ -41,23 +42,38 @@ const tituloPagina = construirTxt((l) => `${blogCopy.titulo[l]} · ${sitio.nombr
 
   <main id="contenido" class="section-y">
     <div class="container-page">
-      <div class="mx-auto max-w-read">
-        <h1 class="text-3xl font-extrabold text-balance text-ink sm:text-4xl">
-          <T v={blogCopy.titulo} />
-        </h1>
-        <p class="mt-4 text-lg text-pretty text-ink-muted">
-          <T v={blogCopy.entradilla} />
-        </p>
-      </div>
+      <Editorial medida={false}>
+        {/* El título y la entradilla ya no van encima del listado sino AL
+            LADO, y se quedan a la vista mientras se baja. Ver la regla del
+            ancho en global.css: lo que antes era margen muerto a los dos
+            lados de una columna centrada ahora es la cabecera de la página. */}
+        <div slot="rail">
+          <h1 class="text-3xl font-extrabold text-balance text-ink sm:text-4xl">
+            <T v={blogCopy.titulo} />
+          </h1>
+          <p class="mt-4 text-lg text-pretty text-ink-muted">
+            <T v={blogCopy.entradilla} />
+          </p>
+        </div>
 
-      {/* Una columna y no una rejilla de tarjetas: un listado de artículos se
-          lee de arriba abajo, y en una sola columna el titular puede ser largo
-          sin que la caja lo corte. Las rejillas de tres obligan a titulares de
-          cuatro palabras, que es justo lo que no ayuda a decidir qué leer. */}
-      <ul class="mx-auto mt-12 max-w-read divide-y divide-line border-t border-line">
+      {/* Filas y no tarjetas: un listado de artículos se lee de arriba abajo,
+          y en una fila el titular puede ser largo sin que la caja lo corte.
+          Las rejillas de tres obligan a titulares de cuatro palabras, que es
+          justo lo que no ayuda a decidir qué leer.
+
+          A partir de 80rem se parte en DOS columnas de filas, que no es lo
+          mismo que una rejilla de tarjetas: cada fila sigue teniendo sitio de
+          sobra para un titular largo. Es lo que hace que el ancho de la
+          pantalla sirva para algo en vez de estirar un renglón hasta los
+          2000 px. Ver la regla del ancho en global.css.
+
+          ⚠️ EL BORDE VA EN CADA `li` Y NO CON `divide-y`: en dos columnas,
+          `divide-y` deja sin línea de arriba al primer artículo de la segunda
+          columna y pinta una de más al final de la primera. */}
+      <ul class="grid xl:grid-cols-2 xl:gap-x-16">
         {
           articulos.map((a) => (
-            <li>
+            <li class="border-t border-line">
               <a
                 href={`/blog/${a.id}`}
                 class="group block py-7 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
@@ -96,7 +112,8 @@ const tituloPagina = construirTxt((l) => `${blogCopy.titulo[l]} · ${sitio.nombr
             </li>
           ))
         }
-      </ul>
+        </ul>
+      </Editorial>
     </div>
   </main>
 

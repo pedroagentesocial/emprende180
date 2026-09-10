@@ -127,7 +127,50 @@ el vídeo daría igual y valdría lo mismo un rectángulo navy.
 
 ## Layout
 
-- `--container-page` 72rem, `--container-read` 42rem.
+### La regla del ancho: la página ocupa la pantalla que hay
+
+**No hay ancho máximo de página y no hay centrado de página.** La utilidad
+`container-page` es ancho completo con un margen lateral que crece con la
+pantalla (`--gutter-page`: 20 px a 375, 44 a 1024, 58 a 1440, 75 a 1920, tope
+de 96 a partir de 2560).
+
+Antes eran 72rem centradas. En un monitor de 2560 px eso dejaba 700 px de
+blanco a cada lado y la web entera vivía en el 45 % del centro. Y convivía con
+un `max-w-[88rem]` escrito a mano en media docena de sitios, o sea que había
+dos páginas de anchos distintos en la misma web. Las dos se han ido.
+
+**Lo único que conserva medida es una columna de texto seguido.** Pasados unos
+90 caracteres por línea el ojo pierde el salto de renglón: es un límite del
+ojo, no una preferencia. Para eso está `--container-read`, que ahora **crece
+con la pantalla** —`clamp(42rem, 33rem + 9vw, 54rem)`— porque un tope fijo era
+el centrado disfrazado de tipografía. Se defienden los caracteres por línea,
+no un número de rem: subir el tope sin subir el cuerpo de letra rompe justo lo
+que esto protege.
+
+**Y una columna con medida nunca se centra en un vacío.** Es la mitad de la
+regla que se olvida. Una columna de 42rem sola en el centro de 2560 px es el
+problema del que veníamos. Si un bloque conserva medida, va en una **rejilla**
+que usa el resto del ancho: el titular al lado, la ficha al lado, la foto al
+lado. Ese patrón está resuelto en `components/ui/Editorial.astro` y lo usan el
+blog, las guías, las legales y el bloque del fundador.
+
+La pregunta al escribir una sección nueva no es «¿de qué ancho la hago?» sino
+**«¿qué pongo en el ancho que hay?»**. Si la respuesta es «nada», la sección
+está pidiendo más columnas, no menos ancho.
+
+Sigue siendo **mobile first**: nada de esto es una excepción de escritorio. El
+margen arranca en 20 px y sube solo. Lo que hay que mirar al añadir algo es lo
+de siempre —que quepa a 320— y ahora además que a 2560 no quede una fila de
+tres tarjetas nadando en el centro.
+
+Lo que sangra de borde a borde (bandas, sliders, mitades de pantalla) no lleva
+contenedor: se pone el margen con `px-[var(--gutter-page)]` para que su texto
+siga a plomo con el del resto de la página.
+
+### Lo demás
+
+- `--container-read` `clamp(42rem, 33rem + 9vw, 54rem)`; `--gutter-page`
+  `clamp(1.25rem, 0.5rem + 3.5vw, 6rem)`.
 - Ritmo vertical variable por sección: las secciones de argumento respiran más
   que las de trámite.
 - Objetivo táctil mínimo 44 px (`min-h-11`). Inputs a 16 px o iOS hace zoom.
@@ -142,3 +185,7 @@ el vídeo daría igual y valdría lo mismo un rectángulo navy.
 - Raya (—) en el texto de cara al usuario. Coma, dos puntos o punto.
 - Centrarlo todo. La alternancia entre centrado y alineado a la izquierda es
   parte del ritmo.
+- **Poner un ancho máximo a la página**, en cualquiera de sus formas: un
+  `max-w-*` sobre el envoltorio de una sección, un `mx-auto` que centre un
+  bloque de página, o un contenedor propio en vez de `container-page`. Ver la
+  regla del ancho, arriba.

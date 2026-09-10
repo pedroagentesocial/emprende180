@@ -1,0 +1,312 @@
+---
+import T from "@components/i18n/T.astro";
+import Button from "@components/ui/Button.astro";
+import Enfasis from "@components/ui/Enfasis.astro";
+import { fotoHero } from "@lib/assets";
+import type { Idioma, Txt } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * HERO · EL DÍPTICO — dos públicos en la misma pantalla
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * La primera imagen del slider no es una foto: son DOS, partidas por la mitad.
+ * Ella a la izquierda con su frase, él a la derecha con la suya, el botón en
+ * el centro y la promesa debajo.
+ *
+ * ─── POR QUÉ ESTO NO ES "UN HERO A DOS COLUMNAS" ───────────────────────────
+ *
+ * Un hero normal elige un público, y el que no se reconoce se va. Aquí los dos
+ * ganchos se ven a la vez, y cada persona encuentra el suyo por el lado hacia
+ * el que está mirando: nadie tiene que leer los dos para saber cuál le habla.
+ * Ese es todo el mecanismo, y por eso las dos mitades pesan lo mismo.
+ *
+ * ⚠️ Y POR ESO EL BOTÓN ES UNO SOLO Y ESTÁ EN LA COSTURA. Dos botones —uno por
+ * lado— convertirían un hero que reconoce a dos personas en un formulario que
+ * les pide elegir bando. La bifurcación es del TEXTO; la acción es la misma.
+ *
+ * ─── LAS DOS TIPOGRAFÍAS ───────────────────────────────────────────────────
+ *
+ * `voz` no es un tamaño distinto: son dos sistemas.
+ *
+ *   editorial (ella) — caja baja, peso 600, interlínea abierta, alineada a la
+ *                      izquierda, y la frase que remata en Fraunces itálica.
+ *                      Suena a alguien contando algo.
+ *   directa   (él)   — antetítulo en versalitas espaciadas, titular en 800 con
+ *                      el tracking cerrado y la interlínea por debajo de 1,
+ *                      alineado a la derecha. Suena a alguien afirmando algo.
+ *
+ * Lo que las separa es PESO, CAJA, TRACKING y ALINEACIÓN. No se separan con
+ * dos familias distintas: la marca tiene una (Montserrat) y una segunda que es
+ * de acento (Fraunces), y usarla para un titular entero está prohibido en
+ * tokens.css por un motivo que sigue vigente aquí.
+ *
+ * ⚠️ LAS TABLAS DE CLASES ESTÁN ESCRITAS ENTERAS Y SON CERRADAS. Tailwind lee
+ * el código como TEXTO: una clase montada al vuelo no existe para él y no se
+ * genera nunca, sin aviso. Si hace falta una voz nueva, se añade aquí escrita
+ * completa.
+ *
+ * ─── EL CONTRASTE, QUE AQUÍ ES MÁS DIFÍCIL QUE EN LAS OTRAS DOS ────────────
+ *
+ * En las otras imágenes el texto cae en una esquina y basta con un degradado
+ * lateral. Aquí hay texto en los DOS lados y encima el bloque central, así que
+ * cada mitad lleva su propio velo que arranca en su borde de fuera —donde cae
+ * el texto— y se apaga hacia la costura, que es justo donde están las dos
+ * caras. Se oscurece lo que hay detrás de las letras y se deja limpia la parte
+ * que se mira.
+ *
+ * ⚠️ SI SE CAMBIA UNA FOTO POR OTRA MÁS CLARA, HAY QUE VOLVER A MIRARLO. No va
+ * a saltar ningún aviso: simplemente dejará de leerse.
+ */
+
+interface Linea {
+  es: string;
+  en: string;
+  /** `lead` es el antetítulo; `acento` es la frase que remata. */
+  estilo?: "lead" | "acento";
+}
+
+interface Panel {
+  lado: string;
+  foto: string;
+  /** `object-position` de la foto. Es lo único que decide a quién se ve. */
+  encuadre?: string;
+  alt: Txt;
+  voz: "editorial" | "directa";
+  titulo: readonly Linea[];
+}
+
+interface Props {
+  paneles: readonly Panel[];
+  subtitulo: Txt;
+  cta: { texto: Txt; href: string };
+  lang: Idioma;
+  /** La sombra de texto del slider. Ver su nota en `HeroSlider.astro`. */
+  sombra: string;
+  /** Solo la primera imagen de la página compite por el LCP. */
+  prioritaria?: boolean;
+  trackId: string;
+}
+
+const {
+  paneles,
+  subtitulo,
+  cta,
+  lang,
+  sombra,
+  prioritaria = false,
+  trackId,
+} = Astro.props;
+
+/**
+ * ⚠️ EL MÍNIMO DE LOS `clamp()` ESTÁ CALCULADO CONTRA LA PANTALLA, NO ELEGIDO.
+ * En móvil las dos fotos se apilan, así que cada titular tiene MEDIA pantalla
+ * menos el bloque de abajo: unos 190 px en un teléfono de 667. Con el mínimo
+ * en 1,75rem los dos renglones del titular más el antetítulo no caben y la
+ * mitad de arriba se mete debajo de la barra. Con 1,5rem sí caben.
+ *
+ * O sea que subir ese número no es "poner el titular más grande": es sacar la
+ * primera línea de la pantalla en los teléfonos cortos, y no va a avisar
+ * nadie. Se mide con las dos frases más largas que haya en el config.
+ */
+const VOCES = {
+  editorial: {
+    /* `justify-start` = el texto se pega al borde de FUERA del díptico, que es
+       donde el velo es opaco. Pegarlo a la costura lo pondría encima de la
+       cara. */
+    caja: "justify-start text-left",
+    lead: "max-w-[26ch] text-sm font-normal text-secondary-100 sm:text-base lg:text-lg",
+    titulo:
+      "mt-2 text-[clamp(1.5rem,1.05rem+2.6vw,3.25rem)] font-semibold leading-[1.08] tracking-[-0.015em] sm:mt-3",
+  },
+  directa: {
+    caja: "justify-end text-right",
+    lead: "ml-auto max-w-[26ch] text-[0.65rem] font-bold uppercase tracking-[0.18em] text-secondary-200 sm:text-xs",
+    titulo:
+      "mt-3 text-[clamp(1.5rem,1rem+2.9vw,3.5rem)] font-extrabold leading-[0.97] tracking-[-0.03em] sm:mt-4",
+  },
+} as const;
+
+/* El velo de cada mitad arranca en su borde de fuera y muere en la costura. */
+const VELOS = {
+  editorial:
+    "bg-gradient-to-r from-primary-950/92 via-primary-950/50 to-primary-950/10",
+  directa:
+    "bg-gradient-to-l from-primary-950/92 via-primary-950/50 to-primary-950/10",
+} as const;
+---
+
+{/* `relative` para que el bloque central pueda salirse del flujo en pantalla
+    grande. En móvil NO se sale: es la tercera fila de esta misma rejilla, con
+    su fondo navy, y por eso las dos fotos se reparten lo que sobra en vez de
+    quedar medio tapadas por él. */}
+<div class="relative grid size-full grid-rows-[1fr_1fr_auto] lg:grid-cols-2 lg:grid-rows-1">
+  {
+    paneles.map((panel, n) => (
+      <div class="relative isolate overflow-hidden">
+        {/* Sin `width`/`height`, y esta vez no es un olvido: la celda de la
+            rejilla ya tiene su alto, así que la imagen no reserva nada ni
+            puede desplazar nada. Poner una proporción inventada solo serviría
+            para mentir sobre el archivo. */}
+        {/* La foto de la sesión manda sobre la de banco del config, y el
+            recorte se va con ella: una vertical hecha a medida no necesita que
+            nadie le busque el punto. Ver `fotoHero` en `lib/assets.ts`.
+
+            Las DOS van en `fetchpriority="high"`, no solo la primera. En las
+            otras imágenes del slider se prioriza una porque solo hay una; aquí
+            las dos mitades se ven a la vez desde el primer píxel y las dos
+            compiten por el LCP. Priorizar una sola no ahorra bytes: hace que
+            la otra llegue tarde y que el díptico se monte a trozos. */}
+        <img
+          src={fotoHero(panel.lado) ?? panel.foto}
+          alt={panel.alt[lang]}
+          data-alt-es={panel.alt.es}
+          data-alt-en={panel.alt.en}
+          loading={prioritaria ? "eager" : "lazy"}
+          fetchpriority={prioritaria ? "high" : "auto"}
+          decoding="async"
+          style={
+            fotoHero(panel.lado) === null && panel.encuadre
+              ? `object-position:${panel.encuadre}`
+              : undefined
+          }
+          class="absolute inset-0 -z-10 size-full object-cover"
+        />
+
+        <div
+          aria-hidden="true"
+          class:list={["absolute inset-0 -z-10", VELOS[panel.voz]]}
+        />
+
+        {/* Y encima, un apagado hacia abajo. En pantalla grande es lo que hace
+            que el bloque central se apoye en algo en vez de flotar sobre la
+            foto; en móvil es lo que sostiene el texto de cada mitad, que ahí
+            va abajo y no en el centro. */}
+        <div
+          aria-hidden="true"
+          class="absolute inset-x-0 bottom-0 -z-10 h-2/5 bg-gradient-to-t from-primary-950/85 to-transparent"
+        />
+
+        {/* ─── DÓNDE CAE EL TEXTO DENTRO DE SU MITAD ──────────────────────
+            En pantalla grande, centrado, con `lg:pb-56` para dejarle sitio al
+            bloque de la promesa y el botón.
+
+            ⚠️ EN MÓVIL NO ESTÁN LOS DOS IGUAL, y no es un descuido. Apiladas,
+            cada foto se queda con poco más de 190 px de alto y la barra de
+            navegación flota sobre los primeros 80: con el texto centrado, el
+            antetítulo de la primera se mete debajo del logo. Por eso la de
+            arriba lleva su texto ABAJO —lejos de la barra— y la de abajo lo
+            lleva centrado, que es lo que deja aire antes de la franja navy.
+
+            `pt-20` es el seguro por si algún día el texto crece: aunque vaya
+            alineado abajo, no puede subir más allá de la barra. */}
+        <div
+          class:list={[
+            "flex size-full px-[var(--gutter-page)] pb-6 pt-20 lg:items-center lg:pb-56 lg:pt-10",
+            n === 0 ? "items-end" : "items-center",
+            /* El margen de FUERA es el de la página —así estos dos titulares
+               quedan a plomo con los de las secciones de abajo— y el de DENTRO
+               es el aire de la costura, que solo existe cuando hay dos
+               columnas. Ver la regla del ancho en global.css. */
+            n === 0 ? "lg:pr-14" : "lg:pl-14",
+            VOCES[panel.voz].caja,
+          ]}
+        >
+          <div class="max-w-[30ch]">
+            {panel.titulo
+              .filter((l) => l.estilo === "lead")
+              .map((linea) => (
+                <p class={VOCES[panel.voz].lead} style={sombra}>
+                  <T v={linea} />
+                </p>
+              ))}
+
+            {/* ⚠️ LOS DOS TITULARES SON `h2`, Y EL `h1` ES LA FRASE DE ABAJO.
+                Parece al revés y no lo es: estas dos frases son GANCHOS —cada
+                una le habla a una persona— y ninguna de las dos dice de qué va
+                la página. La de abajo sí. Poner un `h1` a cada lado dejaría a
+                un lector de pantalla con dos titulares de página y ninguna
+                respuesta. Ver el bloque central. */}
+            <h2 class:list={["text-balance", VOCES[panel.voz].titulo]}>
+              {panel.titulo
+                .filter((l) => l.estilo !== "lead")
+                .map((linea) => (
+                  <span class="block" style={`color:#ffffff;${sombra}`}>
+                    {linea.estilo === "acento" ? (
+                      panel.voz === "editorial" ? (
+                        <Enfasis v={linea} tono="inverso" />
+                      ) : (
+                        /* La misma función que la cursiva de ella, con el otro
+                           recurso: aquí el remate lo marca el COLOR, porque una
+                           Fraunces itálica dentro de un titular apretado en 800
+                           se lee como un fallo de estilos. */
+                        <span class="text-ink-on-inverse-brand">
+                          <T v={linea} />
+                        </span>
+                      )
+                    ) : (
+                      <T v={linea} />
+                    )}
+                  </span>
+                ))}
+            </h2>
+          </div>
+        </div>
+      </div>
+    ))
+  }
+
+  {/* ─── LA COSTURA ────────────────────────────────────────────────────────
+      Solo en pantalla grande. En móvil las dos fotos ya se tocan y una línea
+      horizontal ahí sería nada más que una raya. */}
+  <div
+    aria-hidden="true"
+    class="pointer-events-none absolute inset-y-0 left-1/2 hidden w-px -translate-x-1/2 bg-white/20 lg:block"
+  />
+
+  {/* ─── EL BLOQUE CENTRAL ─────────────────────────────────────────────────
+      La promesa y la acción, centradas, a caballo de la costura.
+
+      El orden es promesa → botón y no al revés: el botón dice a qué te
+      apuntas, y quien lo lee antes que la frase no sabe a qué. Cambiarlo es
+      mover dos bloques.
+
+      ⚠️ EL `pb` GRANDE NO ES AIRE: ES SITIO PARA LOS MANDOS DEL SLIDER. Los
+      tres puntos y el botón de pausa van anclados a 24 px del borde de abajo y
+      ocupan una banda de 44 px de alto que cruza la pantalla. Con menos
+      relleno, el botón se sienta encima de esa banda; y como los mandos se
+      pintan después, es el botón el que deja de recibir el clic. Se ve raro y
+      no se entiende, que es la peor combinación.
+
+      El otro extremo del mismo problema está en `HeroSlider.astro`: la caja de
+      los mandos lleva `pointer-events-none` para no comerse los clics del aire
+      que le sobra a su derecha. Las dos cosas hacen falta. */}
+  <div
+    class="relative z-10 flex flex-col items-center gap-4 bg-primary-950 px-[var(--gutter-page)] pb-20 pt-6 text-center sm:gap-5 lg:absolute lg:inset-x-0 lg:bottom-0 lg:z-auto lg:col-span-2 lg:bg-transparent lg:pb-20 lg:pt-0"
+  >
+    {/* Es el `h1` de la página, aunque no lo parezca y aunque no sea lo más
+        grande que hay en pantalla. Es la única frase del hero que contesta
+        "¿de qué va esto?": los dos titulares de arriba son ganchos, y un
+        gancho no sirve de titular de página.
+
+        `font-normal` porque global.css pone todos los encabezados en bold: sin
+        eso, esta frase competiría con los dos titulares que tiene encima. El
+        peso semántico y el peso visual no tienen por qué coincidir. */}
+    <h1
+      class="max-w-2xl text-pretty text-sm font-normal leading-relaxed text-secondary-100 sm:text-base lg:max-w-xl lg:text-lg"
+      style={sombra}
+    >
+      <T v={subtitulo} />
+    </h1>
+
+    <Button
+      href={cta.href}
+      variant="primary"
+      size="lg"
+      sobre="oscuro"
+      trackId={trackId}
+    >
+      <T v={cta.texto} />
+    </Button>
+  </div>
+</div>

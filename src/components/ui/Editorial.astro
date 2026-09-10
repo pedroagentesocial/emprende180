@@ -1,0 +1,88 @@
+---
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * EDITORIAL — el patrón de las páginas de documento
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Un raíl a la izquierda con el título y la navegación, y al lado la columna de
+ * contenido. El raíl se queda pegado arriba mientras se baja.
+ *
+ * ─── PARA QUÉ EXISTE ───────────────────────────────────────────────────────
+ *
+ * Es la respuesta de la REGLA DEL ANCHO (ver `global.css`) al único caso que
+ * la regla no puede resolver sola: el texto seguido.
+ *
+ * La regla dice que la página ocupa la pantalla que hay. Un párrafo no puede:
+ * pasados unos 90 caracteres por línea el ojo pierde el salto de renglón. Pero
+ * la regla dice también que una columna con medida NO se centra en un vacío,
+ * porque una columna de 42rem sola en el centro de un monitor de 2560 es justo
+ * el problema del que veníamos.
+ *
+ * La salida es esta: la columna conserva su medida y se coloca en una REJILLA
+ * que empieza en el margen izquierdo de la página, con el título, la fecha y
+ * la vuelta atrás ocupando el ancho de al lado. Lo que antes era blanco muerto
+ * a los dos lados ahora es la cabecera del documento, y encima se queda a la
+ * vista mientras se lee.
+ *
+ * ⚠️ EN UN MONITOR MUY ANCHO SIGUE SOBRANDO SITIO A LA DERECHA, y es honesto
+ * decirlo en vez de disimularlo: un texto corrido no puede llenar 2400 px y no
+ * hay maquetación que lo arregle. Lo que se puede hacer —y se hace— es que lo
+ * que NO es texto corrido sí lo llene: ver `medida`.
+ */
+
+interface Props {
+  /**
+   * Si la columna de contenido conserva la medida de lectura.
+   *
+   *   true  (por defecto) — texto seguido: un artículo, un documento legal.
+   *   false               — un listado o una rejilla, que sí puede crecer.
+   *                         Entonces el contenido es responsable de ponerle
+   *                         medida a sus párrafos y de repartirse en columnas
+   *                         cuando hay sitio: si no, se queda una lista de
+   *                         renglones de 2000 px que no se lee.
+   */
+  medida?: boolean;
+  class?: string;
+}
+
+const { medida = true, class: className = "" } = Astro.props;
+
+/**
+ * ⚠️ LAS DOS REJILLAS ESCRITAS ENTERAS Y NO UNA MONTADA AL VUELO. Tailwind lee
+ * el código como TEXTO para decidir qué CSS genera: una clase interpolada no
+ * existe para él y no se genera nunca, sin aviso.
+ *
+ * `minmax(0,…)` en las dos columnas y no `auto`: sin eso, un elemento que no
+ * sepa encoger —una tabla, un bloque de código largo— empuja la rejilla y saca
+ * la página por el borde. Es el fallo clásico de CSS Grid y no avisa tampoco.
+ */
+const REJILLAS = {
+  medida:
+    "lg:grid-cols-[minmax(0,16rem)_minmax(0,var(--container-read))] xl:grid-cols-[minmax(0,20rem)_minmax(0,var(--container-read))]",
+  ancha:
+    "lg:grid-cols-[minmax(0,16rem)_minmax(0,1fr)] xl:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]",
+} as const;
+---
+
+<div
+  class:list={[
+    "grid gap-10 lg:gap-16 xl:gap-24",
+    REJILLAS[medida ? "medida" : "ancha"],
+    className,
+  ]}
+>
+  {/* El raíl. `self-start` no es opcional: sin él, el elemento de rejilla se
+      estira al alto de la fila y `sticky` no tiene contra qué pegarse, así que
+      no hace nada y tampoco da error.
+
+      `top-28` deja pasar la barra de arriba, que también es sticky. */}
+  <div class="lg:sticky lg:top-28 lg:self-start">
+    <slot name="rail" />
+  </div>
+
+  {/* `min-w-0` por lo mismo que el `minmax(0,…)` de arriba, y hacen falta los
+      dos: uno impide que la PISTA crezca, este que lo haga el ELEMENTO. */}
+  <div class="min-w-0">
+    <slot />
+  </div>
+</div>

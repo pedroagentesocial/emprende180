@@ -67,11 +67,16 @@ const FOTO = "/imagenes/resultados/04.webp";
 
 <Section id="empezar" tono="surface" ariaLabel={copy.cierre.aria} sinContenedor>
   <div class="grid items-stretch lg:grid-cols-2">
-    {/* ─── El formulario ──────────────────────────────────────────────────
-        Misma medida que el resto del rediseño: 44rem pegadas al borde derecho
-        de su mitad empiezan donde empezaría un contenedor centrado de 88rem, y
-        así el titular queda alineado con el de las demás secciones. */}
-    <div class="w-full px-5 sm:px-8 lg:ml-auto lg:max-w-[44rem] lg:py-6">
+    {/* ─── La mitad que se lee ────────────────────────────────────────────
+        ⚠️ AQUÍ HABÍA UN "lg:max-w-[44rem]" y se ha ido con la regla del ancho:
+        eran 44rem pegadas a la costura para cuadrar con un contenedor centrado
+        de 88rem que ya no existe. Ahora esta mitad se llena entera.
+
+        Los dos márgenes NO son el mismo y no deben serlo: el de FUERA es
+        "--gutter-page", el mismo de toda la página, para que este titular
+        quede a plomo con el de las demás secciones; el de DENTRO es el aire de
+        la costura, y solo aparece cuando hay dos columnas. */}
+    <div class="w-full px-[var(--gutter-page)] lg:py-6 lg:pr-14">
       <Reveal>
         <p class="text-sm font-semibold text-ink-brand">
           <T v={informes.kicker} />

@@ -128,13 +128,17 @@ const duracion = `${marcas.length * 5}s`;
       sección) mientras el rótulo respeta el margen de la página: por eso el
       padding va en el rótulo y no en el contenedor común. */}
       <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:gap-10">
-        {/* ⚠️ EL MARGEN VA A MANO Y NO CON `container-page`. Esa utilidad lleva
-            `max-width` y `margin-inline: auto`, así que dentro de una fila flex
-            se comía el ancho entero y empujaba la banda fuera de la pantalla:
-            se veía el rótulo y un solo logo asomando por la derecha. Aquí solo
-            hace falta el margen izquierdo, que son los mismos 1.25/2rem que
-            usa la página. */}
-        <Reveal class="shrink-0 pl-5 sm:pl-8">
+        {/* ⚠️ EL MARGEN VA A MANO PERO CON EL TOKEN DE LA PÁGINA, no con un
+            número escrito aquí. Aquí solo hace falta el margen IZQUIERDO —la
+            banda tiene que seguir sangrando hasta el borde derecho— y
+            `container-page` pone los dos, así que no sirve.
+
+            Antes eran `pl-5 sm:pl-8` a mano, y eso funcionaba mientras la
+            página tuviera ese margen fijo. Con la regla del ancho el margen
+            crece con la pantalla (ver global.css): dejarlo en 2rem clavados
+            habría desalineado este rótulo de todos los titulares de la página
+            a partir de 1024 px, sin que salte nada. */}
+        <Reveal class="shrink-0 pl-[var(--gutter-page)]">
           <p class="text-xs font-bold tracking-[0.18em] text-ink-subtle uppercase">
             <T v={copy.aliados.rotulo} />
           </p>

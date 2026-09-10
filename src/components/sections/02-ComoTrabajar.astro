@@ -51,6 +51,9 @@ const { comoTrabajar } = copy;
     botón del hero ("Ver cómo funciona") y un botón de /about. Sin él, los tres
     se quedan sin destino. `scroll-mt` lo separa de la barra al saltar. */}
 <div id="como-trabajar" class="scroll-mt-24" aria-labelledby="como-trabajar-titulo">
+  {/* El titular conserva medida —es texto— pero NO se centra: arranca en el
+      margen izquierdo de la página, como el de las demás secciones. Ver la
+      regla del ancho en global.css. */}
   <div class="max-w-2xl">
     <p class="text-xs font-bold tracking-[0.18em] text-ink-brand uppercase">
       <T v={comoTrabajar.kicker} />
@@ -74,7 +77,7 @@ const { comoTrabajar } = copy;
     </h2>
   </div>
 
-  <ul class="mt-12 grid gap-6 lg:grid-cols-3">
+  <ul class="mt-12 grid gap-6 lg:grid-cols-3 2xl:gap-10">
     {
       comoTrabajar.piezas.map((pieza, i) => (
         <Reveal as="li" delay={i * 0.08} class="h-full">
@@ -105,7 +108,7 @@ const { comoTrabajar } = copy;
               <T v={pieza.titulo} />
             </h3>
 
-            <p class="mt-3 text-base text-pretty text-ink-muted">
+            <p class="mt-3 max-w-prose text-base text-pretty text-ink-muted">
               <T v={pieza.texto} />
             </p>
 

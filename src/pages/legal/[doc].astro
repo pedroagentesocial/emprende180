@@ -3,6 +3,7 @@ import BaseLayout from "@layouts/BaseLayout.astro";
 import Header from "@components/layout/Header.astro";
 import Footer from "@components/layout/Footer.astro";
 import LegalArticle from "@components/legal/LegalArticle.astro";
+import Editorial from "@components/ui/Editorial.astro";
 import { documentosPorSlug } from "@config/legal.config";
 import { sitio, copy } from "@config/curso.config";
 import { construirTxt } from "@i18n/idioma";
@@ -33,18 +34,21 @@ const tituloPagina = construirTxt((l) => `${doc.titulo[l]} · ${sitio.nombre}`);
 
   <main id="contenido" class="section-y">
     <div class="container-page">
-      <div class="mx-auto max-w-read">
+      {/* La vuelta atrás deja de ir encima del documento y pasa al raíl, donde
+          se queda a la vista mientras se baja: en un texto legal largo, tener
+          la salida siempre delante es más útil que un enlace en el minuto
+          cero. Ver `Editorial.astro` y la regla del ancho en global.css. */}
+      <Editorial>
         <a
+          slot="rail"
           href="/"
           class="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-ink-brand hover:text-secondary-800"
         >
           <span aria-hidden="true">←</span> <T v={copy.ui.volverAInicio} />
         </a>
 
-        <div class="mt-6">
-          <LegalArticle doc={doc} />
-        </div>
-      </div>
+        <LegalArticle doc={doc} />
+      </Editorial>
     </div>
   </main>
 

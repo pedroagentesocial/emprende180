@@ -6,6 +6,7 @@ import Footer from "@components/layout/Footer.astro";
 import T from "@components/i18n/T.astro";
 import Icono from "@components/ui/Icono.astro";
 import LeadForm from "@components/ui/LeadForm";
+import Editorial from "@components/ui/Editorial.astro";
 import { copy, sitio } from "@config/curso.config";
 import { articulosPublicados, formatearFecha } from "@lib/blog";
 import { construirTxt, resolverIdiomaServidor } from "@i18n/idioma";
@@ -50,19 +51,22 @@ const tituloPagina = construirTxt(
 
   <main id="contenido" class="section-y">
     <div class="container-page">
-      <div class="mx-auto max-w-read">
-        <h1 class="text-3xl font-extrabold text-balance text-ink sm:text-4xl">
-          <T v={recursos.paginaTitulo} />
-        </h1>
-        <p class="mt-4 text-lg text-pretty text-ink-muted">
-          <T v={recursos.paginaEntradilla} />
-        </p>
-      </div>
+      <Editorial medida={false}>
+        {/* Título y entradilla al lado, no encima: se quedan a la vista
+            mientras se baja y llenan el ancho que antes era margen muerto. */}
+        <div slot="rail">
+          <h1 class="text-3xl font-extrabold text-balance text-ink sm:text-4xl">
+            <T v={recursos.paginaTitulo} />
+          </h1>
+          <p class="mt-4 text-lg text-pretty text-ink-muted">
+            <T v={recursos.paginaEntradilla} />
+          </p>
+        </div>
 
       {/* ─── Los artículos ───────────────────────────────────────────────
           El mismo listado de `/blog`, en una columna: un titular largo se lee
           entero y no hay que cortarlo para que quepa en una tarjeta. */}
-      <section class="mx-auto mt-14 max-w-read" aria-labelledby="recursos-articulos">
+      <section aria-labelledby="recursos-articulos">
         <h2
           id="recursos-articulos"
           class="text-xs font-bold tracking-[0.18em] text-ink-subtle uppercase"
@@ -112,8 +116,11 @@ const tituloPagina = construirTxt(
       {/* ─── El aviso del siguiente ──────────────────────────────────────
           El mismo formulario de la portada, con el mismo origen: lo que se
           mide es de dónde salió el correo, y desde aquí sigue siendo "guías". */}
+      {/* El formulario SÍ conserva medida: son etiquetas y frases que se
+          leen renglón a renglón, no un listado. Pero no se centra —se queda a
+          la izquierda de su columna— que es lo que pide la regla. */}
       <section
-        class="mx-auto mt-16 max-w-read rounded-3xl bg-surface-muted p-8 sm:p-10"
+        class="mt-16 max-w-read rounded-3xl bg-surface-muted p-8 sm:p-10"
         aria-labelledby="recursos-avisame"
       >
         <h2
@@ -135,7 +142,8 @@ const tituloPagina = construirTxt(
             exitoTexto={guias.exitoTexto}
           />
         </div>
-      </section>
+        </section>
+      </Editorial>
     </div>
   </main>
 

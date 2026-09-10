@@ -3,17 +3,30 @@ import T from "@components/i18n/T.astro";
 import Button from "@components/ui/Button.astro";
 import Enfasis from "@components/ui/Enfasis.astro";
 import Icono from "@components/ui/Icono.astro";
+import HeroDiptico from "@components/hero/HeroDiptico.astro";
 import { copy } from "@config/curso.config";
-import { resolverIdiomaServidor, construirTxt } from "@i18n/idioma";
+import { resolverIdiomaServidor, construirTxt, type Txt } from "@i18n/idioma";
 import { interpolar } from "@i18n/formato";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- * HERO · TRES FOTOS QUE ROTAN
+ * HERO · TRES IMÁGENES QUE ROTAN
  * ═══════════════════════════════════════════════════════════════════════════
  *
  * La segunda dirección visual: la foto ocupa la pantalla entera y el texto va
  * encima, cargado a la derecha. Sustituye al hero de isla navy + vídeo.
+ *
+ * ─── LA PRIMERA NO ES UNA FOTO, ES UN DÍPTICO ──────────────────────────────
+ *
+ * Y por eso el archivo dice "imágenes" y ya no dice "fotos". La que abre son
+ * DOS fotos partidas por la mitad, con un titular en cada lado —uno le habla a
+ * ella y otro a él— el botón en la costura y la promesa debajo. Se pinta con
+ * su propio componente, `HeroDiptico.astro`, y lo que eso obliga a hacer aquí
+ * está anotado en `esDiptico`, más abajo.
+ *
+ * Las otras dos siguen siendo lo de siempre: una foto y el texto en su
+ * esquina. Las dos plantillas conviven; el slider no sabe de cuál es cada una
+ * hasta que lo pregunta.
  *
  * ─── LO QUE SE PIERDE, Y HAY QUE DECIDIR DÓNDE VUELVE ──────────────────────
  *
@@ -131,6 +144,74 @@ type Posicion = keyof typeof POSICIONES;
 const posicionDe = (v: string | undefined): Posicion =>
   v && v in POSICIONES ? (v as Posicion) : "derecha-centro";
 
+/**
+ * ─── EL DÍPTICO ES OTRA COSA, Y POR ESO SE PREGUNTA ────────────────────────
+ *
+ * Las imágenes normales son UNA foto con el texto en una esquina. La primera
+ * es un díptico: dos fotos partidas por la mitad, un texto en cada lado y el
+ * botón en la costura. No cabe en la plantilla de las otras dos —no tiene
+ * `posicion`, ni `kicker`, ni una foto sola— así que se pinta con su propio
+ * componente. Ver `HeroDiptico.astro`.
+ *
+ * ⚠️ EL DÍPTICO SE PINTA ENTERO DENTRO DE LA CAPA DE FONDO, texto incluido, y
+ * NO usa la capa de texto que usan las otras dos. El motivo es que su rejilla
+ * decide a la vez dónde va cada foto y dónde va cada frase: repartirla entre
+ * dos capas absolutas obligaría a mantener la misma rejilla escrita dos veces
+ * y a que las dos coincidieran al píxel para siempre.
+ *
+ * Lo que eso obliga a hacer, y por qué está más abajo:
+ *
+ *   · La capa de fondo lleva `pointer-events-none` salvo la activa. Antes daba
+ *     igual —eran imágenes— pero ahora tiene un botón dentro, y una capa
+ *     invisible a `opacity-0` sigue tapando clics.
+ *   · La capa de texto se sigue pintando VACÍA para el díptico. Es fea y es a
+ *     propósito: el script empareja fondos, textos y puntos POR POSICIÓN en el
+ *     array, así que saltarse un hueco desplazaría todos los siguientes.
+ */
+interface PanelDiptico {
+  lado: string;
+  foto: string;
+  encuadre?: string;
+  alt: Txt;
+  voz: "editorial" | "directa";
+  titulo: readonly { es: string; en: string; estilo?: "lead" | "acento" }[];
+}
+
+interface SlideDiptico {
+  paneles: readonly PanelDiptico[];
+  subtitulo: Txt;
+  cta: { texto: Txt; href: string };
+}
+
+/* Se reconoce por `paneles`, que es lo único que ninguna imagen normal tiene.
+   Preguntar por `tipo === "diptico"` obligaría a que las otras dos declararan
+   un `tipo` que no usa nadie. */
+const esDiptico = (slide: unknown): slide is SlideDiptico =>
+  typeof slide === "object" && slide !== null && "paneles" in slide;
+
+/** Una imagen de las normales: una foto y el texto en una esquina. */
+interface SlideFoto {
+  foto: string;
+  alt: Txt;
+  posicion?: string;
+  kicker: Txt;
+  titulo: readonly { es: string; en: string; enfasis?: boolean }[];
+  subtitulo: Txt;
+}
+
+/**
+ * ⚠️ ESTE CAST NO SE PUEDE QUITAR, y merece la línea. `esDiptico` sí estrecha
+ * en la rama verdadera, pero en la FALSA TypeScript no descarta el díptico:
+ * para hacerlo tendría que ver el objeto del config como asignable al tipo del
+ * guard, y con `as const` viene con todo readonly y con los textos como tipos
+ * literales, así que no encaja del todo y se queda en la unión.
+ *
+ * O sea que dentro del `else` seguiría creyendo que `slide` puede no tener
+ * `foto`. Se afirma aquí, una vez, en lugar de repetir un cast en cada
+ * atributo —que es lo que ya hacía la lectura de `posicion`.
+ */
+const comoFoto = (slide: unknown) => slide as SlideFoto;
+
 /** "Ver la imagen 2", ya resuelto en los dos idiomas. */
 const etiquetaPunto = (i: number) =>
   construirTxt((l) => interpolar(heroSlider.irASlide[l], { n: i + 1 }));
@@ -150,41 +231,62 @@ const etiquetaPunto = (i: number) =>
       <div
         data-slide={i}
         data-activo={i === 0 ? "true" : "false"}
-        class="absolute inset-0 -z-10 opacity-0 transition-opacity duration-[1200ms] ease-out-soft data-[activo=true]:opacity-100"
+        class="pointer-events-none absolute inset-0 -z-10 opacity-0 transition-opacity duration-[1200ms] ease-out-soft data-[activo=true]:pointer-events-auto data-[activo=true]:opacity-100"
         aria-hidden={i === 0 ? undefined : "true"}
       >
-        {/* `fetchpriority="high"` y `loading="eager"` SOLO en la primera: es la
-            imagen más grande de la página y la que decide el LCP. Las otras dos
-            no se ven hasta el segundo seis, así que esperan. */}
-        <img
-          src={slide.foto}
-          alt={slide.alt[lang]}
-          data-alt-es={slide.alt.es}
-          data-alt-en={slide.alt.en}
-          width={1600}
-          height={900}
-          loading={i === 0 ? "eager" : "lazy"}
-          fetchpriority={i === 0 ? "high" : "auto"}
-          decoding="async"
-          class="size-full object-cover"
-        />
+        {/* ⚠️ `pointer-events-none` HASTA QUE LA IMAGEN ES LA ACTIVA. Mientras
+            estas capas solo tenían un `<img>` dentro daba igual; desde que el
+            díptico mete su botón aquí, no: una capa a `opacity-0` sigue
+            ocupando la pantalla entera y se come los clics de la que sí se ve.
 
-        {/* El velo va DENTRO de la foto y no encima de todo: así se desvanece
-            con ella en el cruce en vez de quedarse fijo mientras la imagen de
-            debajo cambia, que se vería como un parpadeo. */}
-        <div
-          aria-hidden="true"
-          class:list={[
-            "absolute inset-0",
-            VELOS[
-              posicionDe((slide as { posicion?: string }).posicion).startsWith(
-                "derecha",
-              )
-                ? "derecha"
-                : "izquierda"
-            ],
-          ]}
-        />
+            El díptico se pinta ENTERO aquí dentro, texto y botón incluidos, y
+            deja vacío su hueco en la capa de texto de más abajo. Ver la nota
+            de `esDiptico`. */}
+        {esDiptico(slide) ? (
+          <HeroDiptico
+            paneles={slide.paneles}
+            subtitulo={slide.subtitulo}
+            cta={slide.cta}
+            lang={lang}
+            sombra={SOMBRA_TEXTO}
+            prioritaria={i === 0}
+            trackId={`hero-${i + 1}`}
+          />
+        ) : (
+          <Fragment>
+            {/* `fetchpriority="high"` y `loading="eager"` SOLO en la primera:
+                es la imagen más grande de la página y la que decide el LCP.
+                Las otras dos no se ven hasta el segundo seis, así que
+                esperan. */}
+            <img
+              src={comoFoto(slide).foto}
+              alt={comoFoto(slide).alt[lang]}
+              data-alt-es={comoFoto(slide).alt.es}
+              data-alt-en={comoFoto(slide).alt.en}
+              width={1600}
+              height={900}
+              loading={i === 0 ? "eager" : "lazy"}
+              fetchpriority={i === 0 ? "high" : "auto"}
+              decoding="async"
+              class="size-full object-cover"
+            />
+
+            {/* El velo va DENTRO de la foto y no encima de todo: así se
+                desvanece con ella en el cruce en vez de quedarse fijo mientras
+                la imagen de debajo cambia, que se vería como un parpadeo. */}
+            <div
+              aria-hidden="true"
+              class:list={[
+                "absolute inset-0",
+                VELOS[
+                  posicionDe(comoFoto(slide).posicion).startsWith("derecha")
+                    ? "derecha"
+                    : "izquierda"
+                ],
+              ]}
+            />
+          </Fragment>
+        )}
       </div>
     ))
   }
@@ -200,13 +302,20 @@ const etiquetaPunto = (i: number) =>
       a la derecha. Alinear a la derecha tres líneas de titular obliga a buscar
       dónde empieza cada una. */}
   {
-    heroSlider.slides.map((slide, i) => (
+    heroSlider.slides.map((slide, i) =>
+      esDiptico(slide) ? (
+        /* El hueco del díptico, que ya se pintó entero arriba. Va vacío y
+           siempre oculto, pero VA: el script empareja fondos, textos y puntos
+           por su posición en el array, así que saltárselo correría un puesto
+           todos los siguientes. Ver la nota de `esDiptico`. */
+        <div data-texto={i} data-activo={i === 0 ? "true" : "false"} class="hidden" />
+      ) : (
       <div
         data-texto={i}
         data-activo={i === 0 ? "true" : "false"}
         class:list={[
           "absolute inset-0 hidden data-[activo=true]:flex",
-          POSICIONES[posicionDe((slide as { posicion?: string }).posicion)],
+          POSICIONES[posicionDe(comoFoto(slide).posicion)],
         ]}
       >
         <div class="container-page w-full">
@@ -220,7 +329,7 @@ const etiquetaPunto = (i: number) =>
           <div
             class:list={[
               "max-w-2xl",
-              (slide as { posicion?: string }).posicion?.startsWith("derecha")
+              comoFoto(slide).posicion?.startsWith("derecha")
                 ? "ml-auto"
                 : "mr-auto",
             ]}
@@ -233,11 +342,11 @@ const etiquetaPunto = (i: number) =>
               class="mb-4 text-sm font-semibold text-secondary-200 sm:text-base"
               style={SOMBRA_TEXTO}
             >
-              <T v={slide.kicker} />
+              <T v={comoFoto(slide).kicker} />
             </p>
 
             <h1 class="text-4xl leading-[1.06] font-extrabold text-balance sm:text-5xl lg:text-6xl">
-              {slide.titulo.map((linea) => (
+              {comoFoto(slide).titulo.map((linea) => (
                 <span class="block" style={`color:#ffffff;${SOMBRA_TEXTO}`}>
                   {"enfasis" in linea && linea.enfasis ? (
                     <Enfasis v={linea} tono="inverso" />
@@ -254,7 +363,7 @@ const etiquetaPunto = (i: number) =>
               class="mt-5 max-w-md text-base sm:text-lg"
               style={`color:#ffffff;${SOMBRA_TEXTO}`}
             >
-              <T v={slide.subtitulo} />
+              <T v={comoFoto(slide).subtitulo} />
             </p>
 
             <div class="mt-8">
@@ -270,15 +379,25 @@ const etiquetaPunto = (i: number) =>
           </div>
         </div>
       </div>
-    ))
+      ),
+    )
   }
 
   {/* ─── LOS MANDOS ─────────────────────────────────────────────────────────
       Abajo a la izquierda, lejos del texto y del botón. Los tres puntos dicen
       en qué imagen vas y dejan elegir; el botón para. Ver la nota de la
-      cabecera: sin esto, el hero incumple la WCAG. */}
-  <div class="container-page absolute inset-x-0 bottom-6 flex items-center gap-4">
-    <ul role="list" class="flex items-center gap-2">
+      cabecera: sin esto, el hero incumple la WCAG.
+
+      ⚠️ `pointer-events-none` EN LA CAJA Y `pointer-events-auto` EN LO QUE SE
+      PULSA. Esta caja es tan ancha como el contenedor de la página, pero lo
+      que hay dentro ocupa 140 px a la izquierda: el resto es aire, y ese aire
+      se pintaba POR ENCIMA del hero. Mientras el botón del hero estuvo a la
+      derecha no se notó; el del díptico va centrado y a la misma altura, así
+      que el clic caía en el aire de esta caja y no pasaba nada. */}
+  <div
+    class="container-page pointer-events-none absolute inset-x-0 bottom-6 flex items-center gap-4"
+  >
+    <ul role="list" class="pointer-events-auto flex items-center gap-2">
       {
         heroSlider.slides.map((_, i) => (
           <li>
@@ -313,7 +432,7 @@ const etiquetaPunto = (i: number) =>
       data-etiqueta-pausar-en={heroSlider.pausar.en}
       data-etiqueta-reanudar-es={heroSlider.reanudar.es}
       data-etiqueta-reanudar-en={heroSlider.reanudar.en}
-      class="grid size-11 place-items-center rounded-full border border-white/40 text-white transition-colors duration-200 hover:border-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+      class="pointer-events-auto grid size-11 place-items-center rounded-full border border-white/40 text-white transition-colors duration-200 hover:border-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
     >
       <Icono nombre="pausa" class="size-4" grosor={2} data-icono-pausa />
       <Icono nombre="play" class="hidden size-4" grosor={1} data-icono-play />
