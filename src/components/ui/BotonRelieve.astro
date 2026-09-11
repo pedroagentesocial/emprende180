@@ -1,0 +1,244 @@
+---
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * BOTÓN EN RELIEVE — el CTA de las secciones
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Un botón que en reposo está LEVANTADO —desplazado arriba a la izquierda, con
+ * una pila de sombras sólidas debajo— y que al pasar el cursor se hunde hasta
+ * su sitio. Por encima, una trama de puntos que se desplaza en bucle.
+ *
+ * ─── DE DÓNDE SALE Y QUÉ SE CAMBIÓ ─────────────────────────────────────────
+ *
+ * El efecto viene de Uiverse.io (augustin_4687, licencia MIT). Lo que llegó
+ * era una pieza suelta con su propia paleta y su propia tipografía, y NADA de
+ * eso se ha copiado tal cual:
+ *
+ *   fuente Rubik ........ fuera. Se hereda la del sitio (Montserrat).
+ *   #facc15 amarillo .... pasa a ser `--color-cta`, el teal de la marca.
+ *   #292524 piedra ...... pasa a ser el navy de marca.
+ *   #fafaf9 hueso ....... pasa a ser `--color-surface`.
+ *   outline amarillo .... pasa a ser el color de foco del sistema.
+ *
+ * ⚠️ Y ESO NO ES COSMÉTICO: DESIGN.md prohíbe introducir paleta nueva. Un
+ * amarillo en esta web sería el único color que no está en la guía de marca, y
+ * encima en el elemento más visible de cada sección.
+ *
+ * ─── DÓNDE SE USA, Y DÓNDE NO ──────────────────────────────────────────────
+ *
+ * ⚠️ SOLO EN SECCIONES. No va en el hero ni en la barra de navegación, y es
+ * una decisión, no un olvido: el hero ya tiene su propio botón —que compite
+ * con un vídeo detrás— y la barra necesita un botón que no pida atención
+ * mientras se lee la página. Un botón con animación en bucle en la barra
+ * estaría moviéndose durante toda la visita.
+ *
+ * ─── EL BUCLE, Y EL SEGURO QUE LLEVA ───────────────────────────────────────
+ *
+ * ⚠️ LA TRAMA DE PUNTOS SE PARA CON `prefers-reduced-motion`, y no es opcional:
+ * es una animación infinita, que es justo lo que esa preferencia existe para
+ * apagar. Sin el bucle el botón conserva el relieve y el hundido al pasar por
+ * encima, así que no pierde su forma: pierde el brillo.
+ */
+
+interface Props {
+  href?: string;
+  type?: "button" | "submit";
+  /**
+   * Sobre qué fondo se apoya, y aquí sí cambia el dibujo entero.
+   *
+   * En claro la pila de sombras es NAVY y el anillo blanco. En oscuro se
+   * invierten: el navy desaparecería contra un fondo navy, así que la pila
+   * pasa a blanca y el anillo al navy del fondo, que deja de verse y solo
+   * asienta la forma.
+   *
+   * Lo que NO cambia es el texto: va en blanco en las dos, porque la cara del
+   * botón es la misma y es el teal de la marca. Ver la nota del CSS.
+   */
+  sobre?: "claro" | "oscuro";
+  /** Se envía a GA4 como `cta_click`, igual que `Button.astro`. */
+  trackId?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
+const {
+  href,
+  type = "button",
+  sobre = "claro",
+  trackId,
+  class: className = "",
+  ...rest
+} = Astro.props;
+
+const Tag = href ? "a" : "button";
+---
+
+<Tag
+  href={href}
+  type={href ? undefined : type}
+  data-track={trackId}
+  data-sobre={sobre}
+  class:list={["boton-relieve", className]}
+  {...rest}
+>
+  {/* Tres capas, y las tres hacen falta: el elemento exterior lleva el relieve
+      y el desplazamiento, el `div` la cara de color y la trama, y el `span` el
+      relleno y el hundido al pulsar. Aplanarlo a un solo elemento obligaría a
+      animar la misma propiedad en dos direcciones a la vez. */}
+  <div>
+    <span><slot /></span>
+  </div>
+</Tag>
+
+<style>
+  .boton-relieve {
+    --relieve-cara: var(--color-cta);
+    --relieve-sombra: var(--color-primary-900);
+    --relieve-anillo: var(--color-surface);
+    --relieve-foco: var(--color-focus);
+
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    /* Se hereda la tipografía del sitio. El original traía Rubik. */
+    font-weight: var(--font-weight-bold);
+    /* ⚠️ EN CLAMP Y NO EN DOS ESCALONES. Un botón que salta de 16 a 18 px justo
+       en el punto de corte se ve dar el salto; así crece con la pantalla igual
+       que los titulares que tiene al lado. 17 px en un teléfono, 19 en un
+       monitor. */
+    font-size: clamp(1.0625rem, 0.98rem + 0.36vw, 1.1875rem);
+    line-height: 1;
+    text-align: center;
+    padding: 1px;
+    border-radius: var(--radius-full);
+    background-color: var(--relieve-sombra);
+    color: var(--color-ink-inverse);
+    outline: 2px solid transparent;
+    outline-offset: 5px;
+
+    /* En reposo va LEVANTADO: desplazado 4 px arriba a la izquierda, con la
+       pila de sombras ocupando ese hueco abajo a la derecha. */
+    transform: translate(-4px, -4px);
+    transition:
+      transform 150ms ease,
+      box-shadow 150ms ease;
+
+    /* La pila: siete copias del navy en medios píxeles para que el canto salga
+       sólido y no escalonado, y otras nueve del anillo por fuera. */
+    box-shadow:
+      0.5px 0.5px 0 0 var(--relieve-sombra),
+      1px 1px 0 0 var(--relieve-sombra),
+      1.5px 1.5px 0 0 var(--relieve-sombra),
+      2px 2px 0 0 var(--relieve-sombra),
+      2.5px 2.5px 0 0 var(--relieve-sombra),
+      3px 3px 0 0 var(--relieve-sombra),
+      0 0 0 2px var(--relieve-anillo),
+      0.5px 0.5px 0 2px var(--relieve-anillo),
+      1px 1px 0 2px var(--relieve-anillo),
+      1.5px 1.5px 0 2px var(--relieve-anillo),
+      2px 2px 0 2px var(--relieve-anillo),
+      2.5px 2.5px 0 2px var(--relieve-anillo),
+      3px 3px 0 2px var(--relieve-anillo),
+      3.5px 3.5px 0 2px var(--relieve-anillo),
+      4px 4px 0 2px var(--relieve-anillo);
+  }
+
+  /* Sobre navy la pila se invierte: el navy contra navy no se vería. */
+  /* ⚠️ EL TEXTO NO CAMBIA DE COLOR AQUÍ, Y ANTES SÍ. La variante oscura ponía
+     el texto en navy, y eso era un fallo de contraste de verdad, no de gusto:
+     la CARA del botón es la misma en las dos variantes —el teal de la marca—
+     así que un texto navy sobre teal se queda en torno a 1,8:1, muy por debajo
+     del 4,5 que exige la WCAG. En blanco da 4,69, que es el número medido en
+     tokens.css para esa pareja.
+
+     Lo que sí se invierte es la pila de sombras: el navy contra un fondo navy
+     no se vería. */
+  .boton-relieve[data-sobre="oscuro"] {
+    --relieve-sombra: var(--color-surface);
+    --relieve-anillo: var(--color-primary-900);
+    --relieve-foco: var(--color-focus-inverse);
+  }
+
+  /* Al pasar por encima se hunde: vuelve a su sitio y la pila desaparece. */
+  .boton-relieve:hover {
+    transform: translate(0, 0);
+    box-shadow: 0 0 0 2px var(--relieve-anillo);
+  }
+
+  .boton-relieve:active,
+  .boton-relieve:focus-visible {
+    outline-color: var(--relieve-foco);
+  }
+
+  .boton-relieve:focus-visible {
+    outline-style: dashed;
+  }
+
+  .boton-relieve > div {
+    position: relative;
+    pointer-events: none;
+    background-color: var(--relieve-cara);
+    border: 2px solid rgb(255 255 255 / 0.3);
+    border-radius: var(--radius-full);
+  }
+
+  /* La trama de puntos. Dos degradados radiales desfasados 4 px, en
+     `hard-light`, que se desplazan medio patrón por vuelta: al llegar a 8 px
+     el dibujo coincide consigo mismo y el bucle no tiene costura. */
+  .boton-relieve > div::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-full);
+    opacity: 0.5;
+    background-image:
+      radial-gradient(rgb(255 255 255 / 80%) 20%, transparent 20%),
+      radial-gradient(rgb(255 255 255 / 100%) 20%, transparent 20%);
+    background-position:
+      0 0,
+      4px 4px;
+    background-size: 8px 8px;
+    mix-blend-mode: hard-light;
+  }
+
+  .boton-relieve > div > span {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    /* 44 px de alto mínimo: objetivo táctil, y aquí no se baja de ahí aunque
+       el relleno del original diera menos. Ver tokens.css. */
+    /* Sube con la letra. Un botón con más cuerpo y el mismo relleno se ve
+       estrecho, y de paso el objetivo táctil pasa de 44 a 48 px. */
+    min-height: calc(3rem - 6px);
+    padding: 0.875rem 1.75rem;
+    filter: drop-shadow(0 -1px 0 rgb(255 255 255 / 0.25));
+  }
+
+  .boton-relieve:active > div > span {
+    transform: translateY(2px);
+  }
+
+  /* ⚠️ EL BUCLE SOLO ARRANCA SI NADIE HA PEDIDO LO CONTRARIO. Es una animación
+     infinita: exactamente lo que `prefers-reduced-motion` existe para apagar.
+     Apagada, el botón conserva el relieve y el hundido; pierde el brillo. */
+  @media (prefers-reduced-motion: no-preference) {
+    .boton-relieve > div::before {
+      animation: relieve-puntos 0.5s infinite linear;
+    }
+  }
+
+  @keyframes relieve-puntos {
+    0% {
+      background-position:
+        0 0,
+        4px 4px;
+    }
+    100% {
+      background-position:
+        8px 0,
+        12px 4px;
+    }
+  }
+</style>

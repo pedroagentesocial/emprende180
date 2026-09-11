@@ -57,83 +57,158 @@ const lang = resolverIdiomaServidor(
   Astro.request.headers.get("accept-language"),
 );
 
-/* ⚠️ Foto de banco, como el resto de la página, pero elegida por dos motivos
-   concretos: es la única de la carpeta en la que se ve una mano de mujer, que
-   es a quien le habla la página entera, y lo que hace es justo lo que dice el
-   titular de al lado, escribir su semana. Aguanta bien el recorte vertical de
-   media pantalla porque no hay ninguna cara que cortar. */
-const FOTO = "/imagenes/resultados/04.webp";
+/**
+ * ⚠️ LAS DOS PRIMERAS SON LAS CARAS DE LA PRIMERA PANTALLA, y esa es toda la
+ * idea: la página cierra con las mismas personas con las que abrió.
+ *
+ * ⚠️ PERO NO SON LOS MISMOS ARCHIVOS. Los del hero son verticales de
+ * 1400x1800 —cada uno ocupa media pantalla de alto completo— y aquí las cajas
+ * son apaisadas. Recortar aquellos a 1,7:1 tiraba el 60 % del alto y dejaba a
+ * las dos personas sin cabeza, así que se han vuelto a recortar DESDE EL
+ * ORIGINAL al formato que pide este hueco.
+ *
+ * Se recortaron con la estrategia de atención de sharp y no con una gravedad
+ * fija: `north` se quedaba con el techo de una y la fachada de la otra.
+ *
+ * ⚠️ Y LA TERCERA NO ES UNA TERCERA CARA: ES UNA CONVERSACIÓN. Sale de
+ * `banco-charla`, que no se usa en ninguna otra parte de la página, recortada
+ * a 900x700. Las dos primeras son las personas a las que habla la sección; la
+ * tercera es lo que hacen. Meter un tercer retrato habría convertido el
+ * cierre en una galería de gente.
+ */
+const FOTO_PRINCIPAL = "/imagenes/cierre/ella-cierre.webp";
+const FOTO_SECUNDARIA = "/imagenes/cierre/el-cierre.webp";
+const FOTO_TERCIARIA = "/imagenes/cierre/charla-cierre.webp";
 ---
 
 <Section id="empezar" tono="surface" ariaLabel={copy.cierre.aria} sinContenedor>
-  <div class="grid items-stretch lg:grid-cols-2">
-    {/* ─── La mitad que se lee ────────────────────────────────────────────
-        ⚠️ AQUÍ HABÍA UN "lg:max-w-[44rem]" y se ha ido con la regla del ancho:
-        eran 44rem pegadas a la costura para cuadrar con un contenedor centrado
-        de 88rem que ya no existe. Ahora esta mitad se llena entera.
-
-        Los dos márgenes NO son el mismo y no deben serlo: el de FUERA es
-        "--gutter-page", el mismo de toda la página, para que este titular
-        quede a plomo con el de las demás secciones; el de DENTRO es el aire de
-        la costura, y solo aparece cuando hay dos columnas. */}
-    <div class="w-full px-[var(--gutter-page)] lg:py-6 lg:pr-14">
+  <div class="container-page">
+      {/* ⚠️ DOS COLUMNAS DESDE `md` Y NO DESDE `lg`, y esto era un agujero de
+          verdad. Rompiendo en 1024, una tablet de 768 u 834 se llevaba el
+          diseño de MÓVIL estirado: fotos de 700 px de ancho, titulares
+          pequeños para ese hueco y una columna de texto con su medida en medio
+          de una pantalla vacía. El punto donde fallan los diseños pensados
+          para móvil y escritorio es justo ese, el de en medio. */}
+    {/* ⚠️ 52 / 48, Y ESTUVO EN 80 / 20 UNA RONDA. Con el 20 % la columna de
+        fotos medía 245 px a 1440 y las imágenes de dentro, al 75 % y al 60 %
+        de ese ancho, salían a 184 y 147 px: se leían como miniaturas y no como
+        retratos. Se volvió atrás al verlo, y con tres fotos en el hueco el
+        reparto equilibrado ya no es una preferencia sino un requisito. */}
+    <div class="grid items-center gap-10 md:grid-cols-[52fr_48fr] md:gap-10 lg:gap-16 xl:gap-20">
+      {/* ─── EL FORMULARIO ───────────────────────────────────────────────
+          Primero en el marcado, que es también el orden que queremos en el
+          teléfono: lo primero tiene que ser lo que hay que rellenar. */}
       <Reveal>
-        <p class="text-sm font-semibold text-ink-brand">
-          <T v={informes.kicker} />
-        </p>
+        {/* ⚠️ TODA LA COLUMNA CENTRADA, Y ANTES IBA A LA IZQUIERDA. El
+            `text-center` de aquí lo hereda todo lo de dentro —renglón de
+            entrada, titular, promesa y el propio formulario— así que no hay
+            que repetirlo en cada pieza.
 
-        <h2 class="mt-3 text-4xl leading-[1.05] font-extrabold text-balance text-ink sm:text-5xl">
-          {
-            informes.titulo.map((linea) => (
-              <span class="block">
-                {"enfasis" in linea && linea.enfasis ? (
-                  <Enfasis v={linea} />
-                ) : (
-                  <T v={linea} />
-                )}
-              </span>
-            ))
-          }
-        </h2>
+            ⚠️ PERO EL `mx-auto` SÍ HAY QUE REPETIRLO, y es el error clásico de
+            centrar un bloque: `text-center` centra las LÍNEAS dentro de su
+            caja, no la caja dentro de su padre. Un elemento con `max-w-prose`
+            o `max-w-xl` se queda pegado a la izquierda y el texto se ve
+            centrado DENTRO de un bloque descentrado, que es peor que no
+            centrar nada. Los dos que llevan medida la llevan también. */}
+        <div class="text-center">
+          <p class="text-sm font-semibold text-ink-brand sm:text-base lg:text-lg">
+            <T v={informes.kicker} />
+          </p>
 
-        <p class="mt-5 max-w-prose text-base text-pretty text-ink-muted sm:text-lg">
-          <T v={informes.porQue} />
-        </p>
+          <h2 class="mt-4 text-4xl font-semibold leading-[1.1] tracking-[-0.02em] text-balance text-ink sm:text-5xl">
+            <T v={informes.titulo[0]} />
+          </h2>
 
-        <div class="mt-8 max-w-xl">
-          <LeadForm
-            client:visible
-            lang={lang}
-            origen="informes"
-            variante="informes"
-            minimo
-            sinEtiquetas
-            compacto
-            cta={informes.ctaBoton}
-            aviso={informes.aviso}
-            exitoTitulo={informes.exitoTitulo}
-            exitoTexto={informes.exitoTexto}
+          <p class="mt-2 text-3xl leading-[1.15] text-balance sm:text-4xl">
+            <Enfasis v={informes.titulo[1]} />
+          </p>
+
+          <p class="mx-auto mt-6 max-w-prose text-lg font-medium leading-relaxed text-pretty text-ink-muted sm:text-xl">
+            <T v={informes.porQue} />
+          </p>
+
+          <div class="mx-auto mt-8 max-w-xl">
+            {/* `relieve` enciende el botón físico SOLO aquí. Ver la nota del
+                propio LeadForm: el mismo formulario se usa en la lista y en
+                las guías, y allí el botón se queda como estaba. */}
+            <LeadForm
+              client:visible
+              lang={lang}
+              origen="informes"
+              variante="informes"
+              minimo
+              sinEtiquetas
+              compacto
+              relieve
+              cta={informes.ctaBoton}
+              aviso={informes.aviso}
+              exitoTitulo={informes.exitoTitulo}
+              exitoTexto={informes.exitoTexto}
+            />
+          </div>
+        </div>
+      </Reveal>
+
+      {/* ─── LAS TRES FOTOS ──────────────────────────────────────────────
+          Eran dos, montadas en diagonal como en la sección de identidad. Ahora
+          son tres, y el montaje cambia con ellas: con tres piezas la diagonal
+          se convierte en una escalera y la composición se vuelve ruidosa.
+
+          El reparto de aquí es una GRANDE con dos acompañantes. La grande
+          arriba a la izquierda manda; la segunda se monta sobre su esquina de
+          abajo a la derecha, que es el gesto que ya existía; la tercera se
+          apoya en la esquina de abajo a la izquierda, más pequeña que las dos.
+          Cada una deja parte de sí a la vista y ninguna queda tapada.
+
+          ⚠️ LOS PORCENTAJES SUMAN MÁS DE 100 A PROPÓSITO, y esa es la
+          diferencia entre un collage y una rejilla de tres huecos: si sumaran
+          exactamente 100 no habría solape, y sin solape esto sería una tabla.
+
+          ⚠️ EL FILETE DEL COLOR DEL FONDO ES LO QUE SEPARA UNA FOTO DE OTRA
+          donde se montan. Sin él se ven fotos pegadas y no unas delante de
+          otras. Lo llevan las dos que van encima, no la de abajo.
+
+          Todo se mide en porcentaje del alto de la columna, así que un cambio
+          de altura no rompe nada: se reescala entero. */}
+      <Reveal delay={0.12}>
+        <div class="relative h-[320px] sm:h-[400px] md:h-[340px] lg:h-[440px]">
+          <img
+            src={FOTO_PRINCIPAL}
+            alt={copy.cierre.foto[lang]}
+            data-alt-es={copy.cierre.foto.es}
+            data-alt-en={copy.cierre.foto.en}
+            width={1100}
+            height={620}
+            loading="lazy"
+            decoding="async"
+            class="absolute left-0 top-0 h-[56%] w-[68%] rounded-lg border border-line object-cover"
+          />
+
+          <img
+            src={FOTO_SECUNDARIA}
+            alt={copy.cierre.fotoSecundaria[lang]}
+            data-alt-es={copy.cierre.fotoSecundaria.es}
+            data-alt-en={copy.cierre.fotoSecundaria.en}
+            width={900}
+            height={600}
+            loading="lazy"
+            decoding="async"
+            class="absolute right-0 top-[16%] z-10 h-[50%] w-[46%] rounded-lg border-4 border-surface object-cover"
+          />
+
+          <img
+            src={FOTO_TERCIARIA}
+            alt={copy.cierre.fotoTerciaria[lang]}
+            data-alt-es={copy.cierre.fotoTerciaria.es}
+            data-alt-en={copy.cierre.fotoTerciaria.en}
+            width={900}
+            height={700}
+            loading="lazy"
+            decoding="async"
+            class="absolute bottom-0 left-[8%] z-20 h-[40%] w-[52%] rounded-lg border-4 border-surface object-cover"
           />
         </div>
       </Reveal>
-    </div>
-
-    {/* ─── La foto, hasta el borde ────────────────────────────────────────
-        En móvil no sangra a media pantalla —quedaría una tira rara— sino que
-        ocupa el ancho completo con una altura fija, y va debajo del formulario:
-        en un teléfono, lo primero tiene que ser lo que hay que rellenar. */}
-    <div class="relative order-last h-64 w-full bg-primary-950 sm:h-80 lg:h-auto lg:min-h-[32rem]">
-      <img
-        src={FOTO}
-        alt={copy.cierre.foto[lang]}
-        data-alt-es={copy.cierre.foto.es}
-        data-alt-en={copy.cierre.foto.en}
-        width={800}
-        height={600}
-        loading="lazy"
-        decoding="async"
-        class="absolute inset-0 size-full object-cover"
-      />
     </div>
   </div>
 </Section>

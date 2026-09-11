@@ -3,9 +3,8 @@ import T from "@components/i18n/T.astro";
 import Section from "@components/ui/Section.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Enfasis from "@components/ui/Enfasis.astro";
-import Button from "@components/ui/Button.astro";
-import MarcaAgua from "@components/ui/MarcaAgua.astro";
-import { copy } from "@config/curso.config";
+import BotonRelieve from "@components/ui/BotonRelieve.astro";
+import { copy, sitio } from "@config/curso.config";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -36,47 +35,88 @@ import { copy } from "@config/curso.config";
 const { recursos } = copy;
 ---
 
-<Section id="recursos" tono="inverse" ritmo="compacto" ariaLabel={recursos.aria} sinContenedor>
+{/* ─── UN BANNER, NO UNA SECCIÓN ────────────────────────────────────────
+    Esta era una franja navy a pantalla completa con su marca de agua y su
+    titular grande, del mismo peso que las de arriba. Ahora es una sola fila
+    dentro de una caja, sobre blanco.
+
+    El cambio es de JERARQUÍA, no de estilo. Lo que hay detrás de este enlace
+    son artículos gratis: no compite con la Academia ni con el cierre, y
+    dándole el mismo peso visual que a ellos se leía como si compitiera. Una
+    invitación rápida tiene que ocupar lo que ocupa una invitación rápida.
+
+    ⚠️ Y POR ESO NO LLEVA DOS COLUMNAS. La sección de arriba (la Academia) es
+    una foto a sangre y el blog es una rejilla asimétrica: si esta repitiera
+    cualquiera de las dos, dejaría de leerse como el respiro que es.
+
+    ⚠️ EL FONDO BLANCO ES EL CONTRASTE, y aquí sí es deliberado que rompa. La
+    Academia, justo encima, quedó oscura: blanco contra ella es el corte más
+    limpio que hay sin meter una línea. El aire entre las dos sigue siendo
+    moderado (`compacto`), porque lo que cambia es el color, no el tema. */}
+<Section
+  id="recursos"
+  tono="surface"
+  ritmo="compacto"
+  ariaLabel={recursos.aria}
+  sinContenedor
+>
   <div class="container-page">
-    <div class="relative isolate overflow-hidden">
-      <MarcaAgua posicion="derecha" class="opacity-[0.06]" />
+    <Reveal>
+      {/* Una fila en escritorio y una columna en el teléfono. El `gap` mayor
+          en vertical que en horizontal no es un descuido: apilado, el botón
+          necesita separarse del párrafo más de lo que se separa de él cuando
+          está al lado. */}
+      {/* ⚠️ LA FILA ARRANCA EN `md` Y NO EN `sm`. A 640 px, icono + titular +
+          párrafo + botón se repartían unos 570 px útiles y el párrafo caía en
+          una columna de 200: el punto más probable de desbordamiento de toda
+          la página. Apilado hasta 768 y en fila a partir de ahí. */}
+      <div class="flex flex-col gap-6 rounded-lg border-[0.5px] border-line bg-surface p-6 md:flex-row md:items-center md:justify-between md:gap-10 md:p-7 lg:px-8">
+        <div class="flex items-start gap-4 sm:items-center">
+          {/* ⚠️ EL ISOTIPO DE MARCA, NO UN ICONO DE LIBRERÍA. Un documento o
+              una carpeta genéricos dirían "aquí hay archivos"; la bombilla
+              dice de quién son. Es `isotipo.png`, la versión en color: la
+              blanca que usa el resto del sitio está pensada para fondos
+              oscuros y aquí desaparecería.
 
-      <Reveal>
-        <div class="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between lg:gap-16">
+              No existe en SVG —no hay ningún vectorial en el repo— así que va
+              en PNG. A 44 px no se nota; si algún día llega el vectorial, se
+              cambia esta línea. */}
+          <span class="grid size-11 shrink-0 place-items-center rounded-lg bg-surface-sunken">
+            <img
+              src={sitio.isotipo.src}
+              alt=""
+              width={512}
+              height={632}
+              loading="lazy"
+              decoding="async"
+              class="size-6 object-contain"
+            />
+          </span>
+
           <div>
-            <p class="text-sm font-semibold text-secondary-300">
-              <T v={recursos.kicker} />
-            </p>
-
-            <h2 class="mt-3 text-4xl leading-[1.05] font-extrabold text-balance text-ink-inverse sm:text-5xl">
-              {
-                recursos.titulo.map((linea) => (
-                  <span class="block">
-                    {"enfasis" in linea && linea.enfasis ? (
-                      <Enfasis v={linea} tono="inverso" />
-                    ) : (
-                      <T v={linea} />
-                    )}
-                  </span>
-                ))
-              }
+            <h2 class="text-xl font-semibold leading-[1.2] text-balance text-ink sm:text-2xl">
+              <T v={recursos.titulo[0]} />{" "}
+              <Enfasis v={recursos.titulo[1]} />
             </h2>
 
-            <p class="mt-5 max-w-lg text-base text-pretty text-secondary-100 sm:text-lg">
+            <p class="mt-2 max-w-prose text-base font-medium text-pretty text-ink-muted sm:text-lg">
               <T v={recursos.texto} />
             </p>
           </div>
-
-          {/* `shrink-0` para que el botón no se comprima cuando el titular
-              ocupa toda la línea: sin él, en anchos intermedios el texto del
-              botón se partía en dos renglones. */}
-          <div class="shrink-0">
-            <Button href="/recursos" sobre="oscuro" trackId="recursos-ver">
-              <T v={recursos.cta} />
-            </Button>
-          </div>
         </div>
-      </Reveal>
-    </div>
+
+        {/* `shrink-0` para que el botón no se comprima cuando el titular
+            crece, y `ml-1` por la compensación de siempre de su relieve. */}
+        <div class="ml-1 shrink-0">
+          <BotonRelieve
+            href="/recursos"
+            trackId="recursos-explorar"
+            class="w-full sm:w-auto"
+          >
+            <T v={recursos.cta} />
+          </BotonRelieve>
+        </div>
+      </div>
+    </Reveal>
   </div>
 </Section>

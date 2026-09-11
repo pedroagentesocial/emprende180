@@ -405,7 +405,7 @@ export const consentimiento = {
    */
   textoAntesLista: {
     es: "Acepto recibir los correos de Emprende180 y he leído el ",
-    en: "I agree to receive emails from Emprende180 and I have read the ",
+    en: "I agree to receive emails from Entrepreneur180 and I have read the ",
   },
   enlaceTexto: { es: "aviso de privacidad", en: "privacy notice" },
   textoDespues: { es: ".", en: "." },

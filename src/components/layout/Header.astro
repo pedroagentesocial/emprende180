@@ -80,9 +80,30 @@ interface Props {
 const { variante = "completo", sobreHero = false } = Astro.props;
 const minimo = variante === "minimo";
 
-/* Sobre la foto y sobre el navy, el logotipo va en blanco. Es el mismo
-   arte, no una versión recoloreada a mano: existe en `/identidad`. */
-const logo = sobreHero ? sitio.logoHorizontalBlanco : sitio.logoHorizontal;
+/**
+ * ─── EL LOGOTIPO CAMBIA CON EL IDIOMA ────────────────────────────────────
+ *
+ * En inglés la marca no es Emprende180: es **Entrepreneur180**, y tiene su
+ * propio arte. Así que aquí ya no hay UN logotipo, hay cuatro: dos idiomas por
+ * dos fondos.
+ *
+ * Sobre la foto y sobre el navy va en blanco. Es el mismo arte, no una versión
+ * recoloreada a mano: existen los dos en `/identidad`.
+ *
+ * ⚠️ SE PINTAN LOS DOS IDIOMAS Y EL CSS ESCONDE EL QUE NO TOCA, igual que hace
+ * `<T>` con el texto. Parece un desperdicio y no lo es: el cambio de idioma de
+ * esta web NO recarga la página, solo cambia el atributo `lang` del `<html>`.
+ * Con un solo `<img>` habría que reasignarle el `src` por JavaScript, y eso
+ * significa una descarga a mitad de interacción y un parpadeo justo en el
+ * logotipo. Con los dos en el marcado, cambiar de idioma es instantáneo.
+ *
+ * El de más son 5 KB en español y 22 en inglés, y solo se descarga el visible:
+ * el navegador no baja la imagen de un elemento con `display:none` heredado.
+ */
+const LOGOS = {
+  es: sobreHero ? sitio.logoHorizontalBlanco : sitio.logoHorizontal,
+  en: sobreHero ? sitio.logoHorizontalBlancoEn : sitio.logoHorizontalEn,
+} as const;
 
 const lang = resolverIdiomaServidor(
   Astro.url,
@@ -112,8 +133,8 @@ const hrefLogo = enPortada ? "#inicio" : "/";
 /* El alt del logo lleva el claim, así que también se traduce. Los data-alt-*
    los usa el script del layout para actualizarlo al cambiar de idioma. */
 const logoAlt = {
-  es: `${sitio.nombre}: ${sitio.claim.es}`,
-  en: `${sitio.nombre}: ${sitio.claim.en}`,
+  es: `${sitio.nombre.es}: ${sitio.claim.es}`,
+  en: `${sitio.nombre.en}: ${sitio.claim.en}`,
 };
 ---
 
@@ -178,12 +199,34 @@ const logoAlt = {
       Por debajo de `lg` no hay menú, así que la rejilla de tres dejaría la
       columna izquierda vacía y el logo centrado contra nada. Ahí se vuelve al
       reparto de siempre: marca a la izquierda, acciones a la derecha. */}
+  {/* ─── LA BARRA CAMBIA DE FORMA AL BAJAR ────────────────────────────────
+      Arriba del todo la marca manda: logotipo grande y centrado, con la
+      navegación a un lado y las acciones al otro. En cuanto se empieza a
+      bajar, la barra se compacta y vuelve a lo de siempre: logotipo pequeño a
+      la izquierda y todo en fila.
+
+      ⚠️ EL LOGOTIPO SE QUEDA CENTRADO EN LOS DOS ESTADOS. Lo único que cambia
+      al bajar es el TAMAÑO: de 72 px a 36. Hubo una versión en la que además
+      se iba a la izquierda al compactarse y se descartó: el logotipo saltando
+      de sitio en mitad del scroll se lee como un fallo, no como una
+      transición.
+
+      Por eso la rejilla de TRES columnas vale para los dos estados. Y hace
+      falta que sea rejilla y no `flex`: con `justify-between`, en cuanto un
+      lado pesa más que el otro el logo se desplaza y deja de estar centrado en
+      la PANTALLA, que es donde tiene que estarlo.
+
+      Por debajo de `lg` no hay menú, así que la rejilla dejaría la columna
+      izquierda vacía y el logo centrado contra nada. Ahí se queda el reparto
+      de siempre: marca a la izquierda, acciones a la derecha. */}
   <div
     class:list={[
       "container-page flex h-[var(--header-h-grande)] items-center justify-between gap-2 transition-[height] duration-300 ease-[var(--ease-out-soft)] group-data-[compacta=true]:h-[var(--header-h)] max-[359px]:gap-1 sm:gap-4 lg:h-[var(--header-h-grande-lg)] lg:group-data-[compacta=true]:h-[var(--header-h-lg)]",
-      /* Con logo centrado: rejilla de tres. Con logo a la izquierda (el
-         rediseño): flex, que es lo que ya trae la clase de arriba. */
+      /* Fuera del hero (legales, blog, portal) la barra ya nace compacta y
+         centrada: no hay estado "arriba del todo" que distinguir. */
       !sobreHero && "lg:grid lg:grid-cols-[1fr_auto_1fr]",
+      /* Sobre el hero, la misma rejilla en los dos estados. */
+      sobreHero && "lg:grid lg:grid-cols-[1fr_auto_1fr]",
     ]}
   >
     {/* ─── IZQUIERDA: la navegación ──────────────────────────────────────
@@ -198,7 +241,8 @@ const logoAlt = {
           data-aria-en={copy.ui.menuPrincipal.en}
           class:list={[
             "hidden lg:flex lg:items-center lg:gap-1",
-            sobreHero ? "lg:order-2" : "lg:order-1 lg:justify-self-start",
+            /* Primera columna de la rejilla, en los dos estados. */
+            "lg:order-1 lg:justify-self-start",
           ]}
         >
           {cta.navegacion.map((item) => (
@@ -211,8 +255,16 @@ const logoAlt = {
                    esas no se animan (ver DESIGN.md). `origin-left` es lo que
                    hace que salga desde la izquierda en vez de abrirse por el
                    centro, que se lee como un acordeón. */
-                "group/enlace relative inline-flex min-h-11 items-center px-3 text-sm font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2",
-                "after:absolute after:inset-x-3 after:bottom-2 after:h-0.5 after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-300 after:ease-[var(--ease-out-soft)] hover:after:scale-x-100",
+                /* ⚠️ EL `after` Y EL `px` TIENEN QUE MOVERSE JUNTOS. La raya del
+                   subrayado está anclada con `inset-x` al mismo valor que el
+                   relleno horizontal: si se cambia uno y no el otro, la raya
+                   deja de medir lo que mide la palabra y se sale por los
+                   lados. Son `px-4` / `after:inset-x-4`. */
+                /* ⚠️ EL CUERPO GRANDE ESPERA A `xl`, Y NO ES UN CAPRICHO:
+                   entre 1024 y 1279 la fila ya va justa. Ver la nota del
+                   logotipo, que lleva el reparto medido de la barra entera. */
+                "group/enlace relative inline-flex min-h-12 items-center px-4 text-base font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 xl:text-lg",
+                "after:absolute after:inset-x-4 after:bottom-2.5 after:h-0.5 after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-300 after:ease-[var(--ease-out-soft)] hover:after:scale-x-100",
                 sobreHero
                   ? "text-white/85 hover:text-white focus-visible:outline-focus-inverse"
                   : "text-ink-muted hover:text-ink focus-visible:outline-focus",
@@ -237,26 +289,88 @@ const logoAlt = {
       href={hrefLogo}
       class:list={[
         "flex min-h-11 shrink-0 items-center focus-visible:outline-2 focus-visible:outline-offset-2",
+        /* ⚠️ `lg:min-w-0` ES LA VÁLVULA DE LA BARRA, y sin ella la página
+           entera se va en scroll horizontal. De `lg` para arriba esto es una
+           rejilla `1fr auto 1fr`: la columna del medio se mide por su
+           contenido y NO CEDE, así que cuando el menú y la derecha piden más
+           de lo que hay, el que se sale es el documento.
+
+           Con `min-w-0` aquí y `max-w-full object-contain` en las imágenes, lo
+           que cede es el logotipo: se queda dentro del hueco que le toque y el
+           arte se reescala dentro de su caja. Encoge, que se ve raro un
+           segundo; desbordar se ve mal siempre.
+
+           En móvil no se aplica: ahí la barra es `flex` y el `shrink-0` de
+           arriba es justo lo contrario, porque sin él el logo salía deformado. */
+        "lg:min-w-0",
         /* Centrado en la barra blanca (lo pidió el cliente en su día) y a la
            IZQUIERDA cuando flota sobre el hero, que es lo que pide el
            rediseño. Sin este `order-1`, el logotipo empata en orden con el
            menú y gana el que va antes en el marcado, que es el menú. */
+        "lg:order-2 lg:justify-self-center",
         sobreHero
-          ? "lg:order-1 focus-visible:outline-focus-inverse"
-          : "lg:order-2 lg:justify-self-center focus-visible:outline-focus",
+          ? "focus-visible:outline-focus-inverse"
+          : "focus-visible:outline-focus",
       ]}
     >
-      <img
-        src={logo.src}
-        alt={logoAlt[lang]}
-        data-alt-es={logoAlt.es}
-        data-alt-en={logoAlt.en}
-        width={logo.w}
-        height={logo.h}
-        class="h-9 w-auto shrink-0 transition-[height] duration-300 ease-[var(--ease-out-soft)] group-data-[compacta=true]:h-8 max-[440px]:h-7 sm:h-11 lg:h-14 lg:group-data-[compacta=true]:h-9"
-        fetchpriority="high"
-        decoding="async"
-      />
+      {/* `data-t` es el mismo gancho que usa `<T>`: el CSS de global.css esconde
+          el que no corresponde al `lang` del `<html>`. Y `alt` sin `data-alt-*`
+          porque cada `<img>` ya es de un idioma: no hay nada que intercambiar.
+
+          `width`/`height` son los reales de CADA arte y no los mismos para los
+          dos: el inglés mide 628 de ancho y el español 573, porque
+          "ENTREPRENEUR" tiene cuatro letras más. Poner el mismo número en los
+          dos haría que el navegador reservara el hueco equivocado y la barra
+          diera un salto al cargar. */}
+      {(["es", "en"] as const).map((l) => (
+        <img
+          data-t={l}
+          lang={l}
+          src={LOGOS[l].src}
+          alt={logoAlt[l]}
+          width={LOGOS[l].w}
+          height={LOGOS[l].h}
+          class:list={[
+            /* ⚠️ SE ANIMA `height` Y NO `transform: scale`, que sería más barato:
+               un logotipo escalado se ve borroso a mitad de la transición, y
+               esto es un dibujo con texto fino. Aquí la nitidez manda. */
+            /* `max-w-full object-contain` es la otra mitad de la válvula: ver
+               la nota de `lg:min-w-0` en el enlace de arriba. */
+            "w-auto max-w-full shrink-0 object-contain transition-[height] duration-300 ease-[var(--ease-out-soft)]",
+            "h-11 max-[440px]:h-9 sm:h-14 group-data-[compacta=true]:h-8",
+            /* Arriba del todo va grande y al compactarse vuelve a los 36 de
+               siempre. Fuera del hero nace ya en el tamaño de antes.
+
+               ⚠️ 96 Y NO MÁS. El tope no es el alto de la barra: es el botón
+               del hero. Un logotipo que compita con "Quiero ser Embajador"
+               convierte la cabecera en el elemento dominante de la página, y la
+               cabecera no es a donde se quiere que mire nadie.
+
+               ⚠️ Y CRECE EN TRES PASOS, NO DE GOLPE EN `lg`. El arte en inglés
+               mide 628x120, o sea 5,23 de ancho por 1 de alto: a 96 px de alto
+               son 502 PX DE ANCHO. La medida de la fila a 1024, con el menú en
+               su cuerpo nuevo, deja unos 230 para el logotipo. No es que se
+               vea apretado: es que no entra, y sin la válvula tiraría la
+               página al scroll horizontal.
+
+               El reparto de la fila, medido: menú ~450 px, selector 96,
+               acceso ~116, dos huecos de 16. A 1024 el ancho útil es 936; a
+               1280 son 1174 y a 1536, 1412. De ahí los tres escalones. */
+            /* ⚠️ EL ESTADO COMPACTO SE REPITE EN LOS TRES ESCALONES, Y HACE
+                 FALTA. Tailwind ordena las variantes por punto de corte, no por
+                 el orden en que se escriben: con un solo `lg:...compacta...h-9`,
+                 el `xl:h-20` de después gana en la cascada y el logotipo se
+                 quedaría grande al hacer scroll en cualquier pantalla de 1280
+                 para arriba. */
+            sobreHero
+              ? "lg:h-14 lg:group-data-[compacta=true]:h-9 xl:h-20 xl:group-data-[compacta=true]:h-9 2xl:h-24 2xl:group-data-[compacta=true]:h-9"
+              : "lg:h-14 lg:group-data-[compacta=true]:h-9",
+          ]}
+          fetchpriority={l === lang ? "high" : "low"}
+          loading={l === lang ? "eager" : "lazy"}
+          decoding="async"
+        />
+      ))}
     </a>
 
     {/* ─── DERECHA: idioma, acceso y compra ──────────────────────────────
@@ -267,7 +381,11 @@ const logoAlt = {
         en toda la página justo en el ancho de una tablet en vertical. */}
     <div class:list={[
         "flex shrink-0 items-center gap-2 sm:gap-3 lg:order-3",
-        !sobreHero && "lg:justify-self-end",
+        /* Tercera columna de la rejilla. Sobre el hero solo hay rejilla
+           mientras la barra NO está compactada; en cuanto lo está pasa a flex
+           y `justify-self` deja de significar nada, así que da igual que siga
+           puesto. */
+        "lg:justify-self-end",
       ]}>
       {/* El selector va visible en la barra desde 360 px: si alguien llega con
           ?lang= equivocado tiene que poder corregirlo sin buscar.
@@ -304,7 +422,12 @@ const logoAlt = {
         data-aria-en={cta.acceso.textoLargo.en}
         data-track="header-acceso"
         class:list={[
-          "inline-flex min-h-11 items-center gap-2 rounded-full px-2.5 text-sm font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 max-[359px]:px-1 sm:px-3",
+          /* Sube con los enlaces del menú y en el mismo punto: están en la
+             misma fila y con el mismo peso, así que o suben los dos o se nota.
+             El selector de idioma se queda en `text-sm` a propósito: es un
+             control de dos letras, no un destino, y crecerlo lo convertiría en
+             el elemento más grande de la derecha. */
+          "inline-flex min-h-12 items-center gap-2 rounded-full px-3 text-base font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 max-[359px]:px-1.5 sm:px-4 xl:text-lg",
           sobreHero
             ? "text-white/85 hover:text-white focus-visible:outline-focus-inverse"
             : "text-ink-muted hover:bg-surface-muted hover:text-ink focus-visible:outline-focus",

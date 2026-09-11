@@ -100,6 +100,30 @@ const ICONOS = {
   casa: `<path d="M3.8 10.4 12 3.8l8.2 6.6v8.2a1.8 1.8 0 0 1-1.8 1.8H5.6a1.8 1.8 0 0 1-1.8-1.8Z"/><path d="M9.6 20.4v-6.6h4.8v6.6"/>`,
   /** Dos personas: la lista entera. */
   personas: `<circle cx="9" cy="8.4" r="3.4"/><path d="M3.4 19.4a5.8 5.8 0 0 1 11.2 0"/><path d="M16.2 5.4a3.4 3.4 0 0 1 0 6.6M17.4 14.6a5.8 5.8 0 0 1 3.2 4.8"/>`,
+
+  /**
+   * ─── LOS TRES DE "CÓMO SE TRABAJA" ────────────────────────────────────
+   *
+   * Van juntos porque se leen juntos: tres columnas a la misma altura. Y los
+   * tres están dibujados en contra de su icono "obvio", que era el encargo:
+   *
+   *   academia    — un libro con un PLAY, no un birrete. Un birrete dice
+   *                 "escuela formal" y esto es ver videos cuando puedes.
+   *   agenda      — dos contactos unidos por una línea, no una nube ni un
+   *                 engranaje. Dice "tu gente, ordenada", no "software".
+   *   seguimiento — un bocadillo con un visto, no un calendario ni un reloj.
+   *                 Un calendario es administrativo; esto es que alguien te
+   *                 llama.
+   */
+
+  /** Libro abierto con un play: contenido en video, a tu ritmo. */
+  academia: `<path d="M3.5 5.6h5.1a3.4 3.4 0 0 1 3.4 3.4v10a2.5 2.5 0 0 0-2.5-2.5H3.5Z"/><path d="M20.5 5.6h-5.1a3.4 3.4 0 0 0-3.4 3.4v10a2.5 2.5 0 0 1 2.5-2.5h6Z"/><path d="M15.2 9.9v3.8l3.2-1.9Z"/>`,
+
+  /** Dos contactos unidos: tu gente, ordenada. */
+  agenda: `<rect x="5.2" y="3.5" width="14.3" height="17" rx="2.4"/><path d="M5.2 7.9H3.1M5.2 12H3.1M5.2 16.1H3.1"/><circle cx="9.6" cy="9.1" r="1.6"/><circle cx="9.6" cy="15.3" r="1.6"/><path d="M9.6 10.7v3"/><path d="M12.9 9.1h3.6M12.9 15.3h3.6"/>`,
+
+  /** Bocadillo con un visto: alguien revisó tu avance contigo. */
+  seguimiento: `<path d="M20.4 11.9c0 3.7-3.7 6.8-8.4 6.8a10.4 10.4 0 0 1-2.6-.33L4.6 20.2l1.3-3.4a6.4 6.4 0 0 1-2.3-4.9c0-3.7 3.7-6.8 8.4-6.8s8.4 3.1 8.4 6.8Z"/><path d="m8.9 11.9 2.1 2.1 4.1-4.3"/>`,
 } as const;
 
 export type NombreIcono = keyof typeof ICONOS;

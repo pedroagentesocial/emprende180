@@ -1,0 +1,202 @@
+---
+import T from "@components/i18n/T.astro";
+import Enfasis from "@components/ui/Enfasis.astro";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * UN TITULAR DE DÍPTICO — dos renglones, escala mixta
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Vive aparte porque se pinta en DOS SITIOS según la composición: encima de su
+ * foto (`lados`) o apilado en el bloque central (`centro`). Duplicar el
+ * marcado en los dos habría dejado la escala mixta y el remate escritos dos
+ * veces, y basta con que alguien toque uno para que las dos mitades del hero
+ * dejen de parecerse.
+ *
+ * ─── LA ESCALA MIXTA ───────────────────────────────────────────────────────
+ *
+ * El primer renglón es el APOYO y el segundo el ÉNFASIS. La jerarquía no la da
+ * el énfasis creciendo: la da el apoyo bajando a `0.87em` del otro, o sea un
+ * 15 % de diferencia, más el peso (600 contra 800). Es un contraste editorial
+ * entre dos renglones, no un titular grande con una entradilla.
+ *
+ * ⚠️ EL APOYO VA EN `em` Y NO EN SU PROPIA `clamp`. Así la proporción está
+ * garantizada a cualquier tamaño y solo hay una medida que mantener.
+ */
+
+interface Segmento {
+  es: string;
+  en: string;
+  /** La frase que remata. Va en Fraunces itálica. Ver `Enfasis.astro`. */
+  acento?: boolean;
+}
+
+interface Props {
+  /** Los renglones, cada uno una lista de trozos. Los saltos los da el config. */
+  titulo: readonly (readonly Segmento[])[];
+  /**
+   * Contra qué ancho está calculado el cuerpo de letra.
+   *
+   *   mitad — el titular vive en media pantalla: composición `lados` CON las
+   *           dos fotos, que es lo que le pone el límite.
+   *   ancho — vive en una caja centrada (composición `centro`), así que el
+   *           mismo renglón cabe bastante más grande.
+   *   libre — va a un lado, pero sin foto enfrente: el 80 % del ancho de
+   *           página. Es el más grande de los tres.
+   *
+   * ⚠️ NO ES "GRANDE Y PEQUEÑO": son dos cálculos distintos contra dos anchos
+   * distintos. Ver la tabla de medidas en `HeroDiptico.astro`.
+   */
+  escala?: "mitad" | "ancho" | "libre";
+  /** La sombra de texto del slider. */
+  sombra: string;
+  class?: string;
+}
+
+const { titulo, escala = "mitad", sombra, class: className = "" } = Astro.props;
+
+/**
+ * ⚠️ TABLA CERRADA Y CLASES ESCRITAS ENTERAS. Tailwind lee el código como
+ * TEXTO: una clase montada al vuelo no existe para él y no se genera nunca,
+ * sin aviso.
+ *
+ * Los topes de las dos `clamp` están calculados contra el renglón más largo
+ * que hay en el config (36 caracteres) con el avance por carácter por lo alto
+ * (0,60em en extrabold). Quedarse corto aquí no da un titular apretado: da un
+ * renglón partido, y entonces los dos renglones pasan a ser tres.
+ */
+const ESCALAS = {
+  /* ─── `mitad` ──────────────────────────────────────────────────────────
+     Media pantalla menos el margen de página y el aire de la costura. Con la
+     costura reducida a 16 px (ver `LADOS` en `HeroDiptico`): 563 px útiles a
+     1280, 646 a 1440, 869 a 1920, 1168 a 2560.
+
+     ⚠️ ESTA ESCALA ESTÁ EN SU TOPE FÍSICO Y NO ES UNA FORMA DE HABLAR. El
+     renglón más largo del config tiene 36 caracteres y no se parte solo: el
+     cuerpo máximo es el ancho útil ÷ (36 x avance). A 1440 eso son 646 ÷ 21,1 =
+     30,6 px, y la `clamp` de aquí da 27,9. Queda un 9 % de margen, que es lo
+     que protege de que una traducción larga parta el renglón.
+
+     ⚠️ LA PALANCA PARA QUE ESTO SEA DE VERDAD MÁS GRANDE ES EL COPY. Bajar el
+     renglón largo de 36 a 28 caracteres sube el tope a 39 px, un 40 % más.
+     Subir la `clamp` sin acortar la frase no da un titular grande: da tres
+     renglones donde tiene que haber dos. */
+  mitad:
+    "max-w-[70rem] text-[clamp(1.375rem,1.94vw,3.375rem)] font-extrabold leading-[1.04] tracking-[-0.03em]",
+  /* ─── `ancho` ──────────────────────────────────────────────────────────
+     Caja centrada, que es el tope pase lo que pase con la pantalla.
+
+     ⚠️ LA CAJA HA IDO DE 56rem A 64 Y DE 64 A 96, y las dos subidas son por
+     lo mismo: esta composición ya no convive con dos fotos. El fondo es un
+     vídeo a pantalla completa, así que lo único que le compite es el margen de
+     página, y 1536 px de caja entran en cualquier pantalla de 1600 para
+     arriba; por debajo manda el margen y la caja ni se nota.
+
+     ⚠️ LA `clamp` NO ES LA MISMA QUE LA DE `libre`, Y LLEGÓ A SERLO UN RATO.
+     El encargo era "que mida como el de la pantalla anterior", y compartir la
+     medida parecía la forma limpia de garantizarlo. Es un error: `libre` está
+     calculada contra el 80 % del ancho porque el otro titular le quita sitio,
+     y esta está centrada con la página entera para ella. Con la `clamp` de
+     `libre`, a 1280 este titular se quedaba en 42 px cuando ANTES tenía 46:
+     el encargo era agrandar y el resultado encogía.
+
+     ⚠️ ESTA MEDIDA VA CONTRA UNA COLUMNA DEL 60 %, NO CONTRA LA PÁGINA. El
+     bloque de esa pantalla es una columna pegada al margen derecho
+     (`bloque: "derecha"` en el config) y el ancho de texto que queda es
+     0,60 x pantalla menos un margen.
+
+     ⚠️ Y EL CUERPO SALE DE UNA CONDICIÓN, NO DE UN GUSTO: CADA RENGLÓN DEL
+     CONFIG EN UNA SOLA LÍNEA. Se pidió un máximo de dos líneas por titular, y
+     los titulares tienen dos renglones escritos, así que ninguno puede
+     partirse. El largo son 42 caracteres —"¿Y si esas conversaciones también
+     pagaran?"— así que el cuerpo máximo es columna ÷ 24,6.
+
+         pantalla   columna   tope    esta clamp
+            768       698*    28,4       20 (mínimo)
+           1024       570      23,2       22
+           1280       716      29,1       27
+           1440       806      32,8       31
+           1920      1077      43,8       41
+           2560      1440      58,6       54  (tope de la clamp)
+
+         * por debajo de `lg` el bloque no se desplaza: usa el ancho entero.
+
+     ⚠️ EL DIVISOR ERA 21,1 Y AHORA ES 24,6 porque el renglón pasó de 36 a 42
+     caracteres. Un cambio de copy en el config mueve este número: no hay nada
+     que avise, y lo que se ve es que un titular pasa a tres renglones.
+
+     ⚠️ EN UN TELÉFONO SÍ SE PARTE, y no hay arreglo: 42 caracteres a 20 px
+     piden 491 px y en un 375 hay 333. El mínimo no puede bajar más sin dejar
+     de ser un titular.
+
+     ⚠️ Y ESTA MEDIDA VA ATADA AL ANCHO DE LA COLUMNA. Si algún día se
+     estrecha el bloque, este número baja con él o los titulares vuelven a
+     salir a cuatro renglones. La tabla de equivalencias está en la nota de
+     `bloque`, en `HeroDiptico.astro`. */
+  ancho:
+    "max-w-full text-[clamp(1.25rem,2.12vw,3.375rem)] font-extrabold leading-[1.04] tracking-[-0.03em]",
+  /* ─── `libre` ──────────────────────────────────────────────────────────
+     El titular sigue a un lado, pero ya no tiene una foto enfrente que le
+     ponga el límite en la mitad: ocupa el 80 % del ancho de página y el otro
+     titular baja para no cruzarse con él. Ver `ladosSinFoto` en
+     `HeroDiptico.astro`, que es donde se paga el precio de esto.
+
+     La cuenta, con el mismo renglón de 36 caracteres de siempre:
+
+         pantalla   útil    80 %    tope    esta clamp
+           1024      936     749     35,6      31
+           1280     1174     939     44,6      39
+           1440     1323    1058     50,2      43
+           1920     1770    1416     67,2      57
+           2560     2368    1894     90,0      66  (tope de la clamp)
+
+     Se queda en torno al 86 % del máximo en todo el recorrido. Llegó a estar
+     en el 93 % y se bajó un punto a ojo después de verlo montado; lo que no
+     puede hacer es subir, porque ese margen es lo que absorbe una traducción
+     más larga sin partir el renglón.
+
+     ⚠️ EL MÍNIMO SIGUE SIENDO EL DE ANTES, y en un teléfono la frase SÍ se
+     parte: 36 caracteres a 20 px piden 421 px y en un 375 hay 333. Es lo que
+     pasaba ya y no hay cuerpo legible que lo evite; lo que importa es que a
+     partir de una tablet entra de una pieza.
+
+     ⚠️ Y EL TOPE DE 4,5rem NO ES EL ANCHO: ES EL ALTO. A 2560 cabrían 90 px,
+     pero los dos titulares van apilados y un monitor ancho no tiene por qué
+     ser alto (un 2560x1080 existe). Con 72 px los dos bloques más el hueco del
+     centro caben en 950 px de alto con sitio de sobra. */
+  libre:
+    "text-[clamp(1.25rem,0.125rem+2.875vw,4.125rem)] font-extrabold leading-[1.04] tracking-[-0.03em]",
+} as const;
+
+const APOYO = "text-[0.87em] font-semibold";
+---
+
+{/* ⚠️ `h2` Y NO `h1`: el `h1` de la página es la frase de abajo, la única
+    que dice de qué va esto. Estas dos son GANCHOS, y un gancho no sirve de
+    titular de página. Ver el bloque central de `HeroDiptico`. */}
+<h2 class:list={[ESCALAS[escala], className]}>
+  {
+    titulo.map((linea, l) => (
+      <span
+        class:list={[
+          /* `text-balance` es una RED, no el mecanismo. Con un renglón por
+             span no hay nada que equilibrar y no hace nada; solo entra cuando
+             el renglón tiene que partirse igualmente —en una pantalla
+             estrecha, o con una traducción más larga— y entonces lo parte en
+             dos mitades parejas en vez de dejar una palabra huérfana. El salto
+             intencionado lo sigue decidiendo el config. */
+          "block text-balance",
+          l === 0 ? APOYO : null,
+        ]}
+        style={`color:#ffffff;${sombra}`}
+      >
+        {linea.map((seg, s) => (
+          <>
+            {s > 0 ? " " : null}
+            {seg.acento ? <Enfasis v={seg} tono="inverso" /> : <T v={seg} />}
+          </>
+        ))}
+      </span>
+    ))
+  }
+</h2>

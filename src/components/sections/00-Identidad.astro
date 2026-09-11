@@ -1,0 +1,235 @@
+---
+import Section from "@components/ui/Section.astro";
+import Reveal from "@components/motion/Reveal.astro";
+import T from "@components/i18n/T.astro";
+import Enfasis from "@components/ui/Enfasis.astro";
+import BotonRelieve from "@components/ui/BotonRelieve.astro";
+import { copy } from "@config/curso.config";
+import { resolverIdiomaServidor } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 00 · IDENTIDAD — "todos tienen alguien así"
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * La primera sección después del hero, y la única de la página que no vende
+ * nada. Su trabajo entero es que alguien se RECONOZCA: esa persona a la que
+ * todos le preguntan cosas.
+ *
+ * ⚠️ AQUÍ NO SE EXPLICA EL MÉTODO. Ni un paso, ni un beneficio, ni una cifra.
+ * En cuanto entra cualquiera de las tres, esto deja de ser un espejo y pasa a
+ * ser un argumento, y el argumento ya viene entero en la sección siguiente.
+ * El copy y el porqué están en `copy.identidad`.
+ *
+ * ─── POR QUÉ ESTA NO SEPARA A ELLA DE ÉL ───────────────────────────────────
+ *
+ * Los dos dípticos del hero sí lo hacen: cada mitad le habla a una persona
+ * distinta. Esta hace lo contrario a propósito —los junta en una sola
+ * descripción— y por eso el titular es "todos tienen alguien así", que vale
+ * igual para la que trabaja desde casa y para el que conoce a medio pueblo.
+ *
+ * Las dos fotos dicen lo mismo sin decirlo: una mujer y un hombre, los dos al
+ * teléfono, los dos en la calle. Es el mismo par del hero, en foto fija.
+ *
+ * ─── EL MONTAJE DE LAS DOS FOTOS ───────────────────────────────────────────
+ *
+ * No es una rejilla de dos: es una encima de la otra, con solape. La grande
+ * arriba a la izquierda y la pequeña abajo a la derecha montándose sobre su
+ * esquina. Ese solape es lo que hace que se lean como UNA composición y no
+ * como dos imágenes puestas al lado.
+ *
+ * ⚠️ EL SOLAPE VIVE EN EL ALTO DE LA SEGUNDA, no en un `top` negativo. La
+ * pequeña va anclada abajo y mide "su 45 % + 1,5rem": esas 1,5rem son
+ * exactamente lo que se mete por encima del borde de la grande. Hecho con un
+ * `top` calculado, cualquier cambio de altura de la columna descuadraría el
+ * solape; así se mantiene solo.
+ *
+ * ─── EL ANCHO ──────────────────────────────────────────────────────────────
+ *
+ * Esta sección respira más que el resto: `container-page` a todo lo que dé,
+ * sin la medida de lectura que gobierna el copy largo. Lo que SÍ conserva
+ * medida son los dos párrafos, que son texto seguido (ver la regla del ancho
+ * en `global.css`).
+ */
+
+const { identidad } = copy;
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+const [principal, secundaria] = identidad.fotos;
+
+/**
+ * ⚠️ `rounded-lg` Y NO UN RADIO NUEVO. El encargo pedía 12 px; el sistema de
+ * la marca no tiene 12, tiene 14 (`--radius-lg`), y es el más cercano de los
+ * que YA se usan en el sitio. Inventar un `rounded-[12px]` habría metido un
+ * decimosexto radio en un sistema que tiene ocho. Ver `tokens.css`.
+ */
+const RADIO = "rounded-lg";
+---
+
+<Section id="identidad" tono="surface" ritmo="amplio" ariaLabel={identidad.aria} sinContenedor>
+  <div class="container-page">
+    {/* 55/45 y no 50/50: la columna de fotos carga el peso visual y la de
+        texto no lo necesita, porque sus párrafos ya llevan medida propia. */}
+      {/* ⚠️ DOS COLUMNAS DESDE `md` Y NO DESDE `lg`, y esto era un agujero de
+          verdad. Rompiendo en 1024, una tablet de 768 u 834 se llevaba el
+          diseño de MÓVIL estirado: fotos de 700 px de ancho, titulares
+          pequeños para ese hueco y una columna de texto con su medida en medio
+          de una pantalla vacía. El punto donde fallan los diseños pensados
+          para móvil y escritorio es justo ese, el de en medio. */}
+    {/* ⚠️ 30 / 70, Y ANTES ERA 55 / 45 A FAVOR DE LAS FOTOS. El reparto
+        nuevo lo pidió el cliente y cambia para qué sirve cada columna: las dos
+        fotos pasan de ser el asunto de la sección a ser su apoyo, y el texto
+        pasa de caber a respirar.
+
+        ⚠️ Y ES LO QUE DESBLOQUEA EL TAMAÑO DEL TITULAR. Con el 45 % la columna
+        medía 392 px a 1024 y "Todos tienen alguien así." se partía en cuatro
+        renglones de una palabra: por eso el salto al cuerpo grande esperaba a
+        `xl`. Con el 70 % son 610 px y entra en dos líneas desde `sm`, así que
+        el titular vuelve a crecer en su punto natural. */}
+    <div class="grid items-center gap-10 md:grid-cols-[30fr_70fr] md:gap-10 lg:gap-16 xl:gap-24">
+      {/* ─── LAS DOS FOTOS ─────────────────────────────────────────────────
+          Primero en el marcado, que es también el orden que queremos en el
+          teléfono: la cara antes que el texto. */}
+      <Reveal>
+        <div class="relative h-[320px] sm:h-[400px] md:h-[360px] lg:h-[480px]">
+          <img
+            src={principal.src}
+            alt={principal.alt[lang]}
+            data-alt-es={principal.alt.es}
+            data-alt-en={principal.alt.en}
+            width={1200}
+            height={580}
+            loading="lazy"
+            decoding="async"
+            style={`object-position:${principal.encuadre}`}
+            class:list={[
+              "absolute left-0 top-0 h-[55%] w-[75%] object-cover",
+              /* Borde y no sombra: el sitio es plano y una sombra aquí sería
+                 el único elemento con profundidad de toda la página. */
+              "border border-line",
+              RADIO,
+            ]}
+          />
+
+          {/* La segunda va DELANTE. `z-10` sobre la anterior, que no lleva
+              ninguno: con las dos sin z-index ganaría esta igual por orden de
+              marcado, pero dejarlo escrito evita que un `isolate` futuro en el
+              padre le dé la vuelta sin que nadie sepa por qué. */}
+          <img
+            src={secundaria.src}
+            alt={secundaria.alt[lang]}
+            data-alt-es={secundaria.alt.es}
+            data-alt-en={secundaria.alt.en}
+            width={1000}
+            height={800}
+            loading="lazy"
+            decoding="async"
+            style={`object-position:${secundaria.encuadre}`}
+            class:list={[
+              "absolute bottom-0 right-0 z-10 h-[calc(45%+1.5rem)] w-[60%] object-cover",
+              /* El filete blanco es lo que separa una foto de la otra donde se
+                 montan. Sin él, en el solape se ven dos fotos pegadas y no una
+                 delante de la otra. Es del color del fondo de la sección, no
+                 un borde decorativo. */
+              "border-4 border-surface",
+              RADIO,
+            ]}
+          />
+        </div>
+      </Reveal>
+
+      {/* ─── EL TEXTO ──────────────────────────────────────────────────────
+          Alineado a la izquierda dentro de su columna, y centrado en vertical
+          respecto a las fotos (`items-center` en la rejilla). */}
+      <Reveal delay={0.12}>
+        <div>
+          {/* El renglón de entrada sube de 13 px fijos a 14/16/18 fluidos. Con
+              un titular de 76 px encima, 13 px no se leían como la entrada del
+              bloque: se leían como un pie de foto perdido. */}
+          <p class="text-sm font-semibold text-ink-brand sm:text-base lg:text-lg">
+            <T v={identidad.kicker} />
+          </p>
+
+          {/* ⚠️ EL TITULAR EN MONTSERRAT Y LA SEGUNDA LÍNEA EN FRAUNCES
+              ITÁLICA, no al revés. La primera describe a un tercero y la
+              segunda te señala a ti: el cambio de tipografía ES ese giro. En
+              la misma familia, la frase se leería como una sola idea.
+
+              `font-semibold` y no extrabold: es el titular más grande de la
+              sección, pero la sección no grita. */}
+          {/* ⚠️ TRES ESCALONES, Y EL SUBTÍTULO SIEMPRE UNO POR DEBAJO. El
+              titular va 4xl / 5xl / 6xl y la respuesta en Fraunces 3xl / 4xl /
+              5xl: a la misma altura los dos dejarían de leerse como pregunta y
+              respuesta, y ese contraste es lo único que sostiene el cambio de
+              tipografía.
+
+              Esto llegó a esperar a `xl` para crecer, cuando la columna era el
+              45 % y medía 392 px a 1024: ahí el cuerpo grande partía el titular
+              en cuatro renglones de una palabra. Con el 70 % son 610 px y
+              "Todos tienen alguien así." entra en dos líneas ya desde `sm`.
+
+              `font-semibold` y no extrabold: es el titular más grande de la
+              sección, pero la sección no grita. */}
+          <h2 class="mt-4 text-4xl font-semibold leading-[1.1] tracking-[-0.02em] text-balance text-ink sm:text-5xl lg:text-6xl">
+            <T v={identidad.titulo} />
+          </h2>
+
+          <p class="mt-2 text-3xl leading-[1.15] text-balance sm:text-4xl lg:text-5xl">
+            <Enfasis v={identidad.subtitulo} />
+          </p>
+
+          {/* `max-w-prose`: son los dos únicos bloques de texto seguido de la
+              sección, así que son los dos únicos que conservan medida.
+
+              ⚠️ `font-medium` Y UN ESCALÓN MÁS DE CUERPO, Y LA PREGUNTA ERA SI
+              HACÍA FALTA OTRA TIPOGRAFÍA. No hace falta, y meterla sería un
+              error: el sitio tiene dos familias —Montserrat y la Fraunces de
+              los remates— y una tercera para el cuerpo rompe la marca y añade
+              una descarga más en la primera pantalla.
+
+              Lo que se buscaba se consigue dentro de Montserrat, que es
+              VARIABLE: tiene el eje de peso completo, así que 500 no carga
+              ningún archivo nuevo. A 400 el texto se afina y se lee gris; a
+              500 asienta sin acercarse al 600 de los titulares.
+
+              El otro medio punto de legibilidad es el CUERPO, no el peso: 16
+              -> 18 en el teléfono y 18 -> 20 de `sm` para arriba. El color se
+              queda en `ink-muted`, que ya da 7,40:1 sobre blanco: subirlo a
+              negro puro haría que dos párrafos de apoyo pesaran lo mismo que
+              el titular. */}
+          {
+            identidad.cuerpo.map((parrafo, i) => (
+              <p
+                class:list={[
+                  "max-w-prose text-lg font-medium leading-relaxed text-pretty text-ink-muted sm:text-xl",
+                  i === 0 ? "mt-7" : "mt-4",
+                ]}
+              >
+                <T v={parrafo} />
+              </p>
+            ))
+          }
+
+          {/* ⚠️ `ml-1` EN EL ENVOLTORIO, Y NO SOBRA. El botón en relieve vive
+              desplazado 4 px arriba a la izquierda —ese hueco es lo que ocupa
+              su pila de sombras— así que sin compensarlo su borde izquierdo
+              queda 4 px por fuera del de los párrafos de encima. Con `ml-1`
+              vuelve a la misma vertical que el resto de la columna.
+
+              ⚠️ Y SIN FLECHA. La llevaba cuando era un enlace de texto, donde
+              la flecha era lo único que decía que se podía pulsar. Un botón ya
+              lo dice por su forma: la flecha pasaría a ser adorno. */}
+          <div class="ml-1 mt-8">
+            <BotonRelieve href={identidad.cta.href} trackId="identidad-about">
+              <T v={identidad.cta.texto} />
+            </BotonRelieve>
+          </div>
+        </div>
+      </Reveal>
+    </div>
+  </div>
+</Section>

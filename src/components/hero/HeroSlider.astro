@@ -4,6 +4,8 @@ import Button from "@components/ui/Button.astro";
 import Enfasis from "@components/ui/Enfasis.astro";
 import Icono from "@components/ui/Icono.astro";
 import HeroDiptico from "@components/hero/HeroDiptico.astro";
+import HeroManifiesto from "@components/hero/HeroManifiesto.astro";
+import HeroVideo from "@components/hero/HeroVideo.astro";
 import { copy } from "@config/curso.config";
 import { resolverIdiomaServidor, construirTxt, type Txt } from "@i18n/idioma";
 import { interpolar } from "@i18n/formato";
@@ -173,14 +175,53 @@ interface PanelDiptico {
   foto: string;
   encuadre?: string;
   alt: Txt;
-  voz: "editorial" | "directa";
-  titulo: readonly { es: string; en: string; estilo?: "lead" | "acento" }[];
+  /* Un renglón es una LISTA DE SEGMENTOS, no un texto: el remate del titular
+     cae dentro de la línea y no ocupa la línea entera. Ver `HeroDiptico`. */
+  titulo: readonly (readonly { es: string; en: string; acento?: boolean }[])[];
 }
 
-interface SlideDiptico {
+interface SlideDiptico extends ConVideo {
   paneles: readonly PanelDiptico[];
+  composicion?: "lados" | "centro";
+  /** Dónde se apoya el bloque de texto. Ver `HeroDiptico`. */
+  bloque?: "centro" | "derecha";
   subtitulo: Txt;
-  cta: { texto: Txt; href: string };
+  /* Opcional: solo la primera imagen pide algo. Ver `HeroDiptico`. */
+  cta?: { texto: Txt; href: string };
+}
+
+/** Los campos de fondo en vídeo, que puede llevar cualquier plantilla. */
+interface ConVideo {
+  video?: string;
+  poster?: string;
+  videoAlt?: Txt;
+}
+
+/** La imagen que es SOLO un vídeo: sin titular, sin promesa y sin botón. */
+interface SlideVideo extends ConVideo {
+  video: string;
+  poster: string;
+  alt: Txt;
+  /** Solo la que lleva voz declara esto, y es la que pinta el botón. */
+  sonido?: boolean;
+  /** Lleva subtítulos quemados: los mandos se apartan mientras se ve. */
+  subtitulos?: boolean;
+}
+
+interface SlideManifiesto extends ConVideo {
+  foto: string;
+  alt: Txt;
+  manifiesto: readonly (readonly {
+    es: string;
+    en: string;
+    acento?: boolean;
+    azul?: boolean;
+  }[])[];
+  claves: readonly {
+    icono: "brujula" | "bocadillos" | "personas" | "escudo" | "red" | "megafono";
+    palabra: Txt;
+    frase: Txt;
+  }[];
 }
 
 /* Se reconoce por `paneles`, que es lo único que ninguna imagen normal tiene.
@@ -188,6 +229,39 @@ interface SlideDiptico {
    un `tipo` que no usa nadie. */
 const esDiptico = (slide: unknown): slide is SlideDiptico =>
   typeof slide === "object" && slide !== null && "paneles" in slide;
+
+/* Igual que el díptico: se reconoce por el campo que ninguna otra tiene. */
+const esManifiesto = (slide: unknown): slide is SlideManifiesto =>
+  typeof slide === "object" && slide !== null && "manifiesto" in slide;
+
+/* La que es SOLO vídeo no tiene ni paneles ni manifiesto: se reconoce por
+   descarte, preguntando por lo que sí tiene y ellas no. */
+const esVideoSolo = (slide: unknown): slide is SlideVideo =>
+  typeof slide === "object" &&
+  slide !== null &&
+  "video" in slide &&
+  !("paneles" in slide) &&
+  !("manifiesto" in slide);
+
+/** El fondo en vídeo, que lo puede llevar cualquiera de las tres plantillas. */
+const videoDe = (slide: unknown): ConVideo =>
+  typeof slide === "object" && slide !== null ? (slide as ConVideo) : {};
+
+/**
+ * ⚠️ QUÉ IMÁGENES SE PINTAN ENTERAS EN LA CAPA DE FONDO, texto incluido.
+ *
+ * Son las dos plantillas nuevas —el díptico y el manifiesto— y por eso la capa
+ * de texto de más abajo tiene que SALTÁRSELAS. Esta función existe para no
+ * tener que acordarse de las dos por separado: cuando el díptico entró, la
+ * capa de texto preguntaba por él y funcionaba; al entrar el manifiesto, la
+ * pregunta se quedó corta y la capa intentó pintarle un `kicker` y un
+ * `titulo` que no tiene. La página entera dejó de renderizar.
+ *
+ * O sea: si algún día hay una cuarta plantilla, se añade AQUÍ y no en tres
+ * sitios.
+ */
+const sePintaSola = (slide: unknown): boolean =>
+  esDiptico(slide) || esManifiesto(slide) || esVideoSolo(slide);
 
 /** Una imagen de las normales: una foto y el texto en una esquina. */
 interface SlideFoto {
@@ -231,6 +305,7 @@ const etiquetaPunto = (i: number) =>
       <div
         data-slide={i}
         data-activo={i === 0 ? "true" : "false"}
+        data-subtitulos={esVideoSolo(slide) && slide.subtitulos ? "true" : undefined}
         class="pointer-events-none absolute inset-0 -z-10 opacity-0 transition-opacity duration-[1200ms] ease-out-soft data-[activo=true]:pointer-events-auto data-[activo=true]:opacity-100"
         aria-hidden={i === 0 ? undefined : "true"}
       >
@@ -242,15 +317,74 @@ const etiquetaPunto = (i: number) =>
             El díptico se pinta ENTERO aquí dentro, texto y botón incluidos, y
             deja vacío su hueco en la capa de texto de más abajo. Ver la nota
             de `esDiptico`. */}
-        {esDiptico(slide) ? (
+        {/* ─── EL FONDO EN VÍDEO ────────────────────────────────────────
+            Va ANTES que la plantilla y fuera de ella, porque las tres pueden
+            llevarlo y ninguna tiene por qué saber de vídeo. Cada plantilla
+            solo se entera de una cosa: si ya hay fondo, no pinta el suyo. */}
+        {videoDe(slide).video && (
+          <HeroVideo
+            src={videoDe(slide).video!}
+            poster={videoDe(slide).poster!}
+            alt={videoDe(slide).videoAlt ?? heroSlider.aria}
+            prioritario={i === 0}
+          />
+        )}
+
+        {esVideoSolo(slide) ? (
+          /* Sin nada encima: los rótulos del propio vídeo hacen de texto. Lo
+             único que se añade es el botón de sonido, y solo si lleva voz. */
+          slide.sonido && (
+            /* ⚠️ ESTABA CENTRADO ABAJO Y TAPABA LOS SUBTÍTULOS. Este vídeo los
+               lleva quemados en el centro de la parte de abajo del fotograma,
+               que es exactamente donde caía el botón.
+               Ahora va a la DERECHA, a la misma altura que los puntos y la
+               pausa: se lee como parte del mismo grupo de mandos —que es lo
+               que se pidió— y deja libre la franja del centro, que es del
+               vídeo. */
+            <div class="container-page pointer-events-none absolute inset-x-0 bottom-8 flex justify-end">
+              <button
+                type="button"
+                data-hero-sonido
+                aria-pressed="false"
+                aria-label={heroSlider.activarSonido[lang]}
+                data-aria-es={heroSlider.activarSonido.es}
+                data-aria-en={heroSlider.activarSonido.en}
+                data-etiqueta-activar-es={heroSlider.activarSonido.es}
+                data-etiqueta-activar-en={heroSlider.activarSonido.en}
+                data-etiqueta-silenciar-es={heroSlider.silenciarSonido.es}
+                data-etiqueta-silenciar-en={heroSlider.silenciarSonido.en}
+                class="pointer-events-auto inline-flex min-h-11 items-center gap-2.5 rounded-full border border-white/40 bg-primary-950/40 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition-colors duration-200 hover:border-white hover:bg-primary-950/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+              >
+                <Icono nombre="megafono" class="size-4 shrink-0" grosor={1.8} data-icono-mudo />
+                <Icono nombre="megafono" class="hidden size-4 shrink-0" grosor={2.4} data-icono-suena />
+                <span data-etiqueta-sonido>
+                  <T v={heroSlider.activarSonido} />
+                </span>
+              </button>
+            </div>
+          )
+        ) : esDiptico(slide) ? (
           <HeroDiptico
             paneles={slide.paneles}
+            composicion={slide.composicion}
+            bloque={slide.bloque}
+            sinFotos={!!videoDe(slide).video}
             subtitulo={slide.subtitulo}
             cta={slide.cta}
             lang={lang}
             sombra={SOMBRA_TEXTO}
             prioritaria={i === 0}
             trackId={`hero-${i + 1}`}
+          />
+        ) : esManifiesto(slide) ? (
+          <HeroManifiesto
+            foto={videoDe(slide).video ? undefined : slide.foto}
+            alt={videoDe(slide).video ? undefined : slide.alt}
+            manifiesto={slide.manifiesto}
+            claves={slide.claves}
+            lang={lang}
+            sombra={SOMBRA_TEXTO}
+            prioritaria={i === 0}
           />
         ) : (
           <Fragment>
@@ -303,11 +437,11 @@ const etiquetaPunto = (i: number) =>
       dónde empieza cada una. */}
   {
     heroSlider.slides.map((slide, i) =>
-      esDiptico(slide) ? (
-        /* El hueco del díptico, que ya se pintó entero arriba. Va vacío y
-           siempre oculto, pero VA: el script empareja fondos, textos y puntos
-           por su posición en el array, así que saltárselo correría un puesto
-           todos los siguientes. Ver la nota de `esDiptico`. */
+      sePintaSola(slide) ? (
+        /* El hueco de las imágenes que ya se pintaron enteras arriba. Va vacío
+           y siempre oculto, pero VA: el script empareja fondos, textos y
+           puntos por su posición en el array, así que saltárselo correría un
+           puesto todos los siguientes. Ver la nota de `sePintaSola`. */
         <div data-texto={i} data-activo={i === 0 ? "true" : "false"} class="hidden" />
       ) : (
       <div
@@ -388,14 +522,32 @@ const etiquetaPunto = (i: number) =>
       en qué imagen vas y dejan elegir; el botón para. Ver la nota de la
       cabecera: sin esto, el hero incumple la WCAG.
 
+      ⚠️ ESTABAN ABAJO A LA IZQUIERDA Y AHORA VAN CENTRADOS, debajo del botón,
+      formando con él el grupo de mandos del hero. El orden que se lee es
+      promesa -> botón -> mandos.
+
+      Y se centran en las TRES imágenes, no solo en el díptico, aunque el botón
+      de las otras dos esté a la derecha. Es una decisión, no un descuido: unos
+      mandos centrados se leen como los mandos DEL HERO; en una esquina se leen
+      como un widget suelto que no se sabe a qué pertenece.
+
+      ⚠️ Y NO PUEDEN VIVIR DENTRO DEL DÍPTICO, aunque sea ahí donde se agrupan.
+      Sirven a las tres imágenes y el bloque del díptico solo existe mientras la
+      primera está activa: metidos ahí, desaparecerían al entrar la segunda y el
+      hero dejaría de poder pararse mientras se mueve, que es justo lo que exige
+      la WCAG 2.2.2. Lo que los coloca es el `pb` del bloque central del
+      díptico, que les reserva el hueco. Ver su nota.
+
       ⚠️ `pointer-events-none` EN LA CAJA Y `pointer-events-auto` EN LO QUE SE
-      PULSA. Esta caja es tan ancha como el contenedor de la página, pero lo
-      que hay dentro ocupa 140 px a la izquierda: el resto es aire, y ese aire
-      se pintaba POR ENCIMA del hero. Mientras el botón del hero estuvo a la
-      derecha no se notó; el del díptico va centrado y a la misma altura, así
-      que el clic caía en el aire de esta caja y no pasaba nada. */}
+      PULSA. Esta caja cruza la pantalla entera pero lo que hay dentro ocupa
+      140 px: el resto es aire, y ese aire se pintaba POR ENCIMA del hero, así
+      que se comía los clics del botón. */}
+  {/* ⚠️ `bottom` EN CSS Y NO EN UNA CLASE, porque depende de qué imagen esté a
+      la vista: ver el bloque de estilos de abajo. Cuando la que se ve lleva
+      subtítulos quemados, los mandos suben para no sentarse encima. */}
   <div
-    class="container-page pointer-events-none absolute inset-x-0 bottom-6 flex items-center gap-4"
+    data-hero-mandos
+    class="container-page pointer-events-none absolute inset-x-0 bottom-8 flex items-center justify-center gap-5"
   >
     <ul role="list" class="pointer-events-auto flex items-center gap-2">
       {
@@ -447,6 +599,21 @@ const etiquetaPunto = (i: number) =>
     width: 2.5rem;
     background-color: #ffffff;
   }
+
+  /* ─── LOS MANDOS SE APARTAN DE LOS SUBTÍTULOS ──────────────────────────
+     Medido: los subtítulos quemados del vídeo de presentación caen entre 9 y
+     93 px del borde de abajo, y los mandos ocupan de 32 a 76. Se solapaban.
+
+     Subirlos a 7rem los deja de 112 a 156, por encima de la banda de texto. Y
+     solo pasa mientras esa imagen está a la vista: en las otras tres no hay
+     nada que esquivar y los mandos vuelven a su sitio, que es donde quedan
+     agrupados debajo del botón.
+
+     Va en CSS y no en una clase de Tailwind porque el estado lo lleva un
+     atributo que mueve el script. */
+  [data-hero-slider][data-subtitulos="true"] [data-hero-mandos] {
+    bottom: 7rem;
+  }
 </style>
 
 <script>
@@ -468,12 +635,63 @@ const etiquetaPunto = (i: number) =>
     const textos = [...hero.querySelectorAll<HTMLElement>("[data-texto]")];
     const puntos = [...hero.querySelectorAll<HTMLElement>("[data-punto]")];
     const boton = hero.querySelector<HTMLButtonElement>("[data-hero-pausa]");
+    const botonSonido = hero.querySelector<HTMLButtonElement>("[data-hero-sonido]");
     if (fondos.length < 2) return;
+
+    /**
+     * ─── LOS VÍDEOS DE FONDO ────────────────────────────────────────────
+     *
+     * Uno por imagen, como mucho. Se guardan por índice de imagen para poder
+     * arrancar el que entra y parar el que sale sin buscarlos cada vez.
+     */
+    const videos = fondos.map((f) => f.querySelector<HTMLVideoElement>("[data-hero-video]"));
+
+    /**
+     * ⚠️ EL `src` SE PONE AQUÍ Y NO EN EL MARCADO. Solo el primero llega con
+     * `src`; los otros tres lo traen en `data-src` y no pesan un byte hasta
+     * que les toca. Con los cuatro puestos, el navegador baja 4,2 MB a la vez
+     * y el único que se ve —el primero— llega el último.
+     *
+     * Se precarga también el SIGUIENTE, no solo el actual: así el cambio de
+     * imagen no empieza en el póster y luego salta al vídeo.
+     */
+    const cargar = (i: number) => {
+      const v = videos[i];
+      if (!v || v.src) return;
+      const url = v.dataset.src;
+      if (!url) return;
+      v.src = url;
+      v.load();
+    };
+
+    /* Arranca el de la imagen activa y para los demás. Un `<video>` que no se
+       ve sigue decodificando fotogramas: pararlo es batería y CPU. */
+    const moverVideos = (i: number) => {
+      videos.forEach((v, n) => {
+        if (!v) return;
+        if (n === i) {
+          cargar(n);
+          /* `play()` devuelve una promesa que el navegador RECHAZA si decide
+             que no procede. Sin el `catch` sale un error sin manejar en
+             consola cada vez que alguien cambia de pestaña. */
+          v.play().catch(() => {});
+        } else {
+          v.pause();
+        }
+      });
+      cargar((i + 1) % fondos.length);
+    };
 
     const menosMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)");
     let actual = 0;
     let temporizador: number | undefined;
     let pausado = menosMovimiento.matches;
+
+    /* El vídeo con voz y en qué imagen está. -1 si no hay ninguno. */
+    const indiceSonido = videos.findIndex(
+      (v, n) => v && fondos[n].contains(botonSonido as Node),
+    );
+    let sonando = false;
 
     const pintar = (i: number) => {
       actual = i;
@@ -485,6 +703,14 @@ const etiquetaPunto = (i: number) =>
       });
       textos.forEach((el, n) => (el.dataset.activo = String(n === i)));
       puntos.forEach((el, n) => (el.dataset.activo = String(n === i)));
+      /* Si la que entra lleva subtítulos quemados, los mandos se apartan. */
+      hero.dataset.subtitulos = fondos[i].dataset.subtitulos ?? "false";
+      moverVideos(i);
+
+      /* Si el sonido estaba encendido y nos hemos ido de su imagen, se apaga:
+         una voz que sigue sonando encima de otra pantalla no se entiende y no
+         se sabe de dónde sale. */
+      if (sonando && i !== indiceSonido) apagarSonido();
     };
 
     const arrancar = () => {
@@ -524,15 +750,83 @@ const etiquetaPunto = (i: number) =>
       arrancar();
     });
 
-    window.addEventListener("e180:idioma", pintarBoton);
+    /**
+     * ─── EL SONIDO ──────────────────────────────────────────────────────
+     *
+     * ⚠️ AL 20 %, Y ESO NO ES UNA CIFRA DECORATIVA. `volume` va de 0 a 1, así
+     * que 0.2 es literalmente lo que se pidió. Se pone ANTES de quitar el
+     * mudo: al revés, hay un instante de vídeo a volumen completo.
+     *
+     * ⚠️ Y AL ENCENDERLO SE PARA LA ROTACIÓN. El slider cambia cada seis
+     * segundos y este vídeo dura cuarenta: sin pararlo, nadie oiría más allá
+     * del segundo siete. Se reutiliza el mismo estado `pausado` que el botón
+     * de pausa, así que los dos mandos cuentan la misma verdad y el botón de
+     * pausa aparece pulsado.
+     */
+    const VOLUMEN = 0.2;
+
+    const pintarSonido = () => {
+      if (!botonSonido) return;
+      const etiqueta =
+        botonSonido.dataset[claveIdioma(sonando ? "etiquetaSilenciar" : "etiquetaActivar")];
+      if (etiqueta) botonSonido.setAttribute("aria-label", etiqueta);
+      botonSonido.setAttribute("aria-pressed", String(sonando));
+      botonSonido.querySelector("[data-icono-mudo]")?.classList.toggle("hidden", sonando);
+      botonSonido.querySelector("[data-icono-suena]")?.classList.toggle("hidden", !sonando);
+      const texto = botonSonido.querySelector("[data-etiqueta-sonido]");
+      if (texto && etiqueta) texto.textContent = etiqueta;
+    };
+
+    function apagarSonido() {
+      const v = videos[indiceSonido];
+      if (v) v.muted = true;
+      sonando = false;
+      pintarSonido();
+    }
+
+    botonSonido?.addEventListener("click", () => {
+      const v = videos[indiceSonido];
+      if (!v) return;
+      if (sonando) {
+        apagarSonido();
+        /* Al callar, la presentación sigue su curso. */
+        pausado = menosMovimiento.matches;
+      } else {
+        v.volume = VOLUMEN;
+        v.muted = false;
+        v.play().catch(() => {});
+        sonando = true;
+        /* Mientras habla, la presentación se queda quieta. */
+        pausado = true;
+        pintarSonido();
+      }
+      pintarBoton();
+      arrancar();
+    });
+
+    window.addEventListener("e180:idioma", () => {
+      pintarBoton();
+      pintarSonido();
+    });
 
     /* Si la pestaña no está a la vista, no se gasta nada en rotar. */
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden) clearInterval(temporizador);
-      else arrancar();
+      if (document.hidden) {
+        clearInterval(temporizador);
+        /* Y se para el vídeo: en segundo plano no se ve, pero sigue
+           decodificando y —si estaba sonando— sigue sonando. */
+        videos.forEach((v) => v?.pause());
+        if (sonando) apagarSonido();
+      } else {
+        moverVideos(actual);
+        arrancar();
+      }
     });
 
     pintarBoton();
+    pintarSonido();
+    /* Arranca el vídeo de la primera y precarga el de la segunda. */
+    moverVideos(0);
     arrancar();
   }
 

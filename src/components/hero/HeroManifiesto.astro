@@ -1,0 +1,251 @@
+---
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import Enfasis from "@components/ui/Enfasis.astro";
+import type { Idioma, Txt } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * HERO · EL MANIFIESTO — qué significa ser Embajador
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * La tercera plantilla del slider, y la única que no va de una persona sino de
+ * una IDENTIDAD. Una foto a pantalla completa, el manifiesto encima y tres
+ * palabras con su icono debajo.
+ *
+ * ─── POR QUÉ NO ES UNA LISTA DE TAREAS ─────────────────────────────────────
+ *
+ * Es la diferencia entera entre esta pantalla y las otras dos, y se pierde muy
+ * fácil. Las tres palabras NO son lo que un Embajador hace: son lo que un
+ * Embajador ES. Por eso cada una lleva una micro-frase y no un párrafo, y por
+ * eso la micro-frase no explica un procedimiento.
+ *
+ * ⚠️ SI ALGUIEN CONVIERTE ESTO EN "PASO 1, PASO 2, PASO 3" se rompe el
+ * mecanismo: el método ya se cuenta más abajo en la página, con su sección
+ * entera. Aquí lo que se juega es si la persona se quiere llamar así.
+ *
+ * ─── LO QUE NO LLEVA ───────────────────────────────────────────────────────
+ *
+ * ⚠️ NO LLEVA BOTÓN, y es deliberado. Solo la primera imagen pide algo; las
+ * otras dos cuentan y dejan seguir bajando. Tres botones en tres pantallas que
+ * rotan solas son la misma decisión repetida cada seis segundos.
+ *
+ * ─── EL CONTRASTE ──────────────────────────────────────────────────────────
+ *
+ * Aquí hay MÁS texto que en los dípticos —un párrafo y tres columnas— así que
+ * el velo no puede ser un degradado lateral: es un apagado de abajo arriba que
+ * cubre la mitad inferior, más un tinte general suave. Las caras de la foto
+ * están en el tercio de arriba y se quedan fuera de los dos.
+ */
+
+interface Clave {
+  /** Nombre de icono de `Icono.astro`. Tabla cerrada: ver ese archivo. */
+  icono: "brujula" | "bocadillos" | "personas" | "escudo" | "red" | "megafono";
+  palabra: Txt;
+  /** UNA frase corta. Si necesita dos, es que sobra la mitad. */
+  frase: Txt;
+}
+
+interface Props {
+  /** Si no viene, el fondo lo pone otro (un vídeo) y aquí no se pinta nada. */
+  foto?: string;
+  alt?: Txt;
+  /**
+   * El manifiesto, en renglones. Los saltos los decide el config.
+   *
+   * Un trozo puede llevar UNO de dos realces, nunca los dos:
+   *
+   *   acento — Fraunces itálica en el teal claro. Es el remate de la frase, el
+   *            mismo recurso que usa toda la web (`Enfasis.astro`).
+   *   azul   — el azul claro de la marca, en la misma Montserrat del resto.
+   *            Para enumerar, no para rematar: cambia el color y nada más.
+   *
+   * ⚠️ SON DISTINTOS A PROPÓSITO. Si los dos fueran cursiva teal, el renglón
+   * se leería como una sola frase enfatizada en vez de como una enumeración
+   * que desemboca en un remate.
+   */
+  manifiesto: readonly (readonly {
+    es: string;
+    en: string;
+    acento?: boolean;
+    azul?: boolean;
+  }[])[];
+  claves: readonly Clave[];
+  lang: Idioma;
+  /** La sombra de texto del slider. */
+  sombra: string;
+  prioritaria?: boolean;
+}
+
+const {
+  foto,
+  alt,
+  manifiesto,
+  claves,
+  lang,
+  sombra,
+  prioritaria = false,
+} = Astro.props;
+---
+
+<div class="relative isolate size-full overflow-hidden">
+  {/* La foto solo se pinta si nadie ha puesto un fondo antes. Con vídeo
+      detrás, el `<img>` y su tinte sobran: los pone `HeroVideo`. */}
+  {foto && alt && (
+    <Fragment>
+      <img
+        src={foto}
+        alt={alt[lang]}
+        data-alt-es={alt.es}
+        data-alt-en={alt.en}
+        loading={prioritaria ? "eager" : "lazy"}
+        fetchpriority={prioritaria ? "high" : "auto"}
+        decoding="async"
+        class="absolute inset-0 -z-10 size-full object-cover object-top"
+      />
+      <div aria-hidden="true" class="absolute inset-0 -z-10 bg-primary-950/45" />
+    </Fragment>
+  )}
+
+  {/* El apagado de abajo VA SIEMPRE, haya foto o vídeo: es el que sostiene el
+      texto, y aquí hay un párrafo y tres columnas encima. */}
+  <div
+    aria-hidden="true"
+    class="absolute inset-x-0 bottom-0 -z-10 h-3/5 bg-gradient-to-t from-primary-950 via-primary-950/80 to-transparent"
+  />
+
+  {/* ⚠️ `pb-28`/`lg:pb-32` NO ES AIRE: ES EL HUECO DE LOS MANDOS DEL SLIDER,
+      que van centrados a 32 px del borde de abajo y ocupan 44 de alto. Ver la
+      nota de `HeroSlider`. `pt-24` deja pasar la barra de navegación, que
+      flota sobre los primeros 80 px. */}
+  <div
+    class="flex size-full flex-col items-center justify-end px-[var(--gutter-page)] pb-28 pt-24 text-center lg:pb-32"
+  >
+    {/* El manifiesto. `h2` porque el `h1` de la página lo pone el hero en sus
+        otras imágenes; aquí no hay ninguna frase que conteste "de qué va la
+        página", solo qué significa una palabra. */}
+    {/* ⚠️ LA CAJA HA IDO DE 52rem A 80rem Y EL CUERPO DE 28 A 44 PX, y las
+        dos cosas van juntas porque una sin la otra no sirve. El renglón más
+        largo es "trabajo, dedicación, autonomía y responsabilidad.": 49
+        caracteres que NO se pueden partir sin romper la frase en dos ideas.
+
+        El tope sale de dividir: 49 caracteres x 0,54 de avance = 26,5, así que
+        el cuerpo máximo es la caja ÷ 26,5. Con 832 px eran 31 px; con 1280 son
+        48, y la `clamp` se queda en 44 para dejar margen a la traducción
+        inglesa y a una fuente que cargue distinto.
+
+        A 1024 la caja real no es 1280 sino el ancho de página (936), y ahí el
+        tope baja a 35: por eso la `clamp` da 34 y no 44 en esa pantalla.
+
+        ⚠️ EL MÍNIMO SE QUEDA EN 18 PX Y NO SUBE CON EL RESTO. En un 375x667
+        esta pantalla lleva el manifiesto MÁS las tres claves, y el alto útil
+        entre la barra y los mandos del slider son 392 px. Medido con el mínimo
+        en 20 px y las claves crecidas, el conjunto pedía 426 y se salía por
+        arriba. Lo que crece es de `sm` y de `lg` en adelante; el teléfono se
+        queda como estaba. */}
+    <h2
+      class="max-w-[80rem] text-balance text-[clamp(1.125rem,0.125rem+2.95vw,2.75rem)] font-semibold leading-[1.35] tracking-[-0.01em]"
+      style={`color:#ffffff;${sombra}`}
+    >
+      {
+        manifiesto.map((linea) => (
+          <span class="block">
+            {linea.map((seg, s) => (
+              <>
+                {s > 0 ? " " : null}
+                {/* `resaltar` pinta en ámbar los `[COMPLETAR: …]` que aún
+                    tenga el manifiesto, para que el hueco cante en pantalla en
+                    vez de colarse en producción disfrazado de texto normal.
+                    Ver `lib/pendientes.ts`. */}
+                {seg.acento ? (
+                  <Enfasis v={seg} tono="inverso" />
+                ) : seg.azul ? (
+                  /* `primary-300` (#AAC2E0) y no el navy de marca: el navy es el
+                     FONDO de esta pantalla, así que escribir encima con él
+                     sería escribir en tinta invisible. Este es su versión
+                     clara, y da 8:1 sobre el navy. */
+                  <span class="text-primary-300">
+                    <T v={seg} resaltar />
+                  </span>
+                ) : (
+                  <T v={seg} resaltar />
+                )}
+              </>
+            ))}
+          </span>
+        ))
+      }
+    </h2>
+
+    {/* ─── LAS TRES PALABRAS ────────────────────────────────────────────────
+        En fila desde `sm`, apiladas en el teléfono. Sin tarjetas, sin fondo y
+        sin recuadro: son tres columnas de texto con un icono encima, que es lo
+        que las mantiene del lado de la tipografía editorial y lejos de la
+        rejilla de tarjetas que PRODUCT.md prohíbe por nombre.
+
+        El filete de arriba las separa del manifiesto sin meter una caja.
+
+        ⚠️ EN EL TELÉFONO EL ICONO SE PONE AL LADO, NO ENCIMA, y no es un
+        capricho: apiladas en columna las tres claves miden 361 px y esta
+        pantalla ya lleva el manifiesto encima. Medido a 375x667, con el icono
+        arriba el texto se sale por la barra de navegación; con el icono al
+        lado la lista baja a 185 px y cabe con holgura. Desde `sm` hay sitio de
+        sobra y vuelven a ser tres columnas centradas. */}
+    {/* La caja sigue a la del manifiesto: si las tres columnas fueran más
+        estrechas que el párrafo de encima, el filete de separación dejaría de
+        medir lo mismo que la frase y se vería como un recuadro a medio hacer.
+
+        Los huecos y el aire de arriba suben con el cuerpo de letra, por la
+        misma razón que en el díptico: tres columnas más grandes con el mismo
+        aire entre ellas se leen más apretadas que antes, no más presentes. */}
+    <ul
+      role="list"
+      class="mt-8 grid w-full max-w-[80rem] gap-4 border-t border-white/25 pt-6 sm:mt-12 sm:grid-cols-3 sm:gap-10 sm:pt-8 lg:mt-16 lg:gap-14 lg:pt-12"
+    >
+      {
+        claves.map((clave) => (
+          <li class="flex items-start gap-3.5 text-left sm:flex-col sm:items-center sm:gap-2.5 sm:text-center lg:gap-4">
+            {/* ⚠️ EL ICONO CRECE CON EL TEXTO, NO AL REVÉS. Un icono de 32 px
+                encima de una palabra de 16 y una frase de 18 deja de ser el
+                remate de la columna y pasa a ser un adorno pequeño arriba. A
+                40 vuelve a pesar lo que tenía que pesar.
+
+                El `grosor` NO sube con el tamaño: es un trazo en unidades del
+                `viewBox`, así que engorda solo al escalar. Si alguna vez se ve
+                demasiado grueso, el número a bajar es este. */}
+            <Icono
+              nombre={clave.icono}
+              class="mt-0.5 size-6 shrink-0 text-ink-on-inverse-brand sm:mt-0 sm:size-8 lg:size-12"
+              grosor={1.6}
+            />
+            {/* El envoltorio solo existe para que en el móvil la palabra y la
+                frase queden una debajo de otra A LA DERECHA del icono. Desde
+                `sm` no estorba: el `li` ya es columna. */}
+            <div class="min-w-0">
+            <p
+              class="text-sm font-bold uppercase tracking-[0.18em] lg:text-lg"
+              style={`color:#ffffff;${sombra}`}
+            >
+              <T v={clave.palabra} />
+            </p>
+            {/* `max-w` en `ch` y no en `rem`: lo que hay que proteger es que la
+                micro-frase no pase de dos renglones, y eso es cuestión de
+                caracteres, no de píxeles. */}
+            {/* La medida en `ch` sube a 30 de `lg` para arriba porque ahí la
+                columna ha crecido de 277 a 394 px: con 28 la frase larga de las
+                tres —54 caracteres— se partía en tres renglones en vez de dos.
+                Por debajo de `lg` se queda en 28, que es donde las columnas
+                siguen siendo estrechas. */}
+            <p
+              class="mt-1.5 max-w-[34ch] text-pretty text-sm font-medium leading-snug text-secondary-100 sm:mt-2 sm:max-w-[28ch] sm:text-base lg:max-w-[30ch] lg:text-xl"
+              style={sombra}
+            >
+              <T v={clave.frase} resaltar />
+            </p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</div>

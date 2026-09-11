@@ -111,6 +111,21 @@ const duracion = `${marcas.length * 5}s`;
 
     ⚠️ CON EL ENVOLTORIO SE FUE EL `id="aliados"`. Nadie enlazaba a ese ancla;
     si hace falta una, la que vale es la de la sección que lo contiene. */}
+{/* ⚠️ ESTE `<script>` SE MUDÓ AQUÍ DESDE `BandaTestimonios`, y merece la nota
+    porque el fallo habría sido silencioso. `montarBandas()` es lo que pone el
+    botón de parada y el control por teclado de TODAS las bandas de la página, y
+    se cargaba desde el componente de los testimonios. Al sustituir aquella
+    banda por una rejilla, esta de los logos se habría quedado moviéndose sola
+    y sin forma de pararla: o sea, incumpliendo la WCAG 2.2.2 sin que nada
+    fallara ni saltara ningún aviso.
+
+    Ahora lo carga quien lo usa, que es lo que debió ser desde el principio. */}
+<script>
+  import { montarBandas } from "@lib/banda";
+
+  montarBandas();
+</script>
+
 {
   aliados.activa && marcas.length > 0 && (
     <div>
@@ -139,7 +154,7 @@ const duracion = `${marcas.length * 5}s`;
             habría desalineado este rótulo de todos los titulares de la página
             a partir de 1024 px, sin que salte nada. */}
         <Reveal class="shrink-0 pl-[var(--gutter-page)]">
-          <p class="text-xs font-bold tracking-[0.18em] text-ink-subtle uppercase">
+          <p class="text-sm font-bold tracking-[0.18em] text-ink-subtle uppercase">
             <T v={copy.aliados.rotulo} />
           </p>
         </Reveal>
@@ -191,7 +206,7 @@ const duracion = `${marcas.length * 5}s`;
                             {lockup(m.nombre).arriba}
                           </span>
                           {lockup(m.nombre).abajo && (
-                            <span class="mt-0.5 text-[0.6875rem] font-semibold tracking-[0.18em] text-ink-brand uppercase">
+                            <span class="mt-0.5 text-xs font-semibold tracking-[0.18em] text-ink-brand uppercase">
                               {lockup(m.nombre).abajo}
                             </span>
                           )}
@@ -216,7 +231,7 @@ const duracion = `${marcas.length * 5}s`;
                             {lockup(m.nombre).arriba}
                           </span>
                           {lockup(m.nombre).abajo && (
-                            <span class="mt-0.5 text-[0.6875rem] font-semibold tracking-[0.18em] text-ink-brand uppercase">
+                            <span class="mt-0.5 text-xs font-semibold tracking-[0.18em] text-ink-brand uppercase">
                               {lockup(m.nombre).abajo}
                             </span>
                           )}

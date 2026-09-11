@@ -57,6 +57,17 @@ interface LeadFormProps {
   origen: Origen;
   /** Texto del botón. */
   cta: Txt;
+  /**
+   * Enciende el botón "físico": una sombra sólida corta debajo en reposo y un
+   * hundido al pulsar, con un rebote suave al soltar.
+   *
+   * ⚠️ VA POR PROP Y NO GLOBAL A PROPÓSITO. Este mismo formulario se usa en la
+   * lista del teléfono y en las guías, y allí el botón tiene que seguir siendo
+   * el de siempre: el efecto es para el CTA FINAL de la página, que es el único
+   * que cierra. Encenderlo en los tres lo convertiría en el estilo por defecto
+   * sin que nadie lo hubiera decidido.
+   */
+  relieve?: boolean;
   /** Microcopy bajo el formulario (aviso de privacidad / anti-spam). */
   aviso: Txt;
   /** Estado de éxito. */
@@ -123,6 +134,7 @@ interface LeadFormProps {
 export function LeadForm({
   origen,
   cta,
+  relieve = false,
   aviso,
   exitoTitulo,
   exitoTexto,
@@ -467,7 +479,7 @@ export function LeadForm({
             />
             <p
               className={[
-                "mt-1.5 text-xs",
+                "mt-1.5 text-[0.8125rem]",
                 inverso ? "text-secondary-200/80" : "text-ink-subtle",
               ].join(" ")}
             >
@@ -535,7 +547,7 @@ export function LeadForm({
           />
           <p
             className={[
-              "mt-1.5 text-xs",
+              "mt-1.5 text-[0.8125rem]",
               inverso ? "text-secondary-200/80" : "text-ink-subtle",
             ].join(" ")}
           >
@@ -555,7 +567,14 @@ export function LeadForm({
         <label
           htmlFor={idDe("consentimiento")}
           className={[
-            "flex cursor-pointer items-start gap-3 py-1 text-sm",
+            // ⚠️ `text-left` EXPLÍCITO, Y NO SOBRA. Este formulario se monta
+            // dentro de secciones que pueden ir centradas (el cierre lo está),
+            // y `text-center` se hereda. Una línea de consentimiento legal
+            // centrada al lado de su casilla se lee rota: el texto se despega
+            // del cuadrito y los renglones no cuadran con nada. Es la única
+            // fila del formulario en la que el texto va AL LADO de otra cosa,
+            // así que es la única que necesita defenderse.
+            "flex cursor-pointer items-start gap-3 py-1 text-left text-sm",
             inverso ? "text-secondary-200" : "text-ink-muted",
           ].join(" ")}
         >
@@ -633,11 +652,38 @@ export function LeadForm({
         data-track={`lead-${origen}`}
         className={[
           "mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2",
-          "rounded-full px-7 py-4 text-base font-semibold sm:text-lg",
-          "bg-cta text-ink-inverse shadow-cta",
-          "transition-[background-color,transform,box-shadow] duration-200 ease-out-soft",
-          "hover:bg-cta-hover hover:shadow-cta-hover",
-          "motion-safe:active:scale-[0.98]",
+          "rounded-full px-8 py-4 text-lg font-semibold sm:text-xl",
+          "bg-cta text-ink-inverse",
+          "hover:bg-cta-hover",
+          /* ─── EL BOTÓN FÍSICO ────────────────────────────────────────────
+             De la referencia de Uiverse se toma el COMPORTAMIENTO y nada más:
+             una sombra sólida y corta debajo en reposo, y al pulsar el botón
+             baja esos mismos píxeles mientras la sombra desaparece. Parece que
+             se hunde porque el hueco que ocupaba la sombra es exactamente lo
+             que se desplaza.
+
+             NO se toma su estética: ni la rotación de 5 grados, ni la Gochi
+             Hand, ni su verde, ni el relleno claro del span. La tipografía, el
+             color y el radio siguen siendo los del sitio.
+
+             La curva es la suya: rebasa el 1 al final, así que al soltar el
+             botón vuelve con un resorte corto en vez de frenar en seco.
+
+             ⚠️ La sombra es NAVY y no un tono del teal: el teal oscuro contra
+             el teal del botón no se ve, y esto tiene que leerse como un canto. */
+          relieve
+            ? [
+                "shadow-[0_3px_0_0_var(--color-primary-900)]",
+                "transition-[background-color,transform,box-shadow] duration-300",
+                "ease-[cubic-bezier(0.175,0.885,0.32,1.275)]",
+                "motion-safe:active:translate-y-[3px]",
+                "active:shadow-[0_0_0_0_var(--color-primary-900)]",
+              ].join(" ")
+            : [
+                "shadow-cta hover:shadow-cta-hover",
+                "transition-[background-color,transform,box-shadow] duration-200 ease-out-soft",
+                "motion-safe:active:scale-[0.98]",
+              ].join(" "),
           "focus-visible:outline-2 focus-visible:outline-offset-2",
           inverso ? "focus-visible:outline-focus-inverse" : "focus-visible:outline-focus",
           "disabled:cursor-not-allowed disabled:opacity-70",
@@ -662,7 +708,7 @@ export function LeadForm({
           // verdad —"sin spam, te das de baja en un clic"—, pero es también lo
           // que desactiva el miedo a dejar el correo, y a 12 px en un teléfono
           // no se lee.
-          "mt-3 text-center text-[0.8125rem] sm:text-xs",
+          "mt-3 text-center text-[0.8125rem]",
           inverso ? "text-primary-300" : "text-ink-subtle",
         ].join(" ")}
       >

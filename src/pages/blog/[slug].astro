@@ -54,7 +54,7 @@ const enOtroIdioma = articulo.data.idioma !== idiomaLector;
 const minutos = minutosDeLectura(articulo.body ?? "");
 
 const tituloPagina = construirTxt(
-  () => `${articulo.data.titulo} · ${sitio.nombre}`,
+  (l) => `${articulo.data.titulo} · ${sitio.nombre[l]}`,
 );
 const descripcion = construirTxt(() => articulo.data.resumen);
 ---

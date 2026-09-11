@@ -1,8 +1,6 @@
 ---
-import T from "@components/i18n/T.astro";
+import TarjetaTestimonio from "@components/ui/TarjetaTestimonio.astro";
 import Icono from "@components/ui/Icono.astro";
-import Estrellas from "@components/ui/Estrellas.astro";
-import MarcaGoogle from "@components/ui/MarcaGoogle.astro";
 import { copy } from "@config/curso.config";
 import type { Testimonio } from "@config/curso.config";
 import { resolverIdiomaServidor } from "@i18n/idioma";
@@ -97,14 +95,6 @@ const lang = resolverIdiomaServidor(
  */
 const duracion = `${items.length * 9}s`;
 
-/** Iniciales, para cuando no hay foto. */
-const iniciales = (nombre: string) =>
-  nombre
-    .split(" ")
-    .slice(0, 2)
-    .map((p) => p[0] ?? "")
-    .join("")
-    .toUpperCase();
 /**
  * ⚠️ ¿HAY TARJETA DE CABECERA O NO?
  *
@@ -166,8 +156,13 @@ const conCabecera = Astro.slots.has("default");
         {
           [0, 1].map((copia) =>
             items.map((t) => (
+              /* ⚠️ MÁS ANCHA QUE ANTES, y no es un retoque: la tarjeta pasó de
+                 vertical a HORIZONTAL. Con 22rem la foto y la cita se
+                 repartirían 350 px y no cabría ninguna de las dos. A 30rem la
+                 columna de texto se queda en unas 18rem, que es donde una cita
+                 de cuatro renglones se lee. */
               <li
-                class="w-[19rem] shrink-0 sm:w-[22rem]"
+                class="w-[20rem] shrink-0 sm:w-[30rem]"
                 aria-hidden={copia === 1 ? "true" : undefined}
                 data-banda-clon={copia === 1 ? "" : undefined}
               >
@@ -178,102 +173,18 @@ const conCabecera = Astro.slots.has("default");
                     invertirlo, lo que se mueve es el color y el fondo se queda
                     quieto. Sin borde por lo mismo: el contraste de superficie ya
                     dibuja el canto. */}
-                <figure class="flex h-full flex-col rounded-2xl bg-surface-muted p-6">
-                  {/* ─── LA LÍNEA DE CREDIBILIDAD ────────────────────────────
-                      Estrellas a la izquierda, de dónde sale la reseña a la
-                      derecha. Va ARRIBA del todo porque es lo que decide si se
-                      lee la cita: en una banda en movimiento, una fila de
-                      estrellas se reconoce sin leer nada.
+                {/* ⚠️ LA TARJETA YA NO SE DIBUJA AQUÍ. Vivía en este archivo
+                    —un `<figure>` de noventa líneas con su avatar circular, sus
+                    estrellas y su pie— y ahora es `TarjetaTestimonio`, que es
+                    la misma que usa la rejilla. Una sola tarjeta y dos formas
+                    de presentarla.
 
-                      La nota va `sinTexto` aquí y solo aquí: el resumen de la
-                      tarjeta azul ya la dice escrita, y repetir "5 de 5" en
-                      cada una de las tarjetas sería ruido. La versión
-                      accesible de la puntuación vive en ese resumen.
-
-                      (Los comentarios van AQUÍ arriba y no dentro de cada
-                      `{cond && (…)}`: un comentario JSX dentro de una expresión
-                      rompe el parser de Astro.) */}
-                  {/* ─── ARRIBA: QUIÉN LO DICE ──────────────────────────────
-                      El avatar sube aquí desde el pie. En una banda que pasa de
-                      largo, la cara (o las iniciales) es lo que dice de un
-                      vistazo que esto lo escribió una persona, y llegaba al
-                      final de la tarjeta, cuando ya se había ido. */}
-                  <div class="mb-4 flex items-center justify-between gap-3">
-                    <div class="flex min-w-0 items-center gap-3">
-                      {t.foto ? (
-                        <img
-                          src={t.foto}
-                          alt=""
-                          loading="lazy"
-                          decoding="async"
-                          class="size-11 shrink-0 rounded-full object-cover"
-                        />
-                      ) : (
-                        <span
-                          aria-hidden="true"
-                          class="grid size-11 shrink-0 place-items-center rounded-full bg-secondary-100 text-sm font-bold text-secondary-700"
-                        >
-                          {iniciales(t.nombre)}
-                        </span>
-                      )}
-
-                      {t.estrellas && <Estrellas valor={t.estrellas} sinTexto />}
-                    </div>
-
-                      {t.fuente === "google" && t.url && (
-                        <a
-                          href={t.url}
-                          target="_blank"
-                          rel="noopener noreferrer nofollow"
-                          data-track="testimonio-google"
-                          aria-label={copy.pruebaSocial.verEnGoogle[lang]}
-                          data-aria-es={copy.pruebaSocial.verEnGoogle.es}
-                          data-aria-en={copy.pruebaSocial.verEnGoogle.en}
-                          class="inline-flex min-h-11 shrink-0 items-center gap-1.5 text-xs font-semibold text-ink-subtle transition-colors duration-200 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                        >
-                          <MarcaGoogle class="size-4" />
-                          <span><T v={copy.pruebaSocial.enGoogle} /></span>
-                        </a>
-                      )}
-                  </div>
-
-                  {/* El distintivo del resultado va a `text-sm` y no a
-                      `text-xs`: es la frase por la que existe la tarjeta, y a
-                      12 px dentro de una banda que se mueve, en un teléfono, no
-                      da tiempo a leerla. */}
-                  {t.resultado && (
-                    <p class="mb-4 inline-flex self-start rounded-full bg-secondary-100 px-3 py-1 text-sm font-bold text-secondary-700">
-                      <T v={t.resultado} resaltar />
-                    </p>
-                  )}
-
-                  {/* La comilla grande. Decorativa y `aria-hidden`: un lector de
-                      pantalla ya sabe que esto es una cita porque es un
-                      `<blockquote>`, y oír «comillas» antes de cada una es
-                      ruido. Va en la serifa de acento, que es donde ese glifo
-                      está dibujado de verdad. */}
-                  <span
-                    aria-hidden="true"
-                    class="mb-1 block font-acento text-5xl leading-none text-ink-brand/25 select-none"
-                  >
-                    &ldquo;
-                  </span>
-
-                  <blockquote class="flex-1 text-base text-pretty text-ink">
-                    <T v={t.cita} resaltar />
-                  </blockquote>
-
-                  {/* Una sola línea, sin raya larga delante: el cliente las tiene
-                      prohibidas en el texto de cara al usuario. El nombre en
-                      negrita y el contexto detrás, que es como se firma una cita
-                      cuando ya se sabe de quién es la cara de arriba. */}
-                  <figcaption class="mt-5 text-sm text-ink-subtle">
-                    <span class="font-bold text-ink">{t.nombre}</span>{", "}<T
-                      v={t.contexto}
-                      resaltar
-                    />
-                  </figcaption>
-                </figure>
+                    El motivo es que se estaban separando: la banda tenía la
+                    tarjeta clara sobre fondo blanco y la rejilla al revés, con
+                    otro radio y otro avatar. Dos dibujos distintos para el
+                    mismo contenido es cómo se acaba con dos diseños en la
+                    misma página. */}
+                <TarjetaTestimonio testimonio={t} />
               </li>
             )),
           )

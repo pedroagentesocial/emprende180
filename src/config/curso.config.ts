@@ -145,7 +145,21 @@ export type OrigenLead = "hero" | "lead-magnet" | "cierre" | "modal" | "footer";
 // ─── Sitio ───────────────────────────────────────────────────────────────────
 
 export const sitio = {
-  nombre: "Emprende180",
+  /**
+   * ⚠️ LA MARCA CAMBIA DE NOMBRE CON EL IDIOMA, y por eso esto dejó de ser una
+   * cadena. En inglés no es "Emprende180": es **Entrepreneur180**, con su
+   * propio logotipo. La grafía sale del ARTE que pasó el cliente
+   * (`logo-english.jpeg`), que es la autoridad sobre cómo se escribe una marca.
+   *
+   * ⚠️ ESTO NO ES LA RAZÓN SOCIAL. El nombre legal de quien responde vive en
+   * `legal.config.ts` y NO se traduce: una sociedad se llama como está inscrita,
+   * en el idioma que sea. Aquí solo está la marca comercial.
+   *
+   * Se usa en 26 sitios y casi todos ya resolvían idioma —van dentro de un
+   * `construirTxt((l) => …)`— así que el cambio fue mecánico: `sitio.nombre`
+   * pasa a `sitio.nombre[l]`.
+   */
+  nombre: { es: "Emprende180", en: "Entrepreneur180" } as Txt,
   claim: {
     es: "Tu giro de 180° empieza aquí",
     en: "Your 180° turn starts here",
@@ -154,7 +168,7 @@ export const sitio = {
 
   titulo: {
     es: "Emprende180 — Conviértete en Embajador",
-    en: "Emprende180 — Become an Ambassador",
+    en: "Entrepreneur180 — Become an Ambassador",
   },
   descripcion: {
     /* ⚠️ ESTO ES LO QUE SALE EN GOOGLE Y AL COMPARTIR EL ENLACE, así que es lo
@@ -165,7 +179,7 @@ export const sitio = {
        entero hace tiempo. Prometer en Google algo que no está en la página es
        la forma más cara de perder a alguien: entra, no lo encuentra y se va. */
     es: "El método de Emprende180 para construir algo tuyo desde casa: el plan de 90 días, la Academia con sus programas y un CRM donde no se te pierde nadie.",
-    en: "The Emprende180 method for building something of your own from home: the 90 day plan, the Academy with its programs, and a CRM so you never lose track of anyone.",
+    en: "The Entrepreneur180 method for building something of your own from home: the 90 day plan, the Academy with its programs, and a CRM so you never lose track of anyone.",
   },
 
   ogImagen: "/imagenes/og/og.jpg",
@@ -176,6 +190,30 @@ export const sitio = {
   logoBlanco: { src: "/identidad/logo-blanco.png", w: 320, h: 308 },
   logoHorizontal: { src: "/identidad/logo-horizontal.png", w: 573, h: 120 },
   logoHorizontalBlanco: { src: "/identidad/logo-horizontal-blanco.png", w: 573, h: 120 },
+
+  /**
+   * ─── EL LOCKUP INGLÉS ────────────────────────────────────────────────────
+   *
+   * Mismo arte, otra palabra. Es más ANCHO que el español (628 contra 573)
+   * porque "ENTREPRENEUR" tiene cuatro letras más que "EMPRENDE": el alto es
+   * el mismo, y como la cabecera fija el alto y deja el ancho en `auto`, entra
+   * sin tocar nada. Los `w`/`h` tienen que ser los reales o el navegador
+   * reserva el hueco equivocado y la barra da un salto al cargar.
+   *
+   * ⚠️ ESTÁ RECONSTRUIDO, NO EXPORTADO. El archivo que llegó era un JPEG
+   * apaisado de 1280x720, sin transparencia y con el logotipo APILADO. La
+   * cabecera necesita el horizontal y con alfa, así que se compuso: la
+   * bombilla sale del lockup español —es el mismo dibujo en los dos idiomas y
+   * ya venía limpia— y la palabra se recortó del arte inglés quitándole el
+   * fondo blanco.
+   *
+   * Funciona y a tamaño de cabecera no se nota, pero pesa 22 KB contra los 5
+   * del español porque arrastra el ruido del JPEG en los bordes. Con un
+   * export vectorial del logotipo inglés bajaría a los mismos 5 KB y sería
+   * nítido a cualquier tamaño. Merece pedirlo.
+   */
+  logoHorizontalEn: { src: "/identidad/logo-horizontal-en.png", w: 628, h: 120 },
+  logoHorizontalBlancoEn: { src: "/identidad/logo-horizontal-blanco-en.png", w: 628, h: 120 },
   isotipo: { src: "/identidad/isotipo.png", w: 512, h: 632 },
   isotipoBlanco: { src: "/identidad/isotipo-blanco.png", w: 512, h: 632 },
 } as const;
@@ -200,7 +238,7 @@ export const sitio = {
 export const TITULARES: readonly Txt[] = [
   {
     es: "Conviértete en Embajador Emprende180",
-    en: "Become an Emprende180 Ambassador",
+    en: "Become an Entrepreneur180 Ambassador",
   },
   {
     es: "Tu red de contactos ya vale. Falta saber usarla.",
@@ -218,6 +256,16 @@ const TITULAR_ELEGIDO = 0;
 // ─── El curso ────────────────────────────────────────────────────────────────
 
 export const curso = {
+  /**
+   * ⚠️ EL NOMBRE DEL CURSO NO SE TRADUCE, y es una decisión tomada, no un
+   * olvido. Se llama "Fundamentos de Emprende180" en los dos idiomas.
+   *
+   * Sí, la MARCA cambia con el idioma (Entrepreneur180 en inglés) y aquí no.
+   * No es una incoherencia: es la regla de siempre de este archivo —los
+   * nombres de PRODUCTO no se traducen, porque traducirlos crea dos nombres
+   * para una misma cosa— y el cliente la confirmó para este caso. Ver la nota
+   * de `proximosCursos`, que dice lo mismo del curso 2.
+   */
   nombre: {
     es: "Fundamentos de Emprende180",
     en: "Fundamentos de Emprende180",
@@ -339,7 +387,7 @@ export const curso = {
       },
       detalle: {
         es: "Qué es Emprende180, qué es ser Embajador y cómo funciona el Ecosistema completo. Quién hace qué, y qué parte te toca a ti.",
-        en: "What Emprende180 is, what being an Ambassador means, and how the whole ecosystem works. Who does what, and which part is yours.",
+        en: "What Entrepreneur180 is, what being an Ambassador means, and how the whole ecosystem works. Who does what, and which part is yours.",
       },
     },
     {
@@ -398,7 +446,7 @@ export const curso = {
   resultados: [
     {
       es: "Entender el Ecosistema Emprende180 y el rol del Embajador",
-      en: "Understand the Emprende180 ecosystem and the Ambassador role",
+      en: "Understand the Entrepreneur180 ecosystem and the Ambassador role",
     },
     {
       es: "Detectar oportunidades de Accidentes de Auto y Vivienda en tu red de contactos",
@@ -492,7 +540,7 @@ export const curso = {
       },
       {
         es: "Certificación de Embajador Emprende180 al superar los 10 quizzes",
-        en: "Emprende180 Ambassador Certification once you pass all 10 quizzes",
+        en: "Entrepreneur180 Ambassador Certification once you pass all 10 quizzes",
       },
       {
         es: "Las actualizaciones futuras del curso, sin pagar de nuevo",
@@ -648,7 +696,7 @@ export const curso = {
         },
         detalle: {
           es: "De qué es Emprende180 hasta tu Plan de 90 Días, en el orden en que hay que verlos. Vuelves a cualquiera cuando lo necesites, y las actualizaciones futuras entran sin pagar de nuevo.",
-          en: "From what Emprende180 is through to your 90-Day Plan, in the order you need to watch them. Come back to any of them whenever you need to, and future updates are included at no extra cost.",
+          en: "From what Entrepreneur180 is through to your 90-Day Plan, in the order you need to watch them. Come back to any of them whenever you need to, and future updates are included at no extra cost.",
         },
       },
       {
@@ -666,7 +714,7 @@ export const curso = {
         valor: 700,
         titulo: {
           es: "La certificación de Embajador Emprende180",
-          en: "The Emprende180 Ambassador certification",
+          en: "The Entrepreneur180 Ambassador certification",
         },
         detalle: {
           es: "La emitimos nosotros al superar los diez quizzes. Es la constancia de que hiciste el curso entero, incluido el video de ética y cumplimiento, y de que te validaste video a video en vez de darle a «siguiente».",
@@ -776,7 +824,7 @@ export const aliados = {
   },
   entradilla: {
     es: "Emprende180 no es una idea en un papel: el Ecosistema ya opera con negocios reales, y son ellos los que resuelven las oportunidades que detectas.",
-    en: "Emprende180 isn't an idea on paper: the ecosystem already runs with real businesses, and they're the ones who handle the opportunities you spot.",
+    en: "Entrepreneur180 isn't an idea on paper: the ecosystem already runs with real businesses, and they're the ones who handle the opportunities you spot.",
   },
 
   marcas: [
@@ -906,7 +954,7 @@ export const instructor = {
   nombre: "Pedro Lira",
   rol: {
     es: "Fundador de Emprende180",
-    en: "Founder of Emprende180",
+    en: "Founder of Entrepreneur180",
   },
   /**
    * ⚠️ LEE ESTO ANTES DE DAR LA BIO POR BUENA.
@@ -948,7 +996,7 @@ export const instructor = {
      * suyas, con lo que le costó, y esta bio pasa de correcta a buena.
      */
     es: "Soy Pedro Lira y fundé Emprende180. El Ecosistema existe porque el desperdicio siempre era el mismo: gente con una red de contactos buena y grande, delante de situaciones que podía resolver, que no hacía nada porque nadie le había explicado qué hacer ni hasta dónde llegaba su parte. No es falta de ganas, es falta de método. Lo sé porque mi otro trabajo es financiar casas en Utah, y ahí lo veo cada semana: alguien con la oportunidad delante que no sabe a quién llamar, y alguien que sí lo sabe y por eso le llega a él. Doy yo los diez videos porque el rol de Embajador lo diseñé yo, y prefiero explicarlo en primera persona antes que dejar que cada quien lo interprete a su manera.",
-    en: "I'm Pedro Lira and I founded Emprende180. The ecosystem exists because the waste was always the same: people with a big, good network, standing in front of situations they could have solved, doing nothing because nobody had explained what to do or where their part ended. It isn't a lack of drive, it's a lack of method. I know because my other job is financing homes in Utah, and I see it there every week: someone with the opportunity right in front of them who doesn't know who to call, and someone else who does — which is why it reaches them instead. I teach the ten videos myself because I designed the Ambassador role, and I'd rather explain it first-hand than let everyone interpret it their own way.",
+    en: "I'm Pedro Lira and I founded Entrepreneur180. The ecosystem exists because the waste was always the same: people with a big, good network, standing in front of situations they could have solved, doing nothing because nobody had explained what to do or where their part ended. It isn't a lack of drive, it's a lack of method. I know because my other job is financing homes in Utah, and I see it there every week: someone with the opportunity right in front of them who doesn't know who to call, and someone else who does — which is why it reaches them instead. I teach the ten videos myself because I designed the Ambassador role, and I'd rather explain it first-hand than let everyone interpret it their own way.",
   },
 
   /**
@@ -964,7 +1012,7 @@ export const instructor = {
     {
       dato: {
         es: "Fundador de Emprende180 y del Ecosistema por el que pasa cada oportunidad",
-        en: "Founder of Emprende180 and of the ecosystem every opportunity runs through",
+        en: "Founder of Entrepreneur180 and of the ecosystem every opportunity runs through",
       },
       prueba: null,
     },
@@ -1016,7 +1064,7 @@ export const instructor = {
   queEnsena: [
     {
       es: "Cómo funciona el Ecosistema Emprende180 y qué parte te toca a ti",
-      en: "How the Emprende180 ecosystem works and which part is yours",
+      en: "How the Entrepreneur180 ecosystem works and which part is yours",
     },
     {
       es: "Reconocer una oportunidad de Accidentes de Auto o Vivienda en tu propia red",
@@ -1069,7 +1117,7 @@ export const instructor = {
   fotoOficina: "/imagenes/instructor/pedro-oficina.webp",
   fotoAlt: {
     es: "Retrato de Pedro Lira, fundador de Emprende180",
-    en: "Portrait of Pedro Lira, founder of Emprende180",
+    en: "Portrait of Pedro Lira, founder of Entrepreneur180",
   },
 
   redes: {
@@ -1111,18 +1159,18 @@ export const temario: Modulo[] = [
     numero: 1,
     titulo: {
       es: "Qué es Emprende180",
-      en: "What Emprende180 is",
+      en: "What Entrepreneur180 is",
     },
     logras: {
       es: "Entiendes qué es Emprende180, qué problema resuelve y qué lugar ocupas tú dentro. Es la base sobre la que se apoyan los nueve videos siguientes.",
-      en: "You understand what Emprende180 is, what problem it solves and where you fit into it. This is the base the other nine videos stand on.",
+      en: "You understand what Entrepreneur180 is, what problem it solves and where you fit into it. This is the base the other nine videos stand on.",
     },
   },
   {
     numero: 2,
     titulo: {
       es: "Qué es ser Embajador Emprende180",
-      en: "What being an Emprende180 Ambassador means",
+      en: "What being an Entrepreneur180 Ambassador means",
     },
     logras: {
       es: "Sabes en qué consiste el rol: qué haces, qué no te toca hacer a ti y qué se espera de un Embajador desde el primer día.",
@@ -1133,7 +1181,7 @@ export const temario: Modulo[] = [
     numero: 3,
     titulo: {
       es: "Cómo funciona el Ecosistema Emprende180",
-      en: "How the Emprende180 ecosystem works",
+      en: "How the Entrepreneur180 ecosystem works",
     },
     logras: {
       es: "Ves el circuito completo y quién hace qué en cada paso, desde que detectas una oportunidad hasta que se resuelve. Dejas de trabajar a ciegas.",
@@ -1446,7 +1494,7 @@ export const testimonios: Testimonio[] = [
     contexto: { es: "Utah", en: "Utah" },
     cita: {
       es: "Emprende180 me ayudó a entender mejor cómo acercarme a las personas, crear relaciones y generar nuevas oportunidades. Aprendí estrategias que puedo aplicar todos los días. Lo recomiendo para quienes quieren crecer y aprender a prospectar de una manera más profesional.",
-      en: "Emprende180 helped me understand how to approach people, build relationships and create new opportunities. I learned strategies I can put to use every day. I recommend it to anyone who wants to grow and learn to prospect more professionally.",
+      en: "Entrepreneur180 helped me understand how to approach people, build relationships and create new opportunities. I learned strategies I can put to use every day. I recommend it to anyone who wants to grow and learn to prospect more professionally.",
     },
     foto: null, // SWAP: "/imagenes/testimonios/maria-gonzalez.webp"
     estrellas: 5,
@@ -1457,7 +1505,7 @@ export const testimonios: Testimonio[] = [
     contexto: { es: "Utah", en: "Utah" },
     cita: {
       es: "Lo que más me gustó fue que la capacitación es práctica y fácil de entender. Aprendí cómo organizar mis contactos, dar seguimiento y aprovechar mejor mis redes sociales. Definitivamente recomiendo Emprende180.",
-      en: "What I liked most is that the training is practical and easy to follow. I learned how to organize my contacts, follow up, and get more out of my social media. I definitely recommend Emprende180.",
+      en: "What I liked most is that the training is practical and easy to follow. I learned how to organize my contacts, follow up, and get more out of my social media. I definitely recommend Entrepreneur180.",
     },
     foto: null, // SWAP: "/imagenes/testimonios/carlos-ramirez.webp"
     estrellas: 5,
@@ -1468,7 +1516,7 @@ export const testimonios: Testimonio[] = [
     contexto: { es: "Utah", en: "Utah" },
     cita: {
       es: "Ha sido una excelente experiencia. Aprendí que prospectar no se trata solamente de vender, sino de crear confianza y mantener una buena relación con las personas. Emprende180 me dio herramientas que ahora puedo aplicar con mucha más seguridad.",
-      en: "It's been an excellent experience. I learned that prospecting isn't only about selling: it's about building trust and keeping a good relationship with people. Emprende180 gave me tools I can now use with a lot more confidence.",
+      en: "It's been an excellent experience. I learned that prospecting isn't only about selling: it's about building trust and keeping a good relationship with people. Entrepreneur180 gave me tools I can now use with a lot more confidence.",
     },
     foto: null, // SWAP: "/imagenes/testimonios/daniela-martinez.webp"
     estrellas: 5,
@@ -1479,7 +1527,7 @@ export const testimonios: Testimonio[] = [
     contexto: { es: "Nevada", en: "Nevada" },
     cita: {
       es: "Emprende180 me ayudó a cambiar mi manera de ver las oportunidades de negocio. Aprendí cómo comunicarme mejor, hacer seguimiento y mantenerme presente con mis contactos. Recomiendo mucho el programa para quienes quieren desarrollarse profesionalmente.",
-      en: "Emprende180 changed the way I look at business opportunities. I learned how to communicate better, follow up, and stay present with my contacts. I really recommend the program to anyone who wants to grow professionally.",
+      en: "Entrepreneur180 changed the way I look at business opportunities. I learned how to communicate better, follow up, and stay present with my contacts. I really recommend the program to anyone who wants to grow professionally.",
     },
     foto: null, // SWAP: "/imagenes/testimonios/jose-hernandez.webp"
     estrellas: 5,
@@ -1501,7 +1549,7 @@ export const testimonios: Testimonio[] = [
     contexto: { es: "Texas", en: "Texas" },
     cita: {
       es: "Antes no sabía cómo iniciar una conversación con un posible prospecto sin sentir que estaba tratando de venderle algo. En Emprende180 aprendí a crear conexiones de una manera más natural y profesional. Ha sido muy útil y lo recomiendo al 100%.",
-      en: "Before, I had no idea how to start a conversation with a possible prospect without feeling like I was trying to sell them something. At Emprende180 I learned to build connections in a way that's more natural and more professional. It's been really useful and I recommend it 100%.",
+      en: "Before, I had no idea how to start a conversation with a possible prospect without feeling like I was trying to sell them something. At Entrepreneur180 I learned to build connections in a way that's more natural and more professional. It's been really useful and I recommend it 100%.",
     },
     foto: null, // SWAP: "/imagenes/testimonios/miguel-torres.webp"
     estrellas: 5,
@@ -1670,7 +1718,7 @@ export const faqs: Faq[] = [
     },
     respuesta: {
       es: "Sí, está pensado justo para eso. El video 1 empieza explicando qué es Emprende180 y no da por sabido nada: ni el sector, ni los servicios, ni haber pedido un referido antes. Lo que sí hace falta es tiempo para hacerlo y disposición para hablar con gente, que es lo que de verdad mueve la aguja.",
-      en: "Yes, that's exactly who it's built for. Video 1 starts by explaining what Emprende180 is and assumes nothing: not the industry, not the services, not having ever asked for a referral. What you do need is time to do it and a willingness to talk to people, which is what actually moves the needle.",
+      en: "Yes, that's exactly who it's built for. Video 1 starts by explaining what Entrepreneur180 is and assumes nothing: not the industry, not the services, not having ever asked for a referral. What you do need is time to do it and a willingness to talk to people, which is what actually moves the needle.",
     },
   },
   {
@@ -1788,7 +1836,7 @@ export const faqs: Faq[] = [
     },
     respuesta: {
       es: "Es la Certificación de Embajador Emprende180, y la emitimos nosotros. No se entrega por comprar el curso ni por darle a «siguiente» diez veces: se emite cuando superas los diez quizzes de validación, uno por cada video. En cuanto apruebas el último te llega por email en PDF, con tu nombre y la fecha de emisión, lista para descargar y compartir. No caduca. Acredita que hiciste el curso entero, incluido el video 9 de ética y cumplimiento, que es justo la parte que un Embajador tiene que poder demostrar.",
-      en: "It's the Emprende180 Ambassador Certification, and we issue it ourselves. It isn't handed out for buying the course, or for clicking “next” ten times: it's issued when you pass all ten validation quizzes, one for each video. The moment you pass the last one it arrives by email as a PDF, with your name and the issue date, ready to download and share. It doesn't expire. It certifies you completed the whole course, video 9 on ethics and compliance included — precisely the part an Ambassador needs to be able to prove.",
+      en: "It's the Entrepreneur180 Ambassador Certification, and we issue it ourselves. It isn't handed out for buying the course, or for clicking “next” ten times: it's issued when you pass all ten validation quizzes, one for each video. The moment you pass the last one it arrives by email as a PDF, with your name and the issue date, ready to download and share. It doesn't expire. It certifies you completed the whole course, video 9 on ethics and compliance included — precisely the part an Ambassador needs to be able to prove.",
     },
   },
   {
@@ -1866,7 +1914,7 @@ export const contacto = {
   whatsapp: "", // SWAP (HECHO)
   whatsappMensaje: {
     es: "Hola, tengo una duda sobre el curso Emprende180",
-    en: "Hi, I have a question about the Emprende180 course",
+    en: "Hi, I have a question about the Entrepreneur180 course",
   },
   /**
    * Quién firma el copyright del pie.
@@ -2153,7 +2201,7 @@ export const copy = {
     },
     entradilla: {
       es: "Cada video cierra con su quiz de validación. Supera los {n} y te emitimos tu Certificación de Embajador Emprende180.",
-      en: "Every video closes with its validation quiz. Pass all {n} and we issue your Emprende180 Ambassador Certification.",
+      en: "Every video closes with its validation quiz. Pass all {n} and we issue your Entrepreneur180 Ambassador Certification.",
     },
     /* El alt describe la ESCENA, no el archivo: quien no ve la foto tiene
        que recibir lo mismo que recibe quien la ve, y lo que esta transmite es
@@ -2303,8 +2351,15 @@ export const copy = {
   pruebaSocial: {
     aria: { es: "Resultados de los alumnos", en: "Student results" },
     kicker: { es: "No serías la primera", en: "You wouldn't be the first" },
+    /* ⚠️ DECÍA "MUJERES COMO TÚ" Y ERA FALSO. De los seis testimonios que hay,
+       tres son de hombres: José, Carlos y Miguel. Un titular que solo nombra a
+       las mujeres encima de una rejilla donde sale medio pueblo no es un matiz
+       de tono, es una frase que el propio contenido desmiente.
+
+       "Gente" los cubre a los dos sin tener que decir "mujeres y hombres",
+       que es la solución que suena a formulario. */
     titulo: [
-      { es: "Mujeres como tú,", en: "Women like you," },
+      { es: "Gente como tú,", en: "People like you," },
       { es: "ya dentro.", en: "already inside.", enfasis: true },
     ],
     etiquetaAlumnos: { es: "Alumnos", en: "Students" },
@@ -2528,6 +2583,45 @@ export const copy = {
      */
     slides: [
       /**
+       * ─── 1 · EL VÍDEO DE PRESENTACIÓN ───────────────────────────────────
+       *
+       * Cuarenta segundos a cámara. Es la única imagen del slider que NO lleva
+       * texto encima, y no es un descuido: el vídeo trae sus propios rótulos y
+       * sus subtítulos quemados en la imagen, así que cualquier titular
+       * nuestro se le montaría encima. Los rótulos del vídeo HACEN de titular.
+       *
+       * ⚠️ ES EL ÚNICO CON SONIDO, Y ARRANCA MUDO IGUAL. No es una decisión de
+       * diseño: ningún navegador deja que un vídeo con audio empiece solo. Se
+       * pinta un botón para encenderlo y suena al 20 %. Ese botón es además lo
+       * que exige la WCAG 1.4.2. Ver `HeroVideo.astro`.
+       *
+       * ⚠️ Y AL ENCENDER EL SONIDO SE PARA LA ROTACIÓN. El slider cambia de
+       * imagen cada seis segundos y esto dura cuarenta: sin pararlo, nadie
+       * llegaría al segundo siete de lo que dice. Ver el script del slider.
+       *
+       * ⚠️ EL ARCHIVO ES 854x480 Y ESO NO SE PUEDE ARREGLAR AQUÍ. A pantalla
+       * completa en un portátil de 1440 se estira 1,7 veces y se ve blando.
+       * Si alguna vez hay un máster en 1080p, se vuelve a comprimir y entra
+       * solo. El original está en /originales/video.
+       */
+      {
+        tipo: "video",
+        video: "/video/prom.mp4",
+        poster: "/video/prom-poster.webp",
+        /* Con voz: el botón de sonido solo lo pinta quien declara esto. */
+        sonido: true,
+        /* ⚠️ Y CON SUBTÍTULOS QUEMADOS EN LA IMAGEN, que no es un detalle: los
+           mandos del carrusel van centrados abajo y se sientan justo encima de
+           ellos. Declararlo aquí es lo que hace que el slider los suba
+           mientras esta imagen está a la vista. Ver `HeroSlider`. */
+        subtitulos: true,
+        alt: {
+          es: "Vídeo de presentación de Emprende180",
+          en: "Entrepreneur180 introduction video",
+        },
+      },
+
+      /**
        * ─── EL DÍPTICO: DOS PÚBLICOS EN LA MISMA PANTALLA ──────────────────
        *
        * La primera imagen no es UNA foto: son DOS, partidas por la mitad, y
@@ -2545,11 +2639,15 @@ export const copy = {
        * se reescriben, esa es la pareja de objeciones que tienen que seguir
        * tumbando, no el género de la foto.
        *
-       * ⚠️ LA TIPOGRAFÍA CAMBIA DE UN LADO A OTRO, Y ES DELIBERADO. `voz`
-       * decide cómo se pinta cada mitad: `editorial` va en caja baja, peso
-       * medio y remata en Fraunces itálica; `directa` va apretada, en
-       * extrabold y sin cursiva. Dos sistemas tipográficos, no dos tamaños.
-       * Ver `HeroDiptico.astro`.
+       * ⚠️ LOS DOS TITULARES SE PINTAN IGUAL, Y ESTO ESTUVO AL REVÉS. Hubo una
+       * `voz` por lado —una en caja baja con peso medio y remate en Fraunces,
+       * otra apretada en extrabold— y se quitó después de verla montada: dos
+       * sistemas tipográficos en la misma pantalla no se leían como dos
+       * públicos, se leían como dos plantillas distintas pegadas por la mitad.
+       *
+       * Lo único que sigue siendo distinto es el LADO: cada texto se pega al
+       * borde de fuera de su mitad, que es donde el velo es opaco y donde no
+       * está la cara. Eso es composición, no tipografía. Ver `HeroDiptico`.
        *
        * ⚠️ Y LAS DOS FOTOS SIGUEN SIENDO DE BANCO. Ninguna está hecha en una
        * casa y ninguna es de un Embajador de verdad. En cuanto haya sesión,
@@ -2564,52 +2662,117 @@ export const copy = {
         paneles: [
           {
             lado: "ella",
-            foto: "/imagenes/resultados/03.webp",
-            /* El recorte deja a la mujer de la izquierda, que mira hacia el
-               centro del díptico. Si se cambia la foto, hay que volver a
-               mirar este número: es lo único que decide a quién se ve. */
-            encuadre: "30% center",
+            /* Pexels 30539348, recortada a 1400x1800 y VOLTEADA en horizontal
+               para que ella quede en la mitad interior: sin voltearla, su cara
+               caía en el borde donde el velo es opaco y se la comía. El lado
+               que queda libre —pared y flores— es donde cae el texto.
+               Sin `encuadre`: la foto ya viene cortada a la vertical que pide
+               el díptico. */
+            foto: "/imagenes/hero/banco-casa-oficina.webp",
+            /* ⚠️ EL `encuadre` ES PARA EL MÓVIL, no para el escritorio. En
+               pantalla grande la mitad mide 720x900 y la foto 1400x1800: casi
+               la misma proporción, así que se recorta poquísimo y este número
+               apenas se nota. En un teléfono la foto se queda en una franja de
+               ~145 px de alto y el recorte se come el 70 % del alto, así que
+               SIN esto se ven cuerpos sin cabeza. El número es la altura a la
+               que está la cara en el archivo. */
+            encuadre: "center 65%",
             alt: {
-              es: "Una mujer conversando en la calle con un café en la mano",
-              en: "A woman talking on the street holding a coffee",
+              es: "Una mujer trabajando con su portátil en la mesa de su casa",
+              en: "A woman working on her laptop at her dining table at home",
             },
-            voz: "editorial",
+            /**
+             * ⚠️ DOS RENGLONES, UNA FRASE CADA UNO, Y EL CORTE NO ES LIBRE.
+             * Antes eran tres —un antetítulo pequeño y dos líneas grandes— y
+             * en pantallas medias el antetítulo se partía, así que se veían
+             * cuatro. Ahora son dos y el corte cae donde cae el punto.
+             *
+             * ⚠️ Y LA LONGITUD DE ESTAS DOS FRASES ES LO QUE DECIDE EL TAMAÑO
+             * DE LETRA, no al revés. Cada titular vive en MEDIA pantalla: el
+             * renglón largo (36 caracteres) solo cabe entero a 32 px en un
+             * monitor de 1440, a 43 en uno de 1920 y a 59 en uno de 2560. Si
+             * alguien alarga una de estas frases, el titular no se parte: se
+             * encoge. Y si la acorta, crece. Está medido en `HeroDiptico`.
+             */
             titulo: [
-              {
-                es: "Tu casa ya es tu oficina.",
-                en: "Your home is already your office.",
-                estilo: "lead",
-              },
-              { es: "Que también sea", en: "Make it your" },
-              {
-                es: "tu punto de partida.",
-                en: "starting line too.",
-                estilo: "acento",
-              },
+              [
+                {
+                  es: "Tu casa ya es tu oficina.",
+                  en: "Your home is already your office.",
+                },
+              ],
+              [
+                { es: "Que también sea", en: "Make it your" },
+                {
+                  es: "tu punto de partida.",
+                  en: "starting line too.",
+                  acento: true,
+                },
+              ],
             ],
           },
           {
             lado: "el",
-            foto: "/imagenes/secciones/resultados.webp",
-            /* Él está en la mitad derecha del original y mira hacia la
-               izquierda, o sea hacia ella. */
-            encuadre: "58% center",
+            /* Pexels 5917337. Su cara está a un tercio de altura, muy por
+               encima de la banda donde cae el texto, así que no hace falta ni
+               voltearla. */
+            foto: "/imagenes/hero/banco-llamada.webp",
+            /* Su cara está a media altura del archivo. Ver la nota de arriba. */
+            encuadre: "center 50%",
             alt: {
-              es: "Un hombre riéndose mientras habla por teléfono en la calle",
-              en: "A man laughing on a phone call out in the street",
+              es: "Un hombre gesticulando mientras habla por teléfono en la calle",
+              en: "A man gesturing while talking on the phone in the street",
             },
-            voz: "directa",
+            /* Los dos renglones de él son de 29 caracteres, más cortos que el
+               largo de ella. Como los dos titulares comparten tamaño, manda el
+               largo de ella: es el que fija el cuerpo de letra de los dos. */
             titulo: [
-              {
-                es: "Si sabes hablar con la gente,",
-                en: "If you know how to talk to people,",
-                estilo: "lead",
-              },
-              { es: "ya tienes lo que", en: "you already have" },
-              { es: "se necesita.", en: "what it takes.", estilo: "acento" },
+              [
+                {
+                  es: "Si sabes hablar con la gente,",
+                  en: "If you know how to talk to people,",
+                },
+              ],
+              [
+                { es: "ya tienes", en: "you already have" },
+                {
+                  es: "lo que se necesita.",
+                  en: "what it takes.",
+                  acento: true,
+                },
+              ],
             ],
           },
         ],
+
+        /**
+         * ⚠️ EL FONDO ES UN VÍDEO Y LAS DOS FOTOS DEJARON DE VERSE. Siguen
+         * escritas arriba a propósito: son la RED. Si algún día falta el mp4,
+         * esta imagen vuelve al díptico de fotos en vez de quedarse en negro.
+         */
+        video: "/video/hero-1.mp4",
+        poster: "/video/hero-1-poster.webp",
+        videoAlt: {
+          es: "Una mujer trabajando de noche en el sofá de su casa, con el portátil",
+          en: "A woman working at night on her sofa at home, with her laptop",
+        },
+
+        /**
+         * ⚠️ "LADOS" AUNQUE EL FONDO SEA UN VÍDEO, y estuvo en "centro" una
+         * temporada. El argumento para centrarlos era que sin las dos fotos no
+         * hay pareja titular-foto; el argumento para devolverlos a los lados es
+         * más fuerte: lo que esta pantalla hace es hablarle a DOS personas a la
+         * vez, y cada una encuentra su frase por el lado hacia el que está
+         * mirando. Apiladas en el centro son cuatro renglones seguidos y el
+         * lector tiene que separarlos él.
+         *
+         * Ver la nota de `alLado` en `HeroDiptico.astro`, que es donde vive el
+         * cambio: con vídeo se pintan los velos y no las fotos.
+         */
+        composicion: "lados",
+        /* Se declara aunque sea el valor por defecto: al lado de la pantalla
+           siguiente, que sí lo cambia, dejarlo implícito parecería un olvido. */
+        bloque: "centro",
 
         /**
          * ⚠️ ESTA FRASE DICE "GENERA INGRESOS EXTRA" Y ESO ES UNA PROMESA DE
@@ -2625,7 +2788,7 @@ export const copy = {
          */
         subtitulo: {
           es: "Únete a la comunidad de Embajadores Emprende180 y genera ingresos extra ayudando a tu gente a conseguir su casa o recuperarse de un accidente.",
-          en: "Join the Emprende180 Ambassador community and earn extra income helping your people get their home or recover from an accident.",
+          en: "Join the Entrepreneur180 Ambassador community and earn extra income helping your people get their home or recover from an accident.",
         },
 
         /* ⚠️ "QUIERO SER EMBAJADOR" Y NO "REGÍSTRATE", y no es cuestión de
@@ -2638,40 +2801,283 @@ export const copy = {
           href: "#empezar",
         },
       },
+      /**
+       * ─── 2 · EL DOLOR, O MÁS BIEN LA FRUSTRACIÓN ────────────────────────
+       *
+       * Segundo díptico, mismo mecanismo que el primero y a propósito: quien
+       * se reconoció en la primera pantalla vuelve a encontrar su lado en el
+       * mismo sitio. Lo que cambia es a qué le habla.
+       *
+       * ⚠️ ESTA IMAGEN NOMBRA LA FRUSTRACIÓN, NO VENDE LA SOLUCIÓN. Es su
+       * único trabajo, y por eso ninguna de las dos frases dice lo que
+       * ofrecemos: dicen lo que la persona YA TIENE y no ha podido usar. La
+       * solución llega después; si se adelanta aquí, la frase deja de sonar a
+       * "esto me pasa a mí" y pasa a sonar a anuncio.
+       *
+       *   ella — "tienes tiempo, contactos y ganas": las tres cosas que sí
+       *          tiene, y que nadie le ha dicho que valgan nada.
+       *   él   — "conoces a medio pueblo": lo mismo, dicho como se dice en un
+       *          pueblo. La pregunta del final es el giro entero.
+       *
+       * ⚠️ EL PRIMER RENGLÓN DE ELLA SE COMPRIMIÓ, y conviene saberlo por si
+       * alguien lo quiere devolver. El cliente lo escribió como "tienes
+       * tiempo, tienes contactos, tienes ganas", con la repetición, y son 46
+       * caracteres: no caben en el renglón de apoyo de media pantalla a
+       * ningún cuerpo legible (el techo son 45). Con la repetición el renglón
+       * se parte en dos y el titular pasa de dos líneas a tres. Se conservan
+       * las tres cosas y se pierde la anáfora.
+       *
+       * ⚠️ Y LA RAYA DEL ORIGINAL NO ESTÁ. El cliente separaba las dos mitades
+       * con un guión largo; DESIGN.md lo prohíbe en texto de cara al usuario y
+       * manda usar coma, dos puntos o punto. Aquí el corte de renglón hace ese
+       * trabajo mejor que cualquier signo.
+       */
       {
-        foto: "/imagenes/secciones/temario.webp",
-        alt: {
-          es: "Una persona sentada a la mesa de su cocina, de noche, trabajando con su portátil",
-          en: "Somebody at their kitchen table at night, working on their laptop",
-        },
-        posicion: "derecha-arriba",
-        kicker: { es: "Y no, no hace falta el día entero", en: "And no, it doesn't take all day" },
-        titulo: [
-          { es: "Dos horas al día.", en: "Two hours a day." },
-          { es: "Noventa días.", en: "Ninety days.", enfasis: true },
-          { es: "Ninguno lo pones tú.", en: "You invent none of them." },
+        tipo: "diptico",
+        paneles: [
+          {
+            lado: "ella-2",
+            /* Pexels 6612273, recortada por arriba para subirle la cara por
+               encima de la banda donde cae el texto. */
+            foto: "/imagenes/hero/banco-tiempo.webp",
+            /* Cara alta en el archivo, al 35 %. Ver la nota de la primera. */
+            encuadre: "center 35%",
+            alt: {
+              es: "Una mujer hablando por teléfono sentada junto a la ventana de su casa",
+              en: "A woman on the phone sitting by the window at home",
+            },
+            titulo: [
+              [
+                {
+                  es: "Tienes tiempo, contactos y aspiración.",
+                  en: "You have time, contacts and drive.",
+                },
+              ],
+              [
+                { es: "Lo que no tenías era", en: "What you didn't have was" },
+                { es: "la oportunidad.", en: "the chance.", acento: true },
+              ],
+            ],
+          },
+          {
+            lado: "el-2",
+            /* Pexels 35085731. Es la más oscura de las cuatro y la única sin
+               retoque de luz: dos hombres hablando en la calle, sin pose. Las
+               dos caras están en el tercio de arriba, lejos del texto. */
+            foto: "/imagenes/hero/banco-charla.webp",
+            /* Las dos caras están muy arriba, al 27 %. Sin esto, en el móvil
+               esta mitad enseña dos torsos y ninguna cara. */
+            encuadre: "center 27%",
+            alt: {
+              es: "Dos hombres conversando sentados a una mesa en la calle",
+              en: "Two men talking at a table out in the street",
+            },
+            titulo: [
+              [
+                {
+                  es: "Conoces a media ciudad.",
+                  en: "You know half the town.",
+                },
+              ],
+              [
+                /* ⚠️ EL RENGLÓN MÁS LARGO DE LAS CUATRO SON ESTOS DOS TROZOS
+                   JUNTOS: "¿Y si esas conversaciones también pagaran?", 42
+                   caracteres. Ese número —y no otro— es el que fija el cuerpo de
+                   los DOS titulares de esta pantalla, porque comparten escala.
+                   Era de 36 y al alargarse obligó a ensanchar la columna del
+                   texto. Ver la escala `ancho` en `HeroTitular.astro`. */
+                { es: "¿Y si esas conversaciones", en: "What if those talks" },
+                { es: "también pagaran?", en: "paid you too?", acento: true },
+              ],
+            ],
+          },
         ],
-        subtitulo: {
-          es: "Cada mañana sabes exactamente qué te toca hacer.",
-          en: "Every morning you know exactly what you have to do.",
+
+        /**
+         * ⚠️ EL FONDO ES UN VÍDEO Y LAS DOS FOTOS DEJARON DE VERSE. Siguen
+         * escritas arriba a propósito: son la RED. Si algún día falta el mp4,
+         * esta imagen vuelve al díptico de fotos en vez de quedarse en negro.
+         *
+         * Y con el vídeo se fue el díptico, que era la pareja titular-foto.
+         * Por eso esta pantalla pasa a `composicion: "centro"` aunque no lo
+         * pidiera antes: con un fondo único, dos titulares pegados a los
+         * bordes ya no emparejan con nada, solo se separan.
+         */
+        video: "/video/hero-2.mp4",
+        poster: "/video/hero-2-poster.webp",
+        videoAlt: {
+          es: "Dos hombres conversando de pie en un encuentro con más gente alrededor",
+          en: "Two men talking at an event with other people around",
         },
+
+        /**
+         * ⚠️ LOS DOS TITULARES NO VAN SOBRE SU FOTO: van apilados en el
+         * centro. Es lo que distingue esta pantalla de la primera y no es
+         * decoración.
+         *
+         * En la primera, cada frase le habla a una persona DISTINTA, así que
+         * tiene que estar al lado de la suya: ahí la pareja titular-foto ES el
+         * mecanismo. Aquí las dos dicen lo MISMO en dos voces —la misma
+         * frustración contada por ella y por él— así que se pueden leer
+         * seguidas, y al salir de media pantalla caben bastante más grandes.
+         *
+         * Ver `composicion` en `HeroDiptico.astro`.
+         */
+        composicion: "centro",
+        /**
+         * ⚠️ Y APOYADO A LA DERECHA. El texto sigue centrado dentro de su
+         * caja; lo que se mueve es la caja, que arranca al 20 % del ancho.
+         *
+         * ⚠️ Y ESO CUESTA TAMAÑO DE TITULAR, que conviene saberlo antes de
+         * pedir las dos cosas a la vez: la caja pierde un 20 % de ancho y el
+         * renglón largo, que no se parte solo, obliga a bajar el cuerpo de 49
+         * a 44 px a 1440. Ver la nota de `bloque` en `HeroDiptico.astro`.
+         */
+        bloque: "derecha",
+
+        /* El apoyo dice CÓMO entra esto en una vida que ya está llena, que es
+           la objeción inmediata a los dos ganchos de arriba. Sin cifras de
+           dinero: solo de tiempo, que sí se puede sostener. */
+        subtitulo: {
+          es: "Una o dos horas al día, sin dejar lo que ya haces. Sin jefe, sin horario fijo y sin pedir permiso.",
+          en: "One or two hours a day, without dropping what you already do. No boss, no fixed hours, no permission to ask for.",
+        },
+
+        /* ⚠️ SIN `cta`, Y QUE FALTE NO ES UN DESCUIDO. Solo la primera imagen
+           pide algo; esta y la siguiente cuentan y dejan seguir bajando. Tres
+           botones en tres pantallas que rotan solas son la misma decisión
+           repetida cada seis segundos, y la que importa es la primera. */
       },
+      /**
+       * ─── 3 · QUÉ SIGNIFICA SER EMBAJADOR ────────────────────────────────
+       *
+       * La tercera plantilla del slider, y la única que no va de una persona
+       * sino de una IDENTIDAD. Se reconoce por `manifiesto`, igual que los
+       * dípticos se reconocen por `paneles`.
+       *
+       * ⚠️ LAS TRES PALABRAS NO SON UNA LISTA DE TAREAS, y es lo que más fácil
+       * se pierde al reescribirlas. No dicen lo que un Embajador HACE: dicen
+       * lo que un Embajador ES. El método ya se cuenta más abajo, con su
+       * sección entera; aquí lo que se juega es si la persona se quiere llamar
+       * así. Si alguien las convierte en "paso 1, paso 2, paso 3", esta
+       * pantalla deja de tener motivo para existir.
+       *
+       * ⚠️ Y CADA UNA LLEVA UNA FRASE, NO UN PÁRRAFO. Si necesita dos
+       * renglones largos para entenderse, es que la palabra está mal elegida.
+       *
+       * ⚠️ SIN BOTÓN. Ver la nota de la imagen anterior.
+       *
+       * ⚠️ LA FOTO ES DE BANCO, como las cuatro del díptico. Esta es la única
+       * horizontal de las cinco porque ocupa la pantalla entera y no media.
+       * Ver el README de /public/imagenes/hero.
+       */
       {
-        foto: "/imagenes/resultados/06.webp",
+        tipo: "manifiesto",
+        /* Pexels 7642037, bajada de luz y de saturación. Enseña el RESULTADO
+           —una familia con las llaves de su casa— y no al Embajador, que es
+           deliberado: el manifiesto ya dice quién eres, y la foto dice para
+           qué. Las caras están en el tercio de arriba, lejos del texto. */
+        /* ⚠️ EL FONDO ES UN VÍDEO. La foto de las llaves se queda escrita como
+           RED: si falta el mp4, esta pantalla vuelve a ella en vez de quedarse
+           en negro. */
+        video: "/video/hero-3.mp4",
+        poster: "/video/hero-3-poster.webp",
+        videoAlt: {
+          es: "Un grupo de personas escuchando a alguien en una reunión",
+          en: "A group of people listening to someone at a meeting",
+        },
+        foto: "/imagenes/hero/banco-llaves.webp",
         alt: {
-          es: "Una mujer hablando por teléfono en la calle",
-          en: "A woman on a phone call out in the street",
+          es: "Una familia en el salón de su casa nueva, sosteniendo las llaves",
+          en: "A family in the living room of their new home, holding the keys",
         },
-        posicion: "derecha-abajo",
-        kicker: { es: "Empiezas con lo que ya tienes", en: "You start with what you already have" },
-        titulo: [
-          { es: "Tu agenda vale", en: "Your contacts are worth" },
-          { es: "más de lo que crees.", en: "more than you think.", enfasis: true },
+
+        /**
+         * ⚠️ ESTE TEXTO ESTÁ COMPLETO Y ES DEL CLIENTE. Aquí hubo un
+         * `[COMPLETAR: …]` esperando un remate que nunca hizo falta: la frase
+         * ES el manifiesto entero, no su arranque.
+         *
+         * Lo único que se ha decidido aquí es el CORTE: dónde parte el
+         * renglón y qué mitad lleva el remate en Fraunces itálica. Eso es
+         * tipografía, no redacción, y por eso no lleva marca de pendiente.
+         */
+        manifiesto: [
+          [
+            {
+              es: "Ser Embajador de Emprende180 significa",
+              en: "Being an Entrepreneur180 Ambassador means",
+            },
+          ],
+          [
+            /* ⚠️ LAS CUATRO PALABRAS VAN CON EL MISMO REALCE, Y ANTES NO.
+               "trabajo, dedicación," estuvo en el azul claro de la marca y
+               "autonomía y responsabilidad." en Fraunces itálica, con el
+               argumento de que una ENUMERA y la otra REMATA.
+
+               En pantalla no se lee así: son cuatro palabras de la misma lista,
+               y partirlas en dos tratamientos hacía que parecieran dos ideas
+               distintas en vez de una enumeración. Ahora las cuatro comparten
+               color y tipografía, que es lo que se pidió al verlo montado. */
+            { es: "trabajo, dedicación,", en: "work, dedication,", acento: true },
+            {
+              es: "autonomía y responsabilidad.",
+              en: "autonomy and responsibility.",
+              acento: true,
+            },
+          ],
         ],
-        subtitulo: {
-          es: "La Academia te enseña a moverla. El CRM se acuerda por ti.",
-          en: "The Academy teaches you how to work it. The CRM remembers for you.",
-        },
+
+        /**
+         * Tres palabras, tres iconos, una frase cada una. Los nombres de icono
+         * salen de la tabla cerrada de `Icono.astro`: brújula para la que se
+         * orienta sola, bocadillos para la que habla, personas para la que
+         * lleva a alguien de la mano.
+         *
+         * ⚠️ LAS TRES FRASES DICEN LO QUE ERES, NO LO QUE HACES. Es la regla
+         * de esta pantalla y la que más fácil se pierde al reescribirlas: el
+         * método ya se cuenta más abajo con su sección entera, y aquí lo que
+         * se juega es si la persona se quiere llamar así.
+         *
+         * ⚠️ Y CADA UNA TIENE DOS MITADES QUE SE EQUILIBRAN. No es un tic de
+         * redacción: es lo que impide que suenen a folleto.
+         *
+         *   autonomía   — la libertad, y su precio. "Nadie te pone el horario"
+         *                 solo, sin lo segundo, promete un chollo.
+         *   carisma     — lo que SÍ hace falta, y lo que no. Nombra el guion
+         *                 para descartarlo, que es la objeción de quien cree
+         *                 que esto es vender.
+         *   solidaridad — a quién le resuelves, y qué obliga eso. Es la que
+         *                 conecta con "responsabilidad" del manifiesto.
+         *
+         * ⚠️ NINGUNA HABLA DE DINERO, y no es timidez: ver la regla 3 de la
+         * cabecera del archivo.
+         */
+        claves: [
+          {
+            icono: "brujula",
+            palabra: { es: "Autonomía", en: "Autonomy" },
+            frase: {
+              es: "Nadie te pone el horario. Nadie lo hace por ti.",
+              en: "Nobody sets your hours. Nobody does it for you either.",
+            },
+          },
+          {
+            icono: "bocadillos",
+            palabra: { es: "Carisma", en: "Charisma" },
+            frase: {
+              es: "Tu herramienta es la conversación, no un guion.",
+              en: "Your tool is the conversation, not a script.",
+            },
+          },
+          {
+            icono: "personas",
+            palabra: { es: "Solidaridad", en: "Solidarity" },
+            frase: {
+              es: "Cada caso es alguien que conoces. Por eso se hace bien.",
+              en: "Every case is someone you know. That's why it's done right.",
+            },
+          },
+        ],
       },
     ],
 
@@ -2689,9 +3095,110 @@ export const copy = {
 
     /* Los mandos. La rotación es contenido en movimiento de más de cinco
        segundos, así que la WCAG 2.2.2 exige poder pararla: no es un extra. */
+    /* El botón de sonido del vídeo de presentación. Dice lo que VA A PASAR al
+       pulsarlo, no el estado en el que está: "activar el sonido" y no "está
+       mudo". Es la diferencia entre un botón y un cartel. */
+    activarSonido: { es: "Activar el sonido", en: "Turn the sound on" },
+    silenciarSonido: { es: "Silenciar", en: "Mute" },
+
     pausar: { es: "Pausar la presentación", en: "Pause the slideshow" },
     reanudar: { es: "Reanudar la presentación", en: "Resume the slideshow" },
     irASlide: { es: "Ver la imagen {n}", en: "Show image {n}" },
+  },
+
+  /**
+   * ─── IDENTIDAD · "SER EMBAJADOR ES ESTO" ─────────────────────────────────
+   *
+   * Va justo detrás del hero y antes de que se explique nada. Y ese sitio es
+   * la mitad de su trabajo: nombra al ARQUETIPO antes de que empiece la venta.
+   *
+   * ⚠️ AQUÍ NO SE EXPLICA EL MÉTODO, y es la regla que más fácil se rompe. Lo
+   * único que hace esta sección es que alguien se reconozca: "esa persona a la
+   * que todos le preguntan cosas". Si se le mete un beneficio, un paso o una
+   * cifra, deja de ser un espejo y pasa a ser un argumento, y el argumento ya
+   * viene en la sección siguiente.
+   *
+   * ⚠️ Y NO DISTINGUE ENTRE ELLA Y ÉL. Los dos dípticos del hero sí lo hacen
+   * —cada mitad le habla a uno— y por eso esta NO puede: el trabajo de esta es
+   * juntarlos otra vez en la misma descripción. De ahí "todos tienen alguien
+   * así": vale igual para la que trabaja desde casa y para el que conoce a
+   * medio pueblo.
+   *
+   * Las dos fotos dicen lo mismo sin decirlo: una mujer y un hombre, los dos
+   * al teléfono, los dos en la calle. Es el mismo par del hero, en foto fija.
+   */
+  identidad: {
+    aria: { es: "Qué es ser Embajador", en: "What being an Ambassador is" },
+
+    /* El renglón pequeño de arriba. En caja baja a propósito: en versalitas
+       competiría con el titular y esto es una entrada, no un segundo título. */
+    kicker: {
+      es: "Ser Embajador Emprende180 es esto",
+      en: "This is what being an Entrepreneur180 Ambassador looks like",
+    },
+
+    /* ⚠️ EL TITULAR VA EN MONTSERRAT Y LA SEGUNDA LÍNEA EN FRAUNCES ITÁLICA,
+       no al revés. La primera describe a un tercero —"todos tienen alguien
+       así"— y la segunda te señala a ti. El cambio de tipografía ES ese giro:
+       si las dos fueran iguales, la frase se leería como una sola idea. */
+    titulo: { es: "Todos tienen alguien así.", en: "Everyone has someone like that." },
+    subtitulo: { es: "Tú eres esa persona.", en: "You're that person." },
+
+    /* Dos párrafos y un contraste: el primero describe lo que YA pasa, el
+       segundo cambia una sola cosa. Nada más. */
+    cuerpo: [
+      {
+        es: "Ya te preguntan por un plomero, por un abogado, por quién arregla el techo. Contestas por WhatsApp y ahí acaba todo.",
+        en: "People already ask you about a plumber, a lawyer, who fixes the roof. You answer on WhatsApp and that's where it ends.",
+      },
+      {
+        es: "Un Embajador contesta igual, con un Ecosistema detrás que se encarga del resto. Ese es todo el cambio.",
+        en: "An Ambassador answers the same way, with an Ecosystem behind them that handles the rest. That's the whole change.",
+      },
+    ],
+
+    /**
+     * ⚠️ EL TEXTO NO DESCRIBE EL DESTINO, Y ES DELIBERADO. Lleva a /about, o
+     * sea a "quiénes somos", pero no dice "conócenos": dice qué pasa si
+     * pulsas. Después de dos párrafos que solo describen a la persona, el
+     * botón es la primera frase de la sección que mira hacia delante.
+     *
+     * De paso resuelve un choque: la sección de abajo tiene su propio botón a
+     * /about, y con los dos diciendo "Conócenos" se leían como el mismo enlace
+     * repetido.
+     *
+     * Sigue sin ser conversión —no pide nada, no hay formulario— y por eso el
+     * destino no cambia.
+     */
+    cta: {
+      texto: { es: "Así empieza el cambio", en: "This is how the change starts" },
+      href: "/about",
+    },
+
+    /* ⚠️ LAS DOS FOTOS SON DE BANCO, como las del hero. La segunda se reutiliza
+       a propósito: es la misma que sostiene la mitad de él en la primera
+       imagen del slider, y repetirla cose las dos secciones. */
+    fotos: [
+      {
+        src: "/imagenes/identidad/mujer-telefono.webp",
+        alt: {
+          es: "Una mujer sonriendo mientras habla por teléfono en la calle",
+          en: "A woman smiling while talking on the phone in the street",
+        },
+        /* Su cara está en el tercio de arriba y a la izquierda del encuadre. */
+        encuadre: "35% 30%",
+      },
+      {
+        src: "/imagenes/secciones/resultados.webp",
+        alt: {
+          es: "Un hombre riéndose mientras habla por teléfono en la calle",
+          en: "A man laughing while talking on the phone in the street",
+        },
+        /* Esta es casi cuadrada y la caja es apaisada, así que el recorte se
+           come el alto: el número sube la ventana hasta su cara. */
+        encuadre: "center 35%",
+      },
+    ],
   },
 
   /**
@@ -2930,7 +3437,7 @@ export const copy = {
     },
     descripcion: {
       es: "Quién está detrás de Emprende180, por qué existe y cómo ayuda a quien tiene el tiempo y le falta el método.",
-      en: "Who is behind Emprende180, why it exists, and how it helps someone who has the time but not the method.",
+      en: "Who is behind Entrepreneur180, why it exists, and how it helps someone who has the time but not the method.",
     },
 
     /* El bloque de "por si acabas de llegar". */
@@ -2941,7 +3448,7 @@ export const copy = {
     },
     introTexto: {
       es: "Emprende180 es un método y un Ecosistema. El método es el reto de 90 días: qué hacer cada mañana, en orden, sin tener que decidirlo tú. El Ecosistema es lo que hay detrás cuando alguien de tu agenda necesita algo de verdad.",
-      en: "Emprende180 is a method and an ecosystem. The method is the 90 day challenge: what to do each morning, in order, without having to decide it yourself. The ecosystem is what stands behind you when someone in your contacts actually needs something.",
+      en: "Entrepreneur180 is a method and an ecosystem. The method is the 90 day challenge: what to do each morning, in order, without having to decide it yourself. The ecosystem is what stands behind you when someone in your contacts actually needs something.",
     },
 
     /**
@@ -3170,7 +3677,7 @@ export const copy = {
      */
     fundadorCita: {
       es: "Cada semana veo lo mismo: quien resuelve no es el que más sabe, es el que conoce a alguien. Y las que más gente conocen casi nunca están en una oficina. Están en casa, organizando la vida de todos, con media ciudad en el teléfono. A ellas nadie les había dicho que eso vale, ni qué hacer con ello. Emprende180 es el qué hacer.",
-      en: "Every week I see the same thing: the one who solves it isn't the one who knows the most, it's the one who knows somebody. And the people who know the most people are almost never in an office. They're at home, running everyone's life, with half the city in their phone. Nobody had told them that's worth something, or what to do with it. Emprende180 is the what to do.",
+      en: "Every week I see the same thing: the one who solves it isn't the one who knows the most, it's the one who knows somebody. And the people who know the most people are almost never in an office. They're at home, running everyone's life, with half the city in their phone. Nobody had told them that's worth something, or what to do with it. Entrepreneur180 is the what to do.",
     },
     fundadorSaludo: {
       es: "Hola. Si has llegado hasta aquí, esto es lo mío.",
@@ -3222,7 +3729,7 @@ export const copy = {
         etiqueta: { es: "Fundador", en: "Founder" },
         valor: {
           es: "Emprende180 y el Ecosistema por el que pasa cada oportunidad",
-          en: "Emprende180 and the ecosystem every opportunity runs through",
+          en: "Entrepreneur180 and the ecosystem every opportunity runs through",
         },
       },
       {
@@ -3294,7 +3801,7 @@ export const copy = {
         estrellas: null as number | null,
         cita: {
           es: "[COMPLETAR (HECHO): cita textual de Broker Lenders sobre trabajar con Emprende180, con permiso por escrito de quien lo firma.]",
-          en: "[COMPLETAR (FACT): verbatim quote from Broker Lenders about working with Emprende180, with written permission from whoever signs it.]",
+          en: "[COMPLETAR (FACT): verbatim quote from Broker Lenders about working with Entrepreneur180, with written permission from whoever signs it.]",
         },
       },
       {
@@ -3310,7 +3817,7 @@ export const copy = {
         estrellas: null as number | null,
         cita: {
           es: "[COMPLETAR (HECHO): cita textual de BoltWatts sobre trabajar con Emprende180, con permiso por escrito de quien lo firma.]",
-          en: "[COMPLETAR (FACT): verbatim quote from BoltWatts about working with Emprende180, with written permission from whoever signs it.]",
+          en: "[COMPLETAR (FACT): verbatim quote from BoltWatts about working with Entrepreneur180, with written permission from whoever signs it.]",
         },
       },
       {
@@ -3331,7 +3838,7 @@ export const copy = {
         estrellas: null as number | null,
         cita: {
           es: "[COMPLETAR (HECHO): cita textual de Car Injury Clinics sobre trabajar con Emprende180, con permiso por escrito de quien lo firma.]",
-          en: "[COMPLETAR (FACT): verbatim quote from Car Injury Clinics about working with Emprende180, with written permission from whoever signs it.]",
+          en: "[COMPLETAR (FACT): verbatim quote from Car Injury Clinics about working with Entrepreneur180, with written permission from whoever signs it.]",
         },
       },
     ],
@@ -3339,7 +3846,7 @@ export const copy = {
     empezar: { es: "Quiero empezar", en: "I want to start" },
     fotoRetrato: {
       es: "Retrato de Pedro Lira, fundador de Emprende180",
-      en: "Portrait of Pedro Lira, founder of Emprende180",
+      en: "Portrait of Pedro Lira, founder of Entrepreneur180",
     },
   },
 
@@ -3365,35 +3872,47 @@ export const copy = {
       { es: "Tres piezas.", en: "Three pieces." },
       { es: "Una forma de trabajar.", en: "One way of working.", enfasis: true },
     ],
+    /**
+     * ⚠️ SE FUE LA NUMERACIÓN (01 / 02 / 03), y con ella la idea de que esto
+     * era una secuencia. No lo es: son tres piezas que funcionan a la vez, no
+     * tres pasos que se hacen en orden. El número invitaba a leerlas como un
+     * itinerario y a preguntarse por dónde se empieza.
+     *
+     * ⚠️ Y LA TERCERA ES OTRA COSA, no la misma con otras palabras. Era "el
+     * reto de 90 días" —un plan— y ahora es "el seguimiento", que es una
+     * persona revisando tu avance cada semana. El reto sigue existiendo y se
+     * cuenta en la sección de la Academia; lo que faltaba aquí era decir que
+     * hay alguien detrás.
+     */
     piezas: [
       {
-        numero: "01",
+        icono: "academia",
         titulo: { es: "La Academia", en: "The Academy" },
         texto: {
-          es: "Los programas y el método que los sostiene, en videos cortos y en orden. Se ven cuando puedas.",
-          en: "The programs and the method behind them, in short videos and in order. Watch them when you can.",
+          es: "Los programas y el método que los sostiene, en videos cortos y en orden. Aprendes a tu ritmo, con contenido diseñado para que cada módulo construya sobre el anterior. Si te atoras, alguien del equipo contesta.",
+          en: "The programs and the method behind them, in short videos and in order. You learn at your own pace, with content designed so each module builds on the one before. If you get stuck, someone on the team answers.",
         },
         cta: { es: "Ver la Academia", en: "See the Academy" },
         href: "#academia",
       },
       {
-        numero: "02",
+        icono: "agenda",
         titulo: { es: "El CRM", en: "The CRM" },
         texto: {
-          es: "Tus contactos y tus oportunidades en un sitio, con su estado al día. Va incluido.",
-          en: "Your contacts and opportunities in one place, status current. It comes included.",
+          es: "Tus contactos y tus oportunidades centralizados, con su estado siempre actualizado. Incluido en el programa, con seguimiento del equipo en las llamadas periódicas.",
+          en: "Your contacts and opportunities in one place, with their status always up to date. Included in the program, with the team following up on the regular calls.",
         },
-        cta: { es: "Quiero empezar", en: "I want to start" },
+        cta: { es: "Quiero mi acceso", en: "I want my access" },
         href: "#empezar",
       },
       {
-        numero: "03",
-        titulo: { es: "El reto de 90 días", en: "The 90 day challenge" },
+        icono: "seguimiento",
+        titulo: { es: "El seguimiento", en: "The follow-up" },
         texto: {
-          es: "Qué haces cada día desde el primero. No tienes que inventarte la agenda.",
-          en: "What you do each day from day one. You don't have to invent the schedule.",
+          es: "No es un video más. Cada semana, alguien del equipo revisa tu avance contigo. Así nunca dependes de adivinar si vas bien.",
+          en: "It isn't one more video. Every week, someone on the team goes over your progress with you. So you never have to guess whether you're on track.",
         },
-        cta: { es: "Quiero empezar", en: "I want to start" },
+        cta: { es: "Ver el seguimiento", en: "See the follow-up" },
         href: "#empezar",
       },
     ],
@@ -3432,8 +3951,12 @@ export const copy = {
     aria: { es: "Lo último del blog", en: "Latest from the blog" },
     kicker: { es: "El blog", en: "The blog" },
     titulo: [
-      { es: "Las respuestas", en: "The answers" },
-      { es: "que ya te piden.", en: "people already ask you for.", enfasis: true },
+      { es: "Preguntas que ya conoces.", en: "Questions you already know." },
+      {
+        es: "Respuestas que te faltaban.",
+        en: "Answers you were missing.",
+        enfasis: true,
+      },
     ],
     texto: {
       es: "Casos que pasan de verdad y qué contestar en cada uno. Ni teoría ni motivación: la frase exacta.",
@@ -3454,9 +3977,24 @@ export const copy = {
     verEnBlog: { es: "Ver en el blog", en: "View on the blog" },
     verTodos: { es: "Todos los artículos", en: "All articles" },
     redes: { es: "Dónde publico", en: "Where I post" },
+    /* ⚠️ LA FOTO DE ESTA SECCIÓN ES LA DE OFICINA, no el retrato vertical. El
+       retrato se quedó, pero en el avatar de 40 px del bloque de autor: para
+       el hueco apaisado de la columna hace falta una horizontal.
+
+       Y es un retrato corporativo de día, no "el autor escribiendo de noche",
+       que es lo que pedía el encargo. Se eligió a sabiendas: no existe esa
+       foto, y aquí pesa más que la cara sea la de Pedro de verdad que la
+       escena sea la correcta con un desconocido de banco. Cuando haya una
+       suya trabajando, se cambia esta línea. */
     foto: {
-      es: "Retrato de Pedro Lira, fundador de Emprende180",
-      en: "Portrait of Pedro Lira, founder of Emprende180",
+      es: "Pedro Lira en su oficina",
+      en: "Pedro Lira in his office",
+    },
+    /* El avatar del bloque de autor. Es el mismo nombre que firma los
+       artículos, así que sale del config del instructor y no se escribe aquí. */
+    autorAlt: {
+      es: "Retrato de Pedro Lira",
+      en: "Portrait of Pedro Lira",
     },
     vacio: {
       es: "Todavía no hay artículos publicados.",
@@ -3501,20 +4039,33 @@ export const copy = {
     aria: { es: "La Academia", en: "The Academy" },
     kicker: { es: "La Academia", en: "The Academy" },
     titulo: [
-      { es: "Se ve de noche,", en: "You watch it at night," },
-      { es: "en la mesa de la cocina.", en: "at the kitchen table.", enfasis: true },
+      { es: "Sin horario fijo.", en: "No fixed schedule." },
+      { es: "Solo el tuyo.", en: "Only yours.", enfasis: true },
     ],
     texto: [
       {
-        es: "Dentro están los programas de Emprende180 y el método que los sostiene: el reto de 90 días, un paso cada día, para que no tengas que inventarte la agenda.",
-        en: "Inside are the Emprende180 programs and the method that holds them together: the 90 day challenge, one step a day, so you never have to invent your own schedule.",
+        es: "Los programas de Emprende180 y el método que los sostiene, en videos cortos y en orden. Sin clases en vivo, sin horario que cumplir: avanzas cuando puedes, y si hoy no puedes, mañana sigue ahí.",
+        en: "The Emprende180 programs and the method that holds them together, in short videos and in order. No live classes, no schedule to keep: you move forward when you can, and if today isn't the day, it's still there tomorrow.",
       },
       {
-        es: "Cada programa en videos cortos y en orden, con un quiz que confirma que lo tienes. Sin clases en directo ni horarios: si hoy no puedes, mañana sigue ahí.",
-        en: "Each program in short videos, in order, with a quiz that confirms you've got it. No live classes and no schedule: if today isn't the day, it's still there tomorrow.",
+        es: "Cada programa cierra con un quiz que confirma que lo tienes.",
+        en: "Each program closes with a quiz that confirms you've got it.",
       },
     ],
-    cta: { es: "Entrar", en: "Log in" },
+
+    /**
+     * ⚠️ EL BOTÓN YA NO VA A `/login`, y el cambio importa más de lo que parece.
+     * Decía "Entrar" y llevaba a la puerta de quien YA pagó, pero esta sección
+     * no le habla a ese: le habla a alguien que todavía no tiene cuenta y está
+     * decidiendo. Mandarlo a un formulario de acceso es pedirle una contraseña
+     * que no tiene.
+     *
+     * Ahora lleva a `#como-trabajar`, que es lo que el menú llama "Programas" y
+     * lo único del sitio donde se ven sin identificarse. La puerta de los
+     * Embajadores sigue en "Acceso", arriba en la barra, que es su sitio.
+     */
+    cta: { es: "Ver los programas", en: "See the programs" },
+    ctaHref: "#como-trabajar",
     foto: {
       es: "Una persona sentada a la mesa de su cocina, de noche, trabajando con su portátil",
       en: "Somebody at their kitchen table at night, working on their laptop",
@@ -3548,14 +4099,14 @@ export const copy = {
     aria: { es: "Recursos gratis", en: "Free resources" },
     kicker: { es: "Recursos", en: "Resources" },
     titulo: [
-      { es: "Todo lo que escribimos,", en: "Everything we write," },
-      { es: "sin dejar el correo.", en: "without leaving your email.", enfasis: true },
+      { es: "Para cuando no hay tiempo,", en: "For when there's no time" },
+      { es: "de dar la vuelta larga.", en: "to take the long way round.", enfasis: true },
     ],
     texto: {
-      es: "Guías cortas para mover tu red sin incomodar a nadie. Se abren y se leen: ni registro, ni prueba gratis.",
-      en: "Short guides on working your network without making it weird. You open them and read: no sign-up, no free trial.",
+      es: "El paso a paso, sin rodeos. Se abren y se leen. Ni registro, ni prueba gratis.",
+      en: "Step by step, no detours. You open them and read. No sign-up, no free trial.",
     },
-    cta: { es: "Ver los recursos", en: "See the resources" },
+    cta: { es: "Explorar recursos", en: "Explore resources" },
 
     /**
      * ─── LA PÁGINA ───────────────────────────────────────────────────────
@@ -3789,8 +4340,8 @@ export const copy = {
   informes: {
     kicker: { es: "Empezar", en: "Getting started" },
     titulo: [
-      { es: "El reto empieza", en: "The challenge starts" },
-      { es: "cuando tú digas.", en: "when you say.", enfasis: true },
+      { es: "El primer paso", en: "The first step" },
+      { es: "lo das tú, cuando quieras.", en: "is yours, whenever you want.", enfasis: true },
     ],
     /* El porqué, sin rodeos: es lo que separa "reservado" de "sospechoso". */
     porQue: {
@@ -3824,7 +4375,7 @@ export const copy = {
     },
     recomendadoAyuda: {
       es: "Nombre y apellido de quien te habló de Emprende180.",
-      en: "First and last name of whoever told you about Emprende180.",
+      en: "First and last name of whoever told you about Entrepreneur180.",
     },
     llamar: { es: "Prefiero que me llamen", en: "I'd rather you call me" },
 
@@ -4199,7 +4750,7 @@ export const copy = {
     /** Lo lee un lector de pantalla al llegar al botón. */
     reproducir: {
       es: "Reproducir el vídeo de introducción a Emprende180",
-      en: "Play the Emprende180 introduction video",
+      en: "Play the Entrepreneur180 introduction video",
     },
     pistaSubtitulos: { es: "Español", en: "Spanish" },
   },
@@ -4234,11 +4785,24 @@ export const copy = {
   cierre: {
     aria: { es: "Empezar", en: "Get started" },
     /* ⚠️ EL ALT DESCRIBE LA FOTO QUE HAY, NO LA QUE GUSTARÍA TENER. Si se
-       cambia el archivo en 09-Cierre.astro, esta frase se cambia con él: un alt
-       que no coincide con la imagen es peor que no tener alt. */
+       cambian los archivos en 09-Cierre.astro, estas frases se cambian con
+       ellos: un alt que no coincide con la imagen es peor que no tener alt.
+
+       Son las dos mismas personas de la primera pantalla, recortadas otra vez
+       desde su original. La página cierra con las caras con las que abrió. */
     foto: {
-      es: "Una mujer escribiendo la semana en una agenda, junto a un teclado",
-      en: "A woman writing her week into a planner, next to a keyboard",
+      es: "Una mujer sonriendo mientras habla por teléfono en su casa",
+      en: "A woman smiling while talking on the phone at home",
+    },
+    fotoSecundaria: {
+      es: "Un hombre gesticulando mientras habla por teléfono en la calle",
+      en: "A man gesturing while talking on the phone in the street",
+    },
+    /* La tercera no es ninguna de las dos caras del héroe: es una
+       conversación entre dos, que es de lo que va la sección. */
+    fotoTerciaria: {
+      es: "Dos personas conversando sentadas en una mesa",
+      en: "Two people talking at a table",
     },
     /** Distintivo sobre el titular. Dice dónde está: es el final de la página. */
     kicker: { es: "Último paso", en: "Last step" },

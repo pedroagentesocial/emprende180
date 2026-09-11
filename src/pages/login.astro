@@ -140,7 +140,7 @@ if (Astro.request.method === "POST") {
   }
 }
 
-const pageTitle = construirTxt((l) => `${studentCopy.title[l]} · ${sitio.nombre}`);
+const pageTitle = construirTxt((l) => `${studentCopy.title[l]} · ${sitio.nombre[l]}`);
 
 /* Messages arriving through the URL from `/login/verify` and `/api/logout`. */
 const error = Astro.url.searchParams.get("error");
@@ -231,7 +231,7 @@ const logo = sitio.logoHorizontal;
               misma marca en la misma pantalla no es marca, es un descuido. */}
           <img
             src={logo.src}
-            alt={sitio.nombre}
+            alt={sitio.nombre[lang]}
             width={logo.w}
             height={logo.h}
             class="mb-8 hidden h-10 w-auto xl:block"

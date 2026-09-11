@@ -64,17 +64,27 @@ const hayArticulos = articulos.length > 0;
 
 <Section id="lista" tono="muted" ariaLabel={lista.aria} sinContenedor>
   <div class="container-page">
-  {/* ⚠️ ESQUINAS RECTAS, A PROPÓSITO. Todo lo demás en esta página va con
-      `rounded-3xl`; esta tarjeta no lleva radio ninguno. Es la única, y se
-      pidió así. Si algún día alguien "corrige" esto por coherencia, que sepa
-      que era la intención. */}
-  <div class="relative isolate overflow-hidden bg-primary-950">
+  {/* Las esquinas estuvieron RECTAS a propósito durante un tiempo: era la
+      única tarjeta de la página sin radio y se pidió así. Se ha pedido lo
+      contrario después, así que vuelve al `rounded-3xl` del resto del sitio y
+      deja de ser la excepción. */}
+  <div class="relative isolate overflow-hidden rounded-3xl bg-primary-950">
     <div class="grid items-center gap-10 p-8 sm:p-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14 lg:p-16">
       {/* ─── El texto ─────────────────────────────────────────────────────
           Centrado, y con una entrada que lo trae desde un poco más pequeño.
           Es la única animación de entrada de la sección: si se moviera también
           el teléfono, competirían. */}
-      <div class="order-2 lg:order-1 lg:text-left">
+      {/* ⚠️ CENTRADO, Y ANTES IBA A LA IZQUIERDA EN ESCRITORIO. El motivo de
+          entonces era que un titular centrado al lado de un teléfono deja el
+          eje de lectura partido en dos. Se ha pedido centrarlo y aquí sale
+          bien porque el texto vive en su propia mitad: lo que se centra es una
+          columna, no una línea suelta en una pantalla vacía.
+
+          Los párrafos llevan `mx-auto` porque conservan su medida: sin él, una
+          caja con `max-w` dentro de un contenedor centrado se queda pegada a
+          la izquierda y el texto se ve centrado DENTRO de un bloque
+          descentrado. */}
+      <div class="order-2 text-center lg:order-1">
         <p class="mb-3 text-sm font-semibold text-secondary-300">
           <T v={lista.kicker} />
         </p>
@@ -96,11 +106,11 @@ const hayArticulos = articulos.length > 0;
           }
         </h2>
 
-        <p class="mt-4 max-w-md text-base text-pretty text-secondary-100 sm:text-lg">
+        <p class="mx-auto mt-4 max-w-md text-lg font-medium text-pretty text-secondary-100 sm:text-xl">
           <T v={lista.texto} />
         </p>
 
-        <p class="mt-3 text-base font-bold text-ink-inverse">
+        <p class="mt-3 text-lg font-bold text-ink-inverse sm:text-xl">
           <T v={lista.remate} />
         </p>
 
@@ -109,7 +119,7 @@ const hayArticulos = articulos.length > 0;
             El botón sí baja a su renglón. Tres cosas en fila dentro de media
             tarjeta dejan tres cajas de 160 px, y ahí ya no cabe ni el
             marcador de posición. */}
-        <div class="mt-8 max-w-xl">
+        <div class="mx-auto mt-8 max-w-xl">
           <LeadForm
             client:visible
             lang={lang}
@@ -126,66 +136,149 @@ const hayArticulos = articulos.length > 0;
         </div>
       </div>
 
-      {/* ─── El teléfono ──────────────────────────────────────────────────
-          Un marco dibujado con CSS, no una foto de un iPhone: pesa cero, se ve
-          nítido en cualquier pantalla y no ata la marca a un modelo concreto
-          que dentro de dos años se vea viejo. */}
+      {/* ─── LA TABLET Y EL TELÉFONO ─────────────────────────────────────
+          Dos marcos dibujados con CSS, no fotos de un iPad y un iPhone: pesan
+          cero, se ven nítidos en cualquier pantalla y no atan la marca a dos
+          modelos concretos que dentro de dos años se vean viejos.
+
+          ⚠️ LA TABLET NO SALE EN EL TELÉFONO DEL VISITANTE, y es una cuenta, no
+          un descarte estético. Los dos juntos miden unos 480 px contando el
+          solape; dentro de la tarjeta, a 375 px de pantalla y con su `p-8`,
+          quedan 269 px útiles. No es que se vea apretado: se sale. Desde `sm`
+          hay 602 px y entran los dos.
+
+          ⚠️ Y LA TABLET VA `aria-hidden`, NO CON SU PROPIO RÓTULO. Enseña la
+          misma lista que el teléfono, que ya se anuncia con `role="img"` y su
+          descripción: dos rótulos para la misma cosa obligan a quien navega a
+          ciegas a escuchar dos veces lo mismo sin ganar nada. */}
       {
         hayArticulos && (
           <div class="order-1 flex justify-center lg:order-2">
-            <div
-              class="relative h-[30rem] w-[15rem] overflow-hidden rounded-[2.5rem] border-[0.6rem] border-primary-800 bg-primary-900 shadow-2xl"
-              role="img"
-              aria-label={lista.telefonoAlt[lang]}
-              data-aria-es={lista.telefonoAlt.es}
-              data-aria-en={lista.telefonoAlt.en}
-            >
-              {/* La muesca de arriba. Decorativa y ya está. */}
-              <span
+            <div class="relative flex items-end justify-center">
+              {/* ─── LA TABLET ───────────────────────────────────────────
+                  Más alta y más ancha, con el radio y el marco más finos EN
+                  PROPORCIÓN: es eso, y no el tamaño, lo que distingue de un
+                  vistazo una tablet de un teléfono grande. Va DETRÁS. */}
+              <div
                 aria-hidden="true"
-                class="absolute top-2 left-1/2 z-10 h-1.5 w-16 -translate-x-1/2 rounded-full bg-primary-800"
-              />
+                class="relative hidden h-[27rem] w-[20rem] shrink-0 overflow-hidden rounded-[1.5rem] border-[0.5rem] border-primary-800 bg-primary-900 shadow-2xl sm:block"
+              >
+                {/* La cámara va arriba y centrada, que es donde la lleva una
+                    tablet en vertical. Redonda y pequeña, no la muesca ancha
+                    del teléfono. */}
+                <span
+                  aria-hidden="true"
+                  class="absolute top-2.5 left-1/2 z-10 size-1.5 -translate-x-1/2 rounded-full bg-primary-800"
+                />
 
-              <div data-pista class="flex flex-col gap-3 p-3 pt-8">
-                {[0, 1].map((copia) =>
-                  articulos.map((a) => (
-                    <article
-                      aria-hidden={copia === 1 ? "true" : undefined}
-                      class="flex shrink-0 items-start gap-3 rounded-xl bg-primary-950/70 p-3"
-                    >
-                      <span
-                        aria-hidden="true"
-                        class="mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg bg-secondary-500 text-[0.7rem] font-extrabold text-primary-950"
+                {/* Su propia `data-pista`: la misma animación, pero como la
+                    columna es más ancha los correos ocupan menos alto y la tira
+                    avanza a otro ritmo. Que las dos NO vayan sincronizadas es
+                    lo que evita que se lean como una pantalla clonada. */}
+                <div data-pista class="flex flex-col gap-2.5 p-4 pt-9">
+                  {[0, 1].map((copia) =>
+                    articulos.map((a) => (
+                      <article
+                        aria-hidden={copia === 1 ? "true" : undefined}
+                        class="flex shrink-0 items-start gap-3 rounded-xl bg-primary-950/70 p-3"
                       >
-                        E1
-                      </span>
-                      <span class="min-w-0">
-                        <span class="block text-[0.65rem] font-bold tracking-wide text-secondary-300 uppercase">
-                          <T v={lista.remitente} />
+                        <span
+                          aria-hidden="true"
+                          class="mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg bg-secondary-500 text-xs font-extrabold text-primary-950"
+                        >
+                          E1
                         </span>
-                        {/* Por `<T>` y no como texto plano: si no, con la web
-                            en inglés los tres asuntos del teléfono eran lo único
-                            de la sección que seguía en español. Ver
-                            `tituloBilingue`. */}
-                        <span class="mt-0.5 block text-xs leading-snug text-pretty text-secondary-100">
-                          <T v={tituloBilingue(a)} />
+                        <span class="min-w-0">
+                          <span class="block text-[0.8125rem] font-bold tracking-wide text-secondary-300 uppercase">
+                            <T v={lista.remitente} />
+                          </span>
+                          {/* Por `<T>` y no como texto plano: si no, con la web
+                              en inglés los asuntos eran lo único de la sección
+                              que seguía en español. Ver `tituloBilingue`. */}
+                          <span class="mt-0.5 block text-[0.8125rem] leading-snug text-pretty text-secondary-100">
+                            <T v={tituloBilingue(a)} />
+                          </span>
                         </span>
-                      </span>
-                    </article>
-                  )),
-                )}
+                      </article>
+                    )),
+                  )}
+                </div>
+
+                {/* El degradado de arriba y el de abajo: sin ellos, los correos
+                    aparecen y desaparecen de golpe contra el borde del marco. */}
+                <span
+                  aria-hidden="true"
+                  class="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-primary-900 to-transparent"
+                />
+                <span
+                  aria-hidden="true"
+                  class="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-primary-900 to-transparent"
+                />
               </div>
 
-              {/* El degradado de arriba y el de abajo: sin ellos, los correos
-                  aparecen y desaparecen de golpe contra el borde del marco. */}
-              <span
-                aria-hidden="true"
-                class="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-primary-900 to-transparent"
-              />
-              <span
-                aria-hidden="true"
-                class="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-primary-900 to-transparent"
-              />
+              {/* ─── EL TELÉFONO ─────────────────────────────────────────
+                  Delante y montado sobre la esquina de la tablet. El `-ml` es
+                  el solape y el `-mb` lo baja un punto: dos aparatos con la
+                  base a la misma altura se leen como un escaparate de tienda.
+
+                  ⚠️ EL ANILLO ES DEL COLOR DEL FONDO DE LA TARJETA, no del
+                  marco. Es lo único que separa un aparato del otro donde se
+                  montan: sin él se ven dos rectángulos pegados y no uno delante
+                  del otro. Mismo recurso que el filete de las fotos que se
+                  solapan en identidad y en el cierre. */}
+              <div
+                class="relative z-10 h-[30rem] w-[15rem] shrink-0 overflow-hidden rounded-[2.5rem] border-[0.6rem] border-primary-800 bg-primary-900 shadow-2xl sm:-mb-8 sm:-ml-24 sm:ring-4 sm:ring-primary-950"
+                role="img"
+                aria-label={lista.telefonoAlt[lang]}
+                data-aria-es={lista.telefonoAlt.es}
+                data-aria-en={lista.telefonoAlt.en}
+              >
+                {/* La muesca de arriba. Decorativa y ya está. */}
+                <span
+                  aria-hidden="true"
+                  class="absolute top-2 left-1/2 z-10 h-1.5 w-16 -translate-x-1/2 rounded-full bg-primary-800"
+                />
+
+                <div data-pista class="flex flex-col gap-3 p-3 pt-8">
+                  {[0, 1].map((copia) =>
+                    articulos.map((a) => (
+                      <article
+                        aria-hidden={copia === 1 ? "true" : undefined}
+                        class="flex shrink-0 items-start gap-3 rounded-xl bg-primary-950/70 p-3"
+                      >
+                        <span
+                          aria-hidden="true"
+                          class="mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg bg-secondary-500 text-xs font-extrabold text-primary-950"
+                        >
+                          E1
+                        </span>
+                        <span class="min-w-0">
+                          <span class="block text-[0.8125rem] font-bold tracking-wide text-secondary-300 uppercase">
+                            <T v={lista.remitente} />
+                          </span>
+                          {/* Por `<T>` y no como texto plano: si no, con la web
+                              en inglés los asuntos eran lo único de la sección
+                              que seguía en español. Ver `tituloBilingue`. */}
+                          <span class="mt-0.5 block text-xs leading-snug text-pretty text-secondary-100">
+                            <T v={tituloBilingue(a)} />
+                          </span>
+                        </span>
+                      </article>
+                    )),
+                  )}
+                </div>
+
+                {/* El degradado de arriba y el de abajo: sin ellos, los correos
+                    aparecen y desaparecen de golpe contra el borde del marco. */}
+                <span
+                  aria-hidden="true"
+                  class="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-primary-900 to-transparent"
+                />
+                <span
+                  aria-hidden="true"
+                  class="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-primary-900 to-transparent"
+                />
+              </div>
             </div>
           </div>
         )

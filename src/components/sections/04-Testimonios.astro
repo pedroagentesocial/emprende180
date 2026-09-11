@@ -187,13 +187,15 @@ const puntos = puntosBase.map((p) => ({
             Cuando haya fotos de Embajadoras de verdad, el mosaico vuelve y este
             es su sitio.
 
-            Sin fotos, el titular no se centra: se queda a la izquierda, donde
-            empieza a leerse, y el resumen de estrellas se le pone al lado en
-            escritorio. Centrarlo dejaría una línea sola en medio de una
-            pantalla vacía. */}
+            ⚠️ EL TITULAR VA CENTRADO, Y ANTES NO. Estuvo a la izquierda con
+            las estrellas al lado, con el argumento de que sin fotos un titular
+            centrado deja una línea sola en medio de una pantalla vacía. Se ha
+            pedido centrarlo, y con él bajan las estrellas: dejarlas a la
+            derecha mientras el titular se centra parte la cabecera en dos ejes
+            distintos, que es peor que cualquiera de las dos opciones puras. */}
         <div class="container-page">
           <Reveal>
-            <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between lg:gap-12">
+            <div class="flex flex-col items-center gap-6 text-center">
               <div>
                 <p class="text-sm font-semibold text-ink-brand">
                   <T v={copy.pruebaSocial.kicker} />
@@ -213,7 +215,7 @@ const puntos = puntosBase.map((p) => ({
               </div>
 
               {hayResumen && (
-                <div class="flex shrink-0 items-center gap-3 lg:pb-2">
+                <div class="flex shrink-0 items-center justify-center gap-3">
                   <Estrellas valor={notaMedia} tamano="md" sinTexto />
                   <p class="text-sm text-pretty text-ink-muted">
                     {todasEnGoogle ? (
@@ -228,7 +230,7 @@ const puntos = puntosBase.map((p) => ({
             </div>
 
             {cifras.sonReales && cifras.alumnos > 0 && (
-              <p class="mt-4 text-sm text-ink-muted">
+              <p class="mt-4 text-center text-sm text-ink-muted">
                 <span class="font-bold text-ink">
                   <T v={numAlumnos} />
                 </span>{" "}
@@ -238,17 +240,31 @@ const puntos = puntosBase.map((p) => ({
           </Reveal>
         </div>
 
-        {/* ─── LA BANDA, YA SIN TARJETA DE CABECERA ────────────────────────
-            El `slot` de `BandaTestimonios` se queda vacío a propósito: lo que
-            iba dentro subió al bloque de arriba. */}
-        <div class="container-page mt-14 lg:pr-0">
+        {/* ─── LA BANDA, CON LA TARJETA NUEVA ────────────────────────────
+            Estuvo un rato en rejilla de dos columnas y vuelve al carrusel, que
+            es el mismo tratamiento que la banda de logos de aquí abajo: las dos
+            cosas dicen lo mismo y ahora también se mueven igual.
+
+            ⚠️ LO QUE NO VUELVE ES LA TARJETA VIEJA. La banda dibujaba la suya
+            —avatar circular, estrellas, otro radio y el color invertido— y la
+            rejilla otra distinta. Ahora las dos usan `TarjetaTestimonio`: una
+            sola tarjeta con dos formas de presentarla.
+
+            `montarBandas()` —el botón de parada, que es lo que hace que esto
+            cumpla la WCAG 2.2.2— se carga desde `05-Aliados.astro` y sirve a
+            las dos bandas. Se mudó allí cuando esta sección no tenía ninguna, y
+            se queda: el sitio correcto es el componente que la usa siempre. */}
+        <div class="container-page mt-12 lg:pr-0">
           <BandaTestimonios items={lista} />
         </div>
 
-        {/* ─── Y LOS LOGOS, EN LA MISMA SECCIÓN Y SOBRE EL MISMO FONDO ─────
-            Ver la cabecera de `05-Aliados.astro`: dejó de ser una sección con
-            su propio color justo para poder vivir aquí. */}
-        <div class="mt-16 border-t border-line pt-10">
+        {/* ─── Y LOS LOGOS, EN LA MISMA ZONA Y SIN COSTURA ─────────────────
+            ⚠️ AQUÍ HABÍA UN `border-t border-line` Y SE HA QUITADO. Las dos
+            cosas dicen lo mismo —que esto existe y que ya hay gente dentro— y
+            una raya en medio las volvía a partir en dos temas. Lo único que
+            las separa ahora es aire, y menos del que había: `mt-16` eran 64 px
+            de "cambio de tema" y esto es continuación. */}
+        <div class="mt-12 sm:mt-14">
           <Aliados />
         </div>
       </>
@@ -285,7 +301,7 @@ const puntos = puntosBase.map((p) => ({
                   <dt class="text-lg font-bold text-ink">
                     <T v={p.titulo} />
                   </dt>
-                  <dd class="mt-1.5 text-base text-pretty text-ink-muted">
+                  <dd class="mt-1.5 text-base font-medium text-pretty text-ink-muted sm:text-lg">
                     <T v={p.texto} />
                   </dd>
                 </div>

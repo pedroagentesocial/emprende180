@@ -42,7 +42,7 @@ const lang = resolverIdiomaServidor(
 const articulos = await articulosPublicados(getCollection);
 
 const tituloPagina = construirTxt(
-  (l) => `${recursos.paginaTitulo[l]} · ${sitio.nombre}`,
+  (l) => `${recursos.paginaTitulo[l]} · ${sitio.nombre[l]}`,
 );
 ---
 

@@ -82,7 +82,7 @@ const schemaCourse = {
   image: ogImagen,
   provider: {
     "@type": "Organization",
-    name: sitio.nombre,
+    name: sitio.nombre[lang],
     url: sitio.url,
     email: contacto.email,
   },
@@ -231,7 +231,7 @@ const descripciones = { es: descripcion.es, en: descripcion.en };
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content={sitio.nombre} />
+    <meta property="og:site_name" content={sitio.nombre[lang]} />
     <meta property="og:locale" content={OG_LOCALES[lang]} />
     {
       IDIOMAS.filter((l) => l !== lang).map((l) => (

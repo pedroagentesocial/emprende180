@@ -34,7 +34,7 @@ if (articulos.length === 0) {
   return new Response(null, { status: 404, statusText: "Todavía no hay artículos" });
 }
 
-const tituloPagina = construirTxt((l) => `${blogCopy.titulo[l]} · ${sitio.nombre}`);
+const tituloPagina = construirTxt((l) => `${blogCopy.titulo[l]} · ${sitio.nombre[l]}`);
 ---
 
 <BaseLayout titulo={tituloPagina} descripcion={blogCopy.descripcion}>

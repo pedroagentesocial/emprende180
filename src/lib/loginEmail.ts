@@ -13,7 +13,7 @@ export const LOGIN_EMAIL = {
   replyTo: contacto.email,
 
   subject: (lang: Idioma) =>
-    lang === "en" ? `Your ${sitio.nombre} access` : `Tu acceso a ${sitio.nombre}`,
+    lang === "en" ? `Your ${sitio.nombre[lang]} access` : `Tu acceso a ${sitio.nombre[lang]}`,
 
   body: (lang: Idioma, url: string) =>
     lang === "en"
@@ -25,7 +25,7 @@ export const LOGIN_EMAIL = {
           `It expires in 20 minutes and can only be used once.`,
           `If you didn't request it, ignore this email: nothing has changed.`,
           ``,
-          `— ${sitio.nombre}`,
+          `— ${sitio.nombre[lang]}`,
         ].join("\n")
       : [
           `Aquí tienes tu enlace para poner tu contraseña y entrar:`,
@@ -35,6 +35,6 @@ export const LOGIN_EMAIL = {
           `Caduca en 20 minutos y solo se puede usar una vez.`,
           `Si no lo has pedido tú, ignora este correo: no se ha tocado nada.`,
           ``,
-          `— ${sitio.nombre}`,
+          `— ${sitio.nombre[lang]}`,
         ].join("\n"),
 } as const;

@@ -22,7 +22,8 @@ import Footer from "@components/layout/Footer.astro";
    El orden lo fijó el cliente, sección por sección, y los archivos están
    numerados según él: el número del nombre ES la posición en la página.
 
-    01 Embajador ...... en quién te conviertes, y de qué se compone esto
+    00 Identidad ...... quién eres YA, antes de que se explique nada
+    02 ComoTrabajar ... de qué se compone esto: Academia, CRM y seguimiento
     03 Lista .......... deja tu correo y te llegan los artículos
     04 Testimonios .... ya hay mujeres dentro, y las empresas que lo respaldan
     06 Blog ........... lo que se escribe, gratis
@@ -52,7 +53,8 @@ import Footer from "@components/layout/Footer.astro";
    ───────────────────────────────────────────────────────────────────────────
    ─────────────────────────────────────────────────────────────────────────── */
 import Hero from "@components/hero/HeroSlider.astro";
-import Embajador from "@components/sections/01-Embajador.astro";
+import Identidad from "@components/sections/00-Identidad.astro";
+import ComoTrabajar from "@components/sections/02-ComoTrabajar.astro";
 import Lista from "@components/sections/03-Lista.astro";
 import Testimonios from "@components/sections/04-Testimonios.astro";
 import BlogPortada from "@components/sections/06-Blog.astro";
@@ -81,10 +83,29 @@ import Cierre from "@components/sections/09-Cierre.astro";
   <main id="contenido">
     <Hero />
 
-    {/* Lo primero después del hero: en quién te conviertes y con qué. Las dos
-        cosas van dentro de la MISMA sección desde que se fusionaron, porque son
-        una sola respuesta partida en dos. Ver 01-Embajador. */}
-    <Embajador />
+    {/* ⚠️ ANTES DE QUE SE EXPLIQUE NADA. Esta sección no vende: nombra al
+        arquetipo para que quien llega se reconozca. Va aquí y no más abajo
+        porque su único trabajo es que la persona siga leyendo siendo alguien,
+        y eso solo funciona antes del argumento. Ver 00-Identidad.
+
+        Va numerada 00 y no 01 para no renumerar las nueve que ya están: el
+        número del nombre sigue siendo la posición en la página. */}
+    <Identidad />
+
+    {/* ⚠️ AQUÍ HABÍA UNA SECCIÓN MÁS Y SE QUITÓ: la del Embajador, la que decía
+        "Ser Embajadora Emprende180 es esto · La que siempre conoce a alguien".
+        Decía lo mismo que la de Identidad que va justo encima —quién eres— y
+        con dos titulares seguidos sobre la misma idea, el segundo solo
+        confirmaba lo que el primero ya había dicho.
+
+        ⚠️ Y SE LLEVABA POR DELANTE LAS TRES PIEZAS. "Cómo se trabaja" se
+        pintaba DENTRO de ella, sin envoltorio propio, así que borrar una era
+        borrar las dos. Ahora es una sección por derecho: ver el comentario de
+        su cabecera.
+
+        El archivo 01-Embajador.astro y su copy (`copy.embajador`) siguen en el
+        historial de git: volver a ponerla es un revert y una línea aquí. */}
+    <ComoTrabajar />
 
     {/* La lista, con el teléfono en el que pasan los correos. Es la única
         captura de correo que hay antes del final. */}

@@ -3,7 +3,7 @@ import T from "@components/i18n/T.astro";
 import Section from "@components/ui/Section.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Enfasis from "@components/ui/Enfasis.astro";
-import Button from "@components/ui/Button.astro";
+import BotonRelieve from "@components/ui/BotonRelieve.astro";
 import { copy } from "@config/curso.config";
 import { resolverIdiomaServidor } from "@i18n/idioma";
 
@@ -50,71 +50,109 @@ const lang = resolverIdiomaServidor(
 const FOTO = "/imagenes/secciones/temario.webp";
 ---
 
-<Section id="academia" tono="muted" ariaLabel={academia.aria} sinContenedor>
-  <div class="grid items-stretch lg:grid-cols-2">
-    {/* ─── La foto, hasta el borde izquierdo ──────────────────────────────
-        En móvil no sangra a media pantalla —quedaría una tira rara— sino que
-        ocupa el ancho completo con una altura fija, y va delante del texto. */}
-    <div class="relative order-first h-72 w-full bg-primary-950 sm:h-96 lg:h-auto lg:min-h-[32rem]">
-      <img
-        src={FOTO}
-        alt={academia.foto[lang]}
-        data-alt-es={academia.foto.es}
-        data-alt-en={academia.foto.en}
-        width={1000}
-        height={800}
-        loading="lazy"
-        decoding="async"
-        class="absolute inset-0 size-full object-cover"
-      />
-    </div>
+{/* ─── LA FOTO ES EL FONDO, NO UNA COLUMNA ────────────────────────────────
+    Esto pasó por tres formas en tres intentos y merece quedar escrito para
+    que nadie vuelva a la anterior pensando que mejora:
 
-    {/* ─── La mitad que se lee ────────────────────────────────────────────
-        ⚠️ AQUÍ HABÍA UN "lg:max-w-[44rem]" y se ha ido con la regla del ancho:
-        eran 44rem pegadas a la costura para cuadrar con un contenedor centrado
-        de 88rem que ya no existe. Ahora esta mitad se llena entera.
+      1. Dos mitades lado a lado, foto a un lado y texto al otro. El problema
+         no era la sección: era que el blog y el cierre hacían lo mismo, y
+         tres repartos idénticos seguidos se leen como una plantilla.
+      2. Foto ancha con una tarjeta flotante montada en su esquina. Resolvía
+         la repetición y metía otro problema: una tarjeta con borde encima de
+         una foto son dos rectángulos discutiendo, y el sitio es plano.
+      3. Esto: la foto ocupa la sección ENTERA y el texto vive encima, a la
+         izquierda. Sin tarjeta, sin borde y sin recuadro. Lo único que
+         separa el texto de la foto es un velo.
 
-        Los dos márgenes NO son el mismo y no deben serlo: el de FUERA es
-        "--gutter-page", el mismo de toda la página, para que este titular
-        quede a plomo con el de las demás secciones; el de DENTRO es el aire de
-        la costura, y solo aparece cuando hay dos columnas. */}
-    <div class="w-full px-[var(--gutter-page)] lg:py-6 lg:pl-14">
-      <Reveal>
-        <p class="text-sm font-semibold text-ink-brand">
+    `tono="inverse"` no es decoración: es el navy que se ve si la foto no
+    carga. Sin él, un fallo de red deja texto blanco sobre blanco.
+
+    ⚠️ Y ESTO CONVIERTE LA SECCIÓN EN OSCURA. Blog, que va justo encima, es
+    blanco, y Recursos, justo debajo, es navy: ahora hay dos bloques oscuros
+    seguidos. Se lee bien porque uno es foto y el otro color plano, pero si
+    algún día se revisa el mapa de zonas, esta frontera es la que hay que
+    mirar primero. */}
+<Section
+  id="academia"
+  tono="inverse"
+  ritmo="amplio"
+  ariaLabel={academia.aria}
+  sinContenedor
+  class="relative isolate overflow-hidden"
+>
+  {/* ⚠️ MÁS ANCHA QUE LA SECCIÓN, Y ANCLADA A LA IZQUIERDA. La foto es de
+      1000x800 y la sección mide 1440 de ancho por unos 500 de alto: con
+      `w-full` el navegador la escala por el ancho y recorta solo por arriba y
+      por abajo, así que `object-position` en horizontal NO HACE NADA y la
+      persona se queda clavada en el centro, justo donde acaba el texto.
+
+      Sacándola al 135 % y pegándola a la izquierda, el centro de la foto cae
+      sobre el 70 % de la sección: la persona se va a la derecha, que es donde
+      se la quiere, y lo que sobra lo recorta el `overflow-hidden` del padre.
+      En móvil no se aplica: ahí no hay columna de texto al lado. */}
+  <img
+    src={FOTO}
+    alt={academia.foto[lang]}
+    data-alt-es={academia.foto.es}
+    data-alt-en={academia.foto.en}
+    width={1000}
+    height={800}
+    loading="lazy"
+    decoding="async"
+    class="absolute inset-y-0 left-0 -z-10 h-full w-full max-w-none object-cover object-[center_40%] lg:w-[135%]"
+  />
+
+  {/* El velo. Arranca opaco donde cae el texto y se apaga hacia la derecha,
+      que es donde está la persona: la mitad que se mira sigue viéndose y la
+      que está debajo de las letras deja de competir con ellas. Es el mismo
+      recurso del hero, no uno nuevo. */}
+  <div
+    aria-hidden="true"
+    class="absolute inset-0 -z-10 bg-gradient-to-b from-primary-950/90 via-primary-950/70 to-primary-950/90 lg:bg-gradient-to-r lg:from-primary-950/95 lg:via-primary-950/70 lg:to-primary-950/25"
+  />
+
+  <div class="container-page">
+    <Reveal>
+      {/* La columna de texto ocupa poco más de la mitad: lo que sobra a la
+          derecha no está vacío, es la foto. */}
+      <div class="max-w-xl lg:max-w-[34rem]">
+        <p class="text-sm font-semibold text-ink-on-inverse-brand sm:text-base">
           <T v={academia.kicker} />
         </p>
 
-        <h2 class="mt-3 text-4xl leading-[1.05] font-extrabold text-balance text-ink sm:text-5xl">
-          {
-            academia.titulo.map((linea) => (
-              <span class="block">
-                {"enfasis" in linea && linea.enfasis ? (
-                  <Enfasis v={linea} />
-                ) : (
-                  <T v={linea} />
-                )}
-              </span>
-            ))
-          }
+        <h2 class="mt-3 text-3xl font-semibold leading-[1.1] tracking-[-0.02em] text-balance text-ink-inverse sm:text-4xl lg:text-5xl">
+          <T v={academia.titulo[0]} />
         </h2>
 
+        <p class="mt-1.5 text-2xl leading-[1.15] text-balance sm:text-3xl lg:text-4xl">
+          <Enfasis v={academia.titulo[1]} tono="inverso" />
+        </p>
+
         {
-          academia.texto.map((parrafo) => (
-            <p class="mt-5 max-w-prose text-base text-pretty text-ink-muted sm:text-lg">
+          academia.texto.map((parrafo, i) => (
+            <p
+              class:list={[
+                "max-w-prose text-lg font-medium leading-relaxed text-pretty text-secondary-100 sm:text-xl",
+                i === 0 ? "mt-7" : "mt-4",
+              ]}
+            >
               <T v={parrafo} />
             </p>
           ))
         }
 
-        <div class="mt-8">
-          {/* A `/login`, el mismo sitio que "Acceso" en la barra. Quien ya
-              compró entra; quien no, ve la pantalla de acceso y comprueba que
-              esto existe de verdad y tiene puerta. */}
-          <Button href="/login" trackId="academia-entrar">
+        {/* Sin flecha, y `sobre="oscuro"` para que su pila de sombras no
+            desaparezca contra el navy del fondo. */}
+        <div class="ml-1 mt-8">
+          <BotonRelieve
+            href={academia.ctaHref}
+            sobre="oscuro"
+            trackId="academia-programas"
+          >
             <T v={academia.cta} />
-          </Button>
+          </BotonRelieve>
         </div>
-      </Reveal>
-    </div>
+      </div>
+    </Reveal>
   </div>
 </Section>

@@ -26,7 +26,7 @@ if (!doc) {
   return new Response(null, { status: 404, statusText: "Documento no encontrado" });
 }
 
-const tituloPagina = construirTxt((l) => `${doc.titulo[l]} · ${sitio.nombre}`);
+const tituloPagina = construirTxt((l) => `${doc.titulo[l]} · ${sitio.nombre[l]}`);
 ---
 
 <BaseLayout titulo={tituloPagina} descripcion={doc.resumen}>

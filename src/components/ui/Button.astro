@@ -10,7 +10,7 @@
  */
 interface Props {
   variant?: "primary" | "secondary" | "ghost" | "inverse";
-  size?: "md" | "lg";
+  size?: "md" | "lg" | "xl";
   /**
    * Sobre qué fondo se apoya el botón. SOLO cambia el color del anillo de foco.
    *
@@ -113,8 +113,26 @@ const variants = {
 } as const;
 
 const sizes = {
-  md: "px-5 py-2.5 text-sm",
-  lg: "px-7 py-4 text-base sm:text-lg",
+  /* ⚠️ `text-base` Y NO `text-sm`, Y AQUÍ HABÍA DOS PROBLEMAS A LA VEZ. El
+     único sitio que usa este tamaño es el CTA de la cabecera, y los enlaces
+     que tiene AL LADO pasaron a 16 px en la revisión de tamaños: el botón se
+     quedaba en 14 y se leía como menos importante que los enlaces de texto que
+     acompaña, que es justo al revés de lo que es.
+
+     Y de paso el alto: con `py-2.5` y 14 px la caja medía 41 px, por debajo de
+     los 44 que pide la WCAG 2.5.5. Con `py-3` y 16 px sube a 48. */
+  md: "px-5 py-3 text-base",
+  lg: "px-8 py-4 text-lg sm:text-xl",
+  /* ⚠️ `xl` ES SOLO PARA EL HERO, y con un cuerpo escrito a mano en vez de
+     `text-2xl`. El escalón 2xl del sistema llega a 34 px arriba: eso es un
+     titular, no un botón. Aquí hacen falta 20 en un teléfono y 21 de `sm` para
+     arriba, que es un punto por encima del `lg` y se nota sin desbordar.
+
+     El alto sube de unos 59 px a 63. Parece poco y no lo es: el bloque central
+     del héroe reserva su hueco por abajo y los dos titulares se apoyan en esa
+     cuenta. Ver la cadena de tres piezas en la nota de `LADOS`, en
+     `HeroDiptico.astro`, antes de volver a tocar este número. */
+  xl: "px-9 py-4 text-xl sm:text-[1.3125rem]",
 } as const;
 
 const classes = [

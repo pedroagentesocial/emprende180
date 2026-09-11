@@ -247,14 +247,48 @@
   --text-lg--line-height: 1.6;
   --text-xl: 1.25rem;
   --text-xl--line-height: 1.5;
-  --text-2xl: clamp(1.5rem, 1.35rem + 0.75vw, 1.875rem);
+  /* ─── LOS TITULARES SUBEN, Y SUBEN TODOS JUNTOS ────────────────────────
+     Cada uno de estos cuatro crece alrededor de un 12 % en su tope. Se tocan
+     los CUATRO y no solo el que se ve grande, y ese es el detalle que hace que
+     el cambio se vea bien: subir el 5xl dejando el 4xl donde estaba acerca dos
+     escalones que tienen que estar separados, y el titular de una sección
+     acabaría midiendo casi lo mismo que el de la siguiente.
+
+     Lo que NO se toca es la interlínea. A más cuerpo, una interlínea que no
+     baja deja los renglones flotando: por eso las de aquí van al revés que el
+     tamaño —1,3 en el 2xl y 1,05 en el 5xl— y esa relación ya estaba bien.
+
+     ⚠️ LOS TOPES SUBEN MÁS QUE LOS MÍNIMOS. En un teléfono de 375 el titular ya
+     ocupa casi el ancho entero: lo que sobraba era sitio en pantalla grande, no
+     en la pequeña. Subir el mínimo al mismo ritmo habría partido renglones.
+
+     ⚠️ EL HERO NO ENTRA AQUÍ, y es a propósito. Sus dos titulares tienen su
+     propia medida, calculada carácter a carácter contra el ancho de MEDIA
+     pantalla: ver la tabla de HeroTitular.astro. Esta subida no le afecta, y
+     subirla ahí a mano parte los renglones. */
+  --text-2xl: clamp(1.5625rem, 1.4rem + 0.85vw, 2.125rem);
   --text-2xl--line-height: 1.3;
-  --text-3xl: clamp(1.75rem, 1.5rem + 1.25vw, 2.25rem);
+  --text-3xl: clamp(1.875rem, 1.55rem + 1.5vw, 2.5rem);
   --text-3xl--line-height: 1.2;
-  --text-4xl: clamp(2rem, 1.6rem + 2vw, 3rem);
+  --text-4xl: clamp(2.125rem, 1.68rem + 2.2vw, 3.375rem);
   --text-4xl--line-height: 1.15;
-  --text-5xl: clamp(2.5rem, 1.9rem + 3vw, 3.75rem);
+  --text-5xl: clamp(2.625rem, 2rem + 3.3vw, 4.25rem);
   --text-5xl--line-height: 1.05;
+  /* ⚠️ EL 6XL Y EL 7XL NO ESTABAN, Y ESO SE CONVIRTIÓ EN UN FALLO AL SUBIR
+     EL 5XL. Tailwind trae los suyos por defecto —60 y 72 px fijos— y mientras
+     el 5xl topó en 60 no pasaba nada. Con el 5xl en 68, el `text-6xl` de
+     Tailwind (60) pasó a ser MÁS PEQUEÑO que el escalón de debajo: en
+     `about.astro`, cuyo h1 es `sm:text-6xl lg:text-7xl`, el titular ENCOGÍA al
+     pasar de tablet a escritorio.
+
+     No salta ningún aviso cuando esto ocurre: son dos escalas distintas —la de
+     aquí y la de Tailwind— que solo se cruzan cuando una crece. Definirlos aquí
+     los mete en la misma escala fluida que los demás y el orden queda
+     garantizado: a 1440 son 68 < 76 < 88. */
+  --text-6xl: clamp(3rem, 2.2rem + 3.9vw, 4.75rem);
+  --text-6xl--line-height: 1.02;
+  --text-7xl: clamp(3.5rem, 2.6rem + 4.4vw, 5.5rem);
+  --text-7xl--line-height: 1;
   --text-hero: clamp(2.25rem, 1.5rem + 3.75vw, 4.5rem);
   --text-hero--line-height: 1.02;
   --text-hero--letter-spacing: -0.025em;
@@ -340,10 +374,18 @@
      sumen exactamente una pantalla al cargar, que es cuando la barra está
      alta. Si esos números se escriben en dos sitios, el día que alguien cambie
      uno el hero deja de cuadrar y nadie sabe por qué. */
+  /* ⚠️ LOS DOS PRIMEROS NO SE TOCAN Y LOS DOS SEGUNDOS CRECIERON. La barra
+     tiene dos estados y solo el de arriba del todo se hizo más grande: el
+     compacto —el que se ve mientras se lee la página— se queda como estaba,
+     porque ahí lo que se quiere es que estorbe poco.
+
+     Al subir `--header-h-grande` hay que mirar los seguros del hero, que están
+     calculados contra él: si la barra crece y ellos no, el primer renglón del
+     titular se mete debajo del logotipo. Ver `HeroDiptico`. */
   --header-h: 4rem;
   --header-h-lg: 4.5rem;
-  --header-h-grande: 5rem;
-  --header-h-grande-lg: 6.5rem;
+  --header-h-grande: 5.75rem;
+  --header-h-grande-lg: 8rem;
 
   /* Objetivo táctil mínimo: 44 px (Apple HIG / WCAG 2.5.5) = `min-h-11`.
      Ningún elemento pulsable debe quedar por debajo. */

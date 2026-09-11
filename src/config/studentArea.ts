@@ -51,7 +51,7 @@ export const studentCopy = {
       },
       {
         es: "Tu Certificación de Embajador Emprende180 al superarlos",
-        en: "Your Emprende180 Ambassador Certification once you pass them",
+        en: "Your Entrepreneur180 Ambassador Certification once you pass them",
       },
     ] satisfies Txt[],
   },

@@ -2,7 +2,9 @@
 import T from "@components/i18n/T.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Enfasis from "@components/ui/Enfasis.astro";
-import Button from "@components/ui/Button.astro";
+import BotonRelieve from "@components/ui/BotonRelieve.astro";
+import Icono from "@components/ui/Icono.astro";
+import Section from "@components/ui/Section.astro";
 import { copy } from "@config/curso.config";
 
 /**
@@ -37,25 +39,54 @@ import { copy } from "@config/curso.config";
 const { comoTrabajar } = copy;
 ---
 
-{/* ─── ESTO YA NO ES UNA SECCIÓN, ES UN BLOQUE ───────────────────────────
-    Vivía en su propia `<Section>`, con su fondo y su ritmo. Ahora se pinta
-    DENTRO de la del Embajador, y por eso no trae ni envoltorio ni color propio:
-    los hereda de quien lo incluye.
+{/* ─── VUELVE A SER UNA SECCIÓN ──────────────────────────────────────────
+    Estuvo un tiempo siendo un BLOQUE sin envoltorio, pintado dentro de la
+    sección del Embajador: eran "qué es una Embajadora" y "de qué se compone
+    esto", la misma respuesta partida en dos, y un cambio de fondo en medio las
+    separaba en dos temas que no se conocen.
 
-    El motivo es de lectura, no de código. "Qué es una Embajadora" y "de qué se
-    compone esto" son la misma respuesta partida en dos, y con un cambio de
-    fondo en medio se leían como dos temas que no se conocen. Es la misma
-    operación que se hizo con los testimonios y los logos.
+    ⚠️ AL QUITARSE LA DEL EMBAJADOR SE QUEDÓ SIN CASA. Sin envoltorio propio no
+    tenía ni fondo, ni ritmo vertical, ni etiqueta accesible: se habría pegado
+    al final de la sección anterior sin nada que la separase. Así que recupera
+    su `<Section>`.
+
+    Comparte el blanco con Identidad, que es la que va justo encima: las dos
+    cuentan quién eres y con qué, y entre ellas no hace falta frontera.
 
     ⚠️ EL `id` SE QUEDA, Y NO ES OPCIONAL. Aquí llegan "Programas" del menú, el
-    botón del hero ("Ver cómo funciona") y un botón de /about. Sin él, los tres
-    se quedan sin destino. `scroll-mt` lo separa de la barra al saltar. */}
-<div id="como-trabajar" class="scroll-mt-24" aria-labelledby="como-trabajar-titulo">
-  {/* El titular conserva medida —es texto— pero NO se centra: arranca en el
-      margen izquierdo de la página, como el de las demás secciones. Ver la
-      regla del ancho en global.css. */}
-  <div class="max-w-2xl">
-    <p class="text-xs font-bold tracking-[0.18em] text-ink-brand uppercase">
+    botón de la Academia y uno de /about. Sin él, los tres se quedan sin
+    destino. `scroll-mt` lo separa de la barra al saltar. */}
+<Section
+  id="como-trabajar"
+  tono="surface"
+  ariaLabel={comoTrabajar.aria}
+  sinContenedor
+>
+<div class="container-page" aria-labelledby="como-trabajar-titulo">
+  {/* ⚠️ EL ENCABEZADO VA CENTRADO, y es lo único de esta sección que no sigue
+      la alineación del resto de la página. Lo pidió el cliente después de
+      haber pedido lo contrario en el mismo encargo; se hace caso a lo último.
+
+      Si algún día se devuelve a la izquierda: quitar `text-center` y `mx-auto`
+      de aquí, y ya está. Las tarjetas de abajo van centradas por su cuenta y
+      no dependen de esto. */}
+  {/* ⚠️ LA CAJA PASÓ DE 2xl A 4xl PARA QUE EL TITULAR SEAN DOS RENGLONES Y
+      NO TRES. El config trae dos líneas escritas —"Tres piezas." y "Una forma
+      de trabajar."— y cada una se pinta en su `span`. La segunda son 22
+      caracteres: a 68 px piden 793 px y en `max-w-2xl` (672) se partía. El
+      resultado eran tres renglones, con el tercero suelto debajo, y por eso el
+      bloque se veía despegado.
+
+      Con `max-w-4xl` (896) entra de una pieza y el titular queda en los dos
+      renglones que se escribieron. Si algún día se alarga esa frase, o sube el
+      cuerpo, hay que volver a hacer la cuenta: caracteres x 0,53 x cuerpo.
+
+      Y los dos renglones van en colores distintos a propósito —el primero en
+      tinta y el segundo con el remate de marca— que es lo que hace que se lean
+      como dos frases y no como una que se ha roto. Lo pone `Enfasis` a partir
+      del `enfasis: true` del config. */}
+  <div class="mx-auto max-w-4xl text-center">
+    <p class="text-sm font-bold tracking-[0.18em] text-ink-brand uppercase">
       <T v={comoTrabajar.kicker} />
     </p>
 
@@ -77,52 +108,60 @@ const { comoTrabajar } = copy;
     </h2>
   </div>
 
-  <ul class="mt-12 grid gap-6 lg:grid-cols-3 2xl:gap-10">
+  {/* ─── TRES COLUMNAS IGUALES ─────────────────────────────────────────────
+      Simétricas a propósito, al revés que la sección de identidad que va justo
+      encima: allí el desnivel crea tensión porque son DOS bloques que se
+      miran; aquí son TRES piezas que valen lo mismo, y cualquier desnivel
+      diría que una manda sobre las otras.
+
+      `items-stretch` (el de por defecto en grid) es lo que hace que las tres
+      columnas midan lo mismo de alto aunque su texto no. Sobre eso, el
+      `mt-auto` del pie de cada tarjeta empuja el botón hasta abajo: los tres
+      quedan a la misma altura sin igualar ni un carácter del copy. */}
+  <ul class="mt-14 grid gap-10 sm:mt-16 lg:grid-cols-3 lg:gap-12">
     {
       comoTrabajar.piezas.map((pieza, i) => (
         <Reveal as="li" delay={i * 0.08} class="h-full">
-          {/* ⚠️ YA NO SON TARJETAS. Lo eran —fondo azul suave y esquinas
-              redondeadas— cuando este bloque vivía en una sección blanca. Al
-              fusionarse con la del Embajador, que ES azul suave, el fondo de la
-              tarjeta desapareció contra el de la sección y lo único que quedaba
-              del recuadro era su relleno: tres columnas de texto empezando 32 px
-              a la derecha del titular de arriba, sin motivo visible.
+          {/* ⚠️ SIN FILETE Y SIN NÚMERO. El filete de arriba separaba tres
+              columnas alineadas a la izquierda; centradas, una raya encima de
+              cada una las convierte en tres recuadros. Y el número enorme del
+              fondo se fue con la numeración: ver la nota del config.
 
-              Un filete arriba hace el mismo trabajo de separar, y alinea. */}
-          <article class="relative isolate flex h-full flex-col border-t border-line pt-6">
-            {/* El número, enorme y detrás de todo. Decorativo: lo que ordena
-                para un lector de pantalla es que esto sea una LISTA, y el
-                número lo cantaría dos veces.
-
-                ⚠️ ENTERO DENTRO DE LA TARJETA, sin salirse por el borde. Medio
-                número cortado contra el canto no se lee como un recurso
-                gráfico, se lee como algo que se ha desbordado. */}
+              Tampoco es una tarjeta: no hay fondo ni borde. Lo que agrupa es
+              el centrado y el aire, que es lo que pide una sección plana. */}
+          <article class="flex h-full flex-col items-center text-center">
+            {/* La caja del icono: 52 px, el mismo radio que las fotos de la
+                sección de identidad y el mismo tratamiento en las tres. La
+                variedad está en QUÉ dibuja cada icono, no en cómo se presenta. */}
             <span
               aria-hidden="true"
-              class="pointer-events-none absolute top-2 right-0 -z-10 text-[6rem] leading-none font-extrabold text-primary-900/[0.07] select-none sm:text-[7rem]"
+              class="grid size-[52px] shrink-0 place-items-center rounded-lg bg-surface-sunken text-ink-brand"
             >
-              {pieza.numero}
+              <Icono nombre={pieza.icono} class="size-7" grosor={1.6} />
             </span>
 
-            <h3 class="text-xl font-extrabold text-ink sm:text-2xl">
+            <h3 class="mt-5 text-xl font-extrabold text-ink sm:text-2xl">
               <T v={pieza.titulo} />
             </h3>
 
-            <p class="mt-3 max-w-prose text-base text-pretty text-ink-muted">
+            {/* `max-w-prose` sigue puesto aunque la columna sea estrecha: en un
+                monitor muy ancho la columna crece y el párrafo necesita su
+                medida igual. Ver la regla del ancho en global.css. */}
+            <p class="mt-3 max-w-prose text-base font-medium text-pretty text-ink-muted sm:text-lg">
               <T v={pieza.texto} />
             </p>
 
-            {/* `mt-auto` es lo que empuja el pie hasta abajo del todo, que es
-                lo que alinea los tres botones entre sí. Ver la nota de arriba. */}
-            <div class="mt-auto pt-8">
-              <Button
+            {/* `mt-auto` es lo que alinea los tres botones entre sí. Y el
+                envoltorio lleva `ml-1` por lo mismo que en la sección de
+                identidad: el botón vive desplazado 4 px a la izquierda y sin
+                compensarlo no queda centrado de verdad en su columna. */}
+            <div class="mt-auto ml-1 pt-8">
+              <BotonRelieve
                 href={pieza.href}
-                variant="secondary"
-                size="md"
-                trackId={`como-trabajar-${pieza.numero}`}
+                trackId={`como-trabajar-${pieza.icono}`}
               >
                 <T v={pieza.cta} />
-              </Button>
+              </BotonRelieve>
             </div>
           </article>
         </Reveal>
@@ -130,3 +169,4 @@ const { comoTrabajar } = copy;
     }
   </ul>
 </div>
+</Section>

@@ -1,0 +1,86 @@
+---
+import T from "@components/i18n/T.astro";
+import type { Testimonio } from "@config/curso.config";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * TARJETA DE TESTIMONIO — horizontal, con la foto de protagonista
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Sustituye al formato anterior: un avatar circular de 44 px con las iniciales
+ * y el texto debajo. Aquí la foto ocupa el 38 % de la tarjeta y todo su alto.
+ *
+ * ⚠️ Y HOY NO HAY NINGUNA FOTO. Los seis testimonios tienen `foto: null` y
+ * `/public/imagenes/testimonios/` está vacía. Por eso la columna de la foto es
+ * CONDICIONAL y no un hueco con iniciales dentro: una tarjeta con dos letras
+ * gigantes donde debería haber una cara resta credibilidad justo en la sección
+ * que existe para darla. Sin foto, el texto ocupa la tarjeta entera y se lee
+ * como una cita, que es lo que es.
+ *
+ * En cuanto alguien deje los archivos en esa carpeta y los apunte desde
+ * `testimonios[].foto`, la columna aparece sola. No hay que tocar esto.
+ *
+ * ⚠️ LA CITA VA EN FRAUNCES ITÁLICA, Y ES UNA EXCEPCIÓN CONSCIENTE. tokens.css
+ * dice que esa familia no se usa para párrafos, y tiene razón para el texto
+ * corrido de la página. Una cita es otra cosa: es la convención tipográfica de
+ * toda la vida para la voz de otra persona, y es lo que la separa de lo que
+ * decimos nosotros. Se queda en ~18 px y en cuatro renglones como mucho; si
+ * alguien mete una cita de diez líneas, esta excepción deja de valer.
+ */
+
+interface Props {
+  testimonio: Testimonio;
+  class?: string;
+}
+
+const { testimonio: t, class: className = "" } = Astro.props;
+---
+
+<article
+  class:list={[
+    /* `overflow-hidden` es lo que hace que la foto respete las esquinas: sin
+       él, la imagen sale por las cuatro puntas del radio. */
+    "flex h-full min-h-[260px] flex-col overflow-hidden rounded-lg border-[0.5px] border-line bg-surface",
+    /* En fila solo desde `sm`. En un teléfono, foto y texto lado a lado dejan
+       la cita en una columna de 180 px. */
+    t.foto && "sm:flex-row",
+    className,
+  ]}
+>
+  {
+    t.foto && (
+      /* Alto fijo en móvil —donde va arriba y a lo ancho— y alto completo de la
+         tarjeta desde `sm`, donde va al lado. */
+      <div class="h-56 w-full shrink-0 sm:h-auto sm:w-[38%]">
+        {/* El `alt` es el nombre y nada más: es un nombre propio, así que no se
+            traduce, y no se le antepone "foto de" porque eso ya lo anuncia el
+            lector de pantalla. */}
+        <img
+          src={t.foto}
+          alt={t.nombre}
+          loading="lazy"
+          decoding="async"
+          class="size-full object-cover"
+        />
+      </div>
+    )
+  }
+
+  <div class="flex flex-1 flex-col justify-center gap-5 p-6 sm:p-7">
+    <blockquote>
+      <p class="font-acento text-lg leading-relaxed text-pretty text-ink italic">
+        <T v={t.cita} />
+      </p>
+    </blockquote>
+
+    {/* `cite` dentro de `footer` y no dentro del `blockquote`: la
+        especificación dice que el contenido de `blockquote` es LA CITA, y la
+        atribución no forma parte de lo que la persona dijo. */}
+    <footer>
+      <p class="text-base font-medium text-ink">{t.nombre}</p>
+      <p class="mt-0.5 text-[0.8125rem] text-ink-subtle">
+        <T v={t.contexto} />
+      </p>
+    </footer>
+  </div>
+</article>

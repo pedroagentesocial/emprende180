@@ -1,7 +1,7 @@
 ---
 import T from "@components/i18n/T.astro";
 import Button from "@components/ui/Button.astro";
-import Enfasis from "@components/ui/Enfasis.astro";
+import HeroTitular from "@components/hero/HeroTitular.astro";
 import { fotoHero } from "@lib/assets";
 import type { Idioma, Txt } from "@i18n/idioma";
 
@@ -25,26 +25,25 @@ import type { Idioma, Txt } from "@i18n/idioma";
  * lado— convertirían un hero que reconoce a dos personas en un formulario que
  * les pide elegir bando. La bifurcación es del TEXTO; la acción es la misma.
  *
- * ─── LAS DOS TIPOGRAFÍAS ───────────────────────────────────────────────────
+ * ─── UNA SOLA TIPOGRAFÍA, Y ESTO ESTUVO AL REVÉS ───────────────────────────
  *
- * `voz` no es un tamaño distinto: son dos sistemas.
+ * Hubo una `voz` por lado: la de ella en caja baja con peso 600 y remate en
+ * Fraunces itálica, la de él con antetítulo en versalitas, peso 800 y el
+ * remate marcado con color. Dos sistemas tipográficos, uno por público.
  *
- *   editorial (ella) — caja baja, peso 600, interlínea abierta, alineada a la
- *                      izquierda, y la frase que remata en Fraunces itálica.
- *                      Suena a alguien contando algo.
- *   directa   (él)   — antetítulo en versalitas espaciadas, titular en 800 con
- *                      el tracking cerrado y la interlínea por debajo de 1,
- *                      alineado a la derecha. Suena a alguien afirmando algo.
+ * ⚠️ SE QUITÓ DESPUÉS DE VERLO MONTADO, y merece quedar escrito para que nadie
+ * lo "restaure". Sobre el papel separaba a los dos públicos; en pantalla, dos
+ * tipografías distintas a la misma altura y del mismo tamaño no se leen como
+ * dos voces: se leen como dos plantillas pegadas por la mitad. El díptico
+ * funciona porque las dos mitades pesan lo mismo, y el peso también es
+ * tipográfico.
  *
- * Lo que las separa es PESO, CAJA, TRACKING y ALINEACIÓN. No se separan con
- * dos familias distintas: la marca tiene una (Montserrat) y una segunda que es
- * de acento (Fraunces), y usarla para un titular entero está prohibido en
- * tokens.css por un motivo que sigue vigente aquí.
+ * Ahora los dos titulares comparten peso, cuerpo, interlínea, tracking y el
+ * mismo remate en Fraunces itálica —que es el recurso de toda la web, ver
+ * `Enfasis.astro`— y es el mismo que usan las otras dos imágenes del slider.
  *
- * ⚠️ LAS TABLAS DE CLASES ESTÁN ESCRITAS ENTERAS Y SON CERRADAS. Tailwind lee
- * el código como TEXTO: una clase montada al vuelo no existe para él y no se
- * genera nunca, sin aviso. Si hace falta una voz nueva, se añade aquí escrita
- * completa.
+ * Lo ÚNICO distinto es el lado, y eso no es estilo sino sitio: cada texto se
+ * pega al borde de fuera de su mitad. Ver `LADOS`.
  *
  * ─── EL CONTRASTE, QUE AQUÍ ES MÁS DIFÍCIL QUE EN LAS OTRAS DOS ────────────
  *
@@ -59,27 +58,82 @@ import type { Idioma, Txt } from "@i18n/idioma";
  * a saltar ningún aviso: simplemente dejará de leerse.
  */
 
-interface Linea {
+/**
+ * Un trozo de renglón. Se parte en trozos y no en renglones enteros porque el
+ * remate —la Fraunces itálica de ella, el color de él— cae DENTRO de la línea
+ * y no ocupa la línea entera: "Que también sea *tu punto de partida*".
+ */
+interface Segmento {
   es: string;
   en: string;
-  /** `lead` es el antetítulo; `acento` es la frase que remata. */
-  estilo?: "lead" | "acento";
+  /** La frase que remata el titular: va en Fraunces itálica, en las dos
+   *  mitades por igual. Ver `Enfasis.astro`. */
+  acento?: boolean;
 }
 
+/** Un renglón del titular. Los saltos los decide el config, no el navegador. */
+type Linea = readonly Segmento[];
+
 interface Panel {
+  /** `ella` o `el`. Solo sirve para buscar su foto en /imagenes/hero. */
   lado: string;
   foto: string;
   /** `object-position` de la foto. Es lo único que decide a quién se ve. */
   encuadre?: string;
   alt: Txt;
-  voz: "editorial" | "directa";
   titulo: readonly Linea[];
 }
 
 interface Props {
   paneles: readonly Panel[];
   subtitulo: Txt;
-  cta: { texto: Txt; href: string };
+  /**
+   * ─── DÓNDE VAN LOS DOS TITULARES ────────────────────────────────────────
+   *
+   *   lados  — uno sobre cada foto, pegado a su borde de fuera. Cada frase
+   *            queda al lado de la persona a la que le habla, que es lo que
+   *            hace que se reconozca en dos segundos.
+   *   centro — los dos salen de sus mitades y se apilan centrados en medio de
+   *            la pantalla, uno encima del otro.
+   *
+   * ⚠️ `centro` GANA TAMAÑO Y PIERDE PAREJA. Al no vivir en media pantalla, el
+   * renglón largo cabe mucho más grande. A cambio se pierde qué titular va con
+   * qué foto: los dos se leen seguidos y el lector tiene que emparejarlos él.
+   * Vale para una pantalla cuyas dos frases dicen lo MISMO en dos voces —la
+   * frustración— y no valdría para la primera, donde cada frase le habla a una
+   * persona distinta.
+   */
+  composicion?: "lados" | "centro";
+  /**
+   * ─── DÓNDE SE APOYA EL BLOQUE DE TEXTO ──────────────────────────────────
+   *
+   *   centro  — a caballo de la costura, centrado en la pantalla.
+   *   derecha — el bloque arranca al 20 % del ancho y llega al margen
+   *             derecho. El texto sigue CENTRADO dentro de él: lo que se
+   *             mueve es la caja, no la alineación.
+   *
+   * ⚠️ MOVERLO A LA DERECHA CUESTA UN 20 % DE ANCHO, Y ESE ANCHO ES TAMAÑO DE
+   * TITULAR. El renglón largo tiene 36 caracteres y no se parte solo, así que
+   * el cuerpo máximo es la caja ÷ 21,1: a 1440, pasar de 1323 px de caja a
+   * 1058 baja el tope de 62 a 50 px. La escala `ancho` de `HeroTitular` está
+   * calculada CONTRA ESA CAJA ESTRECHA. Si algún día este bloque vuelve al
+   * centro, ahí hay 12 px de titular esperando.
+   *
+   * Solo se aplica de `lg` para arriba. En un teléfono no hay sitio para
+   * desplazar nada: el bloque ocupa el ancho entero y se queda centrado.
+   */
+  bloque?: "centro" | "derecha";
+  /**
+   * El fondo lo pone otro (un vídeo), así que esta plantilla NO pinta las dos
+   * fotos ni sus velos: solo el bloque central.
+   *
+   * ⚠️ LOS `paneles` SE SIGUEN PASANDO IGUAL, porque son de donde salen los
+   * dos titulares. Lo que se deja de usar es su `foto`, que queda como red por
+   * si algún día falta el vídeo.
+   */
+  sinFotos?: boolean;
+  /** Sin `cta` no se pinta botón. Ver la nota del bloque central. */
+  cta?: { texto: Txt; href: string };
   lang: Idioma;
   /** La sombra de texto del slider. Ver su nota en `HeroSlider.astro`. */
   sombra: string;
@@ -91,6 +145,9 @@ interface Props {
 const {
   paneles,
   subtitulo,
+  composicion = "lados",
+  bloque = "centro",
+  sinFotos = false,
   cta,
   lang,
   sombra,
@@ -99,40 +156,155 @@ const {
 } = Astro.props;
 
 /**
- * ⚠️ EL MÍNIMO DE LOS `clamp()` ESTÁ CALCULADO CONTRA LA PANTALLA, NO ELEGIDO.
- * En móvil las dos fotos se apilan, así que cada titular tiene MEDIA pantalla
- * menos el bloque de abajo: unos 190 px en un teléfono de 667. Con el mínimo
- * en 1,75rem los dos renglones del titular más el antetítulo no caben y la
- * mitad de arriba se mete debajo de la barra. Con 1,5rem sí caben.
+ * ⚠️ ESTO LLEGÓ A SER `composicion === "lados" && !sinFotos`, y el cambio
+ * merece explicación porque deshace una decisión anterior.
  *
- * O sea que subir ese número no es "poner el titular más grande": es sacar la
- * primera línea de la pantalla en los teléfonos cortos, y no va a avisar
- * nadie. Se mide con las dos frases más largas que haya en el config.
+ * El razonamiento de entonces: sin las dos fotos no hay dos mitades, así que
+ * dos titulares pegados a los bordes "ya no emparejan con nada". Es verdad a
+ * medias. Lo que se pierde con el vídeo es la pareja TITULAR-FOTO; lo que NO
+ * se pierde es que sean dos públicos, uno a cada lado, que es el mecanismo
+ * entero de esta pantalla: cada persona encuentra su frase por el lado hacia
+ * el que está mirando, sin tener que leer las dos.
+ *
+ * Apilados en el centro eso desaparece: se leen como cuatro renglones
+ * seguidos y el lector tiene que separarlos él. Así que el lado se queda
+ * aunque el fondo sea un vídeo, y lo que cambia con `sinFotos` es solo lo que
+ * se pinta debajo: sin imagen y sin la costura, pero con su velo, que ahora
+ * hace más falta que nunca porque debajo hay un fotograma que cambia.
  */
-const VOCES = {
-  editorial: {
-    /* `justify-start` = el texto se pega al borde de FUERA del díptico, que es
-       donde el velo es opaco. Pegarlo a la costura lo pondría encima de la
-       cara. */
-    caja: "justify-start text-left",
-    lead: "max-w-[26ch] text-sm font-normal text-secondary-100 sm:text-base lg:text-lg",
-    titulo:
-      "mt-2 text-[clamp(1.5rem,1.05rem+2.6vw,3.25rem)] font-semibold leading-[1.08] tracking-[-0.015em] sm:mt-3",
-  },
-  directa: {
-    caja: "justify-end text-right",
-    lead: "ml-auto max-w-[26ch] text-[0.65rem] font-bold uppercase tracking-[0.18em] text-secondary-200 sm:text-xs",
-    titulo:
-      "mt-3 text-[clamp(1.5rem,1rem+2.9vw,3.5rem)] font-extrabold leading-[0.97] tracking-[-0.03em] sm:mt-4",
-  },
-} as const;
+const alLado = composicion === "lados";
+/**
+ * ─── EL LADO CON VÍDEO NO ES UNA MITAD, Y ESO ES TODO EL TRUCO ────────────
+ *
+ * Con fotos, cada titular vive DENTRO de su mitad: no puede salir de ella
+ * porque al lado hay otra foto. Con un vídeo detrás no hay mitades: hay una
+ * imagen sola y dos textos que se apoyan en ella.
+ *
+ * ⚠️ Y ESO ES LO QUE DESATASCA EL TAMAÑO. El renglón largo tiene 36
+ * caracteres y no se parte solo, así que el cuerpo máximo es ancho ÷ 36. En
+ * media pantalla de 1440 eso son 30 px y no hay forma de subirlo sin partir la
+ * frase. Sacando los titulares de la rejilla y dándoles el 80 % del ancho de
+ * página, el mismo renglón entra a 47. Es la misma frase, sin tocar una coma.
+ *
+ * ⚠️ EL PRECIO ES EL DESNIVEL, Y HAY QUE PAGARLO ENTERO. Dos bloques del
+ * 80 % se solapan en horizontal, así que NO PUEDEN compartir altura: van
+ * apilados, el de ella arriba pegado a la izquierda y el de él debajo pegado a
+ * la derecha. Se sigue leyendo como dos voces, una a cada lado, pero ya no es
+ * un díptico de dos columnas. Volver a subir los dos a la misma altura obliga
+ * a devolverlos al 50 % y con ello a los 30 px.
+ */
+const ladosSinFoto = alLado && sinFotos;
+/* Las dos celdas son de las FOTOS. Sin fotos no hay celdas que pintar: los
+   titulares, si van a los lados, viven en su propia capa. */
+const hayMitades = !sinFotos;
 
-/* El velo de cada mitad arranca en su borde de fuera y muere en la costura. */
-const VELOS = {
-  editorial:
-    "bg-gradient-to-r from-primary-950/92 via-primary-950/50 to-primary-950/10",
-  directa:
-    "bg-gradient-to-l from-primary-950/92 via-primary-950/50 to-primary-950/10",
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * ⚠️ EL TAMAÑO DE ESTOS DOS TITULARES NO SE ELIGE: SE CALCULA
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Y hay que entender por qué antes de tocar un número, porque es la única
+ * parte de la página donde "ponerlo más grande" tiene un tope físico.
+ *
+ * Cada titular vive en MEDIA pantalla, menos el margen de página y el aire de
+ * la costura. Como los renglones los decide el config y NO se parten solos, el
+ * cuerpo de letra máximo sale de una división: ancho útil ÷ caracteres del
+ * renglón más largo.
+ *
+ * Medido, con el renglón largo de ella (36 caracteres) y el de él (29), y con
+ * el avance por carácter por lo ALTO —0,58em en semibold, 0,60 en extrabold—
+ * porque quedarse corto aquí no da un titular apretado: da un renglón partido.
+ *
+ *     pantalla   útil    ella    él
+ *       1024     428     24px   24px   <- aquí ya no cabe
+ *       1280     547     26px   30px
+ *       1440     622     29px   33px
+ *       1920     845     38px   44px
+ *       2560    1144     51px   58px
+ *
+ * ⚠️ MANDA EL RENGLÓN MÁS LARGO DE LOS CUATRO, no el de cada lado. Desde que
+ * los dos titulares comparten tipografía comparten también cuerpo, así que el
+ * de 36 caracteres de ella fija el tamaño de los dos. El de él cabría más
+ * grande —sus renglones son de 29— pero entonces volverían a ser dos
+ * tipografías distintas, que es justo lo que se quitó.
+ *
+ * ⚠️ LOS DOS RENGLONES SOLO SE SOSTIENEN A PARTIR DE ~1280 px. Por debajo no
+ * hay cuerpo de letra legible que meta 36 caracteres en media pantalla de
+ * 1024, así que ahí el renglón largo se parte y se ven tres. No es un fallo:
+ * es la misma frase en una pantalla que mide la mitad.
+ *
+ * ⚠️ LA PALANCA PARA QUE ESTO SEA MÁS GRANDE ES EL COPY, NO ESTE ARCHIVO. Si
+ * se sube el tope sin acortar la frase, el renglón se parte y vuelven a verse
+ * cuatro líneas donde tiene que haber dos. Quitarle ocho caracteres al renglón
+ * largo de ella sube el cuerpo de los DOS titulares unos 8 px en un 1440.
+ *
+ * ⚠️ Y EL MÍNIMO TAMPOCO ES DE GUSTO. En móvil las dos fotos se apilan y a
+ * cada titular le quedan unos 200 px de alto: con el mínimo por encima de
+ * 1,5rem los renglones se parten y el bloque se mete debajo de la barra.
+ */
+/* El cuerpo y la escala mixta viven ahora en `HeroTitular.astro`, que es
+   quien pinta los dos titulares se pongan donde se pongan. Esta tabla se
+   queda aquí porque explica de dónde salen sus dos medidas. */
+
+/**
+ * Lo único que distingue una mitad de la otra, y no es estilo: es SITIO.
+ *
+ * El texto se pega al borde de FUERA de su mitad porque ahí es donde el velo
+ * es opaco y donde no está la cara. Pegado a la costura estaría encima de las
+ * dos caras y sobre la parte más clara de las dos fotos.
+ *
+ * ⚠️ TABLA CERRADA Y CLASES ESCRITAS ENTERAS. Tailwind lee el código como
+ * TEXTO: una clase montada al vuelo no existe para él y no se genera nunca,
+ * sin aviso.
+ */
+/**
+ * ─── LA ASIMETRÍA VERTICAL, Y EL PRESUPUESTO QUE SE GASTA ─────────────────
+ *
+ * Los dos titulares NO están a la misma altura: el de la derecha va 40 px por
+ * debajo del de la izquierda. Es intencionado. Dos bloques al mismo nivel a
+ * los dos lados de una costura se leen como una tabla; desnivelados, la
+ * composición tiene tensión y sigue equilibrada porque la diferencia es
+ * pequeña y el bloque central los ancla por abajo.
+ *
+ * ⚠️ EL DESNIVEL NO ES LIBRE, Y ESTE ES EL NÚMERO. Todo se mide desde el borde
+ * de ABAJO —no desde el centro— para que la distancia al botón sea la misma en
+ * un portátil de 768 de alto que en un monitor de 1440. Y por abajo hay una
+ * cadena de tres piezas que se empujan:
+ *
+ *     mandos del slider ......  32 px desde abajo, 44 de alto  ->  hasta 76
+ *     bloque central .........  arranca en 120, mide ~137      ->  hasta 257
+ *     titulares ..............  tienen que quedar por encima de 257
+ *
+ * De ahí salen las 19,5rem (312 px) del lado bajo: dejan 55 px de aire sobre
+ * el bloque central. Bajar más al de la derecha lo sienta encima de la frase
+ * de la promesa, que además está centrada y sí se cruza con él en horizontal.
+ *
+ * ⚠️ Y SI ALGÚN DÍA CRECE EL GRUPO DE ABAJO —un renglón más en la promesa, un
+ * botón más alto— estos dos números tienen que subir con él. No hay nada que
+ * avise: simplemente se solapan.
+ */
+const LADOS = {
+  izquierda: {
+    velo: "bg-gradient-to-r from-primary-950/92 via-primary-950/50 to-primary-950/10",
+    /* El margen de FUERA es el de la página —así los titulares quedan a plomo
+       con los de las secciones de abajo— y el de DENTRO es el aire de la
+       costura.
+
+       ⚠️ BAJÓ DE 40 A 16 PX, y es ancho de titular, no estética. Cada píxel
+       que se le quita al centro es ancho útil para la frase, y la frase está
+       en su tope físico (ver la nota de las escalas en `HeroTitular`). Con
+       vídeo detrás ya no hay costura que respetar: no hay dos fotos que
+       separar, solo dos textos que no se tocan porque cada uno se pega a su
+       borde de fuera. */
+    caja: "justify-start text-left lg:pr-4 lg:pb-[22rem]",
+  },
+  derecha: {
+    velo: "bg-gradient-to-l from-primary-950/92 via-primary-950/50 to-primary-950/10",
+    /* 2,5rem más abajo que el otro. Le toca al de la derecha y no al de la
+       izquierda porque en esa foto la cara está más alta: es el lado que mejor
+       aguanta que el texto baje. */
+    caja: "justify-end text-right lg:pl-4 lg:pb-[19.5rem]",
+  },
 } as const;
 ---
 
@@ -140,10 +312,24 @@ const VELOS = {
     grande. En móvil NO se sale: es la tercera fila de esta misma rejilla, con
     su fondo navy, y por eso las dos fotos se reparten lo que sobra en vez de
     quedar medio tapadas por él. */}
-<div class="relative grid size-full grid-rows-[1fr_1fr_auto] lg:grid-cols-2 lg:grid-rows-1">
+<div
+  class:list={[
+    "relative grid size-full",
+    hayMitades
+      ? /* Dos mitades en pantalla grande; apiladas en móvil, con el bloque
+           central de tercera fila. */
+        "grid-rows-[1fr_1fr_auto] lg:grid-cols-2 lg:grid-rows-1"
+      : /* Una sola fila: el bloque central ocupa la pantalla y se alinea abajo
+           por su cuenta. Sin las dos filas de foto, que ya no existen. */
+        "grid-rows-1",
+  ]}
+>
   {
+    hayMitades &&
     paneles.map((panel, n) => (
       <div class="relative isolate overflow-hidden">
+        {/* Izquierda o derecha. Es lo ÚNICO que distingue a las dos mitades
+            desde que comparten tipografía. Ver `LADOS`. */}
         {/* Sin `width`/`height`, y esta vez no es un olvido: la celda de la
             rejilla ya tiene su alto, así que la imagen no reserva nada ni
             puede desplazar nada. Poner una proporción inventada solo serviría
@@ -175,7 +361,10 @@ const VELOS = {
 
         <div
           aria-hidden="true"
-          class:list={["absolute inset-0 -z-10", VELOS[panel.voz]]}
+          class:list={[
+            "absolute inset-0 -z-10",
+            LADOS[n === 0 ? "izquierda" : "derecha"].velo,
+          ]}
         />
 
         {/* Y encima, un apagado hacia abajo. En pantalla grande es lo que hace
@@ -187,82 +376,118 @@ const VELOS = {
           class="absolute inset-x-0 bottom-0 -z-10 h-2/5 bg-gradient-to-t from-primary-950/85 to-transparent"
         />
 
-        {/* ─── DÓNDE CAE EL TEXTO DENTRO DE SU MITAD ──────────────────────
-            En pantalla grande, centrado, con `lg:pb-56` para dejarle sitio al
-            bloque de la promesa y el botón.
+        {alLado && (
+        <Fragment>
+        {/* ─── DÓNDE CAE EL TEXTO, Y POR QUÉ NO VA CENTRADO ────────────────
+            Alineado ABAJO, en las dos mitades y en todos los tamaños.
 
-            ⚠️ EN MÓVIL NO ESTÁN LOS DOS IGUAL, y no es un descuido. Apiladas,
-            cada foto se queda con poco más de 190 px de alto y la barra de
-            navegación flota sobre los primeros 80: con el texto centrado, el
-            antetítulo de la primera se mete debajo del logo. Por eso la de
-            arriba lleva su texto ABAJO —lejos de la barra— y la de abajo lo
-            lleva centrado, que es lo que deja aire antes de la franja navy.
+            ⚠️ ESTUVO CENTRADO Y TAPABA LAS CARAS. En las dos fotos la cara
+            cae en el tercio de arriba, así que un bloque centrado a media
+            altura le pasa justo por encima de la barbilla. Bajándolo, el texto
+            se sienta en la zona muerta de la foto —el cuerpo, el fondo— y las
+            dos caras quedan libres.
 
-            `pt-20` es el seguro por si algún día el texto crece: aunque vaya
-            alineado abajo, no puede subir más allá de la barra. */}
+            No es solo composición: el apagado de aquí arriba cubre el 40 % de
+            abajo, así que el texto bajado cae dentro de la parte oscura y se
+            lee mejor de lo que se leía en el centro.
+
+            `lg:pb-72` son los 288 px que necesita para no sentarse encima del
+            bloque de la promesa y el botón, que ocupa unos 217 desde abajo. Se
+            mide desde el BORDE INFERIOR y no desde el centro a propósito: así
+            la distancia al botón es la misma en un portátil de 768 de alto que
+            en un monitor de 1440, que es lo que de verdad hay que proteger.
+
+            `pt-24` sigue siendo el seguro por arriba: aunque el texto crezca
+            —otra traducción más larga, un teléfono muy estrecho— no puede
+            subir por encima de la barra, que flota sobre los primeros 80 px. */}
         <div
           class:list={[
-            "flex size-full px-[var(--gutter-page)] pb-6 pt-20 lg:items-center lg:pb-56 lg:pt-10",
-            n === 0 ? "items-end" : "items-center",
-            /* El margen de FUERA es el de la página —así estos dos titulares
-               quedan a plomo con los de las secciones de abajo— y el de DENTRO
-               es el aire de la costura, que solo existe cuando hay dos
-               columnas. Ver la regla del ancho en global.css. */
-            n === 0 ? "lg:pr-14" : "lg:pl-14",
-            VOCES[panel.voz].caja,
+            /* Sin `lg:pb`: en pantalla grande lo pone cada lado, que es lo que
+               los desnivela. El de móvil sí es común —ahí las fotos están
+               apiladas y un desnivel no significa nada. */
+            "flex size-full items-end px-[var(--gutter-page)] pb-4 pt-24 lg:pt-10",
+            LADOS[n === 0 ? "izquierda" : "derecha"].caja,
           ]}
         >
-          <div class="max-w-[30ch]">
-            {panel.titulo
-              .filter((l) => l.estilo === "lead")
-              .map((linea) => (
-                <p class={VOCES[panel.voz].lead} style={sombra}>
-                  <T v={linea} />
-                </p>
-              ))}
-
-            {/* ⚠️ LOS DOS TITULARES SON `h2`, Y EL `h1` ES LA FRASE DE ABAJO.
-                Parece al revés y no lo es: estas dos frases son GANCHOS —cada
-                una le habla a una persona— y ninguna de las dos dice de qué va
-                la página. La de abajo sí. Poner un `h1` a cada lado dejaría a
-                un lector de pantalla con dos titulares de página y ninguna
-                respuesta. Ver el bloque central. */}
-            <h2 class:list={["text-balance", VOCES[panel.voz].titulo]}>
-              {panel.titulo
-                .filter((l) => l.estilo !== "lead")
-                .map((linea) => (
-                  <span class="block" style={`color:#ffffff;${sombra}`}>
-                    {linea.estilo === "acento" ? (
-                      panel.voz === "editorial" ? (
-                        <Enfasis v={linea} tono="inverso" />
-                      ) : (
-                        /* La misma función que la cursiva de ella, con el otro
-                           recurso: aquí el remate lo marca el COLOR, porque una
-                           Fraunces itálica dentro de un titular apretado en 800
-                           se lee como un fallo de estilos. */
-                        <span class="text-ink-on-inverse-brand">
-                          <T v={linea} />
-                        </span>
-                      )
-                    ) : (
-                      <T v={linea} />
-                    )}
-                  </span>
-                ))}
-            </h2>
-          </div>
+          <HeroTitular titulo={panel.titulo} escala="mitad" sombra={sombra} />
         </div>
+        </Fragment>
+        )}
       </div>
     ))
   }
 
   {/* ─── LA COSTURA ────────────────────────────────────────────────────────
-      Solo en pantalla grande. En móvil las dos fotos ya se tocan y una línea
-      horizontal ahí sería nada más que una raya. */}
-  <div
-    aria-hidden="true"
-    class="pointer-events-none absolute inset-y-0 left-1/2 hidden w-px -translate-x-1/2 bg-white/20 lg:block"
-  />
+      Solo en pantalla grande, y solo si hay dos mitades que separar. En móvil
+      las dos fotos ya se tocan y una línea horizontal ahí sería nada más que
+      una raya; con un vídeo detrás no hay costura ninguna. */}
+  {!sinFotos && (
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute inset-y-0 left-1/2 hidden w-px -translate-x-1/2 bg-white/20 lg:block"
+    />
+  )}
+
+  {/* ─── LOS DOS TITULARES CUANDO EL FONDO ES UN VÍDEO ─────────────────────
+      Fuera de la rejilla, en su propia capa. El porqué entero está en la nota
+      de `ladosSinFoto`, arriba; aquí va lo que hay que saber para tocarlo.
+
+      ⚠️ EL 80 % ES LO QUE HACE QUE LA FRASE QUEPA GRANDE, y es también lo que
+      obliga a apilarlos. Dos bloques del 80 % se pisan en horizontal, así que
+      el de ella va arriba pegado a la izquierda y el de él debajo pegado a la
+      derecha. Subirlos a la misma altura obliga a bajarlos al 50 %, y con el
+      50 % el renglón de 36 caracteres no pasa de 30 px.
+
+      ⚠️ `pointer-events-none` EN LA CAPA Y NADA DENTRO QUE LO DEVUELVA. Esta
+      capa cubre la pantalla entera por encima del bloque central: sin esto se
+      come el clic del botón, que está justo debajo. Es el mismo problema que
+      ya tuvieron los mandos del slider.
+
+      ⚠️ EL `pb` ES EL HUECO DEL BLOQUE CENTRAL, no aire, Y YA SE QUEDÓ CORTO
+      UNA VEZ. Estaba en 19,5rem cuando el bloque de abajo medía unos 265 px:
+      47 de margen. Desde entonces la promesa subió a 22 px y el botón a `xl`,
+      el bloque pasó a 290 y el segundo titular acabó rozando la promesa.
+
+      La cuenta, a 1440: mandos hasta 76, `pb-30` del bloque 120, promesa en
+      dos renglones 71, hueco 36, botón 63 -> el bloque llega a 290. Con 23rem
+      (368) quedan 78 px de aire.
+
+      ⚠️ Y POR ESO SON DOS VALORES Y NO UNO. Los titulares crecen hacia ARRIBA
+      desde este número, así que subirlo los empuja contra la barra de
+      navegación. En un 1280x720 —que da unos 610 px de alto— con 23rem el
+      bloque se salía por arriba; con 20,5rem cabe justo. De 1280 para arriba
+      la pantalla ya es más alta y se puede pagar el aire de verdad.
+
+      Si vuelve a crecer cualquiera de las piezas de abajo, estos dos números
+      suben con ellas. No hay nada que avise: simplemente se tocan. */}
+  {ladosSinFoto && (
+    <div class="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col justify-end gap-5 px-[var(--gutter-page)] pb-[16rem] pt-24 sm:gap-6 lg:pb-[20.5rem] xl:pb-[23rem]">
+      {paneles.map((panel, n) => (
+        <div
+          class:list={[
+            "max-w-full",
+            n === 0
+              ? "self-start text-left lg:max-w-[80%]"
+              : "self-end text-right lg:max-w-[80%]",
+          ]}
+        >
+          <HeroTitular titulo={panel.titulo} escala="libre" sombra={sombra} />
+        </div>
+      ))}
+    </div>
+  )}
+
+  {/* Y el apagado que los sostiene. `HeroVideo` lava el fotograma con un 45 %
+      de navy, que basta para el bloque central pero no para dos titulares que
+      suben hasta media pantalla: este añade caida hacia abajo y deja el tercio
+      de arriba del vídeo limpio. Va DEBAJO de los titulares y por encima del
+      vídeo. */}
+  {ladosSinFoto && (
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-3/4 bg-gradient-to-t from-primary-950/80 via-primary-950/35 to-transparent"
+    />
+  )}
 
   {/* ─── EL BLOQUE CENTRAL ─────────────────────────────────────────────────
       La promesa y la acción, centradas, a caballo de la costura.
@@ -271,42 +496,177 @@ const VELOS = {
       apuntas, y quien lo lee antes que la frase no sabe a qué. Cambiarlo es
       mover dos bloques.
 
-      ⚠️ EL `pb` GRANDE NO ES AIRE: ES SITIO PARA LOS MANDOS DEL SLIDER. Los
-      tres puntos y el botón de pausa van anclados a 24 px del borde de abajo y
-      ocupan una banda de 44 px de alto que cruza la pantalla. Con menos
-      relleno, el botón se sienta encima de esa banda; y como los mandos se
-      pintan después, es el botón el que deja de recibir el clic. Se ve raro y
-      no se entiende, que es la peor combinación.
+      ⚠️ EL `pb` NO ES AIRE: ES EL HUECO DE LOS MANDOS DEL SLIDER, que van
+      justo debajo de este botón y forman con él un solo grupo. Los mandos
+      viven en `HeroSlider.astro` —tienen que existir también en las otras dos
+      imágenes— así que no se pueden meter aquí dentro; lo que los coloca es
+      que este bloque les reserve el sitio.
 
-      El otro extremo del mismo problema está en `HeroSlider.astro`: la caja de
-      los mandos lleva `pointer-events-none` para no comerse los clics del aire
-      que le sobra a su derecha. Las dos cosas hacen falta. */}
+      La cuenta, desde el borde de abajo: los mandos ocupan de 32 a 76, y este
+      `pb` de 120 deja el botón a 44 px por encima de ellos. Ese hueco es lo que
+      hace que se lean como dos cosas de la misma familia y no como un único
+      componente pegado.
+
+      ⚠️ SI SE TOCA ESTE NÚMERO HAY QUE TOCAR TRES. Ver la cadena entera en la
+      nota de `LADOS`: mandos -> bloque central -> titulares. */}
   <div
-    class="relative z-10 flex flex-col items-center gap-4 bg-primary-950 px-[var(--gutter-page)] pb-20 pt-6 text-center sm:gap-5 lg:absolute lg:inset-x-0 lg:bottom-0 lg:z-auto lg:col-span-2 lg:bg-transparent lg:pb-20 lg:pt-0"
+    class:list={[
+      /* ⚠️ LOS HUECOS SUBEN CON LA LETRA. Los titulares han crecido mucho y
+         el botón con ellos: con los `gap` de antes —16 y 20 px— el grupo
+         entero se lee como un bloque pegado. El aire entre piezas tiene que
+         crecer en la misma proporción que las piezas, o el tamaño nuevo solo
+         sirve para que se vea más apretado. */
+      "relative z-10 flex flex-col items-center gap-5 px-[var(--gutter-page)] pb-28 pt-6 text-center sm:gap-7 lg:absolute lg:z-auto lg:col-span-2 lg:bg-transparent",
+      /* El fondo navy de móvil solo hace falta cuando debajo hay DOS FOTOS
+         apiladas y este bloque es la tercera fila. Con un vídeo detrás cubre
+         la pantalla entera y el navy solo taparía el vídeo. */
+      sinFotos ? "justify-end self-end" : "bg-primary-950",
+      /* ⚠️ LAS DOS RAMAS SON EXCLUYENTES A PROPÓSITO. Escriben las mismas
+         propiedades —`left`, `right`, el relleno vertical, el hueco— y dos
+         clases de Tailwind que tocan la misma propiedad en el mismo punto de
+         corte se resuelven por el orden en que ÉL genera el CSS, no por el
+         orden en que se escriben aquí. Mezclarlas da un resultado que parece
+         aleatorio. */
+      bloque === "derecha"
+        ? /* ─── UNA COLUMNA A LA DERECHA ────────────────────────────────
+             El bloque deja de ser una banda de lado a lado y pasa a ser una
+             COLUMNA pegada al margen derecho, con el texto centrado dentro.
+
+             ⚠️ EL ANCHO LLEVA EL MARGEN SUMADO, Y ESO NO SOBRA. El bloque
+             conserva su `px` de página por los dos lados, así que de un 60 %
+             pelado el texto se quedaría con un 60 % MENOS dos márgenes.
+             Sumando uno al ancho, el texto ocupa "60 % menos un margen", que
+             a 1440 son 806 px de los 1323 útiles.
+
+             ⚠️ ESTUVO EN EL 32 % Y NO SE PUDO MANTENER. Con esa columna —402
+             px— los dos titulares salían a CUATRO renglones cada uno, y lo que
+             se pidió después fue un máximo de dos. El renglón largo tiene 36
+             caracteres y no se parte por gusto: para que entre de una pieza
+             hace falta ancho, y el ancho sale de aquí. La relación es directa
+             y no hay forma de tener las dos cosas. Con el renglón largo
+             actual, de 42 caracteres:
+
+                 columna    ancho a 1440    cuerpo con 2 líneas
+                   32 %         402 px            16 px
+                   45 %         590 px            24 px
+                   55 %         734 px            29 px
+                   60 %         806 px            32 px
+                   70 %         950 px            38 px
+
+             ⚠️ PASÓ DEL 55 AL 60 % CUANDO CRECIÓ EL COPY. "¿Y si esas charlas
+             también pagaran?" eran 35 caracteres y "¿Y si esas conversaciones
+             también pagaran?" son 42: un 20 % más de texto en el mismo hueco
+             habría bajado el titular de 32 a 29 px. Ensanchar la columna cinco
+             puntos lo devuelve a 32. Si el copy vuelve a crecer, la columna
+             tiene que crecer con él o el cuerpo baja.
+
+             ⚠️ Y NO SE USA `ps-0` PARA ESTO, aunque sería más corto: `px` es
+             la forma abreviada de `padding-inline` y `ps` la propiedad larga
+             de un solo lado. Las dos escriben el mismo borde y vuelve el
+             problema del párrafo de arriba.
+
+             ⚠️ SUBE PORQUE EL RELLENO ES ASIMÉTRICO. Con `inset-y-0` y
+             `justify-center` el contenido se centra en la caja, y la caja
+             reserva 96 px arriba y 160 abajo: el centro queda 32 px por
+             encima del centro de la pantalla. El de abajo es mayor porque
+             ahí viven los mandos del slider. */
+          "lg:inset-y-0 lg:left-auto lg:right-0 lg:w-[calc(60%+var(--gutter-page))] lg:justify-center lg:gap-6 lg:pb-40 lg:pt-24"
+        : /* La banda de siempre, de lado a lado y pegada abajo. Con los
+             titulares dentro (composición `centro`) reserva un poco más. */
+          "lg:inset-x-0 lg:bottom-0 lg:gap-9 lg:pt-0 " +
+          (alLado ? "lg:pb-30" : "lg:pb-32"),
+    ]}
   >
+    {/* ─── LOS DOS TITULARES, CUANDO VAN APILADOS ────────────────────────
+        Solo en la composición `centro`. Salen de sus mitades y se leen
+        seguidos, uno encima del otro, en una caja centrada de 56rem: al no
+        vivir en media pantalla caben bastante más grandes.
+
+        ⚠️ LO QUE SE PIERDE ES LA PAREJA. Ya no se ve qué titular va con qué
+        foto, así que esto solo vale para una pantalla cuyas dos frases dicen
+        lo MISMO en dos voces. En la primera imagen, donde cada frase le habla
+        a una persona distinta, romper la pareja rompería el mecanismo entero.
+
+        El `gap` propio y no el del padre: entre los dos titulares hace falta
+        más aire que entre el titular y la frase de abajo, o se leen como un
+        solo bloque de cuatro renglones. */}
+    {!alLado && (
+      <div class="flex flex-col items-center gap-7 sm:gap-10 lg:gap-12">
+        {paneles.map((panel) => (
+          <HeroTitular titulo={panel.titulo} escala="ancho" sombra={sombra} />
+        ))}
+      </div>
+    )}
     {/* Es el `h1` de la página, aunque no lo parezca y aunque no sea lo más
         grande que hay en pantalla. Es la única frase del hero que contesta
         "¿de qué va esto?": los dos titulares de arriba son ganchos, y un
         gancho no sirve de titular de página.
 
-        `font-normal` porque global.css pone todos los encabezados en bold: sin
-        eso, esta frase competiría con los dos titulares que tiene encima. El
-        peso semántico y el peso visual no tienen por qué coincidir. */}
+        ⚠️ `font-medium` Y NO `font-normal`, QUE ERA LO DE ANTES. global.css
+        pone todos los encabezados en bold, así que aquí hace falta escribir el
+        peso a mano o esta frase competiría con los dos titulares que tiene
+        encima; el peso semántico y el visual no tienen por qué coincidir.
+
+        Lo que cambia es CUÁNTO se baja: 500 en vez de 400. Sobre un vídeo que
+        cambia de claridad en cada fotograma, el 400 de Montserrat se afina
+        demasiado y la frase se lee peor que el resto de la página. 500 la
+        asienta sin acercarla al 800 de los titulares, que siguen a tres pasos.
+
+        ⚠️ LA CAJA SE ENSANCHA PARA QUE CAIGA EN DOS RENGLONES, no por gusto.
+        Son 142 caracteres: en `max-w-xl` a 18 px salían cuatro renglones, y
+        cuatro renglones de letra pequeña debajo de dos titulares grandes se
+        leen como una nota al pie.
+
+        ⚠️ Y LA CAJA SUBIÓ CON EL CUERPO: 3xl -> 4xl. A 20 px en `max-w-3xl`
+        (768) los 142 caracteres caben en dos renglones justos; a 22 px piden
+        1562 px y pasarían a TRES, que es exactamente lo que empujaba el
+        segundo titular contra esta frase. Con `max-w-4xl` (896) vuelven a dos.
+
+        Es la excepción razonada a la medida de lectura: 71 caracteres por
+        renglón siguen por debajo del límite de los 90 (ver la regla del ancho
+        en global.css), y son DOS renglones, no una columna de texto seguido.
+        La medida protege la lectura larga; esto es un rótulo.
+
+        `text-balance` y no `text-pretty`: `pretty` solo evita la palabra
+        huérfana del final, y aquí lo que se quiere es que los DOS renglones
+        midan parecido. Con dos líneas centradas, una larga y una corta se ven
+        como un descuadre. */}
     <h1
-      class="max-w-2xl text-pretty text-sm font-normal leading-relaxed text-secondary-100 sm:text-base lg:max-w-xl lg:text-lg"
+      class:list={[
+        "max-w-2xl text-balance text-base font-medium leading-relaxed text-secondary-100 sm:text-lg",
+        /* En la columna de la derecha se queda en 20 px y no en 22: son 142
+           caracteres, y en 734 px de ancho a 22 px salen tres renglones. */
+        bloque === "derecha"
+          ? "lg:text-xl"
+          : "lg:max-w-4xl lg:text-[1.375rem]",
+      ]}
       style={sombra}
     >
       <T v={subtitulo} />
     </h1>
 
-    <Button
-      href={cta.href}
-      variant="primary"
-      size="lg"
-      sobre="oscuro"
-      trackId={trackId}
-    >
-      <T v={cta.texto} />
-    </Button>
+    {/* ⚠️ EL BOTÓN ES OPCIONAL, Y QUE FALTE NO ES UN DESCUIDO. Solo la primera
+        imagen pide algo; las siguientes cuentan y dejan seguir bajando. Tres
+        botones en tres pantallas que rotan solas son la misma decisión
+        repetida cada seis segundos, y la primera es la que importa.
+
+        Sin botón, los mandos del slider suben a ocupar su sitio: ver el `pb`
+        de este bloque y la nota de `HeroSlider`. */}
+    {/* ⚠️ `xl` Y NO `lg`: ES EL BOTÓN DEL HÉROE. Es el único de la página
+        que compite con un vídeo detrás y con dos titulares encima, así que va un
+        escalón por encima del resto. Ver `sizes` en `Button.astro`: crece el
+        cuerpo y el relleno a la vez, porque más letra en la misma caja se ve
+        apretada. */}
+    {cta && (
+      <Button
+        href={cta.href}
+        variant="primary"
+        size="xl"
+        sobre="oscuro"
+        trackId={trackId}
+      >
+        <T v={cta.texto} />
+      </Button>
+    )}
   </div>
 </div>

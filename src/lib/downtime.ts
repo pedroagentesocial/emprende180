@@ -94,6 +94,10 @@ const TEXTOS = {
     reintentar: "Reintentar",
     volver: "Ir a la página principal",
     ayuda: "Si tienes prisa, escríbenos a",
+    /* La marca también vive aquí. Esta página se pinta a mano, sin componentes
+       ni config, porque tiene que funcionar justo cuando la base de datos NO
+       responde: importar `sitio` aquí sería depender de lo que está caído. */
+    marca: "Emprende180",
   },
   en: {
     titulo: "Back in a moment",
@@ -103,6 +107,7 @@ const TEXTOS = {
     reintentar: "Try again",
     volver: "Go to the main page",
     ayuda: "If it is urgent, write to",
+    marca: "Entrepreneur180",
   },
 } as const;
 
@@ -126,7 +131,7 @@ function pagina(lang: "es" | "en"): string {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>${t.titulo} · Emprende180</title>
+<title>${t.titulo} · ${t.marca}</title>
 <link rel="icon" href="/favicon.ico" sizes="any">
 <style>
   :root { color-scheme: light }
@@ -166,7 +171,7 @@ function pagina(lang: "es" | "en"): string {
 </head>
 <body>
 <main>
-  <p class="marca"><span class="punto"></span>Emprende180</p>
+  <p class="marca"><span class="punto"></span>${t.marca}</p>
   <h1>${t.titulo}</h1>
   <p class="entrada">${t.entrada}</p>
   <p class="detalle">${t.detalle}</p>

@@ -256,8 +256,18 @@ if (import.meta.env.DEV && vsl.disponible && !vsl.subtitulos) {
 /**
  * ─── LAS DOS FOTOS DEL DÍPTICO DEL HERO ────────────────────────────────────
  *
- * `ella.webp` y `el.webp` en `/public/imagenes/hero/`. Si están, mandan ellas;
- * si no, cada mitad usa la foto de banco que trae escrita en el config.
+ * Cada mitad del hero declara un `lado` y esta función busca un archivo con
+ * ese nombre. Hoy hay dos dípticos, o sea cuatro lados:
+ *
+ *     ella.webp / el.webp        -> primera imagen (el gancho de identidad)
+ *     ella-2.webp / el-2.webp    -> segunda imagen (la frustración)
+ *
+ * Si el archivo está, manda él; si no, la mitad usa la foto de banco que trae
+ * escrita en el config (las `banco-*.webp` de esa misma carpeta).
+ *
+ * ⚠️ EL NOMBRE SALE DEL `lado` Y POR ESO LOS CUATRO SON DISTINTOS. Si dos
+ * mitades compartieran `lado` compartirían foto, que es justo lo que no puede
+ * pasar: los dos dípticos tienen que enseñar gente distinta.
  *
  * Es el mismo patrón que el vídeo, la portada y los logos de aliados, y sirve
  * para lo mismo: que el día de la sesión de fotos no haya que tocar código ni

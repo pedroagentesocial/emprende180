@@ -1,0 +1,163 @@
+---
+import type { Txt } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * HERO · EL FONDO DE VÍDEO
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Sustituye a la foto de fondo de una imagen del slider. Se ocupa de tres
+ * cosas que, mal hechas, tiran la página entera: cuándo se descarga, qué se ve
+ * mientras tanto, y el contraste del texto que va encima.
+ *
+ * ─── LO QUE SE DESCARGA, Y CUÁNDO ──────────────────────────────────────────
+ *
+ * ⚠️ SOLO EL PRIMER VÍDEO TIENE `src` EN EL MARCADO. Los demás lo llevan en
+ * `data-src` y no pesan un byte hasta que su imagen se pone delante. Con los
+ * cuatro `src` puestos, el navegador empieza a bajar los cuatro a la vez —son
+ * 4,2 MB— y el primero, que es el único que se ve, llega el último.
+ *
+ * El script del slider (`HeroSlider.astro`) es quien hace el cambio, y también
+ * quien pausa el vídeo que deja de verse: un `<video>` oculto sigue
+ * decodificando fotogramas y gastando batería si nadie lo para.
+ *
+ * ─── EL PÓSTER SALE DEL PROPIO VÍDEO ───────────────────────────────────────
+ *
+ * Y no de una foto distinta. Es lo que hace que no haya salto: lo que se ve
+ * mientras carga es exactamente el primer fotograma de lo que va a moverse.
+ * Pesa 22 KB y se sirve siempre, así que la pantalla nunca está en negro.
+ *
+ * ─── AUTOPLAY: LAS REGLAS NO LAS PONEMOS NOSOTROS ──────────────────────────
+ *
+ * ⚠️ UN VÍDEO CON SONIDO NO PUEDE ARRANCAR SOLO. Ningún navegador lo permite
+ * desde 2018: si lleva audio y no ha habido interacción, o no arranca o lo
+ * arrancan mudo. No es una preferencia que se pueda cambiar con una opción.
+ *
+ * Así que todos arrancan MUDOS, que es lo único que funciona, y el que tiene
+ * voz enseña un botón para encenderla. Al pulsarlo suena al 20 %. Ese botón
+ * es además lo que exige la WCAG 1.4.2: si algo suena solo más de tres
+ * segundos, tiene que haber forma de pararlo.
+ *
+ * ─── LLENAN LA PANTALLA, Y DÓNDE SE ARREGLÓ LA NITIDEZ ─────────────────────
+ *
+ * `object-cover`: el vídeo cubre el hueco entero, sin franjas de fondo a los
+ * lados. Recorta lo que sobra en vez de encoger, que es lo que hace que el
+ * hero se lea como una pantalla y no como un reproductor.
+ *
+ * ⚠️ AQUÍ HUBO UN ESCENARIO CENTRADO DE 1200 PX Y SE QUITÓ. La idea era no
+ * ampliar el vídeo de presentación, que es de 854x480: enseñándolo más
+ * pequeño se veía nítido. El problema es que dejaba franjas de navy alrededor
+ * en cuanto la pantalla era ancha, y eso se ve peor que la blandura.
+ *
+ * ⚠️ ASÍ QUE LA NITIDEZ SE ARREGLÓ EN EL ARCHIVO, NO EN EL CSS. El máster se
+ * reescala a 1280x720 con lanczos y un unsharp suave ANTES de publicarse, en
+ * vez de dejar que lo amplíe el navegador. Suena a que da igual —ampliar es
+ * ampliar— y no lo es: el navegador usa un filtro bilineal barato, en tiempo
+ * real y sin poder enfocar después. El detalle real sigue siendo el de 480p,
+ * pero el borde ya no llega blando.
+ *
+ * Lo que queda es de origen y no tiene arreglo desde aquí: si llega un máster
+ * en 1080p, se recomprime y entra solo.
+ *
+ * ─── DÓNDE RECORTA, Y POR QUÉ IMPORTA ──────────────────────────────────────
+ *
+ * `cover` recorta por el eje que sobre. Con un vídeo 16:9 eso depende de la
+ * VENTANA, no del vídeo:
+ *
+ *   ventana más ALTA que 16:9 (un móvil, 1440x1080)  -> recorta a los lados
+ *   ventana más ANCHA que 16:9 (1920x900, un ultra)  -> recorta arriba y abajo
+ *
+ * ⚠️ Y EL SEGUNDO CASO SE COMÍA LOS SUBTÍTULOS. El vídeo de presentación los
+ * lleva quemados en la parte de abajo del fotograma, así que en una ventana
+ * apaisada —que es la normal en un portátil maximizado— el recorte se los
+ * llevaba por delante. No se veía en el de 16:9 de la maqueta porque ahí no
+ * sobraba nada.
+ *
+ * ⚠️ Y ANCLARLO ABAJO TAMPOCO VALE: SE COME LA CARA. Fue el primer intento y
+ * duró un rato. Con `center bottom` el recorte se hace todo por arriba, que
+ * es justo donde está la cabeza del presentador.
+ *
+ * El número bueno sale de medir el fotograma, no de probar:
+ *
+ *     cabeza del presentador ....  empieza al  8 % del alto
+ *     subtítulos quemados .......  del 87 % al 93 %
+ *     ventana de 1920x950 .......  recorta el 12 % del alto
+ *
+ * Con `center 62 %` la ventana visible va del 7,5 % al 95,4 %: entra la cabeza
+ * por arriba y entran los subtítulos por abajo, con margen en los dos lados.
+ * Comprobado también a 1512x860, 1440x820 y 2560x1300.
+ *
+ * ⚠️ SI CAMBIA EL VÍDEO, ESTE NÚMERO HAY QUE VOLVER A SACARLO. No es un gusto:
+ * es dónde caen la cara y los rótulos en ESE archivo. Con otro montaje, otro
+ * número.
+ */
+
+interface Props {
+  /** Ruta del mp4 en /public/video. */
+  src: string;
+  /** El póster, sacado del propio vídeo. */
+  poster: string;
+  alt: Txt;
+  /**
+   * Si es la PRIMERA imagen del slider. Solo esa trae `src` y `autoplay` en el
+   * marcado; las demás esperan a que el script se los ponga.
+   */
+  prioritario?: boolean;
+  /** El velo que va encima. Se pasa entero para que cada plantilla ponga el suyo. */
+  velo?: string;
+  /**
+   * `object-position` del vídeo. Decide POR DÓNDE recorta `cover`.
+   *
+   * Por defecto `center 62%`, que es lo único que salva a la vez la cara del
+   * presentador y los subtítulos quemados. Ver la nota de la cabecera: el
+   * número está medido sobre el fotograma, no elegido.
+   */
+  encuadre?: string;
+}
+
+const {
+  src,
+  poster,
+  alt,
+  prioritario = false,
+  velo = "bg-primary-950/45",
+  encuadre = "center 62%",
+} = Astro.props;
+---
+
+{/* El navy debajo del vídeo. No se ve —el vídeo lo cubre— pero tiene que
+    estar: es lo que hay mientras el póster carga, y lo que se ve durante el
+    cruce entre una imagen y otra. */}
+<div aria-hidden="true" class="absolute inset-0 -z-10 bg-primary-950"></div>
+
+{/* `aria-hidden` y sin controles: esto es decorado, no contenido. Lo que dice
+    la imagen ya está en el texto de encima, y un lector de pantalla que
+    anuncie "reproductor de vídeo" en mitad de un titular solo estorba. El
+    único que SÍ es contenido —el que habla— lleva su propio botón de sonido,
+    que es un `<button>` de verdad y sí se anuncia.
+
+    ⚠️ `size-full` Y NO SOLO `inset-0`: sin él, un `<video>` se dimensiona a su
+    tamaño NATIVO y cada uno saldría de un tamaño distinto. */}
+<video
+  data-hero-video
+  aria-hidden="true"
+  tabindex="-1"
+  muted
+  loop
+  playsinline
+  autoplay={prioritario ? true : undefined}
+  preload={prioritario ? "auto" : "none"}
+  poster={poster}
+  src={prioritario ? src : undefined}
+  data-src={prioritario ? undefined : src}
+  data-alt-es={alt.es}
+  data-alt-en={alt.en}
+  style={`object-position:${encuadre}`}
+  class="absolute inset-0 -z-10 size-full object-cover"
+>
+</video>
+
+{/* El velo va sobre el escenario entero, no solo sobre el vídeo: si se
+    quedara en la caja del vídeo, el texto que cae fuera de ella —en las
+    franjas de navy— tendría otro contraste que el que cae dentro. */}
+<div aria-hidden="true" class:list={["absolute inset-0 -z-10", velo]} />

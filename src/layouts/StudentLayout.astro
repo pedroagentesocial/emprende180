@@ -51,7 +51,7 @@ interface Props {
 
 const { title, student, heading } = Astro.props;
 
-const pageTitle = construirTxt((l) => `${title[l]} · ${sitio.nombre}`);
+const pageTitle = construirTxt((l) => `${title[l]} · ${sitio.nombre[l]}`);
 
 /* The language is NOT resolved here: every piece of text in this shell goes
    through `<T>`, which paints both and lets the CSS hide the one that doesn't
@@ -105,7 +105,9 @@ const signOutClass =
         >
           <img
             src={logo.src}
-            alt={sitio.nombre}
+            alt={sitio.nombre.es}
+            data-alt-es={sitio.nombre.es}
+            data-alt-en={sitio.nombre.en}
             width={logo.w}
             height={logo.h}
             class="h-7 w-auto"
@@ -170,7 +172,9 @@ const signOutClass =
           >
             <img
               src={logo.src}
-              alt={sitio.nombre}
+              alt={sitio.nombre.es}
+            data-alt-es={sitio.nombre.es}
+            data-alt-en={sitio.nombre.en}
               width={logo.w}
               height={logo.h}
               class="h-7 w-auto shrink-0"
