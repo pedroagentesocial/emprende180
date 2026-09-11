@@ -59,7 +59,7 @@ const lang = resolverIdiomaServidor(
   Astro.request.headers.get("accept-language"),
 );
 
-const [principal, secundaria] = identidad.fotos;
+const { foto } = identidad;
 
 /**
  * ⚠️ `rounded-lg` Y NO UN RADIO NUEVO. El encargo pedía 12 px; el sistema de
@@ -91,55 +91,42 @@ const RADIO = "rounded-lg";
         `xl`. Con el 70 % son 610 px y entra en dos líneas desde `sm`, así que
         el titular vuelve a crecer en su punto natural. */}
     <div class="grid items-center gap-10 md:grid-cols-[30fr_70fr] md:gap-10 lg:gap-16 xl:gap-24">
-      {/* ─── LAS DOS FOTOS ─────────────────────────────────────────────────
-          Primero en el marcado, que es también el orden que queremos en el
-          teléfono: la cara antes que el texto. */}
-      <Reveal>
-        <div class="relative h-[320px] sm:h-[400px] md:h-[360px] lg:h-[480px]">
-          <img
-            src={principal.src}
-            alt={principal.alt[lang]}
-            data-alt-es={principal.alt.es}
-            data-alt-en={principal.alt.en}
-            width={1200}
-            height={580}
-            loading="lazy"
-            decoding="async"
-            style={`object-position:${principal.encuadre}`}
-            class:list={[
-              "absolute left-0 top-0 h-[55%] w-[75%] object-cover",
-              /* Borde y no sombra: el sitio es plano y una sombra aquí sería
-                 el único elemento con profundidad de toda la página. */
-              "border border-line",
-              RADIO,
-            ]}
-          />
+      {/* ─── LA FOTO ────────────────────────────────────────────────────
+          Primera en el marcado, que es también el orden que queremos en el
+          teléfono: la cara antes que el texto.
 
-          {/* La segunda va DELANTE. `z-10` sobre la anterior, que no lleva
-              ninguno: con las dos sin z-index ganaría esta igual por orden de
-              marcado, pero dejarlo escrito evita que un `isolate` futuro en el
-              padre le dé la vuelta sin que nadie sepa por qué. */}
-          <img
-            src={secundaria.src}
-            alt={secundaria.alt[lang]}
-            data-alt-es={secundaria.alt.es}
-            data-alt-en={secundaria.alt.en}
-            width={1000}
-            height={800}
-            loading="lazy"
-            decoding="async"
-            style={`object-position:${secundaria.encuadre}`}
-            class:list={[
-              "absolute bottom-0 right-0 z-10 h-[calc(45%+1.5rem)] w-[60%] object-cover",
-              /* El filete blanco es lo que separa una foto de la otra donde se
-                 montan. Sin él, en el solape se ven dos fotos pegadas y no una
-                 delante de la otra. Es del color del fondo de la sección, no
-                 un borde decorativo. */
-              "border-4 border-surface",
-              RADIO,
-            ]}
-          />
-        </div>
+          ⚠️ LLENA LA COLUMNA ENTERA, sin montajes. El porqué está en la nota
+          del config: con el reparto 30/70 la columna es alta y estrecha, y un
+          collage de dos fotos apaisadas dentro se veía como dos sellos. Una
+          vertical a sangre usa la forma que tiene el hueco en vez de pelearse
+          con ella.
+
+          El alto sube de 480 a 560 px en `lg` por lo mismo: en una columna
+          estrecha, 480 px dejaban una foto casi cuadrada. Con 560 la
+          proporción es 0,66 y la imagen se lee como un retrato.
+
+          ⚠️ EN EL TELÉFONO SE QUEDA MÁS BAJA (320) porque ahí la columna ocupa
+          el ancho entero: con 560 px de alto y 333 de ancho la foto se comería
+          la pantalla antes de que se leyera una sola línea del texto. */}
+      <Reveal>
+        <img
+          src={foto.src}
+          alt={foto.alt[lang]}
+          data-alt-es={foto.alt.es}
+          data-alt-en={foto.alt.en}
+          width={800}
+          height={1040}
+          loading="lazy"
+          decoding="async"
+          style={`object-position:${foto.encuadre}`}
+          class:list={[
+            "h-[320px] w-full object-cover sm:h-[420px] md:h-[440px] lg:h-[560px]",
+            /* Borde y no sombra: el sitio es plano y una sombra aquí sería el
+               único elemento con profundidad de toda la página. */
+            "border border-line",
+            RADIO,
+          ]}
+        />
       </Reveal>
 
       {/* ─── EL TEXTO ──────────────────────────────────────────────────────

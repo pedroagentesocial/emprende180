@@ -452,7 +452,14 @@ const LADOS = {
       dos renglones 71, hueco 36, botón 63 -> el bloque llega a 290. Con 23rem
       (368) quedan 78 px de aire.
 
-      ⚠️ Y POR ESO SON DOS VALORES Y NO UNO. Los titulares crecen hacia ARRIBA
+      ⚠️ EL DE MÓVIL ESTUVO EN 16rem Y SE PISABAN. En un 390 de ancho la
+      promesa cae en cuatro renglones (104 px) y con el botón y su hueco el
+      bloque de abajo llega a 298 px desde el borde: los 256 de 16rem dejaban
+      el segundo titular 42 px DENTRO de la promesa. Con 20rem (320) quedan 22
+      px de aire. La cuenta de móvil es distinta de la de escritorio porque
+      allí la promesa cabe en dos renglones y aquí no.
+
+      ⚠️ Y POR ESO SON TRES VALORES Y NO UNO. Los titulares crecen hacia ARRIBA
       desde este número, así que subirlo los empuja contra la barra de
       navegación. En un 1280x720 —que da unos 610 px de alto— con 23rem el
       bloque se salía por arriba; con 20,5rem cabe justo. De 1280 para arriba
@@ -461,7 +468,7 @@ const LADOS = {
       Si vuelve a crecer cualquiera de las piezas de abajo, estos dos números
       suben con ellas. No hay nada que avise: simplemente se tocan. */}
   {ladosSinFoto && (
-    <div class="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col justify-end gap-5 px-[var(--gutter-page)] pb-[16rem] pt-24 sm:gap-6 lg:pb-[20.5rem] xl:pb-[23rem]">
+    <div class="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col justify-end gap-5 px-[var(--gutter-page)] pb-[20rem] pt-24 sm:gap-6 lg:pb-[20.5rem] xl:pb-[23rem]">
       {paneles.map((panel, n) => (
         <div
           class:list={[

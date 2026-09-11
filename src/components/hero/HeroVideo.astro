@@ -113,6 +113,22 @@ interface Props {
    * número está medido sobre el fotograma, no elegido.
    */
   encuadre?: string;
+  /**
+   * El mismo `object-position`, pero para cuando el hueco es VERTICAL.
+   *
+   * ⚠️ Y HACE FALTA UNO APARTE PORQUE EL EJE QUE RECORTA CAMBIA. Los cuatro
+   * vídeos son 16:9. En un escritorio apaisado el hueco es más ancho que alto,
+   * así que `cover` escala por el ancho y recorta ARRIBA Y ABAJO: ahí manda la
+   * coordenada vertical y la horizontal no hace nada. En un móvil pasa justo
+   * lo contrario —recorta por los LADOS— y se ve poco más de un tercio del
+   * fotograma: ahí la coordenada que decide si sale la persona o sale la pared
+   * es la horizontal, y la vertical es la que deja de hacer nada.
+   *
+   * Dejar un solo valor significa que la mitad de las visitas ven el encuadre
+   * calculado para la otra mitad. Los números de cada vídeo están medidos
+   * sobre un fotograma real y van en el config del slider.
+   */
+  encuadreVertical?: string;
 }
 
 const {
@@ -122,6 +138,7 @@ const {
   prioritario = false,
   velo = "bg-primary-950/45",
   encuadre = "center 62%",
+  encuadreVertical = encuadre,
 } = Astro.props;
 ---
 
@@ -152,10 +169,27 @@ const {
   data-src={prioritario ? undefined : src}
   data-alt-es={alt.es}
   data-alt-en={alt.en}
-  style={`object-position:${encuadre}`}
+  style={`--encuadre-ancho:${encuadre};--encuadre-alto:${encuadreVertical}`}
   class="absolute inset-0 -z-10 size-full object-cover"
 >
 </video>
+
+<style>
+  /* Los dos encuadres entran como variables en el `style` del propio vídeo y
+     el punto de corte los elige. No se puede resolver en el servidor: depende
+     del ancho de la ventana, no de la petición. */
+  [data-hero-video] {
+    object-position: var(--encuadre-alto);
+  }
+
+  /* 64rem = el mismo `lg` que usa el resto del sitio. Por encima el hueco es
+     apaisado y recorta arriba y abajo; por debajo recorta por los lados. */
+  @media (min-width: 64rem) {
+    [data-hero-video] {
+      object-position: var(--encuadre-ancho);
+    }
+  }
+</style>
 
 {/* El velo va sobre el escenario entero, no solo sobre el vídeo: si se
     quedara en la caja del vídeo, el texto que cae fuera de ella —en las

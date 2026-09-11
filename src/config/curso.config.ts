@@ -2608,6 +2608,23 @@ export const copy = {
         tipo: "video",
         video: "/video/prom.mp4",
         poster: "/video/prom-poster.webp",
+        /**
+         * ⚠️ ESTE ES EL VÍDEO QUE PEOR LLEVA UN MÓVIL, Y NO TIENE ARREGLO EN
+         * CSS. El fotograma lleva tres cosas puestas encima: la rotulación de
+         * la izquierda ("Vol. 01 / PROPUESTA / ¿qué pasaría si...") entre el
+         * 5 % y el 36 % del ancho, el presentador sobre el 48 %, y los
+         * subtítulos quemados centrados abajo, del 31 % al 69 %.
+         *
+         * En vertical solo se ve un 36 % del ancho. El 50 % es el único punto
+         * que salva al presentador Y los subtítulos casi enteros —la ventana
+         * cae en el 32-68 %— pero SE PIERDE LA ROTULACIÓN DE LA IZQUIERDA.
+         * Cualquier otro valor sacrifica algo más importante.
+         *
+         * ⚠️ LA SOLUCIÓN DE VERDAD ES UN MONTAJE VERTICAL DEL PROMO, no un
+         * número aquí: un 9:16 con la rotulación recolocada. Es trabajo de
+         * edición, no de maquetación.
+         */
+        encuadreVertical: "50% 50%",
         /* Con voz: el botón de sonido solo lo pinta quien declara esto. */
         sonido: true,
         /* ⚠️ Y CON SUBTÍTULOS QUEMADOS EN LA IMAGEN, que no es un detalle: los
@@ -2752,27 +2769,41 @@ export const copy = {
          */
         video: "/video/hero-1.mp4",
         poster: "/video/hero-1-poster.webp",
+        /* Medido sobre el fotograma: ella está en el tercio derecho, con la
+           cara sobre el 67 % del ancho. Centrado se quedaba con el sofá vacío
+           de la izquierda y la cortaba por el borde. */
+        encuadreVertical: "67% 50%",
         videoAlt: {
           es: "Una mujer trabajando de noche en el sofá de su casa, con el portátil",
           en: "A woman working at night on her sofa at home, with her laptop",
         },
 
         /**
-         * ⚠️ "LADOS" AUNQUE EL FONDO SEA UN VÍDEO, y estuvo en "centro" una
-         * temporada. El argumento para centrarlos era que sin las dos fotos no
-         * hay pareja titular-foto; el argumento para devolverlos a los lados es
-         * más fuerte: lo que esta pantalla hace es hablarle a DOS personas a la
-         * vez, y cada una encuentra su frase por el lado hacia el que está
-         * mirando. Apiladas en el centro son cuatro renglones seguidos y el
-         * lector tiene que separarlos él.
+         * ⚠️ ESTA PANTALLA HA PASADO POR LAS TRES COMPOSICIONES, y el recorrido
+         * merece quedar escrito para que nadie lo repita:
          *
-         * Ver la nota de `alLado` en `HeroDiptico.astro`, que es donde vive el
-         * cambio: con vídeo se pintan los velos y no las fotos.
+         *   1. "lados" con las dos fotos. Cada titular sobre su mitad, que era
+         *      el díptico original.
+         *   2. "lados" sobre vídeo. Sin fotos no hay mitades, así que los dos
+         *      titulares se sacaron a una capa propia, al 80 % del ancho y
+         *      escalonados —uno pegado a la izquierda, el otro abajo a la
+         *      derecha— porque dos bloques tan anchos no caben a la misma
+         *      altura. Ahí el titular llegaba a 43 px.
+         *   3. Esto: "centro" dentro del bloque de la DERECHA, igual que la
+         *      pantalla siguiente.
+         *
+         * ⚠️ EL PRECIO DEL PASO 3 SON UNOS 8 PX DE TITULAR, y se paga a
+         * cambio de dos cosas: los dos titulares vuelven a estar a la misma
+         * altura —se leen como una pareja y no como una escalera— y las dos
+         * pantallas de texto del slider comparten por fin una sola
+         * composición. Antes cada una tenía la suya y el salto se notaba al
+         * rotar.
+         *
+         * El código del paso 2 sigue ahí (`ladosSinFoto` en `HeroDiptico`):
+         * no se borra porque esta decisión ya se ha dado la vuelta dos veces.
          */
-        composicion: "lados",
-        /* Se declara aunque sea el valor por defecto: al lado de la pantalla
-           siguiente, que sí lo cambia, dejarlo implícito parecería un olvido. */
-        bloque: "centro",
+        composicion: "centro",
+        bloque: "derecha",
 
         /**
          * ⚠️ ESTA FRASE DICE "GENERA INGRESOS EXTRA" Y ESO ES UNA PROMESA DE
@@ -2905,6 +2936,11 @@ export const copy = {
          */
         video: "/video/hero-2.mp4",
         poster: "/video/hero-2-poster.webp",
+        /* Aquí hay DOS personas, en el 31 % y en el 84 %, y en vertical no
+           caben las dos: se ve poco más de un tercio del fotograma. El 55 %
+           es el punto que salva al de la derecha entero y deja el grupo del
+           medio de fondo, que es lo que sostiene la escena. */
+        encuadreVertical: "55% 50%",
         videoAlt: {
           es: "Dos hombres conversando de pie en un encuentro con más gente alrededor",
           en: "Two men talking at an event with other people around",
@@ -2982,6 +3018,9 @@ export const copy = {
            en negro. */
         video: "/video/hero-3.mp4",
         poster: "/video/hero-3-poster.webp",
+        /* El corro: la mujer rubia en el 27 % y el hombre sentado en el 62 %.
+           El 45 % es lo que mete a los dos dentro de la ventana. */
+        encuadreVertical: "45% 50%",
         videoAlt: {
           es: "Un grupo de personas escuchando a alguien en una reunión",
           en: "A group of people listening to someone at a meeting",
@@ -3178,27 +3217,36 @@ export const copy = {
     /* ⚠️ LAS DOS FOTOS SON DE BANCO, como las del hero. La segunda se reutiliza
        a propósito: es la misma que sostiene la mitad de él en la primera
        imagen del slider, y repetirla cose las dos secciones. */
-    fotos: [
-      {
-        src: "/imagenes/identidad/mujer-telefono.webp",
-        alt: {
-          es: "Una mujer sonriendo mientras habla por teléfono en la calle",
-          en: "A woman smiling while talking on the phone in the street",
-        },
-        /* Su cara está en el tercio de arriba y a la izquierda del encuadre. */
-        encuadre: "35% 30%",
+    /**
+     * ⚠️ UNA FOTO, Y ANTES ERAN DOS SUPERPUESTAS. El montaje en diagonal
+     * funcionaba cuando la columna de imagen era el 55 % de la sección. Con el
+     * reparto nuevo —30 para la foto y 70 para el texto— esa columna mide unos
+     * 368 px de ancho por 480 de alto, y dentro iban dos fotos APAISADAS al
+     * 75 % y al 60 % de ese ancho: dos recuadros casi cuadrados de 276 y 221
+     * px, recortados de originales horizontales. No es que se vieran pequeños;
+     * es que el montaje pedía anchura y la columna había dejado de tenerla.
+     *
+     * ⚠️ Y LA FOTO NUEVA ES VERTICAL DE ORIGEN, que es la otra mitad del
+     * arreglo. Sale de `banco-tiempo` (1400x1800) recortada a 800x1040, o sea
+     * la misma proporción que la columna: `cover` casi no tiene que tirar
+     * nada. Estirar una horizontal para llenar un hueco vertical es lo que
+     * hacía que se viera raro.
+     *
+     * ⚠️ SE PIERDE LA FOTO DEL HOMBRE, y es deliberado. Esta sección dice "tú
+     * eres esa persona" y la pareja mujer-hombre ya vive en dos sitios: el
+     * díptico del héroe y el collage del cierre. Aquí una sola persona mirando
+     * a cámara sostiene mejor la frase que dos sellos recortados.
+     */
+    foto: {
+      src: "/imagenes/identidad/mujer-vertical.webp",
+      alt: {
+        es: "Una mujer hablando por teléfono sentada junto a la ventana de su casa",
+        en: "A woman on the phone sitting by the window at home",
       },
-      {
-        src: "/imagenes/secciones/resultados.webp",
-        alt: {
-          es: "Un hombre riéndose mientras habla por teléfono en la calle",
-          en: "A man laughing while talking on the phone in the street",
-        },
-        /* Esta es casi cuadrada y la caja es apaisada, así que el recorte se
-           come el alto: el número sube la ventana hasta su cara. */
-        encuadre: "center 35%",
-      },
-    ],
+      /* Vertical contra hueco vertical: el recorte es mínimo y la cara cae
+         sobre el tercio de arriba, así que la ventana sube un punto. */
+      encuadre: "50% 35%",
+    },
   },
 
   /**

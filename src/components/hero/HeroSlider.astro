@@ -195,6 +195,8 @@ interface ConVideo {
   video?: string;
   poster?: string;
   videoAlt?: Txt;
+  /** Por dónde recorta el vídeo cuando el hueco es vertical. Ver `HeroVideo`. */
+  encuadreVertical?: string;
 }
 
 /** La imagen que es SOLO un vídeo: sin titular, sin promesa y sin botón. */
@@ -291,10 +293,34 @@ const etiquetaPunto = (i: number) =>
   construirTxt((l) => interpolar(heroSlider.irASlide[l], { n: i + 1 }));
 ---
 
+{/* ⚠️ EN EL TELÉFONO EL HÉROE NO OCUPA LA PANTALLA ENTERA, Y ES UNA CUENTA DE
+    RECORTE, NO UNA PREFERENCIA. Los cuatro vídeos son 16:9; el hueco de un
+    móvil en vertical es 9:19,5. Con `object-cover` el navegador escala por el
+    lado que falta —el alto— y tira lo que sobra por los lados:
+
+        390 x 760 (pantalla entera)  ->  se ve el 29 % del fotograma
+        390 x 608 (esto)             ->  se ve el 36 %
+        390 x 440 (imposible)        ->  se ve el 50 %
+
+    O sea: cuanto MÁS alto es el hueco, más zoom y menos vídeo. Con la pantalla
+    entera se ve una rodaja estrecha y ampliada, que es exactamente lo que se
+    lee como "estirado". Bajando a 38rem se recupera casi un cuarto de
+    encuadre.
+
+    ⚠️ Y NO SE PUEDE BAJAR MÁS. El contenido de la pantalla más cargada —dos
+    titulares, la promesa, el botón y los mandos— pide unos 435 px, más los 92
+    de la barra que flota encima: 530. Las 38rem son 608, o sea 78 px de
+    margen. Por debajo de ahí el texto empieza a meterse bajo el logotipo.
+
+    De `lg` para arriba vuelve la pantalla entera: ahí el hueco ya es apaisado y
+    `cover` apenas recorta, así que la altura no cuesta encuadre.
+
+    Efecto lateral y bienvenido: en un móvil asoma el principio de la sección
+    siguiente, que es la señal de que hay página debajo. */}
 <section
   id="inicio"
   data-hero-slider
-  class="relative isolate min-h-svh overflow-hidden bg-primary-950"
+  class="relative isolate min-h-[38rem] overflow-hidden bg-primary-950 sm:min-h-[44rem] lg:min-h-svh"
   aria-roledescription="carousel"
   aria-label={heroSlider.aria[lang]}
   data-aria-es={heroSlider.aria.es}
@@ -326,6 +352,7 @@ const etiquetaPunto = (i: number) =>
             src={videoDe(slide).video!}
             poster={videoDe(slide).poster!}
             alt={videoDe(slide).videoAlt ?? heroSlider.aria}
+            encuadreVertical={videoDe(slide).encuadreVertical}
             prioritario={i === 0}
           />
         )}
