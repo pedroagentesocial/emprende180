@@ -523,7 +523,7 @@ const LADOS = {
          entero se lee como un bloque pegado. El aire entre piezas tiene que
          crecer en la misma proporción que las piezas, o el tamaño nuevo solo
          sirve para que se vea más apretado. */
-      "relative z-10 flex flex-col items-center gap-5 px-[var(--gutter-page)] pb-28 pt-6 text-center sm:gap-7 lg:absolute lg:z-auto lg:col-span-2 lg:bg-transparent",
+      "relative z-10 flex flex-col items-center gap-4 px-[var(--gutter-page)] pb-24 pt-4 text-center sm:gap-7 sm:pb-28 sm:pt-6 lg:absolute lg:z-auto lg:col-span-2 lg:bg-transparent",
       /* El fondo navy de móvil solo hace falta cuando debajo hay DOS FOTOS
          apiladas y este bloque es la tercera fila. Con un vídeo detrás cubre
          la pantalla entera y el navy solo taparía el vídeo. */
@@ -598,7 +598,7 @@ const LADOS = {
         más aire que entre el titular y la frase de abajo, o se leen como un
         solo bloque de cuatro renglones. */}
     {!alLado && (
-      <div class="flex flex-col items-center gap-7 sm:gap-10 lg:gap-12">
+      <div class="flex flex-col items-center gap-5 sm:gap-10 lg:gap-12">
         {paneles.map((panel) => (
           <HeroTitular titulo={panel.titulo} escala="ancho" sombra={sombra} />
         ))}
@@ -640,7 +640,7 @@ const LADOS = {
         como un descuadre. */}
     <h1
       class:list={[
-        "max-w-2xl text-balance text-base font-medium leading-relaxed text-secondary-100 sm:text-lg",
+        "max-w-2xl text-balance text-sm font-medium leading-relaxed text-secondary-100 sm:text-lg",
         /* En la columna de la derecha se queda en 20 px y no en 22: son 142
            caracteres, y en 734 px de ancho a 22 px salen tres renglones. */
         bloque === "derecha"

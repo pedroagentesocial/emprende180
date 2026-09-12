@@ -125,16 +125,21 @@ const ESCALAS = {
      caracteres. Un cambio de copy en el config mueve este número: no hay nada
      que avise, y lo que se ve es que un titular pasa a tres renglones.
 
-     ⚠️ EN UN TELÉFONO SÍ SE PARTE, y no hay arreglo: 42 caracteres a 20 px
-     piden 491 px y en un 375 hay 333. El mínimo no puede bajar más sin dejar
-     de ser un titular.
+     ⚠️ EL MÍNIMO ES 18 PX Y ESTUVO EN 20, y ese punto vale 66 px de alto en un
+     teléfono. A 20 px el segundo renglón de las dos frases cortas —29
+     caracteres— pedía 339 px y en un 375 hay 333: se partía por seis píxeles.
+     A 18 pide 305 y entra entero, así que los dos titulares pasan de cinco
+     renglones a cuatro. Es lo que permitió bajar el alto del héroe.
+
+     ⚠️ LO QUE SIGUE SIN ENTRAR es el renglón de 42 caracteres: a 18 px pide
+     442 px. Ése se parte en dos y no hay cuerpo legible que lo evite.
 
      ⚠️ Y ESTA MEDIDA VA ATADA AL ANCHO DE LA COLUMNA. Si algún día se
      estrecha el bloque, este número baja con él o los titulares vuelven a
      salir a cuatro renglones. La tabla de equivalencias está en la nota de
      `bloque`, en `HeroDiptico.astro`. */
   ancho:
-    "max-w-full text-[clamp(1.25rem,2.12vw,3.375rem)] font-extrabold leading-[1.04] tracking-[-0.03em]",
+    "max-w-full text-[clamp(1.125rem,2.12vw,3.375rem)] font-extrabold leading-[1.04] tracking-[-0.03em]",
   /* ─── `libre` ──────────────────────────────────────────────────────────
      El titular sigue a un lado, pero ya no tiene una foto enfrente que le
      ponga el límite en la mitad: ocupa el 80 % del ancho de página y el otro

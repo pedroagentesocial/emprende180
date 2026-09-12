@@ -119,7 +119,7 @@ const {
       nota de `HeroSlider`. `pt-24` deja pasar la barra de navegación, que
       flota sobre los primeros 80 px. */}
   <div
-    class="flex size-full flex-col items-center justify-end px-[var(--gutter-page)] pb-28 pt-24 text-center lg:pb-32"
+    class="flex size-full flex-col items-center justify-end px-[var(--gutter-page)] pb-24 pt-24 text-center sm:pb-28 lg:pb-32"
   >
     {/* El manifiesto. `h2` porque el `h1` de la página lo pone el hero en sus
         otras imágenes; aquí no hay ninguna frase que conteste "de qué va la
@@ -137,14 +137,21 @@ const {
         A 1024 la caja real no es 1280 sino el ancho de página (936), y ahí el
         tope baja a 35: por eso la `clamp` da 34 y no 44 en esa pantalla.
 
-        ⚠️ EL MÍNIMO SE QUEDA EN 18 PX Y NO SUBE CON EL RESTO. En un 375x667
-        esta pantalla lleva el manifiesto MÁS las tres claves, y el alto útil
-        entre la barra y los mandos del slider son 392 px. Medido con el mínimo
-        en 20 px y las claves crecidas, el conjunto pedía 426 y se salía por
-        arriba. Lo que crece es de `sm` y de `lg` en adelante; el teléfono se
-        queda como estaba. */}
+        ⚠️ EL MÍNIMO ES 16 PX Y NO SUBE CON EL RESTO, y ese punto decide el alto
+        del héroe entero. Esta es la pantalla MÁS CARGADA de las cuatro —el
+        manifiesto MÁS las tres claves— así que es la que fija el suelo, no la
+        de los titulares.
+
+        A 18 px el primer renglón —"Ser Embajador de Emprende180 significa", 38
+        caracteres— pedía 369 px y en un 375 hay 333: se partía en dos. A 16
+        pide 328 y entra entero, así que el manifiesto pasa de cuatro renglones
+        a tres. Con eso y las reservas ajustadas, la pantalla baja de 570 px a
+        496 y el héroe puede encoger. Ver la cuenta completa en `HeroSlider`.
+
+        Lo que crece es de `sm` y de `lg` en adelante: el teléfono se queda en
+        el mínimo a propósito. */}
     <h2
-      class="max-w-[80rem] text-balance text-[clamp(1.125rem,0.125rem+2.95vw,2.75rem)] font-semibold leading-[1.35] tracking-[-0.01em]"
+      class="max-w-[80rem] text-balance text-[clamp(1rem,0.125rem+2.95vw,2.75rem)] font-semibold leading-[1.35] tracking-[-0.01em]"
       style={`color:#ffffff;${sombra}`}
     >
       {
@@ -200,7 +207,7 @@ const {
         aire entre ellas se leen más apretadas que antes, no más presentes. */}
     <ul
       role="list"
-      class="mt-8 grid w-full max-w-[80rem] gap-4 border-t border-white/25 pt-6 sm:mt-12 sm:grid-cols-3 sm:gap-10 sm:pt-8 lg:mt-16 lg:gap-14 lg:pt-12"
+      class="mt-6 grid w-full max-w-[80rem] gap-3 border-t border-white/25 pt-5 sm:mt-12 sm:grid-cols-3 sm:gap-10 sm:pt-8 lg:mt-16 lg:gap-14 lg:pt-12"
     >
       {
         claves.map((clave) => (
@@ -237,7 +244,7 @@ const {
                 Por debajo de `lg` se queda en 28, que es donde las columnas
                 siguen siendo estrechas. */}
             <p
-              class="mt-1.5 max-w-[34ch] text-pretty text-sm font-medium leading-snug text-secondary-100 sm:mt-2 sm:max-w-[28ch] sm:text-base lg:max-w-[30ch] lg:text-xl"
+              class="mt-1.5 max-w-[34ch] text-pretty text-[0.8125rem] font-medium leading-snug text-secondary-100 sm:mt-2 sm:max-w-[28ch] sm:text-base lg:max-w-[30ch] lg:text-xl"
               style={sombra}
             >
               <T v={clave.frase} resaltar />

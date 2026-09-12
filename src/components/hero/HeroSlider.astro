@@ -299,18 +299,33 @@ const etiquetaPunto = (i: number) =>
     lado que falta —el alto— y tira lo que sobra por los lados:
 
         390 x 760 (pantalla entera)  ->  se ve el 29 % del fotograma
-        390 x 608 (esto)             ->  se ve el 36 %
+        390 x 608 (primer intento)   ->  se ve el 36 %
+        390 x 528 (esto)             ->  se ve el 41 %
         390 x 440 (imposible)        ->  se ve el 50 %
 
     O sea: cuanto MÁS alto es el hueco, más zoom y menos vídeo. Con la pantalla
     entera se ve una rodaja estrecha y ampliada, que es exactamente lo que se
-    lee como "estirado". Bajando a 38rem se recupera casi un cuarto de
-    encuadre.
+    lee como "estirado".
 
-    ⚠️ Y NO SE PUEDE BAJAR MÁS. El contenido de la pantalla más cargada —dos
-    titulares, la promesa, el botón y los mandos— pide unos 435 px, más los 92
-    de la barra que flota encima: 530. Las 38rem son 608, o sea 78 px de
-    margen. Por debajo de ahí el texto empieza a meterse bajo el logotipo.
+    ⚠️ EL PRIMER INTENTO SE QUEDÓ CORTO, Y EL MOTIVO IMPORTA. Se bajó a 38rem
+    dejando el contenido como estaba, y ahí está el techo: mientras el texto
+    del móvil ocupe lo que ocupaba, el hueco no puede encoger más sin meterse
+    bajo el logotipo. Para bajar de verdad hay que tocar las DOS cosas a la
+    vez, y eso es lo que se hizo:
+
+        titulares .... mínimo de 20 a 18 px  (la segunda frase pasa a un solo
+                       renglón en vez de dos: -66 px)
+        promesa ...... de 16 a 14 px         (tres renglones en vez de cuatro)
+        manifiesto ... mínimo de 18 a 16 px  (su primer renglón deja de partirse)
+        reservas ..... el aire de abajo y los huecos, un punto más justos
+
+    Con eso la pantalla más cargada —que es la del manifiesto, no la de los
+    titulares— baja de 570 a 496 px contando los 96 de la barra. Las 33rem son
+    528: 32 px de margen.
+
+    ⚠️ Y AHÍ SÍ ESTÁ EL SUELO. Por debajo, o se parte un renglón que hoy entra
+    entero, o el texto se mete bajo el logotipo. Lo siguiente que daría altura
+    no es CSS: es acortar el copy.
 
     De `lg` para arriba vuelve la pantalla entera: ahí el hueco ya es apaisado y
     `cover` apenas recorta, así que la altura no cuesta encuadre.
@@ -320,7 +335,7 @@ const etiquetaPunto = (i: number) =>
 <section
   id="inicio"
   data-hero-slider
-  class="relative isolate min-h-[38rem] overflow-hidden bg-primary-950 sm:min-h-[44rem] lg:min-h-svh"
+  class="relative isolate min-h-[33rem] overflow-hidden bg-primary-950 sm:min-h-[38rem] md:min-h-[42rem] lg:min-h-svh"
   aria-roledescription="carousel"
   aria-label={heroSlider.aria[lang]}
   data-aria-es={heroSlider.aria.es}
