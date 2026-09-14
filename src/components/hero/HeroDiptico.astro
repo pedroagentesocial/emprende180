@@ -523,7 +523,18 @@ const LADOS = {
          entero se lee como un bloque pegado. El aire entre piezas tiene que
          crecer en la misma proporción que las piezas, o el tamaño nuevo solo
          sirve para que se vea más apretado. */
-      "relative z-10 flex flex-col items-center gap-4 px-[var(--gutter-page)] pb-24 pt-4 text-center sm:gap-7 sm:pb-28 sm:pt-6 lg:absolute lg:z-auto lg:col-span-2 lg:bg-transparent",
+      /* ⚠️ EL `pt` DEL MÓVIL ES LA ALTURA DE LA BANDA DE VÍDEO, no aire. Por
+         debajo de `lg` el vídeo ya no está detrás del texto: ocupa una franja
+         16:9 arriba —o sea 56,25vw— y este bloque tiene que empezar DESPUÉS.
+         Ver la nota de `HeroVideo`.
+
+         ⚠️ LOS DOS NÚMEROS ESTÁN ATADOS. Si algún día la banda deja de ser
+         16:9, este `calc` cambia con ella o el texto se le mete encima. No hay
+         nada que avise: simplemente se solapan.
+
+         De `lg` para arriba el texto vuelve a ir SOBRE el vídeo y el relleno
+         lo ponen las dos ramas de abajo. */
+      "relative z-10 flex flex-col items-center gap-4 px-[var(--gutter-page)] pb-24 pt-[calc(56.25vw+1rem)] text-center sm:gap-7 sm:pb-28 sm:pt-[calc(56.25vw+1.5rem)] lg:absolute lg:z-auto lg:col-span-2 lg:bg-transparent",
       /* El fondo navy de móvil solo hace falta cuando debajo hay DOS FOTOS
          apiladas y este bloque es la tercera fila. Con un vídeo detrás cubre
          la pantalla entera y el navy solo taparía el vídeo. */

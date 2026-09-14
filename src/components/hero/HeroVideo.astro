@@ -129,6 +129,17 @@ interface Props {
    * sobre un fotograma real y van en el config del slider.
    */
   encuadreVertical?: string;
+  /**
+   * Dónde se apoya la banda de vídeo por debajo de `lg`.
+   *
+   *   arriba   — pegada al borde superior, con el texto debajo. Es lo que
+   *              quieren las tres pantallas que llevan texto encima.
+   *   centrada — a media altura. Solo para la pantalla que ES el vídeo y no
+   *              lleva texto: con la banda arriba se quedaba media pantalla
+   *              de navy vacío debajo, y centrada se lee como una
+   *              presentación y no como un hueco.
+   */
+  banda?: "arriba" | "centrada";
 }
 
 const {
@@ -139,6 +150,7 @@ const {
   velo = "bg-primary-950/45",
   encuadre = "center 62%",
   encuadreVertical = encuadre,
+  banda = "arriba",
 } = Astro.props;
 ---
 
@@ -170,7 +182,30 @@ const {
   data-alt-es={alt.es}
   data-alt-en={alt.en}
   style={`--encuadre-ancho:${encuadre};--encuadre-alto:${encuadreVertical}`}
-  class="absolute inset-0 -z-10 size-full object-cover"
+  class:list={[
+    /* ⚠️ POR DEBAJO DE `lg` EL VÍDEO NO LLENA LA PANTALLA: OCUPA UNA BANDA
+       16:9, Y ESO ES TODO EL ARREGLO DEL MÓVIL. Los cuatro vídeos son 16:9 y
+       el hueco de un teléfono es 9:19,5: con el vídeo a sangre, `cover`
+       escalaba por el alto y dejaba ver el 41 % del fotograma, ampliado 2,4
+       veces. Es lo que se leía como "estirado".
+
+       En una caja que YA es 16:9, `cover` no tiene nada que recortar: se ve
+       el fotograma entero, igual que en un escritorio. Y no es un
+       letterbox —no hay bandas muertas alrededor del vídeo—: la caja mide
+       exactamente lo que mide la imagen, y lo que hay debajo es el bloque
+       de texto sobre navy.
+
+       ⚠️ EL `aspect-video` Y EL `pt` DE LAS PLANTILLAS TIENEN QUE MOVERSE
+       JUNTOS. El texto se aparta de la banda con `pt-[calc(56.25vw+...)]`,
+       que es la misma altura calculada a mano. Si un día la banda deja de
+       ser 16:9, hay que cambiar los dos sitios o el texto se le mete
+       encima. */
+    "absolute inset-x-0 -z-10 aspect-video w-full object-cover",
+    banda === "centrada" ? "top-1/2 -translate-y-1/2" : "top-0",
+    /* De `lg` para arriba vuelve a llenarlo todo: ahí el hueco ya es
+       apaisado y el recorte es mínimo. */
+    "lg:inset-0 lg:aspect-auto lg:size-full lg:translate-y-0",
+  ]}
 >
 </video>
 
@@ -194,4 +229,12 @@ const {
 {/* El velo va sobre el escenario entero, no solo sobre el vídeo: si se
     quedara en la caja del vídeo, el texto que cae fuera de ella —en las
     franjas de navy— tendría otro contraste que el que cae dentro. */}
-<div aria-hidden="true" class:list={["absolute inset-0 -z-10", velo]} />
+<div
+  aria-hidden="true"
+  class:list={[
+    "absolute inset-x-0 -z-10 aspect-video w-full",
+    banda === "centrada" ? "top-1/2 -translate-y-1/2" : "top-0",
+    "lg:inset-0 lg:aspect-auto lg:h-full lg:translate-y-0",
+    velo,
+  ]}
+/>

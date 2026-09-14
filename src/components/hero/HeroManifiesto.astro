@@ -114,12 +114,17 @@ const {
     class="absolute inset-x-0 bottom-0 -z-10 h-3/5 bg-gradient-to-t from-primary-950 via-primary-950/80 to-transparent"
   />
 
-  {/* ⚠️ `pb-28`/`lg:pb-32` NO ES AIRE: ES EL HUECO DE LOS MANDOS DEL SLIDER,
+  {/* ⚠️ `pb-24`/`lg:pb-32` NO ES AIRE: ES EL HUECO DE LOS MANDOS DEL SLIDER,
       que van centrados a 32 px del borde de abajo y ocupan 44 de alto. Ver la
-      nota de `HeroSlider`. `pt-24` deja pasar la barra de navegación, que
-      flota sobre los primeros 80 px. */}
+      nota de `HeroSlider`.
+
+      ⚠️ Y EL `pt` DEL MÓVIL ES LA ALTURA DE LA BANDA DE VÍDEO, no el hueco de
+      la barra. Por debajo de `lg` el vídeo ocupa una franja 16:9 arriba
+      —56,25vw— y este bloque empieza después; la barra flota sobre la banda,
+      que es lo mismo que hace en un escritorio. De `lg` para arriba vuelve el
+      `pt-24` de siempre, que ahí sí es el hueco de la barra. */}
   <div
-    class="flex size-full flex-col items-center justify-end px-[var(--gutter-page)] pb-24 pt-24 text-center sm:pb-28 lg:pb-32"
+    class="flex size-full flex-col items-center justify-end px-[var(--gutter-page)] pb-24 pt-[calc(56.25vw+1rem)] text-center sm:pb-28 lg:pb-32 lg:pt-24"
   >
     {/* El manifiesto. `h2` porque el `h1` de la página lo pone el hero en sus
         otras imágenes; aquí no hay ninguna frase que conteste "de qué va la
@@ -238,13 +243,22 @@ const {
             {/* `max-w` en `ch` y no en `rem`: lo que hay que proteger es que la
                 micro-frase no pase de dos renglones, y eso es cuestión de
                 caracteres, no de píxeles. */}
-            {/* La medida en `ch` sube a 30 de `lg` para arriba porque ahí la
+            {/* ⚠️ EN EL TELÉFONO LA MICRO-FRASE NO SE PINTA, y es lo último que
+                se recortó para que el héroe cupiera. Las tres frases apiladas
+                son 99 px de los 384 que la sección reserva para el texto, y son
+                la única pieza del héroe que se puede quitar sin que falte una
+                idea: la palabra —AUTONOMÍA, CARISMA, SOLIDARIDAD— ya la dice.
+                Desde `sm` vuelven enteras.
+
+                ⚠️ `hidden sm:block` Y NO `sm:hidden` AL REVÉS: el `block` hace
+                falta porque el `p` lo es por defecto y `hidden` lo apaga; sin
+                él, de `sm` para arriba no volvería.
+
+                La medida en `ch` sube a 30 de `lg` para arriba porque ahí la
                 columna ha crecido de 277 a 394 px: con 28 la frase larga de las
-                tres —54 caracteres— se partía en tres renglones en vez de dos.
-                Por debajo de `lg` se queda en 28, que es donde las columnas
-                siguen siendo estrechas. */}
+                tres —54 caracteres— se partía en tres renglones en vez de dos. */}
             <p
-              class="mt-1.5 max-w-[34ch] text-pretty text-[0.8125rem] font-medium leading-snug text-secondary-100 sm:mt-2 sm:max-w-[28ch] sm:text-base lg:max-w-[30ch] lg:text-xl"
+              class="mt-1.5 hidden max-w-[34ch] text-pretty text-[0.8125rem] font-medium leading-snug text-secondary-100 sm:mt-2 sm:block sm:max-w-[28ch] sm:text-base lg:max-w-[30ch] lg:text-xl"
               style={sombra}
             >
               <T v={clave.frase} resaltar />

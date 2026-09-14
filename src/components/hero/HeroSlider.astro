@@ -323,19 +323,45 @@ const etiquetaPunto = (i: number) =>
     titulares— baja de 570 a 496 px contando los 96 de la barra. Las 33rem son
     528: 32 px de margen.
 
-    ⚠️ Y AHÍ SÍ ESTÁ EL SUELO. Por debajo, o se parte un renglón que hoy entra
-    entero, o el texto se mete bajo el logotipo. Lo siguiente que daría altura
-    no es CSS: es acortar el copy.
+    ⚠️ Y AHÍ ESTABA EL SUELO DE ESE CAMINO. Con el texto ENCIMA del vídeo no se
+    puede bajar más sin partir un renglón o meterse bajo el logotipo, y aun así
+    seguía viéndose solo el 41 % del fotograma: bajar la caja alivia el zoom,
+    pero no lo quita.
 
-    De `lg` para arriba vuelve la pantalla entera: ahí el hueco ya es apaisado y
-    `cover` apenas recorta, así que la altura no cuesta encuadre.
+    ─── POR ESO EL MÓVIL YA NO PONE EL TEXTO ENCIMA ───────────────────────
+
+    Por debajo de `lg` el vídeo ocupa una BANDA 16:9 y el texto vive debajo,
+    sobre el navy. En una caja que ya es 16:9 no hay nada que recortar: se ve el
+    fotograma ENTERO, igual que en un escritorio, y sin bandas muertas
+    alrededor, porque la caja mide lo que mide la imagen. Ver `HeroVideo`.
+
+    ⚠️ Y POR ESO EL ALTO ES UNA FÓRMULA Y NO UN NÚMERO. La banda mide 56,25vw
+    —el 9/16 del ancho— y encima hay que reservar el alto del bloque de texto,
+    que sí es fijo. Las pantallas van en `absolute` para poder cruzarse, así que
+    la sección no puede medirse por su contenido: hay que decirle cuánto ocupa
+    la más alta.
+
+        390 px  ->  banda 219 + texto 384  =  603
+        640 px  ->  banda 360 + texto 448  =  808
+        768 px  ->  banda 432 + texto 416  =  848
+
+    La reserva sube en `sm` y vuelve a bajar en `md`, y no es un error de
+    tecleo: a 640 las claves del manifiesto ya van en tres columnas y la promesa
+    cae en tres renglones; a 768 la promesa vuelve a dos y el bloque encoge.
+
+    ⚠️ LA RESERVA LA FIJA LA PANTALLA MÁS CARGADA, que en el teléfono es la del
+    díptico —titulares, promesa y botón, 365 px— y no la del manifiesto. Si
+    crece cualquiera de las dos, estos tres números suben con ella.
+
+    De `lg` para arriba vuelve la pantalla entera con el texto encima: ahí el
+    hueco ya es apaisado, `cover` apenas recorta y la altura no cuesta encuadre.
 
     Efecto lateral y bienvenido: en un móvil asoma el principio de la sección
     siguiente, que es la señal de que hay página debajo. */}
 <section
   id="inicio"
   data-hero-slider
-  class="relative isolate min-h-[33rem] overflow-hidden bg-primary-950 sm:min-h-[38rem] md:min-h-[42rem] lg:min-h-svh"
+  class="relative isolate min-h-[calc(56.25vw+24rem)] overflow-hidden bg-primary-950 sm:min-h-[calc(56.25vw+28rem)] md:min-h-[calc(56.25vw+26rem)] lg:min-h-svh"
   aria-roledescription="carousel"
   aria-label={heroSlider.aria[lang]}
   data-aria-es={heroSlider.aria.es}
@@ -368,6 +394,7 @@ const etiquetaPunto = (i: number) =>
             poster={videoDe(slide).poster!}
             alt={videoDe(slide).videoAlt ?? heroSlider.aria}
             encuadreVertical={videoDe(slide).encuadreVertical}
+            banda={esVideoSolo(slide) ? "centrada" : "arriba"}
             prioritario={i === 0}
           />
         )}
