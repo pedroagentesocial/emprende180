@@ -6,7 +6,8 @@
  *
  * Un botón que en reposo está LEVANTADO —desplazado arriba a la izquierda, con
  * una pila de sombras sólidas debajo— y que al pasar el cursor se hunde hasta
- * su sitio. Por encima, una trama de puntos que se desplaza en bucle.
+ * su sitio. La cara es un color sólido: nada se mueve hasta que se le pasa
+ * por encima.
  *
  * ─── DE DÓNDE SALE Y QUÉ SE CAMBIÓ ─────────────────────────────────────────
  *
@@ -29,15 +30,16 @@
  * ⚠️ SOLO EN SECCIONES. No va en el hero ni en la barra de navegación, y es
  * una decisión, no un olvido: el hero ya tiene su propio botón —que compite
  * con un vídeo detrás— y la barra necesita un botón que no pida atención
- * mientras se lee la página. Un botón con animación en bucle en la barra
- * estaría moviéndose durante toda la visita.
+ * mientras se lee la página.
  *
- * ─── EL BUCLE, Y EL SEGURO QUE LLEVA ───────────────────────────────────────
+ * ─── LA TRAMA DE PUNTOS SE QUITÓ ───────────────────────────────────────────
  *
- * ⚠️ LA TRAMA DE PUNTOS SE PARA CON `prefers-reduced-motion`, y no es opcional:
- * es una animación infinita, que es justo lo que esa preferencia existe para
- * apagar. Sin el bucle el botón conserva el relieve y el hundido al pasar por
- * encima, así que no pierde su forma: pierde el brillo.
+ * El original traía una trama de puntos en `hard-light` desplazándose en bucle
+ * sobre la cara del botón. Estuvo puesta y se quitó el 15-09-2026 a petición
+ * del cliente: no le gustaban ni los puntos ni que el botón se moviera solo.
+ * Lo que queda es el relieve y el hundido al pasar por encima, que es lo que
+ * hace que se lea como un botón físico. Y de paso se va la única animación
+ * infinita que tenían las secciones, con su `prefers-reduced-motion` y todo.
  */
 
 interface Props {
@@ -82,9 +84,9 @@ const Tag = href ? "a" : "button";
   {...rest}
 >
   {/* Tres capas, y las tres hacen falta: el elemento exterior lleva el relieve
-      y el desplazamiento, el `div` la cara de color y la trama, y el `span` el
-      relleno y el hundido al pulsar. Aplanarlo a un solo elemento obligaría a
-      animar la misma propiedad en dos direcciones a la vez. */}
+      y el desplazamiento, el `div` la cara de color con su borde, y el `span`
+      el relleno y el hundido al pulsar. Aplanarlo a un solo elemento obligaría
+      a animar la misma propiedad en dos direcciones a la vez. */}
   <div>
     <span><slot /></span>
   </div>
@@ -182,25 +184,6 @@ const Tag = href ? "a" : "button";
     border-radius: var(--radius-full);
   }
 
-  /* La trama de puntos. Dos degradados radiales desfasados 4 px, en
-     `hard-light`, que se desplazan medio patrón por vuelta: al llegar a 8 px
-     el dibujo coincide consigo mismo y el bucle no tiene costura. */
-  .boton-relieve > div::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: var(--radius-full);
-    opacity: 0.5;
-    background-image:
-      radial-gradient(rgb(255 255 255 / 80%) 20%, transparent 20%),
-      radial-gradient(rgb(255 255 255 / 100%) 20%, transparent 20%);
-    background-position:
-      0 0,
-      4px 4px;
-    background-size: 8px 8px;
-    mix-blend-mode: hard-light;
-  }
-
   .boton-relieve > div > span {
     position: relative;
     display: flex;
@@ -220,25 +203,4 @@ const Tag = href ? "a" : "button";
     transform: translateY(2px);
   }
 
-  /* ⚠️ EL BUCLE SOLO ARRANCA SI NADIE HA PEDIDO LO CONTRARIO. Es una animación
-     infinita: exactamente lo que `prefers-reduced-motion` existe para apagar.
-     Apagada, el botón conserva el relieve y el hundido; pierde el brillo. */
-  @media (prefers-reduced-motion: no-preference) {
-    .boton-relieve > div::before {
-      animation: relieve-puntos 0.5s infinite linear;
-    }
-  }
-
-  @keyframes relieve-puntos {
-    0% {
-      background-position:
-        0 0,
-        4px 4px;
-    }
-    100% {
-      background-position:
-        8px 0,
-        12px 4px;
-    }
-  }
 </style>
