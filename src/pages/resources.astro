@@ -327,53 +327,96 @@ const TRAMOS = ["bg-secondary-200", "bg-secondary-400", "bg-secondary-600", "bg-
     <Faq />
 
     {/* ─── 6 · EL AVISO DEL SIGUIENTE ────────────────────────────────────
-        La misma tarjeta navy que "La lista de Emprende180" en la portada:
-        ceja, título centrado con el remate en Fraunces claro, el porqué y el
-        formulario compacto sin etiquetas, en inverso. Estuvo un rato como dos
-        columnas blancas con el formulario en una caja gris, y el cliente lo
-        vio distinto del resto: "el formulario no se parece a los demás de la
-        página". Los formularios del sitio son dos, el de la lista (navy) y el
-        del cierre (con fotos); este es de la familia del primero, así que se
-        viste igual y se queda sin ilustración, que aquí no hace falta.
+        La misma anatomía que el cierre de la portada (`09-Cierre`, el bloque
+        de encima del pie): dos columnas 52 / 48 sobre blanco, a la izquierda
+        la columna centrada —ceja, título con el remate en Fraunces, el porqué
+        y el formulario compacto— y a la derecha tres fotos montadas, una
+        grande y dos acompañantes. El cliente lo pidió así el 15-09-2026, "que
+        se parezca más al del índex que está arriba del footer", después de
+        una versión en tarjeta navy y otra a dos columnas con caja gris.
 
-        El origen sigue siendo "guías": lo que se mide es de dónde salió el
-        correo. */}
+        Lo que cambia respecto al cierre es lo que tiene que cambiar: el texto
+        (aquí se avisa de un artículo, no se pide entrar), el origen del
+        correo ("guías") y las fotos, que son las de banco del hero y no las
+        del cierre, para que quien venga de la portada no vea el mismo cuadro
+        dos veces. El montaje de las fotos y sus porcentajes son los del
+        cierre tal cual; ver allí el porqué de cada número. */}
     <Section id="avisame" tono="surface" ariaLabel={guias.aria}>
-      <Reveal>
-        <div class="relative isolate overflow-hidden rounded-3xl bg-primary-950 px-8 py-12 text-center sm:px-12 sm:py-16 lg:py-20">
-          <MarcaAgua posicion="derecha" class="opacity-[0.06]" />
+      <div class="grid items-center gap-10 md:grid-cols-[52fr_48fr] md:gap-10 lg:gap-16 xl:gap-20">
+        <Reveal>
+          <div class="text-center">
+            <p class="text-sm font-semibold text-ink-brand sm:text-base lg:text-lg">
+              <T v={guias.aria} />
+            </p>
 
-          <p class="mb-3 text-sm font-semibold text-secondary-300">
-            <T v={guias.aria} />
-          </p>
+            {/* El remate va EN MEDIO de la frase y no debajo como en el cierre:
+                "Guías cortas para / mover tu red / sin incomodar a nadie" no
+                se puede partir en dos renglones sin romper la gramática. */}
+            <h2 class="mx-auto mt-4 max-w-2xl text-4xl font-semibold leading-[1.1] tracking-[-0.02em] text-balance text-ink sm:text-5xl">
+              <T v={guias.titulo[0]} />{" "}
+              <Enfasis v={guias.titulo[1]} />{" "}
+              <T v={guias.titulo[2]} />
+            </h2>
 
-          <h2 class="mx-auto max-w-3xl text-3xl font-extrabold leading-tight text-balance text-ink-inverse sm:text-4xl lg:text-5xl">
-            <T v={guias.titulo[0]} />{" "}
-            <Enfasis v={guias.titulo[1]} tono="inverso" />{" "}
-            <T v={guias.titulo[2]} />
-          </h2>
+            <p class="mx-auto mt-6 max-w-prose text-lg font-medium leading-relaxed text-pretty text-ink-muted sm:text-xl">
+              <T v={guias.texto} />
+            </p>
 
-          <p class="mx-auto mt-4 max-w-md text-lg font-medium text-pretty text-secondary-100 sm:text-xl">
-            <T v={guias.texto} />
-          </p>
+            <div class="mx-auto mt-8 max-w-xl">
+              <LeadForm
+                client:visible
+                lang={lang}
+                origen="guias"
+                variante="lista"
+                compacto
+                sinEtiquetas
+                cta={guias.cta}
+                aviso={guias.aviso}
+                exitoTitulo={guias.exitoTitulo}
+                exitoTexto={guias.exitoTexto}
+              />
+            </div>
+          </div>
+        </Reveal>
 
-          <div class="mx-auto mt-8 max-w-xl">
-            <LeadForm
-              client:visible
-              lang={lang}
-              origen="guias"
-              variante="lista"
-              compacto
-              sinEtiquetas
-              cta={guias.cta}
-              aviso={guias.aviso}
-              exitoTitulo={guias.exitoTitulo}
-              exitoTexto={guias.exitoTexto}
-              tono="inverso"
+        <Reveal delay={0.12}>
+          <div class="relative h-[320px] sm:h-[400px] md:h-[340px] lg:h-[440px]">
+            <img
+              src={recursos.fotos.principal.src}
+              alt={recursos.fotos.principal.alt[lang]}
+              data-alt-es={recursos.fotos.principal.alt.es}
+              data-alt-en={recursos.fotos.principal.alt.en}
+              width={1400}
+              height={1800}
+              loading="lazy"
+              decoding="async"
+              class="absolute left-0 top-0 h-[56%] w-[68%] rounded-lg border border-line object-cover object-[center_30%]"
+            />
+            <img
+              src={recursos.fotos.secundaria.src}
+              alt={recursos.fotos.secundaria.alt[lang]}
+              data-alt-es={recursos.fotos.secundaria.alt.es}
+              data-alt-en={recursos.fotos.secundaria.alt.en}
+              width={1400}
+              height={1800}
+              loading="lazy"
+              decoding="async"
+              class="absolute right-0 top-[16%] z-10 h-[50%] w-[46%] rounded-lg border-4 border-surface object-cover object-[center_35%]"
+            />
+            <img
+              src={recursos.fotos.terciaria.src}
+              alt={recursos.fotos.terciaria.alt[lang]}
+              data-alt-es={recursos.fotos.terciaria.alt.es}
+              data-alt-en={recursos.fotos.terciaria.alt.en}
+              width={1400}
+              height={1800}
+              loading="lazy"
+              decoding="async"
+              class="absolute bottom-0 left-[8%] z-20 h-[40%] w-[52%] rounded-lg border-4 border-surface object-cover object-[center_30%]"
             />
           </div>
-        </div>
-      </Reveal>
+        </Reveal>
+      </div>
     </Section>
   </main>
 

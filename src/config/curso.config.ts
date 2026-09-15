@@ -4583,6 +4583,33 @@ export const copy = {
        acompañamiento). Se rotulan como "lo que no cambia" porque eso es lo
        que son: las tres cosas que valen los 90 días enteros. */
     planReglas: { es: "Lo que no cambia", en: "What doesn't change" },
+    /* Las tres fotos del bloque del aviso, montadas como las del cierre de la
+       portada (una grande y dos acompañantes). Son las de banco del hero,
+       que desde que el slider lleva vídeo no se veían en ningún sitio; las
+       mismas notas de origen (Pexels) que en `heroSlider.slides`. */
+    fotos: {
+      principal: {
+        src: "/imagenes/hero/banco-casa-oficina.webp",
+        alt: {
+          es: "Una mujer trabajando con su portátil en la mesa de su casa",
+          en: "A woman working on her laptop at her dining table at home",
+        },
+      },
+      secundaria: {
+        src: "/imagenes/hero/banco-llamada.webp",
+        alt: {
+          es: "Un hombre gesticulando mientras habla por teléfono en la calle",
+          en: "A man gesturing while talking on the phone in the street",
+        },
+      },
+      terciaria: {
+        src: "/imagenes/hero/banco-tiempo.webp",
+        alt: {
+          es: "Una mujer hablando por teléfono sentada junto a la ventana de su casa",
+          en: "A woman on the phone sitting by the window at home",
+        },
+      },
+    },
     paginaVacio: {
       es: "Todavía no hay nada publicado. Déjame tu correo y te aviso con lo primero.",
       en: "Nothing published yet. Leave me your email and I'll let you know about the first one.",
