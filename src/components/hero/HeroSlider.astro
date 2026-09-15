@@ -289,38 +289,6 @@ interface SlideFoto {
 const comoFoto = (slide: unknown) => slide as SlideFoto;
 
 /** "Ver la imagen 2", ya resuelto en los dos idiomas. */
-/**
- * ─── UN SOLO VÍDEO DE FONDO PARA LAS CUATRO PANTALLAS ──────────────────────
- *
- * El promocional —el de la primera pantalla— va detrás de TODAS, y las otras
- * tres ya no traen vídeo propio. Lo pidió el cliente el 15-09-2026, y cambia
- * dos cosas que conviene entender:
- *
- *   1. El vídeo vive FUERA de las capas que se cruzan, en la raíz de la
- *      sección, y no se apaga nunca: las pantallas que rotan encima son
- *      transparentes y solo llevan su texto. Antes cada pantalla tenía el suyo
- *      y el script arrancaba uno y paraba el otro; ahora hay un solo
- *      decodificador y una sola descarga.
- *
- *   2. El botón de sonido, que sigue en la primera pantalla, controla ese
- *      vídeo común. Mientras habla, la rotación se para, igual que antes; si
- *      alguien cambia de pantalla a mano, se calla.
- *
- * ⚠️ Y EL PROMO LLEVA TEXTO QUEMADO, que ahora queda debajo de los textos de
- * las otras pantallas. La rotulación de la izquierda ocupa del 5 al 36 % del
- * ancho; los subtítulos, el centro de la franja de abajo. Por eso las tres
- * pantallas de texto van en la columna de la DERECHA (del 40 % al margen) y
- * con su reserva de abajo: el texto nuestro cae donde el fotograma no tiene
- * texto suyo. Ver `bloque: "derecha"` en HeroDiptico y la columna del
- * manifiesto.
- *
- * Los archivos hero-1/2/3.mp4 siguen en /public/video por si se vuelve
- * atrás; ya no los carga nadie.
- */
-const fondoComun = videoDe(heroSlider.slides[0]);
-const fondoConSubtitulos =
-  esVideoSolo(heroSlider.slides[0]) && !!heroSlider.slides[0].subtitulos;
-
 const etiquetaPunto = (i: number) =>
   construirTxt((l) => interpolar(heroSlider.irASlide[l], { n: i + 1 }));
 ---
@@ -399,30 +367,12 @@ const etiquetaPunto = (i: number) =>
   data-aria-es={heroSlider.aria.es}
   data-aria-en={heroSlider.aria.en}
 >
-  {/* El fondo común. `data-hero-fondo` es lo que busca el script para el
-      sonido y para pararlo al cambiar de pestaña. Una sola vez, con `src` y
-      `autoplay` desde el marcado: es lo primero que se ve. */}
-  {fondoComun.video && (
-    <div data-hero-fondo class="absolute inset-0 -z-20 isolate">
-      <HeroVideo
-        src={fondoComun.video}
-        poster={fondoComun.poster!}
-        alt={fondoComun.videoAlt ?? heroSlider.aria}
-        encuadreVertical={fondoComun.encuadreVertical}
-        banda="arriba"
-        prioritario
-      />
-    </div>
-  )}
-
   {
     heroSlider.slides.map((slide, i) => (
       <div
         data-slide={i}
         data-activo={i === 0 ? "true" : "false"}
-        data-subtitulos={
-          (esVideoSolo(slide) && slide.subtitulos) || fondoConSubtitulos ? "true" : undefined
-        }
+        data-subtitulos={esVideoSolo(slide) && slide.subtitulos ? "true" : undefined}
         class="pointer-events-none absolute inset-0 -z-10 opacity-0 transition-opacity duration-[1200ms] ease-out-soft data-[activo=true]:pointer-events-auto data-[activo=true]:opacity-100"
         aria-hidden={i === 0 ? undefined : "true"}
       >
@@ -434,9 +384,20 @@ const etiquetaPunto = (i: number) =>
             El díptico se pinta ENTERO aquí dentro, texto y botón incluidos, y
             deja vacío su hueco en la capa de texto de más abajo. Ver la nota
             de `esDiptico`. */}
-        {/* ─── SIN VÍDEO PROPIO ─────────────────────────────────────────
-            El fondo es el común de la raíz de la sección. Cada plantilla solo
-            se entera de una cosa: ya hay fondo, así que no pinta el suyo. */}
+        {/* ─── EL FONDO EN VÍDEO ────────────────────────────────────────
+            Va ANTES que la plantilla y fuera de ella, porque las tres pueden
+            llevarlo y ninguna tiene por qué saber de vídeo. Cada plantilla
+            solo se entera de una cosa: si ya hay fondo, no pinta el suyo. */}
+        {videoDe(slide).video && (
+          <HeroVideo
+            src={videoDe(slide).video!}
+            poster={videoDe(slide).poster!}
+            alt={videoDe(slide).videoAlt ?? heroSlider.aria}
+            encuadreVertical={videoDe(slide).encuadreVertical}
+            banda={esVideoSolo(slide) ? "centrada" : "arriba"}
+            prioritario={i === 0}
+          />
+        )}
 
         {esVideoSolo(slide) ? (
           /* Sin nada encima: los rótulos del propio vídeo hacen de texto. Lo
@@ -476,7 +437,7 @@ const etiquetaPunto = (i: number) =>
             paneles={slide.paneles}
             composicion={slide.composicion}
             bloque={slide.bloque}
-            sinFotos={!!fondoComun.video || !!videoDe(slide).video}
+            sinFotos={!!videoDe(slide).video}
             subtitulo={slide.subtitulo}
             cta={slide.cta}
             lang={lang}
@@ -486,8 +447,8 @@ const etiquetaPunto = (i: number) =>
           />
         ) : esManifiesto(slide) ? (
           <HeroManifiesto
-            foto={fondoComun.video || videoDe(slide).video ? undefined : slide.foto}
-            alt={fondoComun.video || videoDe(slide).video ? undefined : slide.alt}
+            foto={videoDe(slide).video ? undefined : slide.foto}
+            alt={videoDe(slide).video ? undefined : slide.alt}
             manifiesto={slide.manifiesto}
             claves={slide.claves}
             lang={lang}
@@ -755,16 +716,6 @@ const etiquetaPunto = (i: number) =>
     const videos = fondos.map((f) => f.querySelector<HTMLVideoElement>("[data-hero-video]"));
 
     /**
-     * ⚠️ EL FONDO COMÚN ESTÁ FUERA DE LAS CAPAS, así que no aparece en
-     * `videos`: ahí quedan los vídeos por pantalla, si algún día vuelven. Este
-     * no se arranca ni se para al rotar —está siempre detrás— y es el que
-     * lleva la voz.
-     */
-    const fondoComun = hero.querySelector<HTMLVideoElement>(
-      "[data-hero-fondo] [data-hero-video]",
-    );
-
-    /**
      * ⚠️ EL `src` SE PONE AQUÍ Y NO EN EL MARCADO. Solo el primero llega con
      * `src`; los otros tres lo traen en `data-src` y no pesan un byte hasta
      * que les toca. Con los cuatro puestos, el navegador baja 4,2 MB a la vez
@@ -805,10 +756,10 @@ const etiquetaPunto = (i: number) =>
     let temporizador: number | undefined;
     let pausado = menosMovimiento.matches;
 
-    /* En qué imagen está el botón de sonido. -1 si no hay ninguno. */
-    const indiceSonido = fondos.findIndex((f) => f.contains(botonSonido as Node));
-    /* Y qué vídeo suena: el común si existe; si no, el de esa imagen. */
-    const videoSonido = fondoComun ?? (indiceSonido >= 0 ? videos[indiceSonido] : null);
+    /* El vídeo con voz y en qué imagen está. -1 si no hay ninguno. */
+    const indiceSonido = videos.findIndex(
+      (v, n) => v && fondos[n].contains(botonSonido as Node),
+    );
     let sonando = false;
 
     const pintar = (i: number) => {
@@ -896,14 +847,14 @@ const etiquetaPunto = (i: number) =>
     };
 
     function apagarSonido() {
-      const v = videoSonido;
+      const v = videos[indiceSonido];
       if (v) v.muted = true;
       sonando = false;
       pintarSonido();
     }
 
     botonSonido?.addEventListener("click", () => {
-      const v = videoSonido;
+      const v = videos[indiceSonido];
       if (!v) return;
       if (sonando) {
         apagarSonido();
@@ -934,21 +885,17 @@ const etiquetaPunto = (i: number) =>
         /* Y se para el vídeo: en segundo plano no se ve, pero sigue
            decodificando y —si estaba sonando— sigue sonando. */
         videos.forEach((v) => v?.pause());
-        fondoComun?.pause();
         if (sonando) apagarSonido();
       } else {
         moverVideos(actual);
-        fondoComun?.play().catch(() => {});
         arrancar();
       }
     });
 
     pintarBoton();
     pintarSonido();
-    /* Arranca el vídeo de la primera y precarga el de la segunda. Con fondo
-       común no hay nada que precargar: ya está sonando desde el marcado. */
+    /* Arranca el vídeo de la primera y precarga el de la segunda. */
     moverVideos(0);
-    fondoComun?.play().catch(() => {});
     arrancar();
   }
 

@@ -2770,13 +2770,20 @@ export const copy = {
         ],
 
         /**
-         * ⚠️ ESTA PANTALLA YA NO TRAE VÍDEO PROPIO. El fondo de las cuatro es
-         * el promocional de la primera, que vive en la raíz del slider desde
-         * el 15-09-2026 (ver `fondoComun` en HeroSlider). Las dos fotos de
-         * arriba siguen escritas como RED: si algún día faltara el promo, esta
-         * pantalla volvería al díptico de fotos en vez de quedarse en negro.
-         * hero-1.mp4 sigue en /public/video por si se vuelve atrás.
+         * ⚠️ EL FONDO ES UN VÍDEO Y LAS DOS FOTOS DEJARON DE VERSE. Siguen
+         * escritas arriba a propósito: son la RED. Si algún día falta el mp4,
+         * esta imagen vuelve al díptico de fotos en vez de quedarse en negro.
          */
+        video: "/video/hero-1.mp4",
+        poster: "/video/hero-1-poster.webp",
+        /* Medido sobre el fotograma: ella está en el tercio derecho, con la
+           cara sobre el 67 % del ancho. Centrado se quedaba con el sofá vacío
+           de la izquierda y la cortaba por el borde. */
+        encuadreVertical: "67% 50%",
+        videoAlt: {
+          es: "Una mujer trabajando de noche en el sofá de su casa, con el portátil",
+          en: "A woman working at night on her sofa at home, with her laptop",
+        },
 
         /**
          * ⚠️ ESTA PANTALLA HA PASADO POR LAS TRES COMPOSICIONES, y el recorrido
@@ -2934,8 +2941,17 @@ export const copy = {
          * pidiera antes: con un fondo único, dos titulares pegados a los
          * bordes ya no emparejan con nada, solo se separan.
          */
-        /* Sin vídeo propio desde el 15-09-2026: el fondo es el promocional
-           común. hero-2.mp4 sigue en /public/video por si se vuelve atrás. */
+        video: "/video/hero-2.mp4",
+        poster: "/video/hero-2-poster.webp",
+        /* Aquí hay DOS personas, en el 31 % y en el 84 %, y en vertical no
+           caben las dos: se ve poco más de un tercio del fotograma. El 55 %
+           es el punto que salva al de la derecha entero y deja el grupo del
+           medio de fondo, que es lo que sostiene la escena. */
+        encuadreVertical: "55% 50%",
+        videoAlt: {
+          es: "Dos hombres conversando de pie en un encuentro con más gente alrededor",
+          en: "Two men talking at an event with other people around",
+        },
 
         /**
          * ⚠️ LOS DOS TITULARES NO VAN SOBRE SU FOTO: van apilados en el
@@ -3004,10 +3020,18 @@ export const copy = {
            —una familia con las llaves de su casa— y no al Embajador, que es
            deliberado: el manifiesto ya dice quién eres, y la foto dice para
            qué. Las caras están en el tercio de arriba, lejos del texto. */
-        /* ⚠️ SIN VÍDEO PROPIO desde el 15-09-2026: el fondo es el promocional
-           común de la raíz del slider. La foto de las llaves se queda escrita
-           como RED por si algún día faltara. hero-3.mp4 sigue en /public/video
-           por si se vuelve atrás. */
+        /* ⚠️ EL FONDO ES UN VÍDEO. La foto de las llaves se queda escrita como
+           RED: si falta el mp4, esta pantalla vuelve a ella en vez de quedarse
+           en negro. */
+        video: "/video/hero-3.mp4",
+        poster: "/video/hero-3-poster.webp",
+        /* El corro: la mujer rubia en el 27 % y el hombre sentado en el 62 %.
+           El 45 % es lo que mete a los dos dentro de la ventana. */
+        encuadreVertical: "45% 50%",
+        videoAlt: {
+          es: "Un grupo de personas escuchando a alguien en una reunión",
+          en: "A group of people listening to someone at a meeting",
+        },
         foto: "/imagenes/hero/banco-llaves.webp",
         alt: {
           es: "Una familia en el salón de su casa nueva, sosteniendo las llaves",
