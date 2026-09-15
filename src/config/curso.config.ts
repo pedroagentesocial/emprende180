@@ -4584,29 +4584,44 @@ export const copy = {
        que son: las tres cosas que valen los 90 días enteros. */
     planReglas: { es: "Lo que no cambia", en: "What doesn't change" },
     /* Las tres fotos del bloque del aviso, montadas como las del cierre de la
-       portada (una grande y dos acompañantes). Son las de banco del hero,
-       que desde que el slider lleva vídeo no se veían en ningún sitio; las
-       mismas notas de origen (Pexels) que en `heroSlider.slides`. */
+       portada (una grande y dos acompañantes).
+
+       ⚠️ RECORTADAS A LA PROPORCIÓN DE SU HUECO, NO LAS VERTICALES DEL HERO.
+       La primera versión reutilizaba las fotos de banco del hero (1400x1800,
+       verticales) y `cover` las metía en cajas apaisadas: en la grande salía
+       una lámpara y ni una cara. El cliente lo vio (15-09-2026: "que se vean
+       bien las caras"). Ahora cada archivo viene ya cortado al hueco que
+       ocupa —5:3, 5:4 y 16:9—, con la persona donde no la tapa la foto de
+       encima; la del café va volteada para que la mujer caiga a la
+       izquierda, lejos del solape. Pexels 36765293, 6248760 y 8937482; ver
+       /public/imagenes/recursos/README.md. Ninguna es de una Embajadora de
+       verdad. */
     fotos: {
       principal: {
-        src: "/imagenes/hero/banco-casa-oficina.webp",
+        src: "/imagenes/recursos/aviso-cafe.webp",
+        ancho: 1100,
+        alto: 660,
         alt: {
-          es: "Una mujer trabajando con su portátil en la mesa de su casa",
-          en: "A woman working on her laptop at her dining table at home",
+          es: "Una mujer sonriendo mientras habla por teléfono en la terraza de un café",
+          en: "A woman smiling on the phone at a café terrace",
         },
       },
       secundaria: {
-        src: "/imagenes/hero/banco-llamada.webp",
+        src: "/imagenes/recursos/aviso-sofa.webp",
+        ancho: 900,
+        alto: 720,
         alt: {
-          es: "Un hombre gesticulando mientras habla por teléfono en la calle",
-          en: "A man gesturing while talking on the phone in the street",
+          es: "Una pareja conversando con una taza en el sofá de su casa",
+          en: "A couple chatting over a cup of coffee on their sofa at home",
         },
       },
       terciaria: {
-        src: "/imagenes/hero/banco-tiempo.webp",
+        src: "/imagenes/recursos/aviso-charla.webp",
+        ancho: 960,
+        alto: 540,
         alt: {
-          es: "Una mujer hablando por teléfono sentada junto a la ventana de su casa",
-          en: "A woman on the phone sitting by the window at home",
+          es: "Dos amigos charlando animadamente en una cafetería",
+          en: "Two friends in a lively conversation at a coffee shop",
         },
       },
     },

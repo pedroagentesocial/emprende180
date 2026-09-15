@@ -340,7 +340,11 @@ const TRAMOS = ["bg-secondary-200", "bg-secondary-400", "bg-secondary-600", "bg-
         correo ("guías") y las fotos, que son las de banco del hero y no las
         del cierre, para que quien venga de la portada no vea el mismo cuadro
         dos veces. El montaje de las fotos y sus porcentajes son los del
-        cierre tal cual; ver allí el porqué de cada número. */}
+        cierre tal cual; ver allí el porqué de cada número.
+
+        ⚠️ LAS FOTOS VIENEN RECORTADAS A LA PROPORCIÓN DE SU CAJA (5:3, 5:4 y
+        16:9), así que `cover` no tiene casi nada que recortar y las caras caen
+        donde se cortaron. Ver `copy.recursos.fotos` para el porqué. */}
     <Section id="avisame" tono="surface" ariaLabel={guias.aria}>
       <div class="grid items-center gap-10 md:grid-cols-[52fr_48fr] md:gap-10 lg:gap-16 xl:gap-20">
         <Reveal>
@@ -386,33 +390,33 @@ const TRAMOS = ["bg-secondary-200", "bg-secondary-400", "bg-secondary-600", "bg-
               alt={recursos.fotos.principal.alt[lang]}
               data-alt-es={recursos.fotos.principal.alt.es}
               data-alt-en={recursos.fotos.principal.alt.en}
-              width={1400}
-              height={1800}
+              width={recursos.fotos.principal.ancho}
+              height={recursos.fotos.principal.alto}
               loading="lazy"
               decoding="async"
-              class="absolute left-0 top-0 h-[56%] w-[68%] rounded-lg border border-line object-cover object-[center_30%]"
+              class="absolute left-0 top-0 h-[56%] w-[68%] rounded-lg border border-line object-cover"
             />
             <img
               src={recursos.fotos.secundaria.src}
               alt={recursos.fotos.secundaria.alt[lang]}
               data-alt-es={recursos.fotos.secundaria.alt.es}
               data-alt-en={recursos.fotos.secundaria.alt.en}
-              width={1400}
-              height={1800}
+              width={recursos.fotos.secundaria.ancho}
+              height={recursos.fotos.secundaria.alto}
               loading="lazy"
               decoding="async"
-              class="absolute right-0 top-[16%] z-10 h-[50%] w-[46%] rounded-lg border-4 border-surface object-cover object-[center_35%]"
+              class="absolute right-0 top-[16%] z-10 h-[50%] w-[46%] rounded-lg border-4 border-surface object-cover"
             />
             <img
               src={recursos.fotos.terciaria.src}
               alt={recursos.fotos.terciaria.alt[lang]}
               data-alt-es={recursos.fotos.terciaria.alt.es}
               data-alt-en={recursos.fotos.terciaria.alt.en}
-              width={1400}
-              height={1800}
+              width={recursos.fotos.terciaria.ancho}
+              height={recursos.fotos.terciaria.alto}
               loading="lazy"
               decoding="async"
-              class="absolute bottom-0 left-[8%] z-20 h-[40%] w-[52%] rounded-lg border-4 border-surface object-cover object-[center_30%]"
+              class="absolute bottom-0 left-[8%] z-20 h-[40%] w-[52%] rounded-lg border-4 border-surface object-cover"
             />
           </div>
         </Reveal>
