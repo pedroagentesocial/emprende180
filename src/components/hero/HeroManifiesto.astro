@@ -123,8 +123,16 @@ const {
       —56,25vw— y este bloque empieza después; la barra flota sobre la banda,
       que es lo mismo que hace en un escritorio. De `lg` para arriba vuelve el
       `pt-24` de siempre, que ahí sí es el hueco de la barra. */}
+  {/* ⚠️ EN ESCRITORIO ES UNA COLUMNA A LA DERECHA, LA MISMA QUE LAS OTRAS DOS
+      PANTALLAS DE TEXTO. Estuvo centrado a lo ancho, y con un solo vídeo de
+      fondo para las cuatro pantallas eso hacía que el texto saltara de sitio
+      al rotar: dos pantallas a la derecha y una en el medio se leen como
+      desorden. La columna es la misma que `bloque: "derecha"` en HeroDiptico:
+      el 60 % más un margen, centrada en vertical y con la reserva de abajo.
+      Y cae, además, donde el promocional NO tiene texto quemado: su
+      rotulación va a la izquierda y sus subtítulos abajo en el centro. */}
   <div
-    class="flex size-full flex-col items-center justify-end px-[var(--gutter-page)] pb-24 pt-[calc(56.25vw+1rem)] text-center sm:pb-28 lg:pb-32 lg:pt-24"
+    class="flex size-full flex-col items-center justify-end px-[var(--gutter-page)] pb-24 pt-[calc(56.25vw+1rem)] text-center sm:pb-28 lg:absolute lg:inset-y-0 lg:right-0 lg:w-[calc(60%+var(--gutter-page))] lg:justify-center lg:pb-40 lg:pt-24"
   >
     {/* El manifiesto. `h2` porque el `h1` de la página lo pone el hero en sus
         otras imágenes; aquí no hay ninguna frase que conteste "de qué va la
@@ -139,8 +147,12 @@ const {
         48, y la `clamp` se queda en 44 para dejar margen a la traducción
         inglesa y a una fuente que cargue distinto.
 
-        A 1024 la caja real no es 1280 sino el ancho de página (936), y ahí el
-        tope baja a 35: por eso la `clamp` da 34 y no 44 en esa pantalla.
+        ⚠️ EL TOPE BAJÓ DE 44 A 36 PX AL MUDARSE A LA COLUMNA DE LA DERECHA.
+        La caja ya no es la página: son unos 806 px a 1440, y a 44 px el
+        primer renglón (38 caracteres) pedía 903 y se partía. A 36 entra en
+        uno; el segundo —49 caracteres— se parte en dos entre sus dos trozos,
+        que es un corte natural porque los dos van en Fraunces. Tres renglones
+        de manifiesto más las tres claves caben en la columna con aire.
 
         ⚠️ EL MÍNIMO ES 16 PX Y NO SUBE CON EL RESTO, y ese punto decide el alto
         del héroe entero. Esta es la pantalla MÁS CARGADA de las cuatro —el
@@ -156,7 +168,7 @@ const {
         Lo que crece es de `sm` y de `lg` en adelante: el teléfono se queda en
         el mínimo a propósito. */}
     <h2
-      class="max-w-[80rem] text-balance text-[clamp(1rem,0.125rem+2.95vw,2.75rem)] font-semibold leading-[1.35] tracking-[-0.01em]"
+      class="max-w-[80rem] text-balance text-[clamp(1rem,0.125rem+2.95vw,2.25rem)] font-semibold leading-[1.35] tracking-[-0.01em]"
       style={`color:#ffffff;${sombra}`}
     >
       {
