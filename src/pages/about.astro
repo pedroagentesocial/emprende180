@@ -669,7 +669,10 @@ const CAJA_ICONO =
       <div class="grid gap-12 lg:grid-cols-[40fr_60fr] lg:gap-20">
         <Reveal>
           <div>
-            <h2 class="text-3xl font-extrabold leading-tight text-balance text-ink sm:text-4xl lg:text-5xl">
+            <p class="text-sm font-semibold text-ink-brand sm:text-base">
+              <T v={about.blog.kicker} />
+            </p>
+            <h2 class="mt-4 text-3xl font-extrabold leading-tight text-balance text-ink sm:text-4xl lg:text-5xl">
               <T v={about.blog.titulo} />
             </h2>
             <p class="mt-2 text-2xl leading-[1.15] text-balance sm:text-3xl lg:text-4xl">
@@ -695,6 +698,14 @@ const CAJA_ICONO =
                 </div>
               </div>
               <BotonRed etiquetaPendiente={copy.ui.proximamente[lang]} />
+            </div>
+
+            {/* A Recursos, que es donde vive la portada del blog desde que se
+                movió de la página principal. `ml-1` por la sombra del botón. */}
+            <div class="ml-1 mt-8 lg:mt-10">
+              <BotonRelieve href="/resources" trackId="about-blog-recursos">
+                <T v={about.blog.irARecursos} />
+              </BotonRelieve>
             </div>
           </div>
         </Reveal>
@@ -732,12 +743,6 @@ const CAJA_ICONO =
                   </li>
                 ))}
               </ul>
-
-              <div class="ml-1 mt-8">
-                <BotonRelieve href="/blog" trackId="about-blog-todos">
-                  <T v={about.blog.verTodos} />
-                </BotonRelieve>
-              </div>
             </div>
           )}
         </Reveal>

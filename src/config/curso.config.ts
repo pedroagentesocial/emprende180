@@ -3845,8 +3845,14 @@ export const copy = {
     /* ─── 8 · EL BLOG ─────────────────────────────────────────────────────
        El mismo bloque de autor que la portada, con dos artículos y no tres. */
     blog: {
+      /* La ceja y el botón los pidió el cliente el 15-09-2026: "mete ceja de
+         el blog y un botón para mandar a recursos". El botón va a /resources
+         y no a /blog porque la portada del blog se mudó a Recursos; /blog
+         sigue existiendo para los artículos sueltos. */
+      kicker: { es: "El blog", en: "The blog" },
       titulo: { es: "Escribo lo que voy aprendiendo.", en: "I write down what I'm figuring out." },
       subtitulo: { es: "Sin adornos.", en: "No polish." },
+      irARecursos: { es: "Ir a Recursos", en: "Go to Resources" },
       verTodos: { es: "Ver todos los artículos", en: "See all articles" },
       vacio: {
         es: "Todavía no hay artículos publicados. El primero está en camino.",
