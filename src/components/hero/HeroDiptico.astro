@@ -108,7 +108,16 @@ interface Props {
    * ─── DÓNDE SE APOYA EL BLOQUE DE TEXTO ──────────────────────────────────
    *
    *   centro  — a caballo de la costura, centrado en la pantalla.
-   *   derecha — el bloque arranca al 20 % del ancho y llega al margen
+   *   izquierda — la misma columna del 60 %, pero pegada al margen
+   *             IZQUIERDO y ARRIBA, con el texto alineado a la izquierda. Es
+   *             la composición de la primera pantalla: su vídeo tiene a la
+   *             persona en el tercio derecho, así que el texto arriba a la
+   *             izquierda cae donde no hay nadie que tapar. Los dos
+   *             titulares, la promesa y el botón se alinean al borde.
+   *   derecha — la misma columna del 60 %, pegada al margen DERECHO y
+   *             ARRIBA, con el texto alineado a la derecha. Es el espejo de
+   *             `izquierda`: las dos pantallas de texto quedan simétricas.
+   *             (Antes: el bloque arranca al 20 % del ancho y llega al margen
    *             derecho. El texto sigue CENTRADO dentro de él: lo que se
    *             mueve es la caja, no la alineación.
    *
@@ -122,7 +131,7 @@ interface Props {
    * Solo se aplica de `lg` para arriba. En un teléfono no hay sitio para
    * desplazar nada: el bloque ocupa el ancho entero y se queda centrado.
    */
-  bloque?: "centro" | "derecha";
+  bloque?: "centro" | "derecha" | "izquierda";
   /**
    * El fondo lo pone otro (un vídeo), así que esta plantilla NO pinta las dos
    * fotos ni sus velos: solo el bloque central.
@@ -583,16 +592,31 @@ const LADOS = {
              de un solo lado. Las dos escriben el mismo borde y vuelve el
              problema del párrafo de arriba.
 
-             ⚠️ SUBE PORQUE EL RELLENO ES ASIMÉTRICO. Con `inset-y-0` y
-             `justify-center` el contenido se centra en la caja, y la caja
-             reserva 96 px arriba y 160 abajo: el centro queda 32 px por
-             encima del centro de la pantalla. El de abajo es mayor porque
-             ahí viven los mandos del slider. */
-          "lg:inset-y-0 lg:left-auto lg:right-0 lg:w-[calc(60%+var(--gutter-page))] lg:justify-center lg:gap-6 lg:pb-40 lg:pt-24"
-        : /* La banda de siempre, de lado a lado y pegada abajo. Con los
-             titulares dentro (composición `centro`) reserva un poco más. */
-          "lg:inset-x-0 lg:bottom-0 lg:gap-9 lg:pt-0 " +
-          (alLado ? "lg:pb-30" : "lg:pb-32"),
+             ⚠️ ARRIBA Y ALINEADA A LA DERECHA, y estuvo centrada en vertical con
+             el texto centrado dentro de la columna. Lo pidió el cliente el
+             15-09-2026 para que las dos pantallas de texto sean simétricas:
+             la primera arriba a la izquierda, ésta arriba a la derecha. El
+             `pt` es el mismo de la primera (9rem, lo justo para pasar la
+             barra) y `items-end` + `text-right` pegan las tres piezas al
+             borde derecho; sin ellos la columna estaría a la derecha pero el
+             texto seguiría centrado dentro de ella. */
+          "lg:inset-y-0 lg:left-auto lg:right-0 lg:w-[calc(60%+var(--gutter-page))] lg:items-end lg:justify-start lg:gap-6 lg:pb-40 lg:pt-36 lg:text-right"
+        : bloque === "izquierda"
+          ? /* ─── ARRIBA A LA IZQUIERDA ──────────────────────────────────
+               La misma columna que `derecha`, pegada al otro margen y con el
+               contenido al principio en vez de al medio. El `pt` de 9rem
+               (144 px) es lo justo para dejar pasar la barra, que sobre el
+               hero mide 128 px de alto en `lg`: quedan 16 px de aire. Estuvo
+               en 11rem y se subió a petición del cliente; por debajo de 8rem
+               el titular se metería bajo el logotipo. `items-start` y
+               `text-left` alinean las tres piezas al borde; sin ellos la
+               columna estaría a la izquierda pero el texto seguiría centrado
+               dentro de ella. */
+            "lg:inset-y-0 lg:left-0 lg:right-auto lg:w-[calc(60%+var(--gutter-page))] lg:items-start lg:justify-start lg:gap-6 lg:pb-40 lg:pt-36 lg:text-left"
+          : /* La banda de siempre, de lado a lado y pegada abajo. Con los
+               titulares dentro (composición `centro`) reserva un poco más. */
+            "lg:inset-x-0 lg:bottom-0 lg:gap-9 lg:pt-0 " +
+            (alLado ? "lg:pb-30" : "lg:pb-32"),
     ]}
   >
     {/* ─── LOS DOS TITULARES, CUANDO VAN APILADOS ────────────────────────
@@ -609,7 +633,13 @@ const LADOS = {
         más aire que entre el titular y la frase de abajo, o se leen como un
         solo bloque de cuatro renglones. */}
     {!alLado && (
-      <div class="flex flex-col items-center gap-5 sm:gap-10 lg:gap-12">
+      <div
+        class:list={[
+          "flex flex-col items-center gap-5 sm:gap-10 lg:gap-12",
+          bloque === "izquierda" && "lg:items-start",
+          bloque === "derecha" && "lg:items-end",
+        ]}
+      >
         {paneles.map((panel) => (
           <HeroTitular titulo={panel.titulo} escala="ancho" sombra={sombra} />
         ))}

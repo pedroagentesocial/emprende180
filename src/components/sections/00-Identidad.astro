@@ -3,7 +3,6 @@ import Section from "@components/ui/Section.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import T from "@components/i18n/T.astro";
 import Enfasis from "@components/ui/Enfasis.astro";
-import BotonRelieve from "@components/ui/BotonRelieve.astro";
 import { copy } from "@config/curso.config";
 import { resolverIdiomaServidor } from "@i18n/idioma";
 
@@ -137,9 +136,14 @@ const RADIO = "rounded-lg";
           {/* El renglón de entrada sube de 13 px fijos a 14/16/18 fluidos. Con
               un titular de 76 px encima, 13 px no se leían como la entrada del
               bloque: se leían como un pie de foto perdido. */}
-          <p class="text-sm font-semibold text-ink-brand sm:text-base lg:text-lg">
-            <T v={identidad.kicker} />
-          </p>
+          {/* El renglón de entrada solo se pinta si el config lo trae; desde
+              el 15-09-2026 viene vacío. Un `<p>` vacío dejaría su `mt-4` de
+              hueco debajo. */}
+          {identidad.kicker.es && (
+            <p class="text-sm font-semibold text-ink-brand sm:text-base lg:text-lg">
+              <T v={identidad.kicker} />
+            </p>
+          )}
 
           {/* ⚠️ EL TITULAR EN MONTSERRAT Y LA SEGUNDA LÍNEA EN FRAUNCES
               ITÁLICA, no al revés. La primera describe a un tercero y la
@@ -161,7 +165,7 @@ const RADIO = "rounded-lg";
 
               `font-semibold` y no extrabold: es el titular más grande de la
               sección, pero la sección no grita. */}
-          <h2 class="mt-4 text-4xl font-semibold leading-[1.1] tracking-[-0.02em] text-balance text-ink sm:text-5xl lg:text-6xl">
+          <h2 class="text-4xl font-semibold leading-[1.1] tracking-[-0.02em] text-balance text-ink sm:text-5xl lg:text-6xl [&:not(:first-child)]:mt-4">
             <T v={identidad.titulo} />
           </h2>
 
@@ -201,20 +205,31 @@ const RADIO = "rounded-lg";
             ))
           }
 
-          {/* ⚠️ `ml-1` EN EL ENVOLTORIO, Y NO SOBRA. El botón en relieve vive
-              desplazado 4 px arriba a la izquierda —ese hueco es lo que ocupa
-              su pila de sombras— así que sin compensarlo su borde izquierdo
-              queda 4 px por fuera del de los párrafos de encima. Con `ml-1`
-              vuelve a la misma vertical que el resto de la columna.
+          {/* ─── LOS CUATRO DATOS ─────────────────────────────────────────
+              Dos por fila en el teléfono, cuatro en fila de `lg` para arriba
+              (la columna de texto es el 70 % y da unos 860 px: 200 por
+              casilla). El filete de arriba los separa del párrafo sin meter
+              una caja; la cifra grande y la etiqueta pequeña son la misma
+              escala que la barra del about, para que las dos páginas cuenten
+              sus datos igual. Ver `identidad.datos` para de dónde sale cada uno
+              y por qué el cuarto no es un número. */}
+          <dl class="mt-8 grid grid-cols-2 gap-x-6 gap-y-6 border-t-[0.5px] border-line pt-7 lg:grid-cols-4">
+            {identidad.datos.map((d) => (
+              <div>
+                <dd class="text-3xl font-extrabold leading-none tracking-[-0.02em] text-ink sm:text-4xl">
+                  <T v={d.valor} />
+                </dd>
+                <dt class="mt-2 max-w-[16ch] text-sm font-medium text-pretty text-ink-muted sm:text-base">
+                  <T v={d.etiqueta} />
+                </dt>
+              </div>
+            ))}
+          </dl>
 
-              ⚠️ Y SIN FLECHA. La llevaba cuando era un enlace de texto, donde
-              la flecha era lo único que decía que se podía pulsar. Un botón ya
-              lo dice por su forma: la flecha pasaría a ser adorno. */}
-          <div class="ml-1 mt-8">
-            <BotonRelieve href={identidad.cta.href} trackId="identidad-about">
-              <T v={identidad.cta.texto} />
-            </BotonRelieve>
-          </div>
+          {/* Sin botón desde el 15-09-2026, a petición del cliente: la sección
+              presenta el programa y ya; la llamada la hacen el hero y el cierre.
+              Con el bloque de texto más corto, el `items-center` de la rejilla
+              lo deja centrado en vertical respecto a la foto. */}
         </div>
       </Reveal>
     </div>

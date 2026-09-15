@@ -54,10 +54,11 @@ import Footer from "@components/layout/Footer.astro";
    ─────────────────────────────────────────────────────────────────────────── */
 import Hero from "@components/hero/HeroSlider.astro";
 import Identidad from "@components/sections/00-Identidad.astro";
+import Plan90 from "@components/sections/01-Plan90.astro";
 import ComoTrabajar from "@components/sections/02-ComoTrabajar.astro";
 import Lista from "@components/sections/03-Lista.astro";
 import Testimonios from "@components/sections/04-Testimonios.astro";
-import BlogPortada from "@components/sections/06-Blog.astro";
+import Faq from "@components/sections/06-Faq.astro";
 import Academia from "@components/sections/07-Academia.astro";
 import Recursos from "@components/sections/08-Recursos.astro";
 import Cierre from "@components/sections/09-Cierre.astro";
@@ -91,6 +92,8 @@ import Cierre from "@components/sections/09-Cierre.astro";
         Va numerada 00 y no 01 para no renumerar las nueve que ya están: el
         número del nombre sigue siendo la posición en la página. */}
     <Identidad />
+    {/* Los 90 días, detrás del programa que los anuncia. */}
+    <Plan90 />
 
     {/* ⚠️ AQUÍ HABÍA UNA SECCIÓN MÁS Y SE QUITÓ: la del Embajador, la que decía
         "Ser Embajadora Emprende180 es esto · La que siempre conoce a alguien".
@@ -118,7 +121,9 @@ import Cierre from "@components/sections/09-Cierre.astro";
 
     {/* El blog es lo único gratis que demuestra criterio, así que va antes de
         las dos puertas y del cierre. */}
-    <BlogPortada />
+    {/* Aquí vivió el blog hasta el 15-09-2026. Se mudó a /resources y su hueco
+        lo ocupan las preguntas frecuentes, recuperadas del historial. */}
+    <Faq />
 
     {/* Primero la puerta de lo que ya se compró, después la de lo que es
         gratis. */}

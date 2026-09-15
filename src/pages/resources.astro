@@ -7,6 +7,7 @@ import T from "@components/i18n/T.astro";
 import Icono from "@components/ui/Icono.astro";
 import LeadForm from "@components/ui/LeadForm";
 import Editorial from "@components/ui/Editorial.astro";
+import BlogPortada from "@components/sections/06-Blog.astro";
 import { copy, sitio } from "@config/curso.config";
 import { articulosPublicados, formatearFecha } from "@lib/blog";
 import { construirTxt, resolverIdiomaServidor } from "@i18n/idioma";
@@ -49,8 +50,18 @@ const tituloPagina = construirTxt(
 <BaseLayout titulo={tituloPagina} descripcion={recursos.paginaDescripcion}>
   <Header />
 
-  <main id="contenido" class="section-y">
-    <div class="container-page">
+  <main id="contenido">
+    {/* ─── EL BLOG, RECIÉN LLEGADO DE LA PORTADA ──────────────────────────
+        La sección entera —el bloque de autor, los tres últimos artículos y su
+        foto— vivía en la portada y se mudó aquí el 15-09-2026: en la portada
+        su sitio lo ocupan ahora las preguntas frecuentes. Aquí está entre lo
+        suyo, y abre la página con quién escribe antes del listado completo.
+
+        Trae su propio `Section` con su ritmo, así que el `section-y` que
+        llevaba el `main` baja al listado de abajo, que es a quien vestía. */}
+    <BlogPortada />
+
+    <div class="container-page section-y">
       <Editorial medida={false}>
         {/* Título y entradilla al lado, no encima: se quedan a la vista
             mientras se baja y llenan el ancho que antes era margen muerto. */}

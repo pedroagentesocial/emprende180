@@ -1,0 +1,157 @@
+---
+import T from "@components/i18n/T.astro";
+import Section from "@components/ui/Section.astro";
+import Reveal from "@components/motion/Reveal.astro";
+import { copy } from "@config/curso.config";
+import { resolverIdiomaServidor } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 01 · LOS 90 DÍAS — cuatro fases, en collage
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Va detrás de "El programa Emprende180" y lo desarrolla: el título y, debajo,
+ * las cuatro fases como filas alternas —foto a un lado, texto al otro, y al
+ * revés en la siguiente— pegadas entre sí y a todo el ancho de la pantalla.
+ * Lo pidió el cliente el 15-09-2026 con estas palabras: "todo bien pegado,
+ * parece casi un collage, usa todo el ancho".
+ *
+ * ─── POR QUÉ ES UN COLLAGE Y NO CUATRO SECCIONES ───────────────────────────
+ *
+ * Sin aire entre filas (`gap-0`) y sin contenedor: las fotos llegan al borde
+ * de la pantalla y el texto se apoya en el margen de página. Cuatro filas con
+ * su aire y su caja serían cuatro secciones, y cuatro secciones seguidas de la
+ * misma forma se saltan. Pegadas se leen como una sola pieza que se recorre,
+ * que es lo que es un plan.
+ *
+ * ⚠️ EL LADO SE CAMBIA CON `order`, NO CON EL MARCADO. La foto va siempre
+ * primera en el HTML —en el teléfono, apilado, la foto encima del texto es lo
+ * que se quiere— y en escritorio `md:order-last` la pasa a la derecha en las
+ * filas pares. Un lector de pantalla oye siempre foto, número, fase, texto.
+ *
+ * ⚠️ LA FOTO MIDE LO QUE MIDE EL TEXTO. `md:h-full` con `object-cover`: la
+ * celda de la foto se estira a la altura de la celda del texto de al lado,
+ * así que las cuatro filas tienen alturas distintas —la 3 tiene más texto que
+ * la 4— y eso es parte del collage. Un `aspect-ratio` fijo dejaría huecos
+ * blancos debajo del texto corto, que es justo lo que se pidió evitar.
+ *
+ * ─── EL TÍTULO BAJA CON LA SECCIÓN ─────────────────────────────────────────
+ *
+ * El título es `sticky`: se queda pegado bajo la barra mientras se recorren
+ * las cuatro filas y se suelta cuando la sección acaba, porque el contenedor
+ * de un `sticky` es su padre y el padre es la sección. Lo pidió el cliente
+ * para que se sepa, en cualquier punto del collage, de qué va lo que se está
+ * mirando; y para que no siga bajando cuando el collage termina.
+ *
+ * ⚠️ VA SOBRE FONDO SÓLIDO Y CON `z-index`. Sin el fondo, las filas se verían
+ * pasar por debajo del titular y se leerían las dos cosas a la vez. Sin el
+ * `z-20`, la foto de la fila —que es `absolute`— se pintaría por encima.
+ *
+ * ⚠️ EL `top` ES LA ALTURA DE LA BARRA COMPACTA (`--header-h`, 64 px; 72 en
+ * `lg`), que es lo que mide la barra fija mientras se baja. Con `top-0` el
+ * titular se metería debajo de ella.
+ *
+ * Los textos y su procedencia están en `copy.plan90Portada`.
+ */
+
+const { plan90Portada: plan } = copy;
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+---
+
+{/* ⚠️ SOBRE EL AZUL SUAVE, Y NO SOBRE BLANCO. El cliente pidió "darle color":
+    la sección pasa al tono `muted` —la zona azul suave que ya usan valores y la
+    lista— y las celdas de texto se quedan BLANCAS, así que el collage alterna
+    foto, blanco, foto, blanco sobre un campo azul. El titular pegajoso lleva el
+    mismo azul para que, al pegarse, siga siendo parte de la sección y no una
+    barra blanca suelta. */}
+<Section id="plan-90" tono="muted" ariaLabel={plan.aria} sinContenedor class="relative">
+  {/* El titular pegajoso: fondo sólido del color de la sección, por encima de
+      las filas, y a la altura de la barra compacta. El `Reveal` va DENTRO del
+      pegajoso y no al revés: un `transform` en el elemento que se pega no le
+      afecta, pero en su padre rompería el `sticky`. */}
+  <div class="sticky top-[var(--header-h)] z-20 bg-surface-muted py-5 sm:py-6 lg:top-[var(--header-h-lg)] lg:py-8">
+    <div class="container-page">
+      <Reveal>
+        <h2 class="text-center text-3xl font-extrabold leading-tight text-balance text-ink sm:text-4xl lg:text-5xl">
+          <T v={plan.titulo} />
+        </h2>
+      </Reveal>
+    </div>
+  </div>
+
+  {/* El collage. Un poco de aire desde el titular y nada más: las filas van
+      pegadas entre sí. */}
+  <div class="mt-4 lg:mt-6">
+    {
+      plan.fases.map((fase, i) => (
+        <Reveal delay={0.05}>
+          <div class="grid md:grid-cols-2">
+            {/* ─── LA FOTO ──────────────────────────────────────────────── */}
+            <div
+              class:list={[
+                "relative min-h-[260px] sm:min-h-[320px] md:min-h-0",
+                i % 2 === 1 && "md:order-last",
+              ]}
+            >
+              <img
+                src={fase.imagen.src}
+                alt={fase.imagen.alt[lang]}
+                data-alt-es={fase.imagen.alt.es}
+                data-alt-en={fase.imagen.alt.en}
+                width={fase.imagen.ancho}
+                height={fase.imagen.alto}
+                loading="lazy"
+                decoding="async"
+                style={`object-position:${fase.imagen.encuadre}`}
+                class="absolute inset-0 size-full object-cover"
+              />
+            </div>
+
+            {/* ─── EL TEXTO ─────────────────────────────────────────────────
+                Se apoya en el margen de página por el lado de fuera y en un
+                relleno propio por el de la foto. Centrado en vertical respecto
+                a la foto cuando el texto es corto; cuando es largo, es él el
+                que manda en la altura. */}
+            <div
+              class:list={[
+                "flex flex-col justify-center bg-surface py-10 sm:py-12 lg:py-16",
+                /* Por fuera, el margen de página; por dentro, el relleno. */
+                i % 2 === 1
+                  ? "pl-[var(--gutter-page)] pr-[var(--gutter-page)] md:pr-10 lg:pr-16 xl:pr-24"
+                  : "pl-[var(--gutter-page)] pr-[var(--gutter-page)] md:pl-10 lg:pl-16 xl:pl-24",
+              ]}
+            >
+              <div class="max-w-[34rem]">
+                {/* El número en Montserrat, grande y teal; el nombre de la fase
+                    en Fraunces itálica. Estaba al revés —número en Fraunces,
+                    nombre en Montserrat— y se cambió con el color: el remate
+                    del sitio va en lo que se recuerda, que es el nombre. */}
+                <p class="text-4xl font-extrabold leading-none tracking-[-0.03em] text-ink-brand sm:text-5xl">
+                  {fase.numero}
+                </p>
+                <p class="mt-4 text-sm font-bold tracking-[0.18em] text-ink-muted uppercase">
+                  <T v={fase.rango} />
+                </p>
+                <h3 class="mt-2 font-acento text-3xl italic leading-tight text-ink sm:text-4xl lg:text-5xl">
+                  <T v={fase.nombre} />
+                </h3>
+                {fase.reparto && (
+                  <p class="mt-3 text-sm font-semibold text-ink-brand sm:text-base">
+                    <T v={fase.reparto} />
+                  </p>
+                )}
+                <p class="mt-5 text-base font-medium leading-relaxed text-pretty text-ink-muted sm:text-lg">
+                  <T v={fase.texto} />
+                </p>
+              </div>
+            </div>
+          </div>
+        </Reveal>
+      ))
+    }
+  </div>
+</Section>

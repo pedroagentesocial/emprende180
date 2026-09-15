@@ -11,7 +11,7 @@ import Icono from "@components/ui/Icono.astro";
 import BotonRelieve from "@components/ui/BotonRelieve.astro";
 import BotonRed from "@components/ui/BotonRed.astro";
 import Lista from "@components/sections/03-Lista.astro";
-import { copy, instructor, sitio } from "@config/curso.config";
+import { copy, contacto, instructor, sitio } from "@config/curso.config";
 import { construirTxt, resolverIdiomaServidor } from "@i18n/idioma";
 import { articulosPublicados, formatearFecha, tituloBilingue } from "@lib/blog";
 
@@ -644,6 +644,36 @@ const CAJA_ICONO =
           )}
         </Reveal>
       </div>
+    </Section>
+
+    {/* ─── 8b · VISÍTANOS ────────────────────────────────────────────────
+        Una franja corta, hundida, con la dirección física y el enlace al
+        mapa. Va aquí y no más arriba porque el about es donde alguien
+        comprueba que detrás hay algo real, y una dirección a la que se puede
+        ir es la prueba más difícil de fingir. La misma dirección va en el pie
+        de todas las páginas; aquí se le da sitio propio. */}
+    <Section id="about-visitanos" tono="sunken" ritmo="compacto" ariaLabel={copy.ui.visitanos}>
+      <Reveal>
+        <div class="grid items-center gap-8 lg:grid-cols-[1fr_auto] lg:gap-16">
+          <div>
+            <p class="text-sm font-semibold text-ink-brand sm:text-base">
+              <T v={copy.ui.visitanos} />
+            </p>
+            <address class="mt-3 text-2xl font-extrabold leading-tight not-italic text-balance text-ink sm:text-3xl lg:text-4xl">
+              {contacto.direccion.calle},<br class="sm:hidden" />
+              {" "}{contacto.direccion.ciudad}
+            </address>
+            <p class="mt-4 max-w-prose text-lg font-medium leading-relaxed text-pretty text-ink-muted sm:text-xl">
+              <T v={copy.ui.visitanosTexto} />
+            </p>
+          </div>
+          <div class="ml-1">
+            <BotonRelieve href={contacto.mapaUrl} target="_blank" rel="noopener" trackId="about-mapa">
+              <T v={copy.ui.comoLlegar} />
+            </BotonRelieve>
+          </div>
+        </div>
+      </Reveal>
     </Section>
 
     {/* ─── 9 · LA LISTA ──────────────────────────────────────────────────

@@ -30,17 +30,24 @@ import type { Testimonio } from "@config/curso.config";
 
 interface Props {
   testimonio: Testimonio;
+  /**
+   * La versión del carrusel: una sola tarjeta a la vista, así que puede ser
+   * más alta y con la cita un cuerpo mayor. En la banda —varias en fila— se
+   * queda en el tamaño normal.
+   */
+  grande?: boolean;
   class?: string;
 }
 
-const { testimonio: t, class: className = "" } = Astro.props;
+const { testimonio: t, grande = false, class: className = "" } = Astro.props;
 ---
 
 <article
   class:list={[
     /* `overflow-hidden` es lo que hace que la foto respete las esquinas: sin
        él, la imagen sale por las cuatro puntas del radio. */
-    "flex h-full min-h-[260px] flex-col overflow-hidden rounded-lg border-[0.5px] border-line bg-surface",
+    "flex h-full flex-col overflow-hidden rounded-lg border-[0.5px] border-line bg-surface",
+    grande ? "min-h-[320px] lg:min-h-[380px]" : "min-h-[260px]",
     /* En fila solo desde `sm`. En un teléfono, foto y texto lado a lado dejan
        la cita en una columna de 180 px. */
     t.foto && "sm:flex-row",
@@ -66,9 +73,14 @@ const { testimonio: t, class: className = "" } = Astro.props;
     )
   }
 
-  <div class="flex flex-1 flex-col justify-center gap-5 p-6 sm:p-7">
+  <div class:list={["flex flex-1 flex-col justify-center gap-5", grande ? "p-7 sm:p-10 lg:p-12" : "p-6 sm:p-7"]}>
     <blockquote>
-      <p class="font-acento text-lg leading-relaxed text-pretty text-ink italic">
+      <p
+        class:list={[
+          "font-acento leading-relaxed text-pretty text-ink italic",
+          grande ? "text-xl sm:text-2xl lg:text-3xl lg:leading-snug" : "text-lg",
+        ]}
+      >
         <T v={t.cita} />
       </p>
     </blockquote>
@@ -77,8 +89,8 @@ const { testimonio: t, class: className = "" } = Astro.props;
         especificación dice que el contenido de `blockquote` es LA CITA, y la
         atribución no forma parte de lo que la persona dijo. */}
     <footer>
-      <p class="text-base font-medium text-ink">{t.nombre}</p>
-      <p class="mt-0.5 text-[0.8125rem] text-ink-subtle">
+      <p class:list={["font-medium text-ink", grande ? "text-lg" : "text-base"]}>{t.nombre}</p>
+      <p class:list={["mt-0.5 text-ink-subtle", grande ? "text-sm sm:text-base" : "text-[0.8125rem]"]}>
         <T v={t.contexto} />
       </p>
     </footer>

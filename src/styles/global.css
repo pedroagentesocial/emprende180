@@ -625,6 +625,127 @@ html[lang="en"] [data-t="es"] {
   height: 1lh;
 }
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   EL BOTÓN DEL SITIO — la píldora
+   ═══════════════════════════════════════════════════════════════════════════
+   Desde el 15-09-2026 hay UN solo estilo de botón en toda la web: el hero, las
+   secciones, la cabecera y los formularios. Lo eligió el cliente después de
+   dos rondas con el botón en relieve.
+
+   ─── DE DÓNDE SALE Y QUÉ SE CAMBIÓ ─────────────────────────────────────────
+   Viene de Uiverse.io (barisdogansutcu, MIT): píldora blanca con la letra en
+   mayúsculas espaciadas; al pasar el cursor la letra se abre, el fondo se
+   vuelve de color y aparece un brillo; al pulsar se hunde. De ahí se toma el
+   comportamiento y la proporción. Lo que NO se copia:
+
+     hsl(261 80% 48%) morado .... pasa a `--color-cta`, el teal de la marca.
+                                  DESIGN.md prohíbe paleta nueva, y un morado
+                                  sería el único color fuera de la guía.
+     tipografía del navegador ... se hereda Montserrat.
+     `transition: all` ........... se nombran las cinco propiedades. `all`
+                                  anima también lo que no debe (el ancho al
+                                  abrirse la letra) y cuesta más.
+
+   ─── LO QUE HAY QUE SABER PARA TOCARLO ─────────────────────────────────────
+   ⚠️ EL TAMAÑO VA EN VARIABLES, no en clases de relleno. `boton-pildora-md`
+   las cambia para la cabecera. Poner `px-6` encima no funcionaría: es una
+   utilidad del mismo nivel que ésta y quién gana lo decide el orden de la
+   hoja, no el del atributo.
+
+   ⚠️ LOS COLORES VAN INVERTIDOS RESPECTO AL ORIGINAL, a petición del cliente
+   el 15-09-2026: en reposo la píldora es TEAL con la letra blanca, y al pasar
+   el cursor se vuelve blanca con la letra navy. El original hacía justo lo
+   contrario. Así el botón se ve en reposo sobre cualquier fondo —teal sobre
+   blanco y teal sobre navy contrastan los dos— y el cambio al pasar es el
+   mismo gesto, al revés.
+
+   ⚠️ SOBRE BLANCO LLEVA UN FILETE, Y AHORA SOLO IMPORTA AL PASAR EL CURSOR:
+   ahí la píldora se vuelve blanca sobre una sección blanca, y sin el filete
+   se quedaría sin borde. `data-sobre="claro"` lo pone; sobre navy no hace
+   falta y no se pinta.
+
+   ⚠️ LA LETRA SE ABRE Y EL BOTÓN SE ENSANCHA. Es el gesto de la referencia, y
+   mueve lo que tenga al lado. Los botones del sitio van solos o centrados, así
+   que no hay nada que se desplace. Si algún día hay dos en fila, hay que
+   saberlo.
+
+   ⚠️ EL BRILLO ES EL TEAL AL 55 %, con `color-mix`. Es la misma técnica que
+   usa Tailwind 4 para sus opacidades, así que el soporte es el mismo que el
+   del resto de la hoja.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@utility boton-pildora {
+  --pildora-px: 2.5rem;
+  --pildora-py: 1.0625rem;
+  --pildora-fs: 0.9375rem;
+  --pildora-brillo: color-mix(in srgb, var(--color-primary-900) 35%, transparent);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: var(--pildora-py) var(--pildora-px);
+  border: 0.5px solid var(--pildora-borde, transparent);
+  border-radius: var(--radius-full);
+  background-color: var(--color-cta);
+  color: var(--color-ink-inverse);
+  box-shadow: 0 0 8px rgb(0 0 0 / 0.05);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--pildora-fs);
+  line-height: 1.2;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    letter-spacing 500ms ease,
+    background-color 500ms ease,
+    color 500ms ease,
+    box-shadow 500ms ease,
+    transform 500ms ease;
+
+  &:hover {
+    letter-spacing: 0.2em;
+    background-color: var(--color-neutral-0);
+    color: var(--color-primary-900);
+    box-shadow: 0 7px 29px 0 var(--pildora-brillo);
+  }
+
+  &:active {
+    letter-spacing: 0.2em;
+    background-color: var(--color-neutral-0);
+    color: var(--color-primary-900);
+    box-shadow: 0 0 0 0 var(--pildora-brillo);
+    transform: translateY(10px);
+    transition-duration: 100ms;
+  }
+
+  &[data-sobre="claro"] {
+    --pildora-borde: var(--color-line);
+  }
+
+  &:disabled {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+
+    &:active {
+      transform: none;
+    }
+  }
+}
+
+/* El de la cabecera: más corto y con la letra un punto menor. */
+@utility boton-pildora-md {
+  --pildora-px: 1.5rem;
+  --pildora-py: 0.6875rem;
+  --pildora-fs: 0.8125rem;
+}
+
 /* Solo para lectores de pantalla. */
 @utility sr-only-focusable {
   position: absolute;

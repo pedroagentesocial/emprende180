@@ -1,0 +1,294 @@
+---
+import TarjetaTestimonio from "@components/ui/TarjetaTestimonio.astro";
+import Icono from "@components/ui/Icono.astro";
+import { copy, type Testimonio } from "@config/curso.config";
+import { construirTxt, resolverIdiomaServidor } from "@i18n/idioma";
+import { interpolar } from "@i18n/formato";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * CARRUSEL DE TESTIMONIOS — una tarjeta grande, de una en una
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Sustituye a la banda que corría sin parar (`BandaTestimonios`) desde el
+ * 15-09-2026. El motivo lo dio el cliente: la sección tenía DOS carruseles
+ * seguidos —los testimonios y los logos— moviéndose a la vez, y se leían como
+ * dos marquesinas. Ahora los testimonios pasan de uno en uno en una tarjeta
+ * grande, con flechas y puntos, y la única banda que queda es la de logos.
+ *
+ * ─── CÓMO ESTÁ MONTADO ─────────────────────────────────────────────────────
+ *
+ * Todas las tarjetas viven en la misma celda de una rejilla (`grid-area:
+ * 1/1`) y se cruzan por opacidad. No hay carril que desplazar ni anchos que
+ * medir: la caja mide lo que mide la tarjeta más alta, así que los mandos de
+ * abajo no saltan cuando cambia el testimonio. Es el mismo cruce que el hero.
+ *
+ * Avanza solo cada siete segundos —una cita se lee en menos— y se para si el
+ * cursor está encima, si algo dentro tiene el foco, si la pestaña no se ve o
+ * si quien mira ha pedido menos movimiento. Las flechas y los puntos mueven a
+ * mano y reinician la cuenta; el botón de pausa la para del todo, que es lo
+ * que exige la WCAG 2.2.2 para cualquier cosa que se mueva sola más de cinco
+ * segundos.
+ *
+ * ⚠️ LOS PUNTOS SON BOTONES DE 44 PX AUNQUE EL DIBUJO MIDA 6. El objetivo
+ * táctil es el botón, no la raya.
+ *
+ * ⚠️ EL `aria-live` VA EN EL RÓTULO DE POSICIÓN, NO EN LAS TARJETAS. Anunciar
+ * la cita entera cada siete segundos a quien usa lector de pantalla sería
+ * insufrible; anunciar "testimonio 3 de 6" es lo justo para saber que algo
+ * cambió. Y solo cuando se cambia a mano: `aria-live="polite"` con el rótulo
+ * actualizado únicamente desde las flechas y los puntos.
+ */
+
+interface Props {
+  items: Testimonio[];
+  class?: string;
+}
+
+const { items, class: className = "" } = Astro.props;
+const { banda } = copy;
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+const irA = (i: number) =>
+  construirTxt((l) => interpolar(banda.irA[l], { n: i + 1 }));
+const posicion = (i: number) =>
+  construirTxt((l) => interpolar(banda.posicion[l], { n: i + 1, total: items.length }));
+---
+
+<section
+  data-carrusel-testimonios
+  aria-roledescription="carousel"
+  aria-label={banda.etiqueta[lang]}
+  data-aria-es={banda.etiqueta.es}
+  data-aria-en={banda.etiqueta.en}
+  class:list={["relative", className]}
+>
+  {/* ─── LAS TARJETAS, APILADAS ────────────────────────────────────────────
+      Una encima de otra en la misma celda. La activa es la única que se ve,
+      se anuncia y recibe clics; las demás quedan a opacidad cero, ocultas al
+      lector de pantalla y sin eventos, para que un enlace de dentro no se
+      pueda pulsar a ciegas. */}
+  <div class="grid">
+    {
+      items.map((t, i) => (
+        <div
+          data-tarjeta={i}
+          data-activo={i === 0 ? "true" : "false"}
+          aria-hidden={i === 0 ? undefined : "true"}
+          role="group"
+          aria-roledescription="slide"
+          aria-label={posicion(i)[lang]}
+          data-aria-es={posicion(i).es}
+          data-aria-en={posicion(i).en}
+          class="col-start-1 row-start-1 opacity-0 transition-opacity duration-700 ease-out-soft pointer-events-none data-[activo=true]:pointer-events-auto data-[activo=true]:opacity-100"
+        >
+          <TarjetaTestimonio testimonio={t} grande />
+        </div>
+      ))
+    }
+  </div>
+
+  {/* ─── LOS MANDOS ───────────────────────────────────────────────────────
+      Flecha, puntos, pausa, flecha. Centrados bajo la tarjeta y a 44 px cada
+      uno. El rótulo de posición está solo para el lector de pantalla: quien
+      ve la pantalla ya lo lee en los puntos. */}
+  <div class="mt-6 flex items-center justify-center gap-3 sm:gap-4">
+    <button
+      type="button"
+      data-carrusel-antes
+      aria-label={banda.anterior[lang]}
+      data-aria-es={banda.anterior.es}
+      data-aria-en={banda.anterior.en}
+      class="grid size-11 place-items-center rounded-full border-[0.5px] border-line text-ink-muted transition-colors duration-200 hover:border-line-strong hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+    >
+      <Icono nombre="chevron" class="size-5 rotate-90" grosor={2} />
+    </button>
+
+    <ul role="list" class="flex items-center gap-1">
+      {
+        items.map((_, i) => (
+          <li>
+            <button
+              type="button"
+              data-carrusel-punto={i}
+              data-activo={i === 0 ? "true" : "false"}
+              aria-label={irA(i)[lang]}
+              data-aria-es={irA(i).es}
+              data-aria-en={irA(i).en}
+              class="group grid size-11 place-items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            >
+              <span
+                aria-hidden="true"
+                class="block h-1.5 w-1.5 rounded-full bg-ink/20 transition-[background-color,width] duration-300 ease-out-soft group-data-[activo=true]:w-6 group-data-[activo=true]:bg-ink-brand"
+              />
+            </button>
+          </li>
+        ))
+      }
+    </ul>
+
+    <button
+      type="button"
+      data-carrusel-pausa
+      aria-pressed="false"
+      aria-label={banda.pausar[lang]}
+      data-aria-es={banda.pausar.es}
+      data-aria-en={banda.pausar.en}
+      data-etiqueta-pausar-es={banda.pausar.es}
+      data-etiqueta-pausar-en={banda.pausar.en}
+      data-etiqueta-reanudar-es={banda.reanudar.es}
+      data-etiqueta-reanudar-en={banda.reanudar.en}
+      class="grid size-11 place-items-center rounded-full border-[0.5px] border-line text-ink-muted transition-colors duration-200 hover:border-line-strong hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+    >
+      <Icono nombre="pausa" class="size-4" grosor={2} data-icono-pausa />
+      <Icono nombre="play" class="hidden size-4" grosor={1} data-icono-play />
+    </button>
+
+    <button
+      type="button"
+      data-carrusel-despues
+      aria-label={banda.siguiente[lang]}
+      data-aria-es={banda.siguiente.es}
+      data-aria-en={banda.siguiente.en}
+      class="grid size-11 place-items-center rounded-full border-[0.5px] border-line text-ink-muted transition-colors duration-200 hover:border-line-strong hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+    >
+      <Icono nombre="chevron" class="size-5 -rotate-90" grosor={2} />
+    </button>
+  </div>
+
+  <p data-carrusel-posicion class="sr-only" aria-live="polite">
+    {posicion(0)[lang]}
+  </p>
+</section>
+
+<script>
+  /**
+   * El script de cada carrusel de la página. Se monta una vez por sección
+   * (`dataset.montado`) y sobrevive a las navegaciones de vista.
+   */
+  function montarCarruseles() {
+    document
+      .querySelectorAll<HTMLElement>("[data-carrusel-testimonios]")
+      .forEach((raiz) => {
+        if (raiz.dataset.montado) return;
+        raiz.dataset.montado = "1";
+
+        const tarjetas = [...raiz.querySelectorAll<HTMLElement>("[data-tarjeta]")];
+        const puntos = [...raiz.querySelectorAll<HTMLElement>("[data-carrusel-punto]")];
+        const antes = raiz.querySelector<HTMLButtonElement>("[data-carrusel-antes]");
+        const despues = raiz.querySelector<HTMLButtonElement>("[data-carrusel-despues]");
+        const pausa = raiz.querySelector<HTMLButtonElement>("[data-carrusel-pausa]");
+        const posicion = raiz.querySelector<HTMLElement>("[data-carrusel-posicion]");
+        if (tarjetas.length < 2) return;
+
+        const SEGUNDOS = 7;
+        const menosMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)");
+        let actual = 0;
+        let temporizador: number | undefined;
+        /* Parado por el botón (o por la preferencia del sistema). */
+        let pausado = menosMovimiento.matches;
+        /* Parado porque el cursor o el foco están encima: se reanuda solo. */
+        let retenido = false;
+
+        const idioma = () => (document.documentElement.lang.startsWith("en") ? "en" : "es");
+        const clave = (base: string) => base + (idioma() === "en" ? "En" : "Es");
+
+        const pintar = (i: number, anunciar: boolean) => {
+          actual = (i + tarjetas.length) % tarjetas.length;
+          tarjetas.forEach((el, n) => {
+            const activo = n === actual;
+            el.dataset.activo = String(activo);
+            if (activo) el.removeAttribute("aria-hidden");
+            else el.setAttribute("aria-hidden", "true");
+          });
+          puntos.forEach((p, n) => (p.dataset.activo = String(n === actual)));
+          /* El rótulo de posición solo se actualiza cuando se cambia A MANO:
+             el avance automático no tiene por qué interrumpir a nadie. */
+          if (anunciar && posicion) {
+            const activa = tarjetas[actual];
+            const texto = activa.dataset[clave("aria")];
+            if (texto) posicion.textContent = texto;
+          }
+        };
+
+        const arrancar = () => {
+          clearInterval(temporizador);
+          if (pausado || retenido) return;
+          temporizador = window.setInterval(
+            () => pintar(actual + 1, false),
+            SEGUNDOS * 1000,
+          );
+        };
+
+        const pintarPausa = () => {
+          if (!pausa) return;
+          const etiqueta = pausa.dataset[clave(pausado ? "etiquetaReanudar" : "etiquetaPausar")];
+          if (etiqueta) pausa.setAttribute("aria-label", etiqueta);
+          pausa.setAttribute("aria-pressed", String(pausado));
+          pausa.querySelector("[data-icono-pausa]")?.classList.toggle("hidden", pausado);
+          pausa.querySelector("[data-icono-play]")?.classList.toggle("hidden", !pausado);
+        };
+
+        const aMano = (i: number) => {
+          pintar(i, true);
+          arrancar();
+        };
+
+        antes?.addEventListener("click", () => aMano(actual - 1));
+        despues?.addEventListener("click", () => aMano(actual + 1));
+        puntos.forEach((p, i) => p.addEventListener("click", () => aMano(i)));
+
+        pausa?.addEventListener("click", () => {
+          pausado = !pausado;
+          pintarPausa();
+          arrancar();
+        });
+
+        /* Con las flechas del teclado, cuando el foco está dentro. */
+        raiz.addEventListener("keydown", (e) => {
+          if (e.key === "ArrowLeft") { e.preventDefault(); aMano(actual - 1); }
+          if (e.key === "ArrowRight") { e.preventDefault(); aMano(actual + 1); }
+        });
+
+        /* Cursor o foco encima: se retiene, y al salir se reanuda. Nadie quiere
+           que la cita que está leyendo desaparezca a mitad. */
+        const retener = () => { retenido = true; arrancar(); };
+        const soltar = () => { retenido = false; arrancar(); };
+        raiz.addEventListener("pointerenter", retener);
+        raiz.addEventListener("pointerleave", soltar);
+        raiz.addEventListener("focusin", retener);
+        raiz.addEventListener("focusout", (e) => {
+          if (!raiz.contains(e.relatedTarget as Node | null)) soltar();
+        });
+
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden) clearInterval(temporizador);
+          else arrancar();
+        });
+
+        menosMovimiento.addEventListener("change", (e) => {
+          if (e.matches) pausado = true;
+          pintarPausa();
+          arrancar();
+        });
+
+        window.addEventListener("e180:idioma", () => {
+          pintarPausa();
+          if (posicion) {
+            const texto = tarjetas[actual].dataset[clave("aria")];
+            if (texto) posicion.textContent = texto;
+          }
+        });
+
+        pintarPausa();
+        arrancar();
+      });
+  }
+
+  montarCarruseles();
+  document.addEventListener("astro:page-load", montarCarruseles);
+</script>

@@ -1,39 +1,51 @@
 ---
 /**
- * Botón / enlace de acción. Renderiza <a> si recibe `href`, si no <button>.
+ * ═══════════════════════════════════════════════════════════════════════════
+ * BOTÓN — el hero, la cabecera, la lista y la captura
+ * ═══════════════════════════════════════════════════════════════════════════
  *
- * El texto entra por slot, así que en una página bilingüe se le pasa un <T/>:
- * el botón no necesita saber nada de idiomas.
+ * Desde el 15-09-2026 es la misma píldora que el resto del sitio: el estilo
+ * vive en `boton-pildora` (global.css) y aquí solo se decide el tamaño y el
+ * foco. Ver la nota de esa utilidad para el porqué de cada cosa.
  *
- * Regla de la landing: un solo objetivo. `primary` es SIEMPRE comprar.
- * No usar `primary` para nada más, o el ojo deja de saber dónde ir.
+ * ─── LO QUE ERA Y YA NO ES ─────────────────────────────────────────────────
+ *
+ * Este componente tenía cuatro variantes —`primary` teal relleno, `secondary`,
+ * `ghost` e `inverse` de contorno blanco para el hero— y un pequeño relieve al
+ * pasar el cursor. Todo eso se fue cuando el cliente pidió UN solo botón para
+ * toda la web. La prop `variant` se conserva para no tocar a quien la pasa,
+ * pero ya no cambia nada: todas las variantes son la píldora.
+ *
+ * ⚠️ Y CON ELLAS SE FUE LA REGLA DE "UN SOLO COLOR DE ACCIÓN". Antes el hero
+ * tenía un botón relleno y otro de contorno para que el ojo eligiera sin
+ * dudar. Ahora los dos serían iguales. Hoy el hero lleva un solo botón, así
+ * que no hay conflicto; el día que vuelva a llevar dos, hay que volver a
+ * pensar esto.
+ *
+ * ─── `size` ────────────────────────────────────────────────────────────────
+ *
+ *   md — la cabecera: más corto y con la letra un punto menor.
+ *   lg / xl — el resto. Son iguales: la píldora tiene un solo tamaño de
+ *             cuerpo, y `xl` se conserva para que el hero no tenga que
+ *             cambiar su llamada.
  */
 interface Props {
+  /** Se conserva por compatibilidad; ya no cambia el dibujo. */
   variant?: "primary" | "secondary" | "ghost" | "inverse";
   size?: "md" | "lg" | "xl";
-  /**
-   * Sobre qué fondo se apoya el botón. SOLO cambia el color del anillo de foco.
-   *
-   * No es un detalle de gusto: WCAG 1.4.11 pide 3:1 del indicador de foco
-   * contra lo que tiene al lado, y el teal de `--color-focus` está calculado
-   * contra fondos claros. Sobre el navy del hero se queda justo en el límite.
-   * `oscuro` usa el teal claro (`--color-focus-inverse`, 7.93:1 sobre navy),
-   * que sí se ve sin dudar.
-   */
+  /** Sobre qué fondo va: decide el color del foco y si lleva filete. */
   sobre?: "claro" | "oscuro";
   href?: string;
   type?: "button" | "submit";
-  /** Ocupa todo el ancho. En móvil casi siempre `true`. */
   block?: boolean;
   disabled?: boolean;
-  /** Se envía a GA4 como `cta_click` para saber qué botón convierte. */
+  /** Se envía a GA4 como `cta_click`. */
   trackId?: string;
   class?: string;
   [key: string]: unknown;
 }
 
 const {
-  variant = "primary",
   size = "lg",
   sobre = "claro",
   href,
@@ -42,105 +54,20 @@ const {
   disabled = false,
   trackId,
   class: className = "",
+  variant: _variant,
   ...rest
 } = Astro.props;
-
-const base =
-  "inline-flex items-center justify-center gap-2 rounded-full text-center font-semibold " +
-  // min-h-11 = 44 px: objetivo táctil mínimo, no bajar de aquí.
-  "min-h-11 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out-soft " +
-  "focus-visible:outline-2 focus-visible:outline-offset-2 " +
-  "disabled:pointer-events-none disabled:opacity-50";
 
 const focos = {
   claro: "focus-visible:outline-focus",
   oscuro: "focus-visible:outline-focus-inverse",
 } as const;
 
-const variants = {
-  // El teal es el color de acción de la marca y el ÚNICO color de CTA de la
-  // página: el mismo aquí y en el botón de envío de `LeadForm`. Si esto fuera
-  // navy, la misma acción tendría dos colores según el componente que la
-  // pinta, y el ojo dejaría de saber qué es pulsable.
-  /**
-   * ─── EL BOTÓN SE LEVANTA ─────────────────────────────────────────────
-   *
-   * En reposo es el teal de siempre con un borde navy. Al pasar el cursor se
-   * desplaza 4 px en diagonal, se pone navy y deja detrás una sombra SÓLIDA
-   * navy del mismo tamaño del desplazamiento, así que parece que se ha
-   * despegado del papel. Al pulsar vuelve a su sitio y la sombra desaparece:
-   * el botón se "apoya" otra vez, que es el gesto de pulsar de verdad.
-   *
-   * Sustituye al cambio de color de antes en TODOS los `variant="primary"` de
-   * la página a la vez, que es justo la gracia de que el botón sea un solo
-   * componente.
-   *
-   * ⚠️ LA SOMBRA ES SÓLIDA Y DEL COLOR DE LA MARCA, no un difuminado. Un
-   * `box-shadow` sin blur es un recurso gráfico, no una sombra: por eso
-   * funciona sobre fondo claro y sobre navy sin volverse gris sucio.
-   *
-   * ⚠️ Y SE APAGA CON `prefers-reduced-motion`. La transición está en la clase
-   * base y global.css la anula entera, así que quien pide menos movimiento ve
-   * el cambio de color de golpe, sin desplazamiento. No hace falta tocar nada
-   * aquí para eso.
-   */
-  primary:
-    "border border-primary-900 bg-cta text-ink-inverse " +
-    "motion-safe:hover:-translate-x-1 motion-safe:hover:-translate-y-1 " +
-    "hover:bg-primary-900 " +
-    "motion-safe:hover:shadow-[0.25rem_0.25rem_0_0_var(--color-primary-900)] " +
-    "active:translate-x-0 active:translate-y-0 active:shadow-none",
-  secondary:
-    "bg-surface text-ink border border-line-strong hover:bg-surface-muted",
-  ghost: "bg-transparent text-ink-brand hover:bg-surface-muted",
-  /**
-   * Botón secundario SOBRE FONDO OSCURO (el hero con vídeo).
-   *
-   * Es de contorno y no relleno a propósito. La regla del proyecto es que en
-   * toda la página hay UN solo color de acción, así que el segundo botón del
-   * hero no puede competir en peso con el teal: si los dos van rellenos, el ojo
-   * tiene que elegir y tarda. Un contorno blanco se ve perfectamente y deja
-   * claro cuál de los dos es la acción principal.
-   *
-   * El borde va al 70 % y no más bajo porque un control de interfaz necesita
-   * 3:1 contra su fondo (WCAG 1.4.11). Por debajo de ahí el botón se queda sin
-   * límites visibles para bastante gente, sobre todo encima de un vídeo, que
-   * cambia de claridad en cada fotograma.
-   */
-  inverse:
-    "border border-neutral-0/70 bg-neutral-0/5 text-ink-inverse " +
-    "hover:border-neutral-0 hover:bg-neutral-0 hover:text-ink",
-} as const;
-
-const sizes = {
-  /* ⚠️ `text-base` Y NO `text-sm`, Y AQUÍ HABÍA DOS PROBLEMAS A LA VEZ. El
-     único sitio que usa este tamaño es el CTA de la cabecera, y los enlaces
-     que tiene AL LADO pasaron a 16 px en la revisión de tamaños: el botón se
-     quedaba en 14 y se leía como menos importante que los enlaces de texto que
-     acompaña, que es justo al revés de lo que es.
-
-     Y de paso el alto: con `py-2.5` y 14 px la caja medía 41 px, por debajo de
-     los 44 que pide la WCAG 2.5.5. Con `py-3` y 16 px sube a 48. */
-  md: "px-5 py-3 text-base",
-  lg: "px-8 py-4 text-lg sm:text-xl",
-  /* ⚠️ `xl` ES SOLO PARA EL HERO, y con un cuerpo escrito a mano en vez de
-     `text-2xl`. El escalón 2xl del sistema llega a 34 px arriba: eso es un
-     titular, no un botón. Aquí hacen falta 20 en un teléfono y 21 de `sm` para
-     arriba, que es un punto por encima del `lg` y se nota sin desbordar.
-
-     El alto sube de unos 59 px a 63. Parece poco y no lo es: el bloque central
-     del héroe reserva su hueco por abajo y los dos titulares se apoyan en esa
-     cuenta. Ver la cadena de tres piezas en la nota de `LADOS`, en
-     `HeroDiptico.astro`, antes de volver a tocar este número. */
-  xl: "px-9 py-4 text-xl sm:text-[1.3125rem]",
-} as const;
-
 const classes = [
-  base,
+  "boton-pildora focus-visible:outline-2 focus-visible:outline-offset-2",
+  size === "md" && "boton-pildora-md",
   focos[sobre],
-  variants[variant],
-  sizes[size],
-  block ? "w-full" : "",
+  block && "w-full",
   className,
 ];
 
@@ -154,6 +81,7 @@ const Tag = href ? "a" : "button";
   disabled={href ? undefined : disabled}
   aria-disabled={disabled ? "true" : undefined}
   data-track={trackId}
+  data-sobre={sobre}
   {...rest}
 >
   <slot />

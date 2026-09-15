@@ -50,7 +50,7 @@ export const responsable = {
   identificacion: "[COMPLETAR: NIF / EIN / NIT]",
   direccion: "[COMPLETAR: dirección postal completa]",
   pais: "[COMPLETAR: país]",
-  email: "hola@emprende180.com", // SWAP: confirmar
+  email: "contact@emprende180.com", // el mismo que `contacto.email` en curso.config
 } as const;
 
 const R = responsable;

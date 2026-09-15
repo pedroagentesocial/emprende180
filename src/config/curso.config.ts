@@ -126,6 +126,14 @@ export interface Testimonio {
 export interface Faq {
   pregunta: Txt;
   respuesta: Txt;
+  /**
+   * ⚠️ LAS QUE HABLAN DE PRECIO, PAGO O GARANTÍA NO SALEN EN LA PORTADA. La
+   * página dejó de vender el curso —no hay cifra en ninguna sección— y una
+   * pregunta sobre "pagar en partes" debajo de una página sin precio es una
+   * pregunta que nadie se hizo. Se quedan escritas para el área de alumnos y
+   * para el día que vuelva el precio.
+   */
+  soloCurso?: boolean;
 }
 
 export interface DiaLeadMagnet {
@@ -1485,7 +1493,7 @@ export const testimonios: Testimonio[] = [
 
      ─── SIN `resultado` ──────────────────────────────────────────────────────
      La pastilla teal de la tarjeta (`resultado`) se quitó, también a petición
-     de Pedro. Sigue existiendo en el tipo y en `BandaTestimonios`: es opcional,
+     de Pedro. Sigue existiendo en el tipo y en `TarjetaTestimonio`: es opcional,
      y cuando llegue un testimonio con un resultado de verdad —una cifra o un
      plazo que la persona haya dicho— basta con añadirle el campo y su tarjeta
      lo pinta. Lo que NO se hace es rellenarlo con algo que el alumno no dijo. */
@@ -1790,12 +1798,12 @@ export const faqs: Faq[] = [
   },
   {
     pregunta: {
-      es: "¿El CRM va incluido en el precio?",
-      en: "Is the CRM included in the price?",
+      es: "¿El CRM va incluido?",
+      en: "Is the CRM included?",
     },
     respuesta: {
-      es: "Sí. El acceso al CRM entra con el curso, no se contrata aparte y no es una herramienta que tengas que poner tú. El video 7 te enseña a usarlo con lo mínimo para empezar: cada contacto y cada oportunidad en un sitio, con su estado al día.",
-      en: "Yes. CRM access comes with the course. It isn't contracted separately and it isn't a tool you have to bring yourself. Video 7 teaches you to use it with the bare minimum to get going: every contact and every opportunity in one place, with its status current.",
+      es: "Sí. El acceso al CRM entra con el programa, no se contrata aparte y no es una herramienta que tengas que poner tú. El video 7 te enseña a usarlo con lo mínimo para empezar: cada contacto y cada oportunidad en un sitio, con su estado al día.",
+      en: "Yes. CRM access comes with the program. It isn't contracted separately and it isn't a tool you have to bring yourself. Video 7 teaches you to use it with the bare minimum to get going: every contact and every opportunity in one place, with its status current.",
     },
   },
   {
@@ -1870,8 +1878,10 @@ export const faqs: Faq[] = [
     },
   },
   {
+    soloCurso: true,
     pregunta: {
       es: "¿Puedo pagar en partes?",
+      /* Ver `soloCurso` en la interfaz: no sale en la portada. */
       en: "Can I pay in installments?",
     },
     respuesta: {
@@ -1880,8 +1890,10 @@ export const faqs: Faq[] = [
     },
   },
   {
+    soloCurso: true,
     pregunta: {
       es: "¿Cómo funciona la garantía exactamente?",
+      /* Ver `soloCurso` en la interfaz: no sale en la portada. */
       en: "How exactly does the guarantee work?",
     },
     respuesta: {
@@ -1894,7 +1906,10 @@ export const faqs: Faq[] = [
 // ─── Contacto ────────────────────────────────────────────────────────────────
 
 export const contacto = {
-  email: "hola@emprende180.com", // SWAP (HECHO): confirmar
+  /* ⚠️ contact@ Y NO hola@. Lo fijó el cliente el 15-09-2026. Es el que se
+     enseña en las preguntas frecuentes, el del pie, el del schema y el de
+     respuesta de los correos de acceso: cambia aquí y cambia en todos. */
+  email: "contact@emprende180.com",
   /**
    * Teléfono para el botón de "Llámame ahora". Formato internacional.
    *
@@ -1929,6 +1944,19 @@ export const contacto = {
    * de privacidad y en los términos.
    */
   razonSocial: "Emprende180",
+  /**
+   * La dirección física. La dio el cliente el 15-09-2026. Se pinta en el pie
+   * y en el bloque "Visítanos" del about; el enlace del mapa se construye
+   * con la búsqueda de Google Maps, que no necesita clave ni coordenadas y
+   * abre la app nativa en el teléfono.
+   */
+  direccion: {
+    calle: "1515 East Fort Union Blvd",
+    ciudad: "Cottonwood Heights, UT 84121",
+    pais: { es: "EE. UU.", en: "USA" },
+  },
+  mapaUrl:
+    "https://www.google.com/maps/search/?api=1&query=1515+East+Fort+Union+Blvd%2C+Cottonwood+Heights%2C+UT+84121",
 } as const;
 
 /**
@@ -2764,9 +2792,14 @@ export const copy = {
          *
          * El código del paso 2 sigue ahí (`ladosSinFoto` en `HeroDiptico`):
          * no se borra porque esta decisión ya se ha dado la vuelta dos veces.
+         *
+         * ⚠️ Y DESDE EL 15-09-2026 EL BLOQUE VA ARRIBA A LA IZQUIERDA, alineado
+         * al borde. Con el promocional fuera del slider esta pasó a ser la
+         * primera pantalla, y el cliente la quiso así. Encaja con el vídeo: la
+         * persona está en el tercio derecho, y el texto cae donde no hay nadie.
          */
         composicion: "centro",
-        bloque: "derecha",
+        bloque: "izquierda",
 
         /**
          * ⚠️ ESTA FRASE DICE "GENERA INGRESOS EXTRA" Y ESO ES UNA PROMESA DE
@@ -3132,30 +3165,60 @@ export const copy = {
   identidad: {
     aria: { es: "Qué es ser Embajador", en: "What being an Ambassador is" },
 
-    /* El renglón pequeño de arriba. En caja baja a propósito: en versalitas
-       competiría con el titular y esto es una entrada, no un segundo título. */
-    kicker: {
-      es: "Ser Embajador Emprende180 es esto",
-      en: "This is what being an Entrepreneur180 Ambassador looks like",
-    },
+    /* ⚠️ SIN RENGLÓN DE ENTRADA desde el 15-09-2026: el cliente reemplazó
+       todo el texto de la sección por el titular y un párrafo, y un kicker
+       encima de "El programa Emprende180" repetiría lo que ya dice el título.
+       Se deja vacío en vez de borrarse para que la sección no tenga que
+       cambiar de forma si algún día vuelve. */
+    kicker: { es: "", en: "" },
 
     /* ⚠️ EL TITULAR VA EN MONTSERRAT Y LA SEGUNDA LÍNEA EN FRAUNCES ITÁLICA,
        no al revés. La primera describe a un tercero —"todos tienen alguien
        así"— y la segunda te señala a ti. El cambio de tipografía ES ese giro:
        si las dos fueran iguales, la frase se leería como una sola idea. */
-    titulo: { es: "Todos tienen alguien así.", en: "Everyone has someone like that." },
-    subtitulo: { es: "Tú eres esa persona.", en: "You're that person." },
+    /* ⚠️ EL TEXTO LO DICTÓ EL CLIENTE el 15-09-2026 y sustituye al de
+       identidad ("Todos tienen alguien así / Tú eres esa persona"). El título
+       "El programa Emprende180" se parte en dos renglones para conservar el
+       gesto de la sección: Montserrat arriba y el remate en Fraunces, que
+       aquí es el nombre.
 
-    /* Dos párrafos y un contraste: el primero describe lo que YA pasa, el
-       segundo cambia una sola cosa. Nada más. */
+       El guion largo que traía el texto ("…trabajan para ti — todo sin dejar
+       de vivir tu vida") pasa a punto y seguido: es la regla de todo el sitio
+       en español. El inglés no es traducción literal. */
+    titulo: { es: "El programa", en: "The program" },
+    subtitulo: { es: "Emprende180.", en: "Entrepreneur180." },
+
     cuerpo: [
       {
-        es: "Ya te preguntan por un plomero, por un abogado, por quién arregla el techo. Contestas por WhatsApp y ahí acaba todo.",
-        en: "People already ask you about a plumber, a lawyer, who fixes the roof. You answer on WhatsApp and that's where it ends.",
+        es: "Emprende180 es un plan estructurado de prospección diaria para embajadores. En 90 días construyes una base de contactos organizada, un sistema de seguimiento que funciona solo y fuentes de referidos que trabajan para ti. Todo sin dejar de vivir tu vida.",
+        en: "Entrepreneur180 is a structured daily prospecting plan for ambassadors. In 90 days you build an organized contact base, a follow-up system that runs on its own, and referral sources that work for you. All without putting your life on hold.",
       },
+    ],
+
+    /**
+     * ─── LOS CUATRO DATOS DEL PROGRAMA ──────────────────────────────────
+     *
+     * Los pidió el cliente el 15-09-2026, debajo del párrafo. Los tres primeros
+     * salen del documento del plan de 90 días, tal cual están en `plan90`: 90
+     * días, 2 horas al día (60 de prospección + 45 de seguimiento + 15 de CRM)
+     * y cuatro fases (Fundación, Sistematización, Red y base viva,
+     * Consolidación).
+     *
+     * ⚠️ EL CUARTO NO LLEVA NÚMERO, Y ES A PROPÓSITO. El documento fija una
+     * meta de 450 contactos, y la regla del propio `plan90` —que sale de la
+     * regla 5 del documento del cliente— es que las metas de actividad NO se
+     * publican: en una página de venta, cualquier número junto a "contactos"
+     * se lee como una promesa. Lo que sí es verdad por diseño es que TODOS los
+     * contactos viven organizados en el CRM ("si no está en el CRM, no
+     * existió"), y eso es lo que dice la casilla.
+     */
+    datos: [
+      { valor: { es: "90", en: "90" }, etiqueta: { es: "días de plan", en: "days of plan" } },
+      { valor: { es: "2", en: "2" }, etiqueta: { es: "horas al día", en: "hours a day" } },
+      { valor: { es: "4", en: "4" }, etiqueta: { es: "fases de crecimiento", en: "growth phases" } },
       {
-        es: "Un Embajador contesta igual, con un Ecosistema detrás que se encarga del resto. Ese es todo el cambio.",
-        en: "An Ambassador answers the same way, with an Ecosystem behind them that handles the rest. That's the whole change.",
+        valor: { es: "Todos", en: "All" },
+        etiqueta: { es: "tus contactos, organizados en el CRM", en: "your contacts, organized in the CRM" },
       },
     ],
 
@@ -3899,11 +3962,17 @@ export const copy = {
   blogPortada: {
     aria: { es: "Lo último del blog", en: "Latest from the blog" },
     kicker: { es: "El blog", en: "The blog" },
+    /* ⚠️ EL TÍTULO CAMBIÓ CON LA MUDANZA. "Preguntas que ya conoces /
+       Respuestas que te faltaban" era el titular cuando la sección vivía en
+       la portada; el 15-09-2026 pasó a /resources y su sitio en la portada lo
+       ocupan las preguntas frecuentes, así que un titular que empezaba por
+       "Preguntas" habría chocado con la sección que la sustituye. Este habla
+       de lo que es: 21 años de oficio, contados en corto. */
     titulo: [
-      { es: "Preguntas que ya conoces.", en: "Questions you already know." },
+      { es: "Lo que he aprendido en 21 años,", en: "What 21 years taught me," },
       {
-        es: "Respuestas que te faltaban.",
-        en: "Answers you were missing.",
+        es: "en artículos cortos.",
+        en: "in short articles.",
         enfasis: true,
       },
     ],
@@ -4019,6 +4088,128 @@ export const copy = {
       es: "Una persona sentada a la mesa de su cocina, de noche, trabajando con su portátil",
       en: "Somebody at their kitchen table at night, working on their laptop",
     },
+  },
+
+  /**
+   * ═══════════════════════════════════════════════════════════════════════
+   * LOS 90 DÍAS, EN LA PORTADA — la sección que va detrás del programa
+   * ═══════════════════════════════════════════════════════════════════════
+   *
+   * La pidió el cliente el 15-09-2026: el título y, debajo, las cuatro fases
+   * como un collage de filas alternas —foto a un lado, texto al otro, y al
+   * revés en la siguiente—, sin aire entre ellas y a todo el ancho.
+   *
+   * ⚠️ LOS TEXTOS DE LA FASE 1 Y LA 4 LOS DICTÓ EL CLIENTE tal cual, con sus
+   * cifras ("100 contactos", "más de 150 contactos organizados", "25
+   * conversaciones profundas"). Conviene saber que eso contradice la regla
+   * que él mismo fijó en `plan90` —las metas de actividad no se publican—.
+   * Se ponen porque las dictó por escrito para esta sección; si algún día se
+   * quiere volver a la regla, son dos frases.
+   *
+   * ⚠️ LAS FASES 2 Y 3 LAS ESCRIBIÓ CLAUDE a partir de los objetivos que ya
+   * estaban en `plan90.fases` y del corte del día 45, porque el cliente pegó
+   * la fase 1 tres veces y solo dictó la 1 y la 4. Van sin la línea de
+   * minutos: el documento da el reparto del principio (60·45·15) y el del
+   * final (35·70·15), y el de las fases de en medio no está escrito en ningún
+   * sitio. Inventarlo sería inventar un dato. Pendientes de que el cliente
+   * las apruebe o las reescriba.
+   *
+   * Sin guion largo en español: el que traía la fase 4 pasa a dos puntos.
+   */
+  plan90Portada: {
+    aria: { es: "Los 90 días", en: "The 90 days" },
+    titulo: {
+      es: "Los 90 días que cambian tu rutina",
+      en: "The 90 days that change your routine",
+    },
+    fases: [
+      {
+        numero: "01",
+        rango: { es: "Días 1–20", en: "Days 1–20" },
+        nombre: { es: "Fundación", en: "Foundation" },
+        reparto: {
+          es: "60 min prospección · 45 min seguimiento · 15 min cierre",
+          en: "60 min prospecting · 45 min follow-up · 15 min wrap-up",
+        },
+        texto: {
+          es: "Empiezas desde cero y eso está bien. Construyes tu lista de 100 contactos, la cargas al CRM y aprendes a sostener conversaciones reales. Al final de esta fase tienes más de 150 contactos organizados y 25 conversaciones profundas.",
+          en: "You start from zero, and that's fine. You build your list of 100 contacts, load it into the CRM and learn to hold real conversations. By the end of this phase you have more than 150 organized contacts and 25 deep conversations.",
+        },
+        imagen: {
+          src: "/imagenes/resultados/01.webp",
+          ancho: 800,
+          alto: 600,
+          encuadre: "center 40%",
+          alt: {
+            es: "Una mano escribiendo una lista en una libreta, con un café al lado",
+            en: "A hand writing a list in a notebook, with a coffee beside it",
+          },
+        },
+      },
+      {
+        numero: "02",
+        rango: { es: "Días 21–45", en: "Days 21–45" },
+        nombre: { es: "Sistematización", en: "Systematizing" },
+        reparto: null,
+        texto: {
+          es: "Lo que hacías de memoria pasa a tener un sitio. Cada contacto queda con su etapa, su etiqueta y su próximo paso, y el seguimiento deja de depender de que te acuerdes. El día 45 te sientas con tu líder y decidís juntos: sigues, ajustas o pausas.",
+          en: "What you did from memory now has a place. Every contact gets its stage, its tag and its next step, and follow-up stops depending on you remembering. On day 45 you sit down with your leader and decide together: carry on, adjust or pause.",
+        },
+        imagen: {
+          src: "/imagenes/resultados/04.webp",
+          ancho: 800,
+          alto: 600,
+          encuadre: "center 45%",
+          alt: {
+            es: "Una agenda abierta con la semana escrita a mano, junto a un teclado",
+            en: "An open planner with the week written out by hand, next to a keyboard",
+          },
+        },
+      },
+      {
+        numero: "03",
+        rango: { es: "Días 46–70", en: "Days 46–70" },
+        nombre: { es: "Red y base viva", en: "Network and living base" },
+        reparto: null,
+        texto: {
+          es: "Sales de tu agenda. Abres alianzas con negocios de tu zona que ven a la misma gente que tú, y vuelves sobre todo lo que sembraste en las semanas anteriores: los contactos que se enfriaron, las conversaciones que quedaron a medias. La base deja de ser una lista y empieza a moverse sola.",
+          en: "You step outside your own contacts. You open alliances with local businesses that see the same people you do, and you go back over everything you planted in the previous weeks: the contacts that went cold, the conversations left half-finished. The base stops being a list and starts moving on its own.",
+        },
+        imagen: {
+          src: "/imagenes/hero/banco-charla.webp",
+          ancho: 1400,
+          alto: 1800,
+          encuadre: "center 35%",
+          alt: {
+            es: "Dos personas conversando sentadas a una mesa en la calle",
+            en: "Two people talking at a table out in the street",
+          },
+        },
+      },
+      {
+        numero: "04",
+        rango: { es: "Días 71–90", en: "Days 71–90" },
+        nombre: { es: "Consolidación", en: "Consolidation" },
+        reparto: {
+          es: "35 min prospección · 70 min seguimiento · 15 min cierre",
+          en: "35 min prospecting · 70 min follow-up · 15 min wrap-up",
+        },
+        texto: {
+          es: "Demuestras que lo que construiste se sostiene solo. El día 78 empiezas a escribir tus propias tareas. El día 90 no es un final: es el punto de partida para los siguientes 90.",
+          en: "You prove that what you built holds on its own. On day 78 you start writing your own tasks. Day 90 isn't an ending: it's the starting point for the next 90.",
+        },
+        imagen: {
+          src: "/imagenes/resultados/06.webp",
+          ancho: 800,
+          alto: 600,
+          encuadre: "center 30%",
+          alt: {
+            es: "Una mujer hablando por teléfono al aire libre, con el agua de fondo",
+            en: "A woman on the phone outdoors, with water in the background",
+          },
+        },
+      },
+    ],
   },
 
   /**
@@ -4734,9 +4925,11 @@ export const copy = {
 
   faq: {
     aria: { es: "Preguntas frecuentes", en: "Frequently asked questions" },
+    /* A secas, a petición del cliente (15-09-2026). Decía "Preguntas que
+       probablemente te estás haciendo". */
     titulo: {
-      es: "Preguntas que probablemente te estás haciendo",
-      en: "Questions you're probably asking yourself",
+      es: "Preguntas frecuentes",
+      en: "Frequently asked questions",
     },
 
     /**
@@ -4745,8 +4938,8 @@ export const copy = {
      * estas respuestas y quién las escribe. `entradilla` hace ese trabajo.
      */
     entradilla: {
-      es: "Las que más me llegan por teléfono, contestadas sin rodeos. Si algo aquí no te cuadra, prefiero que lo sepas antes de pagar y no después.",
-      en: "The ones I get most on the phone, answered straight. If something here doesn't add up for you, I'd rather you knew before paying, not after.",
+      es: "Las que más me llegan por teléfono, contestadas sin rodeos. Si algo aquí no te cuadra, prefiero que lo sepas antes de empezar y no después.",
+      en: "The ones I get most on the phone, answered straight. If something here doesn't add up for you, I'd rather you knew before you start, not after.",
     },
     /** Se rellena con el número real de preguntas. Ver `10-Faq.astro`. */
     cuantas: {
@@ -4909,7 +5102,8 @@ export const copy = {
   },
 
   /**
-   * Banda de testimonios. Ver `BandaTestimonios.astro`.
+   * Los testimonios: rótulos de la banda que hubo y del carrusel que la
+   * sustituyó el 15-09-2026. Ver `CarruselTestimonios.astro`.
    *
    * Los tres los lee un lector de pantalla, así que van en el idioma de la
    * página como cualquier otro texto. `etiqueta` nombra la lista: sin ella, lo
@@ -4923,6 +5117,12 @@ export const copy = {
     etiqueta: { es: "Testimonios de alumnos", en: "Student testimonials" },
     pausar: { es: "Pausar los testimonios", en: "Pause the testimonials" },
     reanudar: { es: "Reanudar los testimonios", en: "Resume the testimonials" },
+    /* El carrusel de una tarjeta que sustituyó a la banda el 15-09-2026. Ver
+       `CarruselTestimonios.astro`. */
+    anterior: { es: "Testimonio anterior", en: "Previous testimonial" },
+    siguiente: { es: "Testimonio siguiente", en: "Next testimonial" },
+    irA: { es: "Ver el testimonio {n}", en: "Show testimonial {n}" },
+    posicion: { es: "Testimonio {n} de {total}", en: "Testimonial {n} of {total}" },
   },
 
   /**
@@ -5033,6 +5233,12 @@ export const copy = {
        derecho: media página de gris vacío en medio. Ahora tiene columnas, y
        las columnas necesitan nombre. */
     pieNavegar: { es: "La página", en: "The page" },
+    visitanos: { es: "Visítanos", en: "Visit us" },
+    comoLlegar: { es: "Cómo llegar", en: "Get directions" },
+    visitanosTexto: {
+      es: "Si estás por Salt Lake, pasa a vernos. Una conversación en persona vale más que veinte correos.",
+      en: "If you're around Salt Lake, come by. A conversation in person is worth more than twenty emails.",
+    },
     pieContacto: { es: "Hablar con nosotros", en: "Talk to us" },
     pieLegal: { es: "Legal", en: "Legal" },
     pieLlamar: { es: "Llamar", en: "Call" },

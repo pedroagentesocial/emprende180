@@ -4,7 +4,7 @@ import Section from "@components/ui/Section.astro";
 import SectionHeading from "@components/ui/SectionHeading.astro";
 import Editorial from "@components/ui/Editorial.astro";
 import Reveal from "@components/motion/Reveal.astro";
-import BandaTestimonios from "@components/motion/BandaTestimonios.astro";
+import CarruselTestimonios from "@components/motion/CarruselTestimonios.astro";
 import Aliados from "@components/sections/05-Aliados.astro";
 import Enfasis from "@components/ui/Enfasis.astro";
 import Estrellas from "@components/ui/Estrellas.astro";
@@ -240,22 +240,22 @@ const puntos = puntosBase.map((p) => ({
           </Reveal>
         </div>
 
-        {/* ─── LA BANDA, CON LA TARJETA NUEVA ────────────────────────────
-            Estuvo un rato en rejilla de dos columnas y vuelve al carrusel, que
-            es el mismo tratamiento que la banda de logos de aquí abajo: las dos
-            cosas dicen lo mismo y ahora también se mueven igual.
+        {/* ─── EL CARRUSEL: UNA TARJETA, DE UNA EN UNA ────────────────────
+            Estuvo en rejilla, luego en banda corrida —como la de logos de aquí
+            abajo— y desde el 15-09-2026 es un carrusel de una sola tarjeta
+            grande, con flechas y puntos. El motivo lo dio el cliente: dos
+            bandas moviéndose a la vez, una encima de otra, se leían como dos
+            marquesinas. Ahora la única que corre es la de logos, y los
+            testimonios se leen de uno en uno.
 
-            ⚠️ LO QUE NO VUELVE ES LA TARJETA VIEJA. La banda dibujaba la suya
-            —avatar circular, estrellas, otro radio y el color invertido— y la
-            rejilla otra distinta. Ahora las dos usan `TarjetaTestimonio`: una
-            sola tarjeta con dos formas de presentarla.
+            La tarjeta es la misma `TarjetaTestimonio` en su versión `grande`.
+            La caja mide lo que mide la más alta, así que los mandos de abajo
+            no saltan al cambiar. Ver `CarruselTestimonios`.
 
-            `montarBandas()` —el botón de parada, que es lo que hace que esto
-            cumpla la WCAG 2.2.2— se carga desde `05-Aliados.astro` y sirve a
-            las dos bandas. Se mudó allí cuando esta sección no tenía ninguna, y
-            se queda: el sitio correcto es el componente que la usa siempre. */}
-        <div class="container-page mt-12 lg:pr-0">
-          <BandaTestimonios items={lista} />
+            `montarBandas()` sigue cargándose desde `05-Aliados.astro`: ahora
+            solo sirve a la banda de logos, pero es el sitio correcto igual. */}
+        <div class="container-page mt-12">
+          <CarruselTestimonios items={lista} class="mx-auto max-w-5xl" />
         </div>
 
         {/* ─── Y LOS LOGOS, EN LA MISMA ZONA Y SIN COSTURA ─────────────────

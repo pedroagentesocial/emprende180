@@ -117,7 +117,7 @@ const columnaDos = enlacesPagina.slice(3, 6);
   {/* Aire recortado: el pie no es una sección, es el remate. Con `py-14` y
       `gap-10` ocupaba casi una pantalla de teléfono él solo. */}
   <div class="container-page py-10">
-    <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+    <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-5 lg:gap-8">
       <!-- ── Las redes ─────────────────────────────────────────────────────── -->
       {/* En fila y con el botón que se abre al pasar por encima. Es la primera
           columna y va sin rótulo, igual que las otras tres: cinco círculos con
@@ -202,6 +202,40 @@ const columnaDos = enlacesPagina.slice(3, 6);
           </li>
         </ul>
       </nav>
+
+      <!-- ── Visítanos ─────────────────────────────────────────────────────── -->
+      {/* La dirección física, con el enlace al mapa. Es la quinta columna
+          desde el 15-09-2026, cuando el cliente dio la dirección. `<address>`
+          es la etiqueta que existe para esto; el correo va debajo porque es la
+          otra forma de llegar. */}
+      <div>
+        <p class="text-sm font-bold tracking-[0.18em] text-ink-inverse uppercase">
+          <T v={copy.ui.visitanos} />
+        </p>
+        <address class="mt-3 text-sm not-italic leading-relaxed text-secondary-200/90">
+          {contacto.direccion.calle}<br />
+          {contacto.direccion.ciudad}<br />
+          <T v={contacto.direccion.pais} />
+        </address>
+        {/* Un botón y no un enlace de texto, a petición del cliente: es la
+            píldora del sitio en su tamaño de cabecera, sobre navy. */}
+        <a
+          href={contacto.mapaUrl}
+          target="_blank"
+          rel="noopener"
+          data-sobre="oscuro"
+          data-track="pie-mapa"
+          class="boton-pildora boton-pildora-md mt-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+        >
+          <T v={copy.ui.comoLlegar} />
+        </a>
+        <a
+          href={`mailto:${contacto.email}`}
+          class="mt-3 block text-sm text-secondary-200/90 transition-colors hover:text-ink-inverse"
+        >
+          {contacto.email}
+        </a>
+      </div>
     </div>
 
     {/* Aquí llegó a haber un isotipo pequeño a la derecha del copyright. Se fue:

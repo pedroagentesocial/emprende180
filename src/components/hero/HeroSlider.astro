@@ -184,7 +184,7 @@ interface SlideDiptico extends ConVideo {
   paneles: readonly PanelDiptico[];
   composicion?: "lados" | "centro";
   /** Dónde se apoya el bloque de texto. Ver `HeroDiptico`. */
-  bloque?: "centro" | "derecha";
+  bloque?: "centro" | "derecha" | "izquierda";
   subtitulo: Txt;
   /* Opcional: solo la primera imagen pide algo. Ver `HeroDiptico`. */
   cta?: { texto: Txt; href: string };
