@@ -666,7 +666,11 @@ const CAJA_ICONO =
     <Section id="about-blog" tono="surface" ariaLabel={about.blog.titulo}>
       {/* 40 / 60 y no mitad y mitad: la lista de artículos es la que gana con
           el ancho, y dos columnas iguales se leen como una tabla. */}
-      <div class="grid gap-12 lg:grid-cols-[40fr_60fr] lg:gap-20">
+      {/* `lg:items-center`: la lista de artículos arrancaba pegada arriba y,
+          con la columna del título más alta (ceja, título, autor, botón),
+          quedaba colgada. Centrada en vertical se lee al lado del título y
+          no encima de él. Lo pidió el cliente el 15-09-2026. */}
+      <div class="grid gap-12 lg:grid-cols-[40fr_60fr] lg:items-center lg:gap-20">
         <Reveal>
           <div>
             <p class="text-sm font-semibold text-ink-brand sm:text-base">

@@ -4389,6 +4389,20 @@ export const copy = {
            que haya captura real, se cambia aquí.
          · Seguimiento: `resultados/03`, dos personas conversando con un
            café. Es la escena del "no lo haces solo". */
+    /* ─── EL MÉTODO DE LOS 90 DÍAS ───────────────────────────────────────
+       Sección nueva del 15-09-2026, a petición del cliente: "mete también el
+       método de los 90 días, datos, por ahí algún vídeo en vertical". El
+       título es nuevo; el párrafo y los cuatro datos son los de
+       `copy.identidad`, y se leen de ahí para que haya UNA sola versión del
+       texto del programa. El vídeo vertical es el de introducción
+       (/video/vsl.mp4, 9:16), que estaba grabado y sin usar desde que el hero
+       pasó a slider. */
+    metodo: {
+      aria: { es: "El método de los 90 días", en: "The 90-day method" },
+      titulo: { es: "El método de los", en: "The" },
+      remate: { es: "90 días.", en: "90-day method." },
+    },
+
     secciones: [
       {
         id: "academia",
@@ -4409,7 +4423,7 @@ export const copy = {
           },
         ],
         cta: { es: "Empezar la Academia", en: "Start the Academy" },
-        ctaHref: "/#empezar",
+        ctaHref: "#empezar",
         imagenLado: "derecha",
         imagen: {
           src: "/imagenes/secciones/temario.webp",
@@ -4437,7 +4451,7 @@ export const copy = {
           },
         ],
         cta: { es: "Quiero mi acceso", en: "I want access" },
-        ctaHref: "/#empezar",
+        ctaHref: "#empezar",
         imagenLado: "izquierda",
         imagen: {
           src: "/imagenes/resultados/04.webp",
@@ -4469,7 +4483,7 @@ export const copy = {
           },
         ],
         cta: { es: "Ver el seguimiento", en: "See the follow-up" },
-        ctaHref: "/#empezar",
+        ctaHref: "#empezar",
         imagenLado: "derecha",
         imagen: {
           src: "/imagenes/resultados/03.webp",

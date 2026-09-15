@@ -8,6 +8,8 @@ import Enfasis from "@components/ui/Enfasis.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Icono from "@components/ui/Icono.astro";
 import BotonRelieve from "@components/ui/BotonRelieve.astro";
+import VideoVsl from "@components/hero/VideoVsl.astro";
+import Cierre from "@components/sections/09-Cierre.astro";
 import { copy, sitio } from "@config/curso.config";
 import { construirTxt, resolverIdiomaServidor } from "@i18n/idioma";
 
@@ -23,21 +25,33 @@ import { construirTxt, resolverIdiomaServidor } from "@i18n/idioma";
  *
  * ─── NO HAY SISTEMA VISUAL NUEVO ───────────────────────────────────────────
  *
- * El hero es el del about (a la izquierda, columna estrecha, remate en
- * Fraunces, navy con las dos luces y el encogimiento al bajar). Las tres
- * secciones usan el patrón de imagen con DESNIVEL del blog de la portada: la
- * foto arranca 96 px más abajo que el texto y se estira hasta su misma línea
- * de abajo. Y el lado de la foto alterna —derecha, izquierda, derecha— para
- * que tres secciones con la misma anatomía no se lean como tres copias.
+ * El hero es el del about de antes (a la izquierda, columna estrecha, remate
+ * en Fraunces, navy con las dos luces y el encogimiento al bajar). Las tres
+ * piezas van en el MOSAICO de la portada —el de "Los 90 días" y el del
+ * propósito del about—: filas alternas foto/texto a todo el ancho, pegadas
+ * entre sí, y el lado de la foto alterna para que tres filas con la misma
+ * anatomía no se lean como tres copias. Ver `01-Plan90.astro` para el porqué
+ * de cada decisión del mosaico.
+ *
+ * ⚠️ ANTES ERAN TRES SECCIONES CON LA FOTO DESNIVELADA (la foto arrancaba 96
+ * px más abajo que el texto, como en el blog de la portada). El cliente las
+ * vio el 15-09-2026 y pidió el mosaico: "arregla el que parece mosaico como
+ * lo veníamos haciendo".
  *
  * ─── LAS ZONAS DE FONDO ─────────────────────────────────────────────────────
  *
- *   navy     hero
- *   blanco   índice + las tres secciones   (una zona: el programa entero)
+ *   navy       hero
+ *   blanco     índice + las tres piezas   (una zona: el programa entero)
+ *   azul suave el método de los 90 días, con los datos y el vídeo vertical
+ *   blanco     el formulario (la misma sección de cierre de la portada)
  *
- * Las tres secciones van sobre el MISMO fondo a propósito: son tres partes
- * de una cosa, y un cambio de color entre ellas diría que son tres cosas. Lo
- * que las separa es el filete del índice arriba y el desnivel de cada foto.
+ * Las tres piezas van sobre el MISMO fondo a propósito: son tres partes de
+ * una cosa, y un cambio de color entre ellas diría que son tres cosas.
+ *
+ * ⚠️ EL FORMULARIO ESTÁ EN ESTA PÁGINA desde el 15-09-2026 ("falta agregar un
+ * captador de leads"). Es `09-Cierre` tal cual, con su `id="empezar"`, así que
+ * los botones de las tres piezas bajan a `#empezar` aquí mismo en vez de
+ * mandar a la portada, que era un salto de página para rellenar un formulario.
  *
  * ⚠️ LAS TRES REGLAS DE TONO viven en `copy.programas`: sin precios, sin
  * "para quién sí / para quién no", sin guion largo en español.
@@ -156,81 +170,157 @@ const tituloPagina = construirTxt(
       </Reveal>
     </Section>
 
-    {/* ─── 3 · LAS TRES SECCIONES ────────────────────────────────────────
-        Una plantilla, tres veces, y lo único que cambia entre ellas es el
+    {/* ─── 3 · LAS TRES PIEZAS, EN MOSAICO ──────────────────────────────
+        Una plantilla, tres veces, y lo único que cambia entre filas es el
         LADO de la foto. Se pinta con un bucle y no con tres copias del
-        marcado: si mañana hay que tocar el desnivel, se toca en un sitio.
+        marcado: si mañana hay que tocar la altura mínima, se toca en un sitio.
 
-        ⚠️ EL DESNIVEL ES EL DEL BLOG DE LA PORTADA. La celda de la foto lleva
-        `md:mt-24` —arranca 96 px más abajo que el texto— y `md:self-stretch`
-        con la imagen a `md:h-full`, así que baja hasta la misma línea donde
-        acaba el texto de al lado. Dos columnas empezando a la vez son la
-        simetría que estas secciones no quieren.
+        ⚠️ CADA FILA LLEVA EL `id` DE SU PIEZA (academia, crm, seguimiento):
+        son los destinos del índice de arriba y del botón del hero. Antes lo
+        llevaba cada `<Section>`; ahora las tres filas comparten una y el ancla
+        baja a la fila. `scroll-mt-20` para que la barra pegajosa no la tape.
 
         ⚠️ EL LADO SE CAMBIA CON `order`, NO CAMBIANDO EL MARCADO. La foto va
-        siempre la última en el HTML —en el teléfono, apilado, la foto antes
-        del titular solo tapa la entrada— y en escritorio `md:order-first` la
-        pasa a la izquierda cuando toca. */}
-    {programas.secciones.map((sec, i) => (
-      <Section
-        id={sec.id}
-        tono="surface"
-        ritmo={i === 0 ? "normal" : "compacto"}
-        ariaLabel={sec.categoria}
-      >
-        <div class="grid items-start gap-10 md:grid-cols-2 md:gap-10 lg:gap-16 xl:gap-20">
-          <Reveal>
-            <div>
-              <p class="text-sm font-bold tracking-[0.18em] text-ink-brand uppercase">
-                {sec.numero} · <T v={sec.categoria} />
-              </p>
+        siempre primera en el HTML —en el teléfono, apilado, la foto encima del
+        texto es lo que se quiere— y en escritorio `md:order-last` la pasa a la
+        derecha cuando `imagenLado` lo dice.
 
-              <h2 class="mt-4 text-3xl font-extrabold leading-tight text-balance text-ink sm:text-4xl lg:text-5xl">
-                <T v={sec.titulo} />
-              </h2>
+        ⚠️ ALTURA MÍNIMA EN ESCRITORIO, como en el propósito del about: aquí
+        cada pieza trae dos párrafos y un botón, y sin el mínimo la foto de la
+        pieza corta quedaba en una tira. */}
+    <Section
+      id="programas-piezas"
+      tono="surface"
+      ariaLabel={programas.kicker}
+      sinContenedor
+      class="relative pt-0! pb-0!"
+    >
+      {programas.secciones.map((sec) => (
+        <Reveal delay={0.05}>
+          <div id={sec.id} class="grid scroll-mt-20 md:grid-cols-2">
+            <div
+              class:list={[
+                "relative min-h-[260px] sm:min-h-[320px] md:min-h-[26rem] lg:min-h-[30rem]",
+                sec.imagenLado === "derecha" && "md:order-last",
+              ]}
+            >
+              <img
+                src={sec.imagen.src}
+                alt={sec.imagen.alt[lang]}
+                data-alt-es={sec.imagen.alt.es}
+                data-alt-en={sec.imagen.alt.en}
+                width={sec.imagen.ancho}
+                height={sec.imagen.alto}
+                loading="lazy"
+                decoding="async"
+                style={`object-position:${sec.imagen.encuadre}`}
+                class="absolute inset-0 size-full object-cover"
+              />
+            </div>
 
-              {sec.parrafos.map((parrafo, j) => (
-                <p
-                  class:list={[
-                    "max-w-prose text-lg font-medium leading-relaxed text-pretty text-ink-muted sm:text-xl",
-                    j === 0 ? "mt-6" : "mt-4",
-                  ]}
-                >
-                  <T v={parrafo} />
+            <div
+              class:list={[
+                "flex flex-col justify-center bg-surface py-10 sm:py-12 lg:py-16",
+                sec.imagenLado === "derecha"
+                  ? "pl-[var(--gutter-page)] pr-[var(--gutter-page)] md:pr-10 lg:pr-16 xl:pr-24"
+                  : "pl-[var(--gutter-page)] pr-[var(--gutter-page)] md:pl-10 lg:pl-16 xl:pl-24",
+              ]}
+            >
+              <div class="max-w-[40rem]">
+                {/* El número grande en Montserrat teal y la categoría en
+                    versalitas debajo, como el número y el rango de fase del
+                    plan de la portada. */}
+                <p class="text-4xl font-extrabold leading-none tracking-[-0.03em] text-ink-brand sm:text-5xl">
+                  {sec.numero}
                 </p>
-              ))}
+                <p class="mt-4 text-sm font-bold tracking-[0.18em] text-ink-muted uppercase">
+                  <T v={sec.categoria} />
+                </p>
+                <h2 class="mt-2 font-acento text-3xl italic leading-tight text-ink sm:text-4xl lg:text-5xl">
+                  <T v={sec.titulo} />
+                </h2>
 
-              <div class="ml-1 mt-8">
-                <BotonRelieve href={sec.ctaHref} trackId={`programas-${sec.id}`}>
-                  <T v={sec.cta} />
-                </BotonRelieve>
+                {sec.parrafos.map((parrafo, j) => (
+                  <p
+                    class:list={[
+                      "text-base font-medium leading-relaxed text-pretty text-ink-muted sm:text-lg",
+                      j === 0 ? "mt-5" : "mt-4",
+                    ]}
+                  >
+                    <T v={parrafo} />
+                  </p>
+                ))}
+
+                <div class="ml-1 mt-8">
+                  <BotonRelieve href={sec.ctaHref} trackId={`programas-${sec.id}`}>
+                    <T v={sec.cta} />
+                  </BotonRelieve>
+                </div>
               </div>
             </div>
-          </Reveal>
+          </div>
+        </Reveal>
+      ))}
+    </Section>
 
-          <Reveal
-            delay={0.15}
-            class:list={[
-              "md:mt-24 md:self-stretch",
-              sec.imagenLado === "izquierda" && "md:order-first",
-            ]}
-          >
-            <img
-              src={sec.imagen.src}
-              alt={sec.imagen.alt[lang]}
-              data-alt-es={sec.imagen.alt.es}
-              data-alt-en={sec.imagen.alt.en}
-              width={sec.imagen.ancho}
-              height={sec.imagen.alto}
-              loading="lazy"
-              decoding="async"
-              style={`object-position:${sec.imagen.encuadre}`}
-              class="h-[260px] w-full rounded-lg border border-line object-cover sm:h-[320px] md:h-full md:min-h-[360px]"
-            />
-          </Reveal>
-        </div>
-      </Section>
-    ))}
+    {/* ─── 4 · EL MÉTODO DE LOS 90 DÍAS ──────────────────────────────────
+        Título con el remate en Fraunces, el párrafo del programa y los
+        cuatro datos de la portada (90 días, 2 horas, 4 fases, el CRM), y al
+        lado el vídeo vertical de introducción. Texto y datos son los de
+        `copy.identidad`: la misma verdad en las dos páginas.
+
+        ⚠️ EL VÍDEO NO SE AUTORREPRODUCE Y SÍ LLEVA SONIDO: es `VideoVsl`, la
+        fachada de póster y botón que solo crea el `<video>` al pulsar. Es un
+        vídeo de 3,6 MB en el que alguien habla; lo contrario del bucle mudo
+        del hero. Se le pone un ancho tope (22rem) porque en una columna del
+        40 % a 1280 mediría 512 de ancho y 910 de alto, más que la pantalla.
+
+        Sobre azul suave para separarlo de las piezas de arriba, que van en
+        blanco, y del formulario de abajo, que también. */}
+    <Section id="programas-metodo" tono="muted" ariaLabel={programas.metodo.aria}>
+      <div class="grid items-center gap-12 lg:grid-cols-[60fr_40fr] lg:gap-20">
+        <Reveal>
+          <div>
+            <h2 class="text-3xl font-extrabold leading-tight text-balance text-ink sm:text-4xl lg:text-5xl">
+              <T v={programas.metodo.titulo} />{" "}
+              <Enfasis v={programas.metodo.remate} />
+            </h2>
+
+            {copy.identidad.cuerpo.map((parrafo) => (
+              <p class="mt-6 max-w-prose text-lg font-medium leading-relaxed text-pretty text-ink-muted sm:text-xl">
+                <T v={parrafo} />
+              </p>
+            ))}
+
+            {/* Los cuatro datos, como en la portada: dos por fila en el
+                teléfono, cuatro en fila desde `sm` (aquí la columna es ancha). */}
+            <dl class="mt-8 grid grid-cols-2 gap-x-6 gap-y-6 border-t-[0.5px] border-line pt-7 sm:grid-cols-4">
+              {copy.identidad.datos.map((d) => (
+                <div>
+                  <dd class="text-3xl font-extrabold leading-none tracking-[-0.02em] text-ink sm:text-4xl">
+                    <T v={d.valor} />
+                  </dd>
+                  <dt class="mt-2 max-w-[16ch] text-sm font-medium text-pretty text-ink-muted sm:text-base">
+                    <T v={d.etiqueta} />
+                  </dt>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </Reveal>
+
+        <Reveal delay={0.1}>
+          <div class="mx-auto w-full max-w-[22rem]">
+            <VideoVsl />
+          </div>
+        </Reveal>
+      </div>
+    </Section>
+
+    {/* ─── 5 · EL FORMULARIO ─────────────────────────────────────────────
+        La sección de cierre de la portada, tal cual, con su `id="empezar"`:
+        es a donde bajan los tres botones de las piezas. */}
+    <Cierre />
   </main>
 
   <Footer />
