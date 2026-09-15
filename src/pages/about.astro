@@ -25,14 +25,19 @@ import { articulosPublicados, formatearFecha, tituloBilingue } from "@lib/blog";
  * escribirse. Ver `copy.about` para el porqué de cada texto.
  *
  *   1. Hero: la frase de misión, la línea de los años, el botón.
- *   2. Presentación de marca, con dos retratos.
- *   3. La barra de cuatro hechos.
- *   4. Las marcas del Ecosistema.
- *   5. Los seis valores del manifiesto.
- *   6. Propósito y los cuatro públicos.
- *   7. La carta de Pedro.
+ *   2. La carta de Pedro.
+ *   3. Presentación de marca, con dos retratos.
+ *   4. La barra de cuatro hechos.
+ *   5. Las marcas que representamos.
+ *   6. Los seis valores del manifiesto.
+ *   7. Propósito y los cuatro públicos.
  *   8. El blog, en corto.
  *   9. La lista, tal cual está en la portada.
+ *
+ * ⚠️ LA CARTA VA SEGUNDA, Y ESTUVO SÉPTIMA. En una página de "quiénes somos"
+ * quién habla es lo primero que hay que enseñar, no lo último: el lector que
+ * llega aquí viene a comprobar que detrás hay alguien. Se movió el 14-09-2026
+ * a petición del cliente.
  *
  * ─── NO HAY SISTEMA VISUAL NUEVO, Y ESO ES LO QUE COSE LA PÁGINA ───────────
  *
@@ -44,14 +49,19 @@ import { articulosPublicados, formatearFecha, tituloBilingue } from "@lib/blog";
  *
  * ─── LAS ZONAS DE FONDO ─────────────────────────────────────────────────────
  *
- *   blanco   hero + presentación            (una zona: quiénes somos)
+ *   navy     hero                           (la frase, sobre color y en movimiento)
+ *   blanco   carta + presentación           (una zona: quién habla, y a quién)
  *   navy     la barra                       (el corte: lo comprobable)
  *   blanco   marcas                         (la prueba)
  *   suave    valores                        (el carácter)
- *   blanco   propósito + públicos           (para quién)
- *   hundido  la carta                       (la voz)
- *   blanco   el blog                        (lo que escribe)
+ *   blanco   propósito + públicos + blog    (para quién, y lo que escribe)
  *   suave    la lista                       (la llamada, con su tarjeta navy)
+ *
+ * ⚠️ EL HERO ES NAVY Y LA CARTA BLANCA. El hundido de la primera versión no
+ * se distinguía lo suficiente y se pidió "algo de fondo de color": el navy es
+ * el color de zona que ya usa la barra y la tarjeta de la lista, así que no
+ * entra ningún color nuevo. La carta sobre blanco es donde mejor se lee un
+ * texto largo, y el corte navy -> blanco es el más limpio que hay.
  *
  * ⚠️ NINGÚN DATO SE ESCRIBE AQUÍ. Los cuatro de la barra, las tres empresas
  * y los textos viven en `copy.about`. Si algo falta, falta allí.
@@ -93,47 +103,189 @@ const CAJA_ICONO =
 
   <main id="contenido">
     {/* ─── 1 · EL HERO ───────────────────────────────────────────────────
-        Texto solo, centrado, sobre blanco. Es la única página del sitio cuyo
-        hero no lleva imagen, y es a propósito: la portada ya ha enseñado el
-        vídeo y aquí lo que hay que leer es una frase. Una foto detrás la
-        haría competir con lo único que tiene que hacer.
+        La composición es la de la referencia (bossbabe.com/about): TODO a la
+        izquierda, en una columna que no pasa del 58 % del contenedor en
+        escritorio, con el aire a la derecha a la vista. Título grande pero no
+        enorme, solo el remate en Fraunces, un subtítulo menor y el botón con
+        su separación. De la referencia se toma la proporción y la
+        disposición; la tipografía y el color son los del sitio.
 
-        La frase va entera en el `h1` y parte en dos por el `enfasis` del
-        config: la primera mitad en Montserrat y la segunda en Fraunces, que
-        es el remate de todo el sitio. */}
-    <Section id="about-hero" tono="surface" ritmo="amplio" ariaLabel={about.aria}>
-      <Reveal>
-        <div class="mx-auto max-w-[64rem] text-center">
-          <p class="text-sm font-semibold text-ink-brand sm:text-base lg:text-lg">
-            <T v={about.kicker} />
-          </p>
+        ⚠️ A LA IZQUIERDA EN TODOS LOS TAMAÑOS. En el teléfono el bloque ocupa
+        el ancho entero, pero sigue alineado a la izquierda: un hero centrado
+        en móvil y a la izquierda en escritorio se leen como dos páginas.
 
-          <h1 class="mt-5 text-4xl font-semibold leading-[1.08] tracking-[-0.02em] text-balance text-ink sm:text-5xl lg:text-6xl">
-            {about.hero.titulo.map((linea) => (
-              <span class="block">
-                {"enfasis" in linea && linea.enfasis ? (
-                  <Enfasis v={linea} />
-                ) : (
-                  <T v={linea} />
-                )}
-              </span>
-            ))}
-          </h1>
+        ⚠️ Y EN EL TELÉFONO NO SE HACE UNA TORRE. Con el título a 34 px, en un
+        375 el titular de 75 caracteres salía a ocho renglones y el hero medía
+        casi 700 px: más alto que ancho, justo lo contrario de la referencia,
+        que se lee apaisada. Tres cosas lo devuelven a horizontal:
 
-          <p class="mx-auto mt-8 max-w-2xl text-lg font-medium leading-relaxed text-pretty text-ink-muted sm:text-xl">
-            <T v={about.hero.anos} />
-          </p>
+          · el título arranca en 3xl (30 px) y no en 4xl: siete renglones y no
+            ocho, y cada uno más bajo;
+          · el relleno de la sección es el compacto en el teléfono (41 px por
+            lado) y recupera los 96 solo de `lg` para arriba, donde hay ancho
+            para gastarlo;
+          · el subtítulo es más corto y el botón se acerca.
 
-          <div class="mt-10 flex justify-center">
-            <BotonRelieve href={about.hero.ctaHref} trackId="about-hero">
-              <T v={about.hero.cta} />
-            </BotonRelieve>
+        Lo que de verdad decide el alto es el LARGO DEL TÍTULO: 75 caracteres
+        son 75 caracteres a cualquier cuerpo. Si algún día se quiere el hero
+        aún más bajo en móvil, la palanca es esa frase, no este CSS.
+
+        Sobre navy, sin imagen: la portada ya ha enseñado el vídeo; aquí lo que
+        hay que leer es una frase. Una foto detrás competiría con ella.
+
+        ─── EL FONDO SE MUEVE ──────────────────────────────────────────────
+        Dos manchas de luz —del navy claro y del teal de la marca— derivan
+        despacio sobre el navy. Ciclo largo y recorrido corto a propósito: si
+        se nota que se mueve, distrae del titular; lo que tiene que notarse es
+        que respira. Van a la DERECHA, que es donde está el aire: sobre el
+        texto molestarían.
+
+        ⚠️ Y SE ENCOGE AL BAJAR. El contenido se escala del 100 al 92 % y se
+        apaga según el hero sale por arriba, con una animación GUIADA POR EL
+        SCROLL (`animation-timeline: view()`) que corre en el compositor sin un
+        solo listener. Donde no exista, el hero se queda quieto. El
+        encogimiento va en una capa aparte que envuelve al `Reveal`: los dos
+        animan `transform` y en el mismo elemento se pisarían.
+
+        ⚠️ QUIEN PIDE MENOS MOVIMIENTO NO VE NI LO UNO NI LO OTRO. */}
+    <Section
+      id="about-hero"
+      tono="inverse"
+      ritmo="compacto"
+      ariaLabel={about.aria}
+      class="relative isolate overflow-hidden lg:py-24"
+    >
+      <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10">
+        <div
+          data-hero-luz="a"
+          class="absolute -right-[10%] -top-[35%] size-[64vw] max-h-[48rem] max-w-[48rem] rounded-full bg-primary-800/60 blur-3xl"
+        />
+        <div
+          data-hero-luz="b"
+          class="absolute -bottom-[40%] right-[8%] size-[52vw] max-h-[40rem] max-w-[40rem] rounded-full bg-secondary-500/20 blur-3xl"
+        />
+      </div>
+
+      <div data-hero-encoge>
+        <Reveal>
+          {/* La columna: 58 % del contenedor de `lg` para arriba y el ancho
+              entero por debajo. `text-left` explícito por si algún padre
+              centrara, y `text-balance` en el título para que sus renglones
+              midan parecido dentro de la columna estrecha. */}
+          <div class="max-w-[58%] max-lg:max-w-none text-left">
+            <p class="text-sm font-semibold text-ink-on-inverse-brand sm:text-base lg:text-lg">
+              <T v={about.kicker} />
+            </p>
+
+            {/* Grande pero no enorme: 4xl / 5xl y ya. El 6xl que llevaba
+                centrado se pasaba de tamaño en una columna estrecha, y la
+                referencia tampoco va a lo enorme. */}
+            <h1 class="mt-4 text-3xl font-semibold leading-[1.1] tracking-[-0.02em] text-balance text-ink-inverse sm:text-4xl lg:text-5xl">
+              {about.hero.titulo.map((linea) => (
+                <span class="block">
+                  {"enfasis" in linea && linea.enfasis ? (
+                    <Enfasis v={linea} tono="inverso" />
+                  ) : (
+                    <T v={linea} />
+                  )}
+                </span>
+              ))}
+            </h1>
+
+            <p class="mt-5 max-w-prose text-base font-medium leading-relaxed text-pretty text-secondary-100 sm:text-lg lg:mt-6 lg:text-xl">
+              <T v={about.hero.anos} />
+            </p>
+
+            {/* Separación clara respecto al subtítulo, como pide la
+                referencia. En el teléfono un punto menos, que ahí cada rem
+                cuenta el doble. */}
+            <div class="ml-1 mt-8 lg:mt-10">
+              <BotonRelieve href={about.hero.ctaHref} sobre="oscuro" trackId="about-hero">
+                <T v={about.hero.cta} />
+              </BotonRelieve>
+            </div>
           </div>
-        </div>
-      </Reveal>
+        </Reveal>
+      </div>
     </Section>
 
-    {/* ─── 2 · LA PRESENTACIÓN ───────────────────────────────────────────
+    {/* ─── 2 · LA CARTA ──────────────────────────────────────────────────
+        El retrato a la izquierda, grande, y la carta a la derecha. Es la
+        única sección de la página con la foto de Pedro, y por eso es la
+        única donde la foto es la pieza central y no un sello: aquí el que
+        habla es él.
+
+        Va justo después del hero, y por eso el retrato es la primera imagen
+        de la página: la primera cara que se ve es la de quien firma.
+
+        Sobre blanco: el hero ya lleva el fondo hundido, y una carta se lee
+        mejor sobre blanco que sobre cualquier otra cosa.
+
+        ⚠️ `items-center` Y NO `items-start`. Las dos columnas no miden lo mismo
+        —el retrato es un 4:5 y la carta son cinco párrafos— y con `start` el
+        texto arrancaba pegado al borde de arriba mientras la foto bajaba más:
+        el centro de una cosa no coincidía con el centro de la otra. Centradas,
+        la que sea más corta se coloca a la altura del medio de la más larga.
+
+        Y por eso el retrato dejó de ser `sticky`: `sticky` lo ancla arriba y
+        `center` lo quiere al medio, y las dos cosas a la vez no existen. */}
+    <Section id="about-carta" tono="surface" ariaLabel={about.carta.kicker}>
+      {/* ⚠️ 30 / 70, Y ERA 38 / 62. El retrato se queda en unos 370 px a 1440,
+          que sigue siendo un retrato y no un sello, y la carta manda. */}
+      <div class="grid gap-12 lg:grid-cols-[30fr_70fr] lg:gap-20 lg:items-center">
+        <Reveal>
+          <div>
+            <img
+              src={instructor.foto}
+              alt={about.carta.fotoAlt[lang]}
+              data-alt-es={about.carta.fotoAlt.es}
+              data-alt-en={about.carta.fotoAlt.en}
+              width={800}
+              height={1000}
+              loading="lazy"
+              decoding="async"
+              class="aspect-[4/5] w-full max-w-md rounded-lg border border-line object-cover object-top lg:max-w-none"
+            />
+            <p class="mt-5 text-xl font-extrabold text-ink">{instructor.nombre}</p>
+            <p class="mt-1 text-base font-medium text-ink-muted">
+              <T v={instructor.rol} />
+            </p>
+          </div>
+        </Reveal>
+
+        <Reveal delay={0.1}>
+          <div>
+            <p class="text-sm font-semibold text-ink-brand sm:text-base">
+              <T v={about.carta.kicker} />
+            </p>
+
+            {/* ⚠️ `max-w-prose` VUELVE, y antes se había quitado a propósito.
+                Con la columna al 62 % medía unos 770 px y la carta cabía en
+                75 caracteres por renglón; al 70 % son 870 y pasaría de 85,
+                que ya cansa. La medida recorta el texto y deja aire a la
+                derecha, y ese aire es justo la asimetría que se quería ver. */}
+            <div class="mt-6 max-w-prose space-y-5">
+              {about.carta.parrafos.map((parrafo) => (
+                <p class="text-lg font-medium leading-relaxed text-pretty text-ink sm:text-xl">
+                  <T v={parrafo} />
+                </p>
+              ))}
+            </div>
+
+            {/* La firma, en la Fraunces de los remates. Es la única vez en
+                toda la web que la itálica no remata una frase: firma una. */}
+            <p class="mt-10 font-acento text-3xl italic text-ink sm:text-4xl">
+              — <T v={about.carta.firma} />
+            </p>
+            <p class="mt-2 text-base font-medium text-ink-muted">
+              <T v={instructor.rol} />
+            </p>
+          </div>
+        </Reveal>
+      </div>
+    </Section>
+
+    {/* ─── 3 · LA PRESENTACIÓN ───────────────────────────────────────────
         Dos retratos verticales, lado a lado y desnivelados, y el texto al
         lado. Son las dos personas a las que habla el sitio —ella y él—, en
         los mismos dos originales que usa la portada.
@@ -144,7 +296,11 @@ const CAJA_ICONO =
         que ninguna tape a la otra. El desnivel es lo que evita que parezcan
         dos celdas de una tabla. */}
     <Section id="about-intro" tono="surface" ariaLabel={about.aria}>
-      <div class="grid items-center gap-12 md:grid-cols-[42fr_58fr] md:gap-10 lg:gap-16 xl:gap-24">
+      {/* ⚠️ 35 / 65, Y ERA 42 / 58. La diferencia de antes casi no se veía; con
+          un tercio para las fotos y dos para el texto sí. No baja del 35 porque
+          la columna lleva DOS retratos lado a lado: a 1440 son unos 430 px, o
+          sea 205 por retrato, y por debajo de eso se leen como sellos. */}
+      <div class="grid items-center gap-12 md:grid-cols-[35fr_65fr] md:gap-10 lg:gap-16 xl:gap-24">
         <Reveal>
           <div class="grid grid-cols-2 gap-4 sm:gap-5">
             {about.intro.fotos.map((foto, i) => (
@@ -166,7 +322,7 @@ const CAJA_ICONO =
           </div>
         </Reveal>
 
-        <Reveal delay={0.12}>
+        <Reveal delay={0.1}>
           <div>
             <h2 class="text-4xl font-semibold leading-[1.1] tracking-[-0.02em] text-balance text-ink sm:text-5xl lg:text-6xl">
               <T v={about.intro.titulo} />
@@ -190,7 +346,7 @@ const CAJA_ICONO =
       </div>
     </Section>
 
-    {/* ─── 3 · LA BARRA ──────────────────────────────────────────────────
+    {/* ─── 4 · LA BARRA ──────────────────────────────────────────────────
         Cuatro hechos con el formato de cuatro contadores, sobre navy: es el
         corte entre "quiénes somos" y "qué hay". El rótulo de arriba dice
         exactamente lo que son —lo que hay hoy, sin redondear— porque una
@@ -225,7 +381,7 @@ const CAJA_ICONO =
       </Reveal>
     </Section>
 
-    {/* ─── 4 · LAS MARCAS ────────────────────────────────────────────────
+    {/* ─── 5 · LAS MARCAS ────────────────────────────────────────────────
         Tres tarjetas iguales. Cada una lleva su logotipo, su rubro, lo que
         resuelve y —cuando exista— su cita.
 
@@ -324,7 +480,7 @@ const CAJA_ICONO =
       </ul>
     </Section>
 
-    {/* ─── 5 · LOS VALORES ───────────────────────────────────────────────
+    {/* ─── 6 · LOS VALORES ───────────────────────────────────────────────
         Las seis palabras del manifiesto, con la caja de icono de "Cómo se
         trabaja". Tres en fila en escritorio, dos en tablet, una en el
         teléfono. Sin tarjetas: son seis ideas, no seis productos. */}
@@ -341,8 +497,11 @@ const CAJA_ICONO =
       </Reveal>
 
       <ul role="list" class="mt-12 grid gap-x-10 gap-y-10 sm:grid-cols-2 lg:mt-16 lg:grid-cols-3 lg:gap-y-14">
+        {/* `i % 3`: se escalona por columna y no por pieza. Seis retardos
+            seguidos hacían que la fila de abajo llegara medio segundo tarde;
+            así cada fila entra como una unidad. */}
         {about.valores.lista.map((valor, i) => (
-          <Reveal as="li" delay={i * 0.06}>
+          <Reveal as="li" delay={(i % 3) * 0.08}>
             <div class="flex items-start gap-5">
               <span class={CAJA_ICONO}>
                 <Icono nombre={valor.icono} class="size-7" grosor={1.6} />
@@ -361,7 +520,7 @@ const CAJA_ICONO =
       </ul>
     </Section>
 
-    {/* ─── 6 · PROPÓSITO Y PÚBLICOS ──────────────────────────────────────
+    {/* ─── 7 · PROPÓSITO Y PÚBLICOS ──────────────────────────────────────
         Una frase grande y, debajo, cuatro bloques en dos por dos. Cada
         bloque empieza por "Si…" y lleva un filete arriba y no una tarjeta:
         el lector busca el suyo y se salta los otros tres, y cuatro cajas
@@ -384,7 +543,7 @@ const CAJA_ICONO =
 
       <ul role="list" class="mt-6 grid gap-x-12 gap-y-10 sm:grid-cols-2 lg:gap-x-16 lg:gap-y-12">
         {about.proposito.publicos.map((publico, i) => (
-          <Reveal as="li" delay={i * 0.06}>
+          <Reveal as="li" delay={(i % 2) * 0.08}>
             <div class="border-t border-line pt-6">
               <h3 class="text-xl font-extrabold text-pretty text-ink sm:text-2xl">
                 <T v={publico.titulo} />
@@ -398,67 +557,6 @@ const CAJA_ICONO =
       </ul>
     </Section>
 
-    {/* ─── 7 · LA CARTA ──────────────────────────────────────────────────
-        El retrato a la izquierda, grande, y la carta a la derecha. Es la
-        única sección de la página con la foto de Pedro, y por eso es la
-        única donde la foto es la pieza central y no un sello: aquí el que
-        habla es él.
-
-        Fondo hundido y no navy: una carta se lee, y el texto largo en blanco
-        sobre navy cansa. El hundido separa la sección sin cambiar de
-        registro. */}
-    <Section id="about-carta" tono="sunken" ariaLabel={about.carta.kicker}>
-      <div class="grid gap-12 lg:grid-cols-[38fr_62fr] lg:gap-20 lg:items-start">
-        <Reveal>
-          <div class="lg:sticky lg:top-28">
-            <img
-              src={instructor.foto}
-              alt={about.carta.fotoAlt[lang]}
-              data-alt-es={about.carta.fotoAlt.es}
-              data-alt-en={about.carta.fotoAlt.en}
-              width={800}
-              height={1000}
-              loading="lazy"
-              decoding="async"
-              class="aspect-[4/5] w-full max-w-md rounded-lg border border-line object-cover object-top lg:max-w-none"
-            />
-            <p class="mt-5 text-xl font-extrabold text-ink">{instructor.nombre}</p>
-            <p class="mt-1 text-base font-medium text-ink-muted">
-              <T v={instructor.rol} />
-            </p>
-          </div>
-        </Reveal>
-
-        <Reveal delay={0.12}>
-          <div>
-            <p class="text-sm font-semibold text-ink-brand sm:text-base">
-              <T v={about.carta.kicker} />
-            </p>
-
-            {/* Sin `max-w-prose`: la columna ya tiene su medida por la
-                rejilla, y una carta con el ancho recortado dentro de una
-                columna ya recortada se queda en un hilo. */}
-            <div class="mt-6 space-y-5">
-              {about.carta.parrafos.map((parrafo) => (
-                <p class="text-lg font-medium leading-relaxed text-pretty text-ink sm:text-xl">
-                  <T v={parrafo} />
-                </p>
-              ))}
-            </div>
-
-            {/* La firma, en la Fraunces de los remates. Es la única vez en
-                toda la web que la itálica no remata una frase: firma una. */}
-            <p class="mt-10 font-acento text-3xl italic text-ink sm:text-4xl">
-              — <T v={about.carta.firma} />
-            </p>
-            <p class="mt-2 text-base font-medium text-ink-muted">
-              <T v={instructor.rol} />
-            </p>
-          </div>
-        </Reveal>
-      </div>
-    </Section>
-
     {/* ─── 8 · EL BLOG, EN CORTO ─────────────────────────────────────────
         El mismo bloque de autor que la portada —retrato pequeño, nombre y
         redes— y DOS artículos, no tres. Aquí el blog es una invitación al
@@ -468,7 +566,9 @@ const CAJA_ICONO =
         la portada: ese visor vive en el script de la portada, y una página
         que dependiera de él sin cargarlo tendría botones que no hacen nada. */}
     <Section id="about-blog" tono="surface" ariaLabel={about.blog.titulo}>
-      <div class="grid gap-12 lg:grid-cols-2 lg:gap-20">
+      {/* 40 / 60 y no mitad y mitad: la lista de artículos es la que gana con
+          el ancho, y dos columnas iguales se leen como una tabla. */}
+      <div class="grid gap-12 lg:grid-cols-[40fr_60fr] lg:gap-20">
         <Reveal>
           <div>
             <h2 class="text-3xl font-extrabold leading-tight text-balance text-ink sm:text-4xl lg:text-5xl">
@@ -557,3 +657,61 @@ const CAJA_ICONO =
 
   <Footer />
 </BaseLayout>
+
+<style>
+  /* ─── LAS DOS MANCHAS DEL HERO ──────────────────────────────────────────
+     Derivan en bucle, cada una por su lado y con periodos distintos para que
+     no parezcan una sola cosa moviéndose. Solo `transform`: es lo que el
+     compositor mueve sin repintar. */
+  @keyframes about-luz-a {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(8%, 12%) scale(1.12);
+    }
+  }
+
+  @keyframes about-luz-b {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(-10%, -8%) scale(1.08);
+    }
+  }
+
+  /* ─── EL HERO SE ENCOGE AL SALIR ─────────────────────────────────────────
+     Guiado por el scroll, no por el tiempo: `view()` sigue la posición del
+     propio elemento en la ventana, y `exit` recorre el tramo en que va
+     saliendo por arriba. Al 0 % de ese tramo aún se ve entero; al 100 % ya no
+     se ve. Escala corta y opacidad, nada más: una caída más aparatosa se
+     leería como un efecto y no como una salida. */
+  @keyframes about-encoger {
+    to {
+      transform: scale(0.92) translateY(-1.5rem);
+      opacity: 0.4;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    [data-hero-luz="a"] {
+      animation: about-luz-a 28s ease-in-out infinite;
+    }
+
+    [data-hero-luz="b"] {
+      animation: about-luz-b 34s ease-in-out infinite;
+    }
+
+    @supports (animation-timeline: view()) {
+      [data-hero-encoge] {
+        transform-origin: 50% 100%;
+        animation: about-encoger linear both;
+        animation-timeline: view();
+        animation-range: exit 0% exit 100%;
+      }
+    }
+  }
+</style>

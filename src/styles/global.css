@@ -146,12 +146,21 @@ html[lang="en"] [data-t="es"] {
    script. Sin JS —o si el script falla— nada se oculta y el contenido se ve.
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/* ⚠️ LA OPACIDAD Y EL DESPLAZAMIENTO NO DURAN LO MISMO, y eso es lo que hace
+   que se sienta fluido. La opacidad llega en 500 ms; el desplazamiento tarda
+   700 con la curva expo, que frena más largo. El elemento ya está visible
+   cuando todavía está asentándose los últimos píxeles: se lee como algo que
+   llega y se posa, no como algo que aparece. Con las dos a 550 ms y la quart,
+   paraban a la vez y el final se veía seco.
+
+   La expo sigue siendo una salida exponencial pura, sin rebote: la regla de
+   tokens.css se mantiene. */
 .js-reveal [data-reveal] {
   opacity: 0;
   transform: translateY(var(--reveal-y, 24px));
   transition:
-    opacity 550ms var(--ease-out-soft) var(--reveal-delay, 0ms),
-    transform 550ms var(--ease-out-soft) var(--reveal-delay, 0ms);
+    opacity 500ms var(--ease-out-soft) var(--reveal-delay, 0ms),
+    transform 700ms var(--ease-out-expo) var(--reveal-delay, 0ms);
   /* Aviso al navegador de qué va a cambiar, y solo mientras está pendiente. */
   will-change: opacity, transform;
 }

@@ -81,6 +81,16 @@ export default defineConfig({
     "/es": "/?lang=es",
 
     /**
+     * ⚠️ LAS RUTAS SON EN INGLÉS DESDE EL 14-09-2026: /programs y /resources.
+     * /recursos llevaba publicada semanas y puede estar enlazada o indexada;
+     * /programas existió unas horas. Las dos redirigen a la nueva con un 301,
+     * que es lo que hace que Google traspase lo que hubiera aprendido de la
+     * vieja en vez de tratarla como una página muerta.
+     */
+    "/recursos": "/resources",
+    "/programas": "/programs",
+
+    /**
      * ⚠️ LAS URLs VIEJAS DEL ÁREA DE ALUMNOS (`/acceso`, `/alumno`…) NO ESTÁN
      * AQUÍ, Y ES A PROPÓSITO. Estas redirecciones PIERDEN la query: probado,
      * `/acceso/entrar?t=abc` acaba en `/login/verify` sin el token, que es

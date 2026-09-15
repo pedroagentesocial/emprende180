@@ -46,6 +46,14 @@ export const GET: APIRoute = async () => {
   const entradas: Entrada[] = [
     { ruta: "/", prioridad: "1.0", frecuencia: "weekly" },
 
+    /* Las tres páginas fijas. Faltaban las dos primeras desde que existen y
+       nadie lo había notado, porque un mapa incompleto no da error: solo
+       hace que Google tarde más en llegar. Sin `lastmod`: no se sabe de
+       verdad cuándo cambian. */
+    { ruta: "/about", prioridad: "0.8", frecuencia: "monthly" },
+    { ruta: "/programs", prioridad: "0.8", frecuencia: "monthly" },
+    { ruta: "/resources", prioridad: "0.7", frecuencia: "weekly" },
+
     /* El blog solo entra si tiene algo. Con cero artículos `/blog` contesta
        404, y anunciar en el mapa una dirección que devuelve 404 es la forma más
        tonta de gastar el presupuesto de rastreo. */

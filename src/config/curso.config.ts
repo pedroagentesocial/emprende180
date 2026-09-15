@@ -2032,8 +2032,15 @@ export const cta = {
   navegacion: [
     { texto: { es: "Inicio", en: "Home" }, href: "#inicio" },
     { texto: { es: "Quiénes somos", en: "About" }, href: "/about" },
-    { texto: { es: "Programas", en: "Programs" }, href: "#como-trabajar" },
-    { texto: { es: "Recursos", en: "Resources" }, href: "/recursos" },
+    /* ⚠️ A LA PÁGINA, Y YA NO AL ANCLA "#como-trabajar" DE LA PORTADA. Desde
+       el 14-09-2026 /programs cuenta las tres piezas enteras; la sección de
+       la portada las resume y sigue existiendo, pero el menú lleva a la
+       versión completa. */
+    { texto: { es: "Programas", en: "Programs" }, href: "/programs" },
+    /* ⚠️ LAS RUTAS VAN EN INGLÉS: /programs, /resources, /about, /blog. El
+       idioma del contenido lo pone `?lang=`; el path es uno solo y es el
+       inglés. Las viejas /programas y /recursos redirigen en astro.config. */
+    { texto: { es: "Recursos", en: "Resources" }, href: "/resources" },
     /* El plan entra en el menú y no se queda solo en el scroll: es la
        respuesta a "¿qué hago yo exactamente?", que es la pregunta que trae
        aquí a la mitad de la gente. Son cuatro enlaces y siguen cabiendo: el
@@ -3307,7 +3314,7 @@ export const copy = {
    */
   lista: {
     aria: { es: "Únete a la lista", en: "Join the list" },
-    kicker: { es: "La lista de Emprende180", en: "The Emprende180 list" },
+    kicker: { es: "La lista de Emprende180", en: "The Entrepreneur180 list" },
     titulo: [
       { es: "Entérate", en: "Find out" },
       { es: "antes que nadie.", en: "before anyone else.", enfasis: true },
@@ -3365,7 +3372,7 @@ export const copy = {
    */
   embajador: {
     aria: { es: "Qué es una Embajadora", en: "What an Ambassador is" },
-    kicker: { es: "Ser Embajadora Emprende180 es esto", en: "Being an Emprende180 Ambassador is this" },
+    kicker: { es: "Ser Embajadora Emprende180 es esto", en: "Being an Entrepreneur180 Ambassador is this" },
     titulo: [
       { es: "La que siempre", en: "The one who always" },
       { es: "conoce a alguien.", en: "knows someone.", enfasis: true },
@@ -3431,63 +3438,113 @@ export const copy = {
     },
 
     /* ─── 1 · EL HERO ────────────────────────────────────────────────────
-       La frase de misión sigue el patrón "ayudamos a [quién] a [qué],
-       representando marcas en las que ya confían". Se eligió entre tres
-       variantes; ésta es la más fiel al patrón. La segunda mitad va en
-       Fraunces, que es el remate de todo el sitio. */
+       Composición de la referencia (bossbabe.com/about): a la izquierda, en
+       una columna estrecha con aire a la derecha, título grande pero no
+       enorme, SOLO el remate de la frase en Fraunces, un subtítulo menor y el
+       botón separado. De la referencia se copia la proporción y la
+       disposición; la tipografía y el color son los del sitio.
+
+       El título lo fijó el cliente por escrito el 14-09-2026, con el remate
+       en énfasis. Ya no da por hecho a quién le habla —"conectar a tu gente"
+       lo hace cualquiera, con muchos contactos o con pocos— y "por fin valga
+       algo" es la idea de toda la página: lo que ya hacías gratis, ahora
+       cuenta. El inglés no es traducción: "finally get paid" dice lo mismo
+       que "por fin valga algo" con las palabras que se usan en inglés, y
+       "actually works" es el "ya funciona" sin sonar a eslogan.
+
+       Sin signos "+" ni guion largo en español: regla del cliente.
+
+       ⚠️ EL SUBTÍTULO HABLA DEL MÉTODO Y DE LO QUE TE LLEVAS, NO DE
+       CREDENCIALES. Pasó por dos versiones que no valían: una decía que la
+       empresa "acaba de empezar" (restar antes de sumar) y otra enumeraba
+       las tres empresas y los 21 años, que ya están en la barra y en la
+       carta dos pantallas más abajo. El hero no tiene que demostrar nada:
+       tiene que decir qué gana quien lee. Tres beneficios en el orden en que
+       los vive quien entra —aprendes, no cargas con el trámite, cobras— y la
+       pregunta final, que es el gesto de la referencia ("Are you next?").
+       Sin guion largo en español. */
     hero: {
       titulo: [
         {
-          es: "Ayudamos a personas con una red que ya las escucha a convertirla en ingresos,",
-          en: "We help people whose circle already listens to them turn that into income,",
+          es: "Ayudamos a que conectar a tu gente por fin valga algo,",
+          en: "We help you finally get paid for connecting your people,",
         },
         {
-          es: "representando marcas en las que su gente ya confía.",
-          en: "representing brands their people already trust.",
+          es: "con un método que ya funciona.",
+          en: "with a method that actually works.",
           enfasis: true,
         },
       ],
-      /* ⚠️ SIN AÑO Y SIN CIFRA A PROPÓSITO. La empresa lleva menos de un año
-         y un número aquí sonaría a poco; lo que se cuenta es que lo nuevo es
-         la marca, no la experiencia. Si algún día se quiere nombrar el año,
-         hay que pedirlo: no se deduce. */
+      /* ⚠️ SIN AÑO DE ARRANQUE A PROPÓSITO. La empresa lleva menos de un año
+         y una fecha aquí sonaría a poco; lo que se cuenta es que lo nuevo es
+         la marca, no la experiencia. Los 21 son los años de oficio de Pedro,
+         confirmados como cifra exacta el 14 de septiembre de 2026.
+
+         ⚠️ "21 AÑOS DE OFICIO CONVERTIDOS EN UN MÉTODO" Y NO "EL MÉTODO LLEVA
+         21 AÑOS": lo segundo sería mentira. El método es nuevo; lo que tiene
+         21 años es el oficio del que sale. */
       anos: {
-        es: "Emprende180 acaba de empezar. Lo que hay detrás, no: el Ecosistema lleva más de veinte años funcionando.",
-        en: "Entrepreneur180 is just getting started. What's behind it isn't — the ecosystem has been running for more than twenty years.",
+        es: "Un método que te enseña qué decir y cuándo, se encarga del resto y convierte cada recomendación en un ingreso. ¿Empezamos?",
+        en: "A method that shows you what to say and when, handles the rest, and turns every recommendation into income. Ready to start?",
       },
       cta: { es: "Quiero ser Embajador", en: "I want to be an Ambassador" },
       ctaHref: "/#empezar",
     },
 
-    /* ─── 2 · LA INTRODUCCIÓN ─────────────────────────────────────────────
-       Recoge el "Todos tienen alguien así / Tú eres esa persona" de la
-       portada sin repetirlo palabra por palabra. */
+    /* ─── 3 · LA INTRODUCCIÓN ─────────────────────────────────────────────
+       ⚠️ NO DA POR HECHO QUE EL LECTOR YA SEA "LA PERSONA A LA QUE TODOS LE
+       PREGUNTAN". La primera versión sí lo hacía ("Todos conocen a alguien
+       así. Aquí esa persona cobra") y dejaba fuera a quien no se ve así,
+       que es el mismo fallo que se corrigió en la identidad de la portada.
+
+       Y hace una segunda cosa a la vez: dar seguridad. Quien llega al about
+       está decidiendo, y lo que busca no es que le digan que puede, sino ver
+       quién hay detrás. Por eso el segundo párrafo enumera lo comprobable y
+       remata con "para eso está esta página". Se eligió entre tres variantes
+       el 14-09-2026. */
     intro: {
-      titulo: { es: "Todos conocen a alguien así.", en: "Everyone knows someone like that." },
-      subtitulo: { es: "Aquí esa persona cobra.", en: "Here, that person gets paid." },
+      titulo: {
+        es: "No hace falta ser la persona más conectada.",
+        en: "You don't need to be the best-connected person in the room.",
+      },
+      subtitulo: {
+        es: "Hace falta un método, y ese lo ponemos nosotros.",
+        en: "You need a method — and that part is on us.",
+      },
       parrafos: [
         {
-          es: "En cada barrio, en cada oficina y en cada grupo de WhatsApp hay alguien a quien se le pregunta todo: por un plomero, por un abogado, por quién arregla el techo. Contesta gratis, por costumbre, y ahí se acaba.",
-          en: "In every neighborhood, every office and every group chat there's someone people ask about everything — a plumber, a lawyer, who fixes the roof. They answer for free, out of habit, and that's where it ends.",
+          es: "Hay quien conoce a medio mundo y hay quien conoce a cinco personas de verdad. Los dos pueden hacer esto, porque lo que se recomienda no es a ti: es a una empresa que lleva años haciendo bien su trabajo.",
+          en: "Some people know half the town; some people know five people well. Both can do this, because what gets recommended isn't you — it's a company that has been doing its job well for years.",
         },
         {
-          es: "Emprende180 es lo que pasa cuando esa persona deja de estar sola. Detrás de cada recomendación hay un Ecosistema de empresas que se encarga del resto —el papeleo, la cita, el seguimiento— y una comisión que llega a quien hizo la presentación. Eso es lo único que cambia, y lo cambia todo.",
-          en: "Entrepreneur180 is what happens when that person stops doing it alone. Behind every recommendation there's an ecosystem of companies that handles the rest — the paperwork, the appointment, the follow-up — and a commission that reaches whoever made the introduction. That's the only thing that changes, and it changes everything.",
+          es: "Detrás de cada presentación hay tres empresas reales, una formación escrita por quien lleva 21 años en esto, y alguien que contesta. No tienes que fiarte de una promesa; tienes que ver quién hay detrás, y para eso está esta página.",
+          en: "Behind every introduction there are three real companies, a training program written by someone with 21 years in the trade, and a person who answers. You don't have to trust a promise; you get to see who's behind it — and that's what this page is for.",
         },
       ],
+      /* ⚠️ EL ORDEN ES ÉL, ELLA, y la segunda es la que baja. El desnivel lo
+         lleva siempre la segunda foto de la lista, así que invertir el orden
+         aquí es lo que cambia cuál queda arriba. Estuvo al revés y se pidió
+         invertirlo el 14-09-2026. */
       fotos: [
+        {
+          /* ⚠️ EN CASA, COMO ELLA. La primera era él delante de un edificio de
+             cristal, y al lado de ella en su sofá se leía como "la que está en
+             casa y el que va a la oficina": justo el reparto que el sitio no
+             quiere hacer. Esta sale de resultados/05 —un original apaisado de
+             800x600, recortado a vertical— y en pantallas de alta densidad se
+             ve algo blanda. Se aceptó a cambio de que las dos fotos tengan la
+             misma temperatura. */
+          src: "/imagenes/about/hombre-vertical.webp",
+          alt: {
+            es: "Un hombre en el sofá de su casa, hablando a la cámara de su teléfono",
+            en: "A man on his couch at home, talking to his phone camera",
+          },
+        },
         {
           src: "/imagenes/identidad/mujer-vertical.webp",
           alt: {
             es: "Una mujer hablando por teléfono sentada junto a la ventana de su casa",
             en: "A woman on the phone sitting by the window at home",
-          },
-        },
-        {
-          src: "/imagenes/about/hombre-vertical.webp",
-          alt: {
-            es: "Un hombre hablando por teléfono delante de un edificio de oficinas",
-            en: "A man on the phone in front of an office building",
           },
         },
       ],
@@ -3501,10 +3558,11 @@ export const copy = {
       datos: [
         {
           valor: "3",
-          etiqueta: { es: "Empresas del Ecosistema", en: "Companies in the ecosystem" },
+          etiqueta: { es: "Empresas que representamos", en: "Companies we represent" },
         },
         {
-          valor: "+20",
+          /* Cifra exacta y no "+20": el cliente la confirmó el 14-09-2026. */
+          valor: "21",
           etiqueta: { es: "Años de oficio detrás", en: "Years of experience behind it" },
         },
         {
@@ -3513,9 +3571,11 @@ export const copy = {
         },
         {
           /* Hipoteca, obra y remodelación, eléctrico, atención tras un
-             accidente: los `rubro` de las tres empresas de abajo. */
+             accidente: los `rubro` de las tres empresas de abajo. Se quedó en
+             contador y no en lista para que las cuatro casillas pesen igual;
+             el detalle lo dan las tarjetas de las marcas. */
           valor: "4",
-          etiqueta: { es: "Servicios que puedes recomendar", en: "Services you can recommend" },
+          etiqueta: { es: "Rubros distintos", en: "Different sectors" },
         },
       ],
     },
@@ -3524,8 +3584,10 @@ export const copy = {
        Las tres empresas salen de `about.aliados`, que ya existía. Aquí solo
        va el titular y el rótulo de "propuesta" que se ve en local. */
     confian: {
-      kicker: { es: "Confían en nosotros", en: "They trust us" },
-      titulo: { es: "Las marcas que representa un Embajador.", en: "The brands an Ambassador represents." },
+      /* El titular dice POR QUÉ confían, no solo QUIÉNES: la versión anterior
+         listaba las marcas sin dar la razón, y la razón es el método. */
+      kicker: { es: "Las marcas", en: "The brands" },
+      titulo: { es: "Ya usan el método. Por eso confían en él.", en: "They already use the method. That's why they trust it." },
       texto: {
         es: "Tres empresas con años de trabajo detrás. Cada presentación que hace un Embajador acaba en una de ellas.",
         en: "Three companies with years of work behind them. Every introduction an Ambassador makes ends up with one of them.",
@@ -3542,39 +3604,45 @@ export const copy = {
        LITERALMENTE las de allí —autonomía, carisma, solidaridad— y los tres
        iconos también; las otras tres se escribieron en esa misma voz. */
     valores: {
-      titulo: { es: "Ser Embajador significa seis cosas.", en: "Being an Ambassador means six things." },
-      subtitulo: { es: "Ninguna es negociable.", en: "None of them are optional." },
+      /* ⚠️ EL SUJETO ES EMPRENDE180, NO EL LECTOR. La versión anterior ("Ser
+         Embajador significa seis cosas") convertía los valores de la empresa
+         en una prueba de identidad para quien lee: si no eres así, no eres
+         Embajador. Ésta dice en qué cree la empresa, que es lo que una
+         sección de valores tiene que decir, y deja al lector fuera del
+         examen. */
+      titulo: { es: "Lo que creemos en Emprende180.", en: "What we believe at Entrepreneur180." },
+      subtitulo: { es: "Seis ideas que no cambian.", en: "Six ideas that don't change." },
       lista: [
         {
           icono: "reloj",
           palabra: { es: "Trabajo", en: "Work" },
           frase: {
-            es: "Nadie cobra por estar apuntado. Se cobra por lo que se mueve.",
-            en: "Nobody gets paid for signing up. You get paid for what you move.",
+            es: "Aquí se cobra por lo que ayudas a que pase, no por estar en una lista.",
+            en: "Here you get paid for what you help make happen, not for being on a list.",
           },
         },
         {
           icono: "infinito",
           palabra: { es: "Dedicación", en: "Dedication" },
           frase: {
-            es: "No es un mes bueno. Es volver a la conversación la semana siguiente.",
-            en: "It isn't one good month. It's going back to the conversation the following week.",
+            es: "No va de un mes bueno. Va de volver a la conversación la semana siguiente, sin prisa.",
+            en: "It isn't about one good month. It's about coming back to the conversation the following week, at your own pace.",
           },
         },
         {
           icono: "brujula",
           palabra: { es: "Autonomía", en: "Autonomy" },
           frase: {
-            es: "Nadie te pone el horario. Nadie lo hace por ti.",
-            en: "Nobody sets your hours. Nobody does it for you.",
+            es: "Tú pones el horario y tú llevas el ritmo. Nadie te empuja, y nadie lo hace por ti.",
+            en: "You set the hours and you set the pace. Nobody pushes you — and nobody does it for you.",
           },
         },
         {
           icono: "escudo",
           palabra: { es: "Responsabilidad", en: "Responsibility" },
           frase: {
-            es: "Das tu nombre con cada presentación. Eso obliga.",
-            en: "You put your name on every introduction. That comes with a duty.",
+            es: "Cada presentación lleva tu nombre. Por eso se hace con cuidado.",
+            en: "Every introduction carries your name. That's why it's done with care.",
           },
         },
         {
@@ -3639,40 +3707,52 @@ export const copy = {
       ],
     },
 
-    /* ─── 7 · LA CARTA DE PEDRO ───────────────────────────────────────────
-       En primera persona y firmada. El párrafo de "no te voy a prometer
-       cifras" convierte en argumento el que no haya números, que es el
-       problema real de una empresa de menos de un año.
+    /* ─── 2 · LA CARTA DE PEDRO ───────────────────────────────────────────
+       Va JUSTO DESPUÉS DEL HERO, y antes iba casi al final: en una página de
+       "quiénes somos", quién habla es lo primero. Cinco párrafos, escritos
+       por el cliente el 14-09-2026 y transcritos tal cual.
 
-       ⚠️ "ALGUIEN —YO— QUE CONTESTA CUANDO ESCRIBES" ES UNA PROMESA
+       ⚠️ LA VERSIÓN ANTERIOR SE DESECHÓ, Y CONVIENE SABER POR QUÉ. Llevaba una
+       anécdota ("una frase en una carne asada") que se sentía forzada y le
+       quitaba a la carta el sentido de propósito. Ésta vuelve a la idea
+       original: la persona que dice tu nombre lo hace toda la vida gratis, y
+       Emprende180 nace para cambiar eso.
+
+       ⚠️ SIN GUION LARGO EN ESPAÑOL, aquí y en todo el about. Es una regla del
+       cliente: coma o punto y seguido. El inglés sí puede llevarlo, porque
+       ahí es natural, y por eso "alguien, yo, que contesta" es "someone — me
+       — who answers".
+
+       ⚠️ "ALGUIEN, YO, QUE CONTESTA CUANDO ESCRIBES" ES UNA PROMESA
        OPERATIVA, no una frase. Si Pedro no va a contestar en persona, hay
        que quitarla antes de publicar. */
     carta: {
       kicker: { es: "Una carta de Pedro", en: "A letter from Pedro" },
       parrafos: [
         {
-          es: "Llevo más de veinte años en esto, y lo que más me ha costado entender es lo simple que era.",
-          en: "I've been in this for more than twenty years, and the hardest part was understanding how simple it actually is.",
+          es: "Llevo 21 años en esto, y lo que más me costó entender es lo simple que era.",
+          en: "I've been in this for 21 years, and the hardest thing to understand was how simple it actually is.",
         },
         {
-          es: "Durante mucho tiempo pensé que el negocio estaba en tener el mejor producto. No lo está. Está en que alguien de confianza diga tu nombre en la conversación correcta. He cerrado más operaciones por una frase dicha en una carne asada que por cualquier anuncio que haya pagado.",
-          en: "For a long time I thought the business was in having the best product. It isn't. It's in someone you trust saying your name in the right conversation. I've closed more deals from a sentence at a backyard barbecue than from any ad I've ever paid for.",
+          es: "El negocio nunca estuvo en tener el mejor producto. Estuvo en que alguien de confianza dijera tu nombre en el momento correcto. Eso vale más que cualquier campaña que haya pagado.",
+          en: "The business was never in having the best product. It was in someone people trust saying your name at the right moment. That's worth more than any campaign I've ever paid for.",
         },
         {
-          es: "El problema es que esa persona —la que dice tu nombre— casi nunca gana nada. Contesta un mensaje, hace la presentación, y ahí se acaba para ella. Lo he visto cientos de veces y me parece injusto de una forma bastante básica.",
-          en: "The problem is that the person saying your name almost never gets anything out of it. They answer a text, make the introduction, and that's where it ends for them. I've watched it happen hundreds of times, and it strikes me as unfair in a pretty basic way.",
+          es: "El problema es que esa persona casi nunca gana nada por decirlo. Lo hace toda la vida, gratis, sin que nadie se lo reconozca. Emprende180 nace para cambiar eso: un método real, con empresas reales detrás, para que lo único que tengas que hacer sea lo que ya hacías sin cobrar.",
+          en: "The problem is that the person saying it almost never gets anything for it. They do it their whole life, for free, and nobody gives them credit for it. Entrepreneur180 exists to change that: a real method, with real companies behind it, so the only thing you have to do is what you were already doing unpaid.",
         },
         {
-          es: "Emprende180 es mi intento de arreglar eso. No es un curso ni una app: es un Ecosistema de empresas reales que se encarga del trabajo pesado —el papeleo, la cita, el seguimiento— para que lo único que tengas que hacer tú sea lo que ya haces gratis.",
-          en: "Entrepreneur180 is my attempt to fix that. It isn't a course and it isn't an app: it's an ecosystem of real companies that handles the heavy part — the paperwork, the appointment, the follow-up — so the only thing left for you is the thing you're already doing for free.",
+          es: "No te voy a prometer cifras que no tengo. Te puedo decir qué hay del otro lado: 21 años de oficio, una formación que escribí yo mismo, y alguien, yo, que contesta cuando escribes.",
+          en: "I won't promise you numbers I don't have. What I can tell you is what's on the other side: 21 years in the trade, a training program I wrote myself, and someone — me — who answers when you write.",
         },
         {
-          es: "No te voy a prometer cifras. No las tengo todavía y no pienso inventármelas para que esta página se vea mejor. Lo que sí te puedo decir es qué hay del otro lado: tres empresas que llevan años funcionando, una formación que escribí yo, y alguien —yo— que contesta cuando escribes.",
-          en: "I'm not going to promise you numbers. I don't have them yet, and I'm not about to invent them to make this page look better. What I can tell you is what's on the other side: three companies that have been running for years, a training program I wrote myself, and someone — me — who answers when you write.",
-        },
-        {
-          es: "Si conoces a medio mundo y nunca has sabido qué hacer con eso, creo que esto te va a gustar.",
-          en: "If you know half the town and have never known what to do with that, I think you're going to like this.",
+          /* ⚠️ "CONOZCAS A MEDIO MUNDO O A CINCO PERSONAS", y no solo lo
+             primero. La versión anterior cerraba con "si conoces a medio
+             mundo", que volvía a dejar fuera a quien no se ve así: justo lo
+             que la introducción de arriba se esfuerza en no hacer. El cierre
+             tiene que sonar igual de bien para las dos personas. */
+          es: "Conozcas a medio mundo o a cinco personas que confían en ti, creo que esto te va a gustar.",
+          en: "Whether you know half the town or five people who trust you, I think you're going to like this.",
         },
       ],
       firma: { es: "Pedro Lira", en: "Pedro Lira" },
@@ -3694,7 +3774,7 @@ export const copy = {
       },
     },
 
-    /* ─── LAS EMPRESAS DEL ECOSISTEMA ─────────────────────────────────────
+    /* ─── LAS EMPRESAS QUE REPRESENTAMOS ──────────────────────────────────
      *
      * ⚠️ `cita` ESTÁ VACÍA Y NO SE INVENTA. Poner palabras en boca de otro
      * negocio, con su nombre y su logotipo al lado, no es solo un problema
@@ -3779,7 +3859,7 @@ export const copy = {
    * que no estar.
    */
   comoTrabajar: {
-    aria: { es: "Cómo trabajar con Emprende180", en: "How to work with Emprende180" },
+    aria: { es: "Cómo trabajar con Emprende180", en: "How to work with Entrepreneur180" },
     kicker: { es: "Cómo se trabaja", en: "How it works" },
     titulo: [
       { es: "Tres piezas.", en: "Three pieces." },
@@ -3958,7 +4038,7 @@ export const copy = {
     texto: [
       {
         es: "Los programas de Emprende180 y el método que los sostiene, en videos cortos y en orden. Sin clases en vivo, sin horario que cumplir: avanzas cuando puedes, y si hoy no puedes, mañana sigue ahí.",
-        en: "The Emprende180 programs and the method that holds them together, in short videos and in order. No live classes, no schedule to keep: you move forward when you can, and if today isn't the day, it's still there tomorrow.",
+        en: "The Entrepreneur180 programs and the method that holds them together, in short videos and in order. No live classes, no schedule to keep: you move forward when you can, and if today isn't the day, it's still there tomorrow.",
       },
       {
         es: "Cada programa cierra con un quiz que confirma que lo tienes.",
@@ -3986,9 +4066,213 @@ export const copy = {
   },
 
   /**
+   * ═══════════════════════════════════════════════════════════════════════
+   * LA PÁGINA DE PROGRAMAS — /programs
+   * ═══════════════════════════════════════════════════════════════════════
+   *
+   * Nueva el 14 de septiembre de 2026. Hasta entonces "Programas" en el menú
+   * era un ancla a la sección "Cómo se trabaja" de la portada, que resume las
+   * tres piezas en tres tarjetas; esta página las cuenta enteras, una por
+   * sección, con su imagen y su botón.
+   *
+   * ─── LAS TRES REGLAS DE TONO, Y POR QUÉ ────────────────────────────────
+   *
+   * ⚠️ SIN PRECIOS NI COSTES. En ninguna sección. La única mención al dinero
+   * es que el CRM va "incluido en el programa, sin costo aparte", que dice lo
+   * contrario de un precio.
+   *
+   * ⚠️ SIN "PARA QUIÉN SÍ / PARA QUIÉN NO". Ninguna sección segmenta ni
+   * filtra al lector: la página invita a aprender, no evalúa si califica. Si
+   * algún día alguien mete un "esto es para ti si…", que sepa que se quitó a
+   * propósito.
+   *
+   * ⚠️ SIN GUION LARGO EN ESPAÑOL: coma o punto y seguido. El inglés sí puede
+   * llevarlo, y no es traducción: cada texto se escribió dos veces.
+   *
+   * ─── LOS TRES BOTONES VAN AL MISMO SITIO ───────────────────────────────
+   *
+   * Los tres llevan al formulario de "Empezar" de la portada, que es la única
+   * puerta que hay hoy: las plataformas de verdad (`plataformas.academia.url`,
+   * `plataformas.crm.url`) todavía no tienen dirección, y hasta que la tengan
+   * no se enlazan desde fuera del área de alumnos. Ver la nota de
+   * `comoTrabajar`. El día que la tengan, `ctaHref` cambia aquí y ya.
+   */
+  programas: {
+    aria: { es: "Programas", en: "Programs" },
+    kicker: { es: "Programas", en: "Programs" },
+    descripcion: {
+      es: "La Academia, el CRM y el seguimiento de Emprende180, explicados enteros y en un solo lugar.",
+      en: "The Entrepreneur180 Academy, CRM and follow-up, explained in full, all in one place.",
+    },
+
+    /* ─── EL HERO ─────────────────────────────────────────────────────────
+       El mismo hero que el about: a la izquierda, columna estrecha, título
+       con el remate en Fraunces, un párrafo y el botón. El botón no vende:
+       baja a la primera sección. */
+    hero: {
+      titulo: {
+        es: "Todo lo que necesitas para trabajar en serio,",
+        en: "Everything you need to actually get to work,",
+      },
+      remate: { es: "en un solo lugar.", en: "all in one place." },
+      texto: {
+        es: "La Academia, el CRM y el seguimiento, sin resumir nada.",
+        en: "The Academy, the CRM, and the follow-up, with nothing left out.",
+      },
+      cta: { es: "Ver cómo funciona", en: "See how it works" },
+      ctaHref: "#academia",
+    },
+
+    /* ─── LA NAVEGACIÓN RÁPIDA ────────────────────────────────────────────
+       Tres tarjetas que son tres enlaces a las tres secciones de abajo. La
+       numeración aquí SÍ va, al revés que en "Cómo se trabaja" de la
+       portada: allí se quitó porque leía como itinerario; aquí es un índice,
+       y un índice se numera. */
+    indice: [
+      {
+        numero: "01",
+        ancla: "#academia",
+        titulo: { es: "La Academia", en: "The Academy" },
+        texto: {
+          es: "El método, en videos cortos y en orden.",
+          en: "The method, in short videos, in order.",
+        },
+      },
+      {
+        numero: "02",
+        ancla: "#crm",
+        titulo: { es: "El CRM", en: "The CRM" },
+        texto: {
+          es: "Tus contactos y oportunidades, siempre al día.",
+          en: "Your contacts and leads, always up to date.",
+        },
+      },
+      {
+        numero: "03",
+        ancla: "#seguimiento",
+        titulo: { es: "El seguimiento", en: "The follow-up" },
+        texto: {
+          es: "Alguien del equipo revisa tu avance cada semana.",
+          en: "Someone from the team checks your progress every week.",
+        },
+      },
+    ],
+
+    /* ─── LAS TRES SECCIONES ──────────────────────────────────────────────
+       Cada una: categoría numerada, título, uno o dos párrafos, botón e
+       imagen. El lado de la imagen alterna —derecha, izquierda, derecha—
+       para que no se lean como tres copias de la misma plantilla.
+
+       ⚠️ LAS IMÁGENES SON LAS QUE HAY EN EL PROYECTO, y dos de las tres son
+       un apaño honesto:
+         · Academia: `secciones/temario.webp`, la misma que usa la Academia
+           de la portada. Un hombre estudiando en casa con el portátil.
+         · CRM: NO HAY captura ni foto del CRM en el repositorio. Va una
+           agenda con la semana escrita a mano (`resultados/04`), que dice
+           "contactos al día" sin enseñar una pantalla que no existe. El día
+           que haya captura real, se cambia aquí.
+         · Seguimiento: `resultados/03`, dos personas conversando con un
+           café. Es la escena del "no lo haces solo". */
+    secciones: [
+      {
+        id: "academia",
+        numero: "01",
+        categoria: { es: "La Academia", en: "The Academy" },
+        titulo: {
+          es: "El método, explicado paso a paso.",
+          en: "The method, explained step by step.",
+        },
+        parrafos: [
+          {
+            es: "Aprendes a tu ritmo, en videos cortos y en orden, con contenido diseñado para que cada módulo construya sobre el anterior. Cada programa incluye un quiz al final que confirma que lo tienes.",
+            en: "You learn at your own pace, through short videos in order, with content designed so each module builds on the last. Every program ends with a quiz that confirms you've got it.",
+          },
+          {
+            es: "No hay clases en vivo ni horarios que cumplir. Si te atoras, alguien del equipo contesta.",
+            en: "There are no live classes or fixed schedules. If you get stuck, someone from the team answers.",
+          },
+        ],
+        cta: { es: "Empezar la Academia", en: "Start the Academy" },
+        ctaHref: "/#empezar",
+        imagenLado: "derecha",
+        imagen: {
+          src: "/imagenes/secciones/temario.webp",
+          ancho: 880,
+          alto: 620,
+          encuadre: "center 40%",
+          alt: {
+            es: "Un hombre estudiando con el portátil en la mesa de su casa",
+            en: "A man studying on his laptop at his kitchen table",
+          },
+        },
+      },
+      {
+        id: "crm",
+        numero: "02",
+        categoria: { es: "El CRM", en: "The CRM" },
+        titulo: {
+          es: "Tus contactos, siempre al día.",
+          en: "Your contacts, always up to date.",
+        },
+        parrafos: [
+          {
+            es: "Cada oportunidad queda registrada con su estado actual, desde el primer contacto hasta la comisión pagada. Incluido en el programa, sin costo aparte.",
+            en: "Every lead is logged with its current status, from first contact through to the commission paid. Included in the program, at no extra cost.",
+          },
+        ],
+        cta: { es: "Quiero mi acceso", en: "I want access" },
+        ctaHref: "/#empezar",
+        imagenLado: "izquierda",
+        imagen: {
+          src: "/imagenes/resultados/04.webp",
+          ancho: 800,
+          alto: 600,
+          encuadre: "center 45%",
+          alt: {
+            es: "Una agenda abierta con la semana escrita a mano, junto a un teclado",
+            en: "An open planner with the week written out by hand, next to a keyboard",
+          },
+        },
+      },
+      {
+        id: "seguimiento",
+        numero: "03",
+        categoria: { es: "El seguimiento", en: "The follow-up" },
+        titulo: {
+          es: "No es un video más.",
+          en: "It's not just another video.",
+        },
+        parrafos: [
+          {
+            es: "Cada semana, alguien del equipo revisa tu avance contigo: qué se movió, qué no, y qué sigue.",
+            en: "Every week, someone from the team goes over your progress with you: what moved, what didn't, and what's next.",
+          },
+          {
+            es: "Así nunca dependes de adivinar si vas bien. Y no lo haces solo: compartes ese espacio con otros Embajadores en el mismo punto que tú.",
+            en: "That way you never have to guess whether you're on track. And you're not doing it alone: you share that space with other Ambassadors at the same stage as you.",
+          },
+        ],
+        cta: { es: "Ver el seguimiento", en: "See the follow-up" },
+        ctaHref: "/#empezar",
+        imagenLado: "derecha",
+        imagen: {
+          src: "/imagenes/resultados/03.webp",
+          ancho: 800,
+          alto: 600,
+          encuadre: "center 30%",
+          alt: {
+            es: "Dos mujeres conversando con un café en la mano, en la calle",
+            en: "Two women talking over coffee, outdoors",
+          },
+        },
+      },
+    ],
+  },
+
+  /**
    * ─── LOS RECURSOS ──────────────────────────────────────────────────────
    *
-   * La franja oscura que manda a `/recursos`. El enlace del menú apunta ahí
+   * La franja oscura que manda a `/resources`. El enlace del menú apunta ahí
    * desde antes que esta sección, así que la página tiene que existir: dos
    * sitios llevando a un 404 es peor que uno.
    *
@@ -4003,7 +4287,7 @@ export const copy = {
    * empiezan a llegarte cosas. Decirle por adelantado que aquí no pasa quita la
    * única duda que tiene antes de pulsar.
    *
-   * ⚠️ Y TIENE QUE SEGUIR SIENDO VERDAD. En `/recursos` los artículos se leen
+   * ⚠️ Y TIENE QUE SEGUIR SIENDO VERDAD. En `/resources` los artículos se leen
    * sin formulario; el que hay al final es opcional y solo sirve para avisar de
    * los siguientes. El día que algo de esa página se ponga detrás de un correo,
    * esta frase pasa a ser mentira y hay que cambiarla.
