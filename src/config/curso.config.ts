@@ -3508,6 +3508,20 @@ export const copy = {
       },
       cta: { es: "Quiero ser Embajador", en: "I want to be an Ambassador" },
       ctaHref: "/#empezar",
+
+      /* ⚠️ DESDE EL 15-09-2026 EL HERO NO PINTA NADA DE LO DE ARRIBA. El
+         cliente pidió meter el vídeo de presentación de Pedro en el hero y
+         quitar el texto: "ya veremos qué hacemos con ese texto". Título,
+         subtítulo y botón se quedan aquí, aprobados, para cuando se decida.
+         Lo único que el hero usa ahora es esto: */
+      video: {
+        src: "/video/prom.mp4",
+        poster: "/video/prom-poster.webp",
+        alt: {
+          es: "Vídeo de presentación de Emprende180",
+          en: "Entrepreneur180 introduction video",
+        },
+      },
     },
 
     /* ─── 3 · LA INTRODUCCIÓN ─────────────────────────────────────────────
@@ -3694,9 +3708,25 @@ export const copy = {
         en: "Entrepreneur180 exists so that knowing people stops being a way to spend your time and starts being a trade.",
       },
       paraQuien: { es: "A quién le sirve", en: "Who it's for" },
+      /* ⚠️ LAS CUATRO FOTOS SON DE BANCO (Pexels, licencia libre sin
+         atribución), bajadas el 15-09-2026 a petición del cliente: "imágenes,
+         representación gráfica, que tengan contexto con esto". Cada una
+         retrata la escena de SU público —no un concepto—: la cocina con el
+         cuaderno y el teléfono, el corrillo de amigos, el mostrador con la
+         clienta, el portátil de noche. Ninguna es de un Embajador de verdad;
+         PRODUCT.md prohíbe el stock por nombre y estas cuatro se cambian en
+         cuanto haya sesión. Originales: pexels.com/photo/8902216, 6340713,
+         7679721 y 6578426. 1200x900, 4:3, menos de 100 KB cada una. */
       publicos: [
         {
           titulo: { es: "Si administras tu casa", en: "If you run a household" },
+          imagen: {
+            src: "/imagenes/about/proposito-casa.webp",
+            alt: {
+              es: "Una mujer en su cocina, al teléfono, apuntando en un cuaderno",
+              en: "A woman in her kitchen, on the phone, jotting in a notebook",
+            },
+          },
           texto: {
             es: "Tienes la agenda más llena de todos y nadie te paga por ella. Esto encaja en los huecos que ya tienes, no en los que no tienes.",
             en: "Your calendar is the fullest of anyone's, and nobody pays you for it. This fits in the gaps you already have, not the ones you don't.",
@@ -3704,6 +3734,13 @@ export const copy = {
         },
         {
           titulo: { es: "Si eres el alma de tu círculo", en: "If you're the one everyone calls" },
+          imagen: {
+            src: "/imagenes/about/proposito-circulo.webp",
+            alt: {
+              es: "Tres amigos conversando con un café junto a una ventana",
+              en: "Three friends chatting over coffee by a window",
+            },
+          },
           texto: {
             es: "Ya te preguntan a ti primero. La diferencia es que ahora hay algo detrás de tu respuesta.",
             en: "People already come to you first. The difference is that now there's something behind your answer.",
@@ -3711,6 +3748,13 @@ export const copy = {
         },
         {
           titulo: { es: "Si ya vives de vender o de atender", en: "If you already work in sales or service" },
+          imagen: {
+            src: "/imagenes/about/proposito-atender.webp",
+            alt: {
+              es: "El dueño de una tienda de ropa atendiendo a una clienta en el mostrador",
+              en: "A clothing shop owner helping a customer at the counter",
+            },
+          },
           texto: {
             es: "Sabes leer una conversación. Aquí eso se cobra aparte de tu sueldo.",
             en: "You know how to read a conversation. Here that earns on top of your paycheck.",
@@ -3718,6 +3762,13 @@ export const copy = {
         },
         {
           titulo: { es: "Si tu empleo te queda corto", en: "If your job has stopped fitting" },
+          imagen: {
+            src: "/imagenes/about/proposito-empleo.webp",
+            alt: {
+              es: "Un hombre trabajando en su portátil por la noche, con una lámpara y un café",
+              en: "A man working on his laptop at night, with a lamp and a coffee",
+            },
+          },
           texto: {
             es: "No hace falta renunciar el lunes. Hace falta empezar el martes por la noche.",
             en: "You don't need to quit on Monday. You need to start on Tuesday night.",

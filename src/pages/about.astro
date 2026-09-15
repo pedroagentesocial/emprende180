@@ -24,8 +24,9 @@ import { articulosPublicados, formatearFecha, tituloBilingue } from "@lib/blog";
  * nueve secciones en este orden, cada una con su texto aprobado antes de
  * escribirse. Ver `copy.about` para el porqué de cada texto.
  *
- *   1. Hero: la frase de misión, la línea de los años, el botón.
- *   2. La carta de Pedro.
+ *   1. Hero: el vídeo de presentación de Pedro, sin texto (desde el 15-09-2026).
+ *   2. La carta de Pedro: retrato y carta a dos columnas, elementos
+ *      centrados, texto justificado.
  *   3. Presentación de marca, con dos retratos.
  *   4. La barra de cuatro hechos.
  *   5. Las marcas que representamos.
@@ -68,7 +69,7 @@ import { articulosPublicados, formatearFecha, tituloBilingue } from "@lib/blog";
  */
 export const prerender = false;
 
-const { about } = copy;
+const { about, heroSlider } = copy;
 
 const lang = resolverIdiomaServidor(
   Astro.url,
@@ -99,113 +100,136 @@ const CAJA_ICONO =
 ---
 
 <BaseLayout titulo={tituloPagina} descripcion={about.descripcion}>
-  <Header />
+  {/* ─── LA BARRA, FLOTANDO SOBRE EL VÍDEO ────────────────────────────────
+      El mismo montaje que la portada: la barra va en un envoltorio ABSOLUTO,
+      transparente y con el logotipo en blanco, así que el hero empieza en el
+      píxel cero y el vídeo se ve por detrás. En cuanto se baja un dedo, se
+      ancla arriba y se pinta de navy (ver `Header.astro`, `sobreHero`). Lo pidió
+      el cliente el 15-09-2026 al meter el vídeo: "el navegador déjalo
+      transparente y se haga sólido al bajar". Hasta entonces esta página
+      llevaba la barra blanca de las páginas sin foto. */}
+  <div class="absolute inset-x-0 top-0 z-40">
+    <Header sobreHero />
+  </div>
 
   <main id="contenido">
     {/* ─── 1 · EL HERO ───────────────────────────────────────────────────
-        La composición es la de la referencia (bossbabe.com/about): TODO a la
-        izquierda, en una columna que no pasa del 58 % del contenedor en
-        escritorio, con el aire a la derecha a la vista. Título grande pero no
-        enorme, solo el remate en Fraunces, un subtítulo menor y el botón con
-        su separación. De la referencia se toma la proporción y la
-        disposición; la tipografía y el color son los del sitio.
+        EL VÍDEO DE PRESENTACIÓN, Y NADA MÁS. Lo pidió el cliente el
+        15-09-2026: "mete el vídeo que teníamos de Pedro en el hero y quita el
+        texto". Es el promocional que abrió el slider de la portada hasta ese
+        mismo día (/video/prom.mp4): Pedro hablando, con la rotulación y los
+        subtítulos quemados en la imagen. Aquí no compite con ningún titular,
+        así que hace él de titular.
 
-        ⚠️ A LA IZQUIERDA EN TODOS LOS TAMAÑOS. En el teléfono el bloque ocupa
-        el ancho entero, pero sigue alineado a la izquierda: un hero centrado
-        en móvil y a la izquierda en escritorio se leen como dos páginas.
+        ⚠️ EL TEXTO NO SE HA BORRADO. `copy.about.hero` sigue en el config con
+        el título, el subtítulo y el botón aprobados; el cliente dijo "ya
+        veremos qué hacemos con ese texto", así que se deja de pintar y se
+        guarda. Si vuelve, la composición de la referencia (bossbabe) está en
+        el historial: columna izquierda al 58 %, remate en Fraunces.
 
-        ⚠️ Y EN EL TELÉFONO NO SE HACE UNA TORRE. Con el título a 34 px, en un
-        375 el titular de 75 caracteres salía a ocho renglones y el hero medía
-        casi 700 px: más alto que ancho, justo lo contrario de la referencia,
-        que se lee apaisada. Tres cosas lo devuelven a horizontal:
+        ─── LLENA LA PANTALLA, CON LA BARRA ENCIMA ─────────────────────────
+        El hero mide una pantalla (`h-svh`) y el vídeo la cubre con `cover`,
+        igual que hacía como primera pantalla del slider de la portada. Con
+        la barra flotando transparente encima, una caja 16:9 debajo de una
+        barra blanca —que es lo que hubo un rato— dejaba el vídeo como un
+        reproductor incrustado; a pantalla entera se lee como el hero de la
+        portada, que es lo que se pidió con "el vídeo mejor acomodado".
 
-          · el título arranca en 3xl (30 px) y no en 4xl: siete renglones y no
-            ocho, y cada uno más bajo;
-          · el relleno de la sección es el compacto en el teléfono (41 px por
-            lado) y recupera los 96 solo de `lg` para arriba, donde hay ancho
-            para gastarlo;
-          · el subtítulo es más corto y el botón se acerca.
+        ⚠️ `cover` RECORTA, Y DÓNDE RECORTA ESTÁ MEDIDO. En escritorio (ventana
+        más ancha que 16:9) recorta arriba y abajo, y el `center 62%` —medido
+        sobre este fotograma, ver la nota larga de HeroVideo.astro— es lo
+        único que salva a la vez la cara del presentador y los subtítulos
+        quemados. En el teléfono (ventana vertical) recorta por los LADOS y
+        se ve poco más de un tercio del ancho: ahí manda la coordenada
+        horizontal, y el `50%` salva al presentador y casi todos los subtítulos
+        a costa de la rotulación de la izquierda. Es el mismo par de encuadres
+        que llevaba en el slider (`encuadreVertical: "50% 50%"`); la solución de
+        verdad para el móvil sigue siendo un montaje vertical del promo.
 
-        Lo que de verdad decide el alto es el LARGO DEL TÍTULO: 75 caracteres
-        son 75 caracteres a cualquier cuerpo. Si algún día se quiere el hero
-        aún más bajo en móvil, la palanca es esa frase, no este CSS.
+        ⚠️ EL VÍDEO EMPIEZA DEBAJO DE LA BARRA, NO EN EL PÍXEL CERO. La barra
+        flota transparente con el logotipo grande en el centro, y la cabeza
+        del presentador arranca al 8 % del alto del fotograma: con el vídeo
+        desde arriba, el logotipo le caía en la cara. El cliente lo vio y lo
+        pidió: "baja el vídeo un poco". La caja lleva un relleno superior
+        igual a la altura de la barra grande (`--header-h-grande`, 92 px; 128
+        en `lg`) y el vídeo ocupa lo que queda, sobre el navy de la sección,
+        que es lo que se ve detrás de la barra mientras está transparente. A
+        900 de alto el vídeo mide 772 y recorta un 5 %; la cabeza queda unos
+        40 px por debajo del borde de la caja, o sea 170 desde arriba: libre.
 
-        Sobre navy, sin imagen: la portada ya ha enseñado el vídeo; aquí lo que
-        hay que leer es una frase. Una foto detrás competiría con ella.
+        ⚠️ Y SE ENCOGE AL BAJAR, como antes lo hacía el texto: la caja se
+        escala del 100 al 92 % y se apaga según sale por arriba, guiada por el
+        scroll (`animation-timeline: view()`) y sin un listener. El navy de la
+        sección es lo que asoma por los bordes al encogerse. Las dos manchas
+        de luz que había detrás del texto se fueron con él: detrás de un vídeo
+        a sangre no se verían.
 
-        ─── EL FONDO SE MUEVE ──────────────────────────────────────────────
-        Dos manchas de luz —del navy claro y del teal de la marca— derivan
-        despacio sobre el navy. Ciclo largo y recorrido corto a propósito: si
-        se nota que se mueve, distrae del titular; lo que tiene que notarse es
-        que respira. Van a la DERECHA, que es donde está el aire: sobre el
-        texto molestarían.
+        ─── EL SONIDO ──────────────────────────────────────────────────────
+        Arranca mudo y en bucle, que es lo único que un navegador deja
+        arrancar solo, y con los subtítulos quemados se entiende sin voz. El
+        botón de abajo a la derecha enciende la voz al 20 %: es el mismo botón
+        y las mismas etiquetas que tenía en el slider. Va a la DERECHA porque
+        los subtítulos ocupan el centro de la franja de abajo; en el teléfono
+        se queda en el icono solo, que con el texto se le metía encima.
 
-        ⚠️ Y SE ENCOGE AL BAJAR. El contenido se escala del 100 al 92 % y se
-        apaga según el hero sale por arriba, con una animación GUIADA POR EL
-        SCROLL (`animation-timeline: view()`) que corre en el compositor sin un
-        solo listener. Donde no exista, el hero se queda quieto. El
-        encogimiento va en una capa aparte que envuelve al `Reveal`: los dos
-        animan `transform` y en el mismo elemento se pisarían.
-
-        ⚠️ QUIEN PIDE MENOS MOVIMIENTO NO VE NI LO UNO NI LO OTRO. */}
+        Quien pide menos movimiento no ve el vídeo moverse solo: se queda en
+        el primer fotograma y arranca solo si pulsa el botón de sonido, que
+        es pedirlo. */}
     <Section
       id="about-hero"
       tono="inverse"
-      ritmo="compacto"
       ariaLabel={about.aria}
-      class="relative isolate overflow-hidden lg:py-24"
+      sinContenedor
+      class="relative isolate overflow-hidden py-0!"
     >
-      <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10">
-        <div
-          data-hero-luz="a"
-          class="absolute -right-[10%] -top-[35%] size-[64vw] max-h-[48rem] max-w-[48rem] rounded-full bg-primary-800/60 blur-3xl"
-        />
-        <div
-          data-hero-luz="b"
-          class="absolute -bottom-[40%] right-[8%] size-[52vw] max-h-[40rem] max-w-[40rem] rounded-full bg-secondary-500/20 blur-3xl"
-        />
-      </div>
+      <div
+        data-hero-encoge
+        class="relative isolate flex h-svh w-full flex-col bg-primary-950 pt-[var(--header-h-grande)] lg:pt-[var(--header-h-grande-lg)]"
+      >
+       {/* El hueco del vídeo: lo que queda de pantalla debajo de la barra. */}
+       <div class="relative flex-1">
+        {/* `aria-hidden` y sin controles nativos: los mandos son el botón de
+            sonido, que es un `<button>` de verdad y sí se anuncia. `size-full`
+            porque un `<video>` sin medida sale a su tamaño nativo. */}
+        <video
+          data-about-video
+          aria-hidden="true"
+          tabindex="-1"
+          muted
+          loop
+          playsinline
+          autoplay
+          preload="auto"
+          poster={about.hero.video.poster}
+          src={about.hero.video.src}
+          data-alt-es={about.hero.video.alt.es}
+          data-alt-en={about.hero.video.alt.en}
+          class="absolute inset-0 size-full object-cover [object-position:50%_50%] lg:[object-position:center_62%]"
+        >
+        </video>
 
-      <div data-hero-encoge>
-        <Reveal>
-          {/* La columna: 58 % del contenedor de `lg` para arriba y el ancho
-              entero por debajo. `text-left` explícito por si algún padre
-              centrara, y `text-balance` en el título para que sus renglones
-              midan parecido dentro de la columna estrecha. */}
-          <div class="max-w-[58%] max-lg:max-w-none text-left">
-            <p class="text-sm font-semibold text-ink-on-inverse-brand sm:text-base lg:text-lg">
-              <T v={about.kicker} />
-            </p>
-
-            {/* Grande pero no enorme: 4xl / 5xl y ya. El 6xl que llevaba
-                centrado se pasaba de tamaño en una columna estrecha, y la
-                referencia tampoco va a lo enorme. */}
-            <h1 class="mt-4 text-3xl font-semibold leading-[1.1] tracking-[-0.02em] text-balance text-ink-inverse sm:text-4xl lg:text-5xl">
-              {about.hero.titulo.map((linea) => (
-                <span class="block">
-                  {"enfasis" in linea && linea.enfasis ? (
-                    <Enfasis v={linea} tono="inverso" />
-                  ) : (
-                    <T v={linea} />
-                  )}
-                </span>
-              ))}
-            </h1>
-
-            <p class="mt-5 max-w-prose text-base font-medium leading-relaxed text-pretty text-secondary-100 sm:text-lg lg:mt-6 lg:text-xl">
-              <T v={about.hero.anos} />
-            </p>
-
-            {/* Separación clara respecto al subtítulo, como pide la
-                referencia. En el teléfono un punto menos, que ahí cada rem
-                cuenta el doble. */}
-            <div class="ml-1 mt-8 lg:mt-10">
-              <BotonRelieve href={about.hero.ctaHref} sobre="oscuro" trackId="about-hero">
-                <T v={about.hero.cta} />
-              </BotonRelieve>
-            </div>
-          </div>
-        </Reveal>
+        <div class="pointer-events-none absolute inset-x-0 bottom-4 flex justify-end px-4 sm:bottom-6 sm:px-6 lg:bottom-8 lg:px-[var(--gutter-page)]">
+          <button
+            type="button"
+            data-about-sonido
+            aria-pressed="false"
+            aria-label={heroSlider.activarSonido[lang]}
+            data-aria-es={heroSlider.activarSonido.es}
+            data-aria-en={heroSlider.activarSonido.en}
+            data-etiqueta-activar-es={heroSlider.activarSonido.es}
+            data-etiqueta-activar-en={heroSlider.activarSonido.en}
+            data-etiqueta-silenciar-es={heroSlider.silenciarSonido.es}
+            data-etiqueta-silenciar-en={heroSlider.silenciarSonido.en}
+            class="pointer-events-auto inline-flex min-h-11 min-w-11 items-center justify-center gap-2.5 rounded-full border border-white/40 bg-primary-950/40 px-3 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition-colors duration-200 hover:border-white hover:bg-primary-950/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse sm:px-5"
+          >
+            <Icono nombre="megafono" class="size-4 shrink-0" grosor={1.8} data-icono-mudo />
+            <Icono nombre="megafono" class="hidden size-4 shrink-0" grosor={2.4} data-icono-suena />
+            <span data-etiqueta-sonido class="hidden sm:inline">
+              <T v={heroSlider.activarSonido} />
+            </span>
+          </button>
+        </div>
+       </div>
       </div>
     </Section>
 
@@ -230,11 +254,40 @@ const CAJA_ICONO =
         Y por eso el retrato dejó de ser `sticky`: `sticky` lo ancla arriba y
         `center` lo quiere al medio, y las dos cosas a la vez no existen. */}
     <Section id="about-carta" tono="surface" ariaLabel={about.carta.kicker}>
-      {/* ⚠️ 30 / 70, Y ERA 38 / 62. El retrato se queda en unos 370 px a 1440,
-          que sigue siendo un retrato y no un sello, y la carta manda. */}
-      <div class="grid gap-12 lg:grid-cols-[30fr_70fr] lg:gap-20 lg:items-center">
+      {/* ⚠️ DOS COLUMNAS 30 / 70, CON LOS ELEMENTOS CENTRADOS Y EL TEXTO
+          JUSTIFICADO. Lo pidió el cliente el 15-09-2026, y hubo que pedirlo
+          dos veces: la primera lectura de "centrado imagen y texto" apiló el
+          retrato encima de la carta en una sola columna, y no era eso. Era
+          esto: el retrato a la izquierda y la carta a la derecha, como
+          estaban, pero cada cosa centrada en su columna —el retrato con su
+          nombre y su cargo debajo, el rótulo y la firma en el eje— y los
+          párrafos justificados, que es lo que hace que un bloque centrado
+          tenga los dos bordes rectos y no un lado dentado.
+
+          ⚠️ JUSTIFICAR TRAE RÍOS DE BLANCO SI NO SE PARTEN PALABRAS, y en una
+          medida de 65 caracteres se notan. Por eso va `hyphens-auto`: el
+          navegador parte por sílabas según el `lang` de la página —que aquí
+          cambia sin recargar, y la partición cambia con él— y los huecos se
+          quedan en lo normal. Y se quita `text-pretty`, que ajusta el último
+          renglón para que no quede una palabra huérfana: con el texto
+          justificado ese ajuste pelea con el propio justificado.
+
+          Las dos columnas van `items-center`: el retrato queda a media altura
+          de la carta, que es lo que se ve cuando la carta es más alta que él.
+
+          ⚠️ EL RETRATO VA PEGADO AL TEXTO, Y LOS DOS JUNTOS EN EL CENTRO. Con
+          30 / 70 a todo el ancho del contenedor, la carta —que mide 65
+          caracteres— quedaba centrada en su columna del 70 % y entre ella y
+          el retrato se abría un hueco de casi 200 px. El cliente lo pidió
+          así: "la imagen de Pedro acércala más al centro con el texto". La
+          rejilla pasa a dos columnas de medida fija —el retrato a 24rem y la
+          carta a lo que mide la prosa— con `justify-center`, así que el par
+          se centra como una sola pieza y el aire sobra por fuera, no por
+          dentro. `gap-16` entre los dos: cerca, pero sin que la carta se lea
+          como pie de foto. */}
+      <div class="grid justify-center gap-12 lg:grid-cols-[24rem_minmax(0,65ch)] lg:items-center lg:gap-16">
         <Reveal>
-          <div>
+          <div class="flex flex-col items-center text-center">
             <img
               src={instructor.foto}
               alt={about.carta.fotoAlt[lang]}
@@ -244,7 +297,7 @@ const CAJA_ICONO =
               height={1000}
               loading="lazy"
               decoding="async"
-              class="aspect-[4/5] w-full max-w-md rounded-lg border border-line object-cover object-top lg:max-w-none"
+              class="aspect-[4/5] w-full max-w-sm rounded-lg border border-line object-cover object-top"
             />
             <p class="mt-5 text-xl font-extrabold text-ink">{instructor.nombre}</p>
             <p class="mt-1 text-base font-medium text-ink-muted">
@@ -254,19 +307,14 @@ const CAJA_ICONO =
         </Reveal>
 
         <Reveal delay={0.1}>
-          <div>
-            <p class="text-sm font-semibold text-ink-brand sm:text-base">
+          <div class="mx-auto flex max-w-prose flex-col items-center">
+            <p class="text-center text-sm font-semibold text-ink-brand sm:text-base">
               <T v={about.carta.kicker} />
             </p>
 
-            {/* ⚠️ `max-w-prose` VUELVE, y antes se había quitado a propósito.
-                Con la columna al 62 % medía unos 770 px y la carta cabía en
-                75 caracteres por renglón; al 70 % son 870 y pasaría de 85,
-                que ya cansa. La medida recorta el texto y deja aire a la
-                derecha, y ese aire es justo la asimetría que se quería ver. */}
-            <div class="mt-6 max-w-prose space-y-5">
+            <div class="mt-6 space-y-5 text-justify hyphens-auto">
               {about.carta.parrafos.map((parrafo) => (
-                <p class="text-lg font-medium leading-relaxed text-pretty text-ink sm:text-xl">
+                <p class="text-lg font-medium leading-relaxed text-ink sm:text-xl">
                   <T v={parrafo} />
                 </p>
               ))}
@@ -274,11 +322,8 @@ const CAJA_ICONO =
 
             {/* La firma, en la Fraunces de los remates. Es la única vez en
                 toda la web que la itálica no remata una frase: firma una. */}
-            <p class="mt-10 font-acento text-3xl italic text-ink sm:text-4xl">
+            <p class="mt-10 text-center font-acento text-3xl italic text-ink sm:text-4xl">
               — <T v={about.carta.firma} />
-            </p>
-            <p class="mt-2 text-base font-medium text-ink-muted">
-              <T v={instructor.rol} />
             </p>
           </div>
         </Reveal>
@@ -522,9 +567,17 @@ const CAJA_ICONO =
 
     {/* ─── 7 · PROPÓSITO Y PÚBLICOS ──────────────────────────────────────
         Una frase grande y, debajo, cuatro bloques en dos por dos. Cada
-        bloque empieza por "Si…" y lleva un filete arriba y no una tarjeta:
-        el lector busca el suyo y se salta los otros tres, y cuatro cajas
-        iguales le dirían que tiene que leer las cuatro. */}
+        bloque empieza por "Si…" y lleva SU FOTO arriba: el lector busca el
+        suyo y se salta los otros tres, y la foto es lo que le deja
+        reconocerse antes de leer. Las cuatro son escenas —una cocina, un
+        corrillo, un mostrador, un portátil de noche— y no conceptos: la
+        frase de arriba ya es el concepto.
+
+        ⚠️ LA FOTO SUSTITUYE AL FILETE, no se suma a él. Había un `border-t`
+        que separaba cada bloque del anterior; con la foto encima, el borde
+        de la propia imagen hace ese trabajo y el filete sobraba. Las pidió el
+        cliente el 15-09-2026: "imágenes, representación gráfica, que tengan
+        contexto con esto". Origen y licencia, en el config. */}
     <Section id="about-proposito" tono="surface" ariaLabel={about.proposito.kicker}>
       <Reveal>
         <p class="text-sm font-semibold text-ink-brand sm:text-base">
@@ -544,8 +597,19 @@ const CAJA_ICONO =
       <ul role="list" class="mt-6 grid gap-x-12 gap-y-10 sm:grid-cols-2 lg:gap-x-16 lg:gap-y-12">
         {about.proposito.publicos.map((publico, i) => (
           <Reveal as="li" delay={(i % 2) * 0.08}>
-            <div class="border-t border-line pt-6">
-              <h3 class="text-xl font-extrabold text-pretty text-ink sm:text-2xl">
+            <div>
+              <img
+                src={publico.imagen.src}
+                alt={publico.imagen.alt[lang]}
+                data-alt-es={publico.imagen.alt.es}
+                data-alt-en={publico.imagen.alt.en}
+                width={1200}
+                height={900}
+                loading="lazy"
+                decoding="async"
+                class="aspect-[4/3] w-full rounded-lg border border-line object-cover"
+              />
+              <h3 class="mt-6 text-xl font-extrabold text-pretty text-ink sm:text-2xl">
                 <T v={publico.titulo} />
               </h3>
               <p class="mt-3 max-w-prose text-base font-medium leading-relaxed text-pretty text-ink-muted sm:text-lg">
@@ -688,30 +752,105 @@ const CAJA_ICONO =
   <Footer />
 </BaseLayout>
 
-<style>
-  /* ─── LAS DOS MANCHAS DEL HERO ──────────────────────────────────────────
-     Derivan en bucle, cada una por su lado y con periodos distintos para que
-     no parezcan una sola cosa moviéndose. Solo `transform`: es lo que el
-     compositor mueve sin repintar. */
-  @keyframes about-luz-a {
-    0%,
-    100% {
-      transform: translate(0, 0) scale(1);
-    }
-    50% {
-      transform: translate(8%, 12%) scale(1.12);
-    }
-  }
+<script>
+  /* ─── EL VÍDEO DEL HERO: SONIDO, VISIBILIDAD Y MOVIMIENTO ────────────────
+     Tres cosas y ninguna más:
 
-  @keyframes about-luz-b {
-    0%,
-    100% {
-      transform: translate(0, 0) scale(1);
+       · el botón de sonido enciende la voz al 20 % y la apaga; el rótulo dice
+         lo que VA A PASAR, en el idioma de la página, y se repinta cuando
+         cambia el idioma (`e180:idioma`);
+       · el vídeo se para cuando sale de la vista o la pestaña se esconde
+         —un `<video>` que no se ve sigue decodificando y gastando batería— y
+         al volver arranca de nuevo. Si estaba sonando al irse, vuelve mudo:
+         una voz que sigue hablando fuera de pantalla es un fallo;
+       · quien pide menos movimiento no lo ve arrancar solo. Se queda en el
+         primer fotograma y solo se mueve si pulsa el botón de sonido, que es
+         pedirlo. */
+  const hero = document.getElementById("about-hero");
+  const video = hero?.querySelector<HTMLVideoElement>("[data-about-video]");
+  const boton = hero?.querySelector<HTMLButtonElement>("[data-about-sonido]");
+
+  if (hero && video && boton) {
+    const VOLUMEN = 0.2;
+    const menosMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let sonando = false;
+
+    const claveIdioma = (base: string) =>
+      document.documentElement.lang === "en" ? `${base}En` : `${base}Es`;
+
+    const pintar = () => {
+      const etiqueta =
+        boton.dataset[claveIdioma(sonando ? "etiquetaSilenciar" : "etiquetaActivar")];
+      if (etiqueta) boton.setAttribute("aria-label", etiqueta);
+      boton.setAttribute("aria-pressed", String(sonando));
+      boton.querySelector("[data-icono-mudo]")?.classList.toggle("hidden", sonando);
+      boton.querySelector("[data-icono-suena]")?.classList.toggle("hidden", !sonando);
+      const texto = boton.querySelector("[data-etiqueta-sonido]");
+      if (texto && etiqueta) texto.textContent = etiqueta;
+    };
+
+    const reproducir = () => {
+      video.play().catch(() => {});
+    };
+
+    const callar = () => {
+      video.muted = true;
+      sonando = false;
+      pintar();
+    };
+
+    if (menosMovimiento.matches) {
+      video.removeAttribute("autoplay");
+      video.pause();
     }
-    50% {
-      transform: translate(-10%, -8%) scale(1.08);
-    }
+
+    boton.addEventListener("click", () => {
+      if (sonando) {
+        callar();
+        if (menosMovimiento.matches) video.pause();
+        return;
+      }
+      video.volume = VOLUMEN;
+      video.muted = false;
+      reproducir();
+      sonando = true;
+      pintar();
+    });
+
+    /* Fuera de la vista, parado. La mitad de la caja basta: por debajo de
+       eso lo que se ve es un trozo y no un vídeo. */
+    const observador = new IntersectionObserver(
+      ([entrada]) => {
+        if (!entrada) return;
+        if (entrada.isIntersecting) {
+          if (!menosMovimiento.matches) reproducir();
+        } else {
+          if (sonando) callar();
+          video.pause();
+        }
+      },
+      { threshold: 0.5 },
+    );
+    observador.observe(video);
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        if (sonando) callar();
+        video.pause();
+      } else if (!menosMovimiento.matches) {
+        reproducir();
+      }
+    });
+
+    window.addEventListener("e180:idioma", pintar);
   }
+</script>
+
+<style>
+  /* ⚠️ AQUÍ HABÍA DOS MANCHAS DE LUZ (`about-luz-a/b`) que derivaban detrás
+     del texto del hero. Se quitaron el 15-09-2026 con el texto: el hero es
+     ahora un vídeo a sangre y detrás de él no se vería nada. Están en el
+     historial si el texto vuelve. */
 
   /* ─── EL HERO SE ENCOGE AL SALIR ─────────────────────────────────────────
      Guiado por el scroll, no por el tiempo: `view()` sigue la posición del
@@ -727,14 +866,6 @@ const CAJA_ICONO =
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    [data-hero-luz="a"] {
-      animation: about-luz-a 28s ease-in-out infinite;
-    }
-
-    [data-hero-luz="b"] {
-      animation: about-luz-b 34s ease-in-out infinite;
-    }
-
     @supports (animation-timeline: view()) {
       [data-hero-encoge] {
         transform-origin: 50% 100%;
