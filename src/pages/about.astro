@@ -106,17 +106,13 @@ const CAJA_ICONO =
 ---
 
 <BaseLayout titulo={tituloPagina} descripcion={about.descripcion}>
-  {/* ─── LA BARRA, FLOTANDO SOBRE EL VÍDEO ────────────────────────────────
-      El mismo montaje que la portada: la barra va en un envoltorio ABSOLUTO,
-      transparente y con el logotipo en blanco, así que el hero empieza en el
-      píxel cero y el vídeo se ve por detrás. En cuanto se baja un dedo, se
-      ancla arriba y se pinta de navy (ver `Header.astro`, `sobreHero`). Lo pidió
-      el cliente el 15-09-2026 al meter el vídeo: "el navegador déjalo
-      transparente y se haga sólido al bajar". Hasta entonces esta página
-      llevaba la barra blanca de las páginas sin foto. */}
-  <div class="absolute inset-x-0 top-0 z-40">
-    <Header sobreHero />
-  </div>
+  {/* ⚠️ LA BARRA ES LA SÓLIDA, LA DE TODAS LAS PÁGINAS SIN FOTO. Estuvo unas
+      horas flotando transparente sobre el vídeo, como en la portada
+      (`sobreHero`), y el cliente la devolvió el mismo 15-09-2026: "el hero
+      mejor si dejas en esta página sólido el navegador". Con la barra en el
+      flujo, el vídeo empieza debajo de ella sin ningún relleno: la propia
+      barra es lo que lo baja. */}
+  <Header />
 
   <main id="contenido">
     {/* ─── 1 · EL HERO ───────────────────────────────────────────────────
@@ -152,16 +148,18 @@ const CAJA_ICONO =
         que llevaba en el slider (`encuadreVertical: "50% 50%"`); la solución de
         verdad para el móvil sigue siendo un montaje vertical del promo.
 
-        ⚠️ EL VÍDEO EMPIEZA DEBAJO DE LA BARRA, NO EN EL PÍXEL CERO. La barra
-        flota transparente con el logotipo grande en el centro, y la cabeza
-        del presentador arranca al 8 % del alto del fotograma: con el vídeo
-        desde arriba, el logotipo le caía en la cara. El cliente lo vio y lo
-        pidió: "baja el vídeo un poco". La caja lleva un relleno superior
-        igual a la altura de la barra grande (`--header-h-grande`, 92 px; 128
-        en `lg`) y el vídeo ocupa lo que queda, sobre el navy de la sección,
-        que es lo que se ve detrás de la barra mientras está transparente. A
-        900 de alto el vídeo mide 772 y recorta un 5 %; la cabeza queda unos
-        40 px por debajo del borde de la caja, o sea 170 desde arriba: libre.
+        ⚠️ BARRA + HERO = UNA PANTALLA. La barra es la sólida y va en el
+        flujo, así que ocupa sus 92 px (128 en `lg`) arriba y el hero mide lo
+        que queda: `100svh` menos la barra grande, que es la altura con la que
+        nace. Es la misma cuenta que hace el slider de la portada. Con el
+        vídeo a `h-svh` entero, barra y hero sumaban pantalla y cuarto, y el
+        borde de abajo del vídeo —donde van los subtítulos— quedaba fuera.
+
+        Y ya no hace falta relleno para apartar el logotipo de la cara del
+        presentador: la barra está encima, no sobre el vídeo. Hubo un
+        `pt-[var(--header-h-grande)]` aquí cuando la barra flotaba; se fue con
+        ella. A 900 de alto el vídeo mide 772 y recorta un 5 % con el
+        `center 62%`: cara y subtítulos dentro.
 
         ⚠️ Y SE ENCOGE AL BAJAR, como antes lo hacía el texto: la caja se
         escala del 100 al 92 % y se apaga según sale por arriba, guiada por el
@@ -190,10 +188,9 @@ const CAJA_ICONO =
     >
       <div
         data-hero-encoge
-        class="relative isolate flex h-svh w-full flex-col bg-primary-950 pt-[var(--header-h-grande)] lg:pt-[var(--header-h-grande-lg)]"
+        class="relative isolate flex h-[calc(100svh-var(--header-h-grande))] w-full flex-col bg-primary-950 lg:h-[calc(100svh-var(--header-h-grande-lg))]"
       >
-       {/* El hueco del vídeo: lo que queda de pantalla debajo de la barra. */}
-       <div class="relative flex-1">
+        <div class="relative flex-1">
         {/* `aria-hidden` y sin controles nativos: los mandos son el botón de
             sonido, que es un `<button>` de verdad y sí se anuncia. `size-full`
             porque un `<video>` sin medida sale a su tamaño nativo. */}
@@ -574,11 +571,22 @@ const CAJA_ICONO =
     {/* ─── 7 · PROPÓSITO Y PÚBLICOS ──────────────────────────────────────
         EL MISMO MOSAICO QUE "LOS 90 DÍAS" DE LA PORTADA. Lo pidió el cliente
         el 15-09-2026: "déjala como la otra sección del índex, tipo mosaico".
-        El título centrado y pegajoso, y debajo los cuatro públicos como filas
-        alternas —foto a un lado, texto al otro, y al revés en la siguiente—
-        pegadas entre sí y a todo el ancho. Ver `01-Plan90.astro` para el
-        porqué de cada decisión (el `order`, el `sticky`, el `z-index`, el `pb-0!`):
-        aquí se copia la forma, no se reinventa.
+        El título centrado, y debajo los cuatro públicos como filas alternas
+        —foto a un lado, texto al otro, y al revés en la siguiente— pegadas
+        entre sí y a todo el ancho. Ver `01-Plan90.astro` para el porqué de
+        cada decisión (el `order`, el `pb-0!`): aquí se copia la forma, no se
+        reinventa.
+
+        ⚠️ EL TÍTULO NO ES PEGAJOSO, Y EL DE LA PORTADA SÍ. Nació igual que
+        aquel y el cliente lo soltó el 15-09-2026: "en esta que el título no
+        baje, no pasa nada". Cuatro filas cortas se recorren en dos pantallas
+        y un titular que las acompañe no aporta lo que aporta en el plan de
+        cuatro fases largas.
+
+        ⚠️ EL BLOQUE DE TEXTO ES ANCHO (`max-w-[44rem]`, y el de la portada
+        mide 34). Los títulos de los públicos van en Fraunces a 5xl y con 34rem
+        partían en tres renglones; el cliente pidió menos saltos. A 44 caben en
+        dos, y el párrafo, que es corto, no llega a cansar en esa medida.
 
         ⚠️ SIN CEJAS. Había dos —"Por qué existimos" sobre la frase y "A quién
         le sirve" sobre los bloques— y el cliente las quitó. La frase se parte
@@ -597,18 +605,16 @@ const CAJA_ICONO =
       sinContenedor
       class="relative pb-0!"
     >
-      <div class="sticky top-[var(--header-h)] z-20 bg-surface py-5 sm:py-6 lg:top-[var(--header-h-lg)] lg:py-8">
-        <div class="container-page">
-          <Reveal>
-            <h2 class="mx-auto max-w-5xl text-center text-3xl font-extrabold leading-tight text-balance text-ink sm:text-4xl lg:text-5xl">
-              <T v={about.proposito.frase} />{" "}
-              <Enfasis v={about.proposito.remate} />
-            </h2>
-          </Reveal>
-        </div>
+      <div class="container-page">
+        <Reveal>
+          <h2 class="mx-auto max-w-5xl text-center text-3xl font-extrabold leading-tight text-balance text-ink sm:text-4xl lg:text-5xl">
+            <T v={about.proposito.frase} />{" "}
+            <Enfasis v={about.proposito.remate} />
+          </h2>
+        </Reveal>
       </div>
 
-      <div class="mt-4 lg:mt-6">
+      <div class="mt-10 lg:mt-14">
         {about.proposito.publicos.map((publico, i) => (
           <Reveal delay={0.05}>
             <div class="grid md:grid-cols-2">
@@ -639,7 +645,7 @@ const CAJA_ICONO =
                     : "pl-[var(--gutter-page)] pr-[var(--gutter-page)] md:pl-10 lg:pl-16 xl:pl-24",
                 ]}
               >
-                <div class="max-w-[34rem]">
+                <div class="max-w-[44rem]">
                   <h3 class="font-acento text-3xl italic leading-tight text-ink sm:text-4xl lg:text-5xl">
                     <T v={publico.titulo} />
                   </h3>
