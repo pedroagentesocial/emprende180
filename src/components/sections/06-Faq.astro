@@ -120,7 +120,10 @@ const schemaFaq =
               )
             }
 
-            <Button href="#empezar" trackId="faq-contacto">
+            {/* Con la barra: la sección vive en la portada y en /resources
+                desde el 15-09-2026, y desde la segunda un ancla pelada no
+                llevaría a ningún sitio. En la portada es el mismo salto. */}
+            <Button href="/#empezar" trackId="faq-contacto">
               <Icono nombre="conversacion" class="size-4 shrink-0" grosor={2} />
               <T v={copy.faq.contactar} />
             </Button>

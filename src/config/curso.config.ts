@@ -4554,6 +4554,35 @@ export const copy = {
       en: "Short guides on working your network without making it weird. Free, no sign-up.",
     },
     paginaArticulos: { es: "Los artículos", en: "The articles" },
+
+    /* ─── LO QUE HAY EN LA PÁGINA, DESDE EL 15-09-2026 ────────────────────
+       El cliente pidió "darle amor, contenido, mejorar mucho esta página". La
+       regla de arriba sigue en pie —nada que no exista—, así que lo que se
+       añade es lo que ya existe y estaba repartido por el sitio o guardado en
+       el config sin pintarse:
+
+         · el plan de 90 días, de un vistazo: el día en tres bloques, las
+           cuatro fases y los tres hitos (`copy.plan90`, escrito sobre el
+           documento del cliente y quitado de la portada el 10-09-2026);
+         · las preguntas frecuentes, las mismas de la portada;
+         · el aviso del siguiente artículo.
+
+       El índice del hero es la lista de esas piezas, en el orden de la
+       página. Si una se quita, se quita de aquí. */
+    indice: [
+      { texto: { es: "Los artículos", en: "The articles" }, ancla: "#blog" },
+      { texto: { es: "El plan de 90 días", en: "The 90-day plan" }, ancla: "#plan" },
+      { texto: { es: "Preguntas frecuentes", en: "Common questions" }, ancla: "#faq" },
+      { texto: { es: "Avísame del siguiente", en: "Tell me about the next one" }, ancla: "#avisame" },
+    ],
+    masArticulos: { es: "Más artículos", en: "More articles" },
+    planTitulo: { es: "El plan de 90 días,", en: "The 90-day plan," },
+    planRemate: { es: "de un vistazo.", en: "at a glance." },
+    /* Reglas de tono de la tarjeta navy: son las tres frases del plan que ya
+       estaban aprobadas (la regla del CRM, el límite de tu parte y el
+       acompañamiento). Se rotulan como "lo que no cambia" porque eso es lo
+       que son: las tres cosas que valen los 90 días enteros. */
+    planReglas: { es: "Lo que no cambia", en: "What doesn't change" },
     paginaVacio: {
       es: "Todavía no hay nada publicado. Déjame tu correo y te aviso con lo primero.",
       en: "Nothing published yet. Leave me your email and I'll let you know about the first one.",

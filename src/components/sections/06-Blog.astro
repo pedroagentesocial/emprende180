@@ -65,6 +65,16 @@ import { resolverIdiomaServidor } from "@i18n/idioma";
  * cálculos ni `vw`.
  */
 
+interface Props {
+  /**
+   * Si pinta el botón "Ver todos los artículos" al pie de la lista. En
+   * /resources se apaga: ahí la lista completa está justo debajo, y un
+   * botón que lleva a /blog desde la página que ya lo es todo sobra.
+   */
+  botonTodos?: boolean;
+}
+
+const { botonTodos = true } = Astro.props;
 const { blogPortada } = copy;
 
 const lang = resolverIdiomaServidor(
@@ -228,11 +238,13 @@ const conContenido = await Promise.all(
                   desplazado a la izquierda —ese hueco lo ocupa su pila de
                   sombras— y sin esto su borde no cuadra con el de la lista de
                   arriba. */}
-              <div class="ml-1 mt-8">
-                <BotonRelieve href="/blog" trackId="blog-todos">
-                  <T v={blogPortada.verTodos} />
-                </BotonRelieve>
-              </div>
+              {botonTodos && (
+                <div class="ml-1 mt-8">
+                  <BotonRelieve href="/blog" trackId="blog-todos">
+                    <T v={blogPortada.verTodos} />
+                  </BotonRelieve>
+                </div>
+              )}
             </Reveal>
           )
         }

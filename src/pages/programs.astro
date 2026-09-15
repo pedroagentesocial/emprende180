@@ -8,6 +8,7 @@ import Enfasis from "@components/ui/Enfasis.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Icono from "@components/ui/Icono.astro";
 import BotonRelieve from "@components/ui/BotonRelieve.astro";
+import HeroPagina from "@components/hero/HeroPagina.astro";
 import VideoVsl from "@components/hero/VideoVsl.astro";
 import Cierre from "@components/sections/09-Cierre.astro";
 import { copy, sitio } from "@config/curso.config";
@@ -25,8 +26,9 @@ import { construirTxt, resolverIdiomaServidor } from "@i18n/idioma";
  *
  * ─── NO HAY SISTEMA VISUAL NUEVO ───────────────────────────────────────────
  *
- * El hero es el del about de antes (a la izquierda, columna estrecha, remate
- * en Fraunces, navy con las dos luces y el encogimiento al bajar). Las tres
+ * El hero es `HeroPagina` (a la izquierda, columna estrecha, remate en
+ * Fraunces, navy con las dos luces y el encogimiento al bajar), el mismo que
+ * usa /resources; se extrajo el 15-09-2026 al llegar la tercera página. Las tres
  * piezas van en el MOSAICO de la portada —el de "Los 90 días" y el del
  * propósito del about—: filas alternas foto/texto a todo el ancho, pegadas
  * entre sí, y el lado de la foto alterna para que tres filas con la misma
@@ -75,55 +77,20 @@ const tituloPagina = construirTxt(
 
   <main id="contenido">
     {/* ─── 1 · EL HERO ───────────────────────────────────────────────────
-        Calcado del about: a la izquierda, columna del 58 %, título con el
-        remate en Fraunces, un párrafo y el botón. Aquí el botón no vende:
-        baja a la primera sección, que es lo que hace "ver cómo funciona".
-        Las dos luces y el encogimiento al bajar son los del about y llevan
-        los mismos seguros: `prefers-reduced-motion` y capas separadas para
-        que el encogimiento y el `Reveal` no animen el mismo `transform`. */}
-    <Section
+        El hero de página interior (`HeroPagina`): columna a la izquierda,
+        remate en Fraunces, luces y encogimiento. Aquí el botón no vende: baja
+        a la primera pieza, que es lo que hace "ver cómo funciona". */}
+    <HeroPagina
       id="programas-hero"
-      tono="inverse"
-      ritmo="compacto"
-      ariaLabel={programas.aria}
-      class="relative isolate overflow-hidden lg:py-24"
-    >
-      <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10">
-        <div
-          data-hero-luz="a"
-          class="absolute -right-[10%] -top-[35%] size-[64vw] max-h-[48rem] max-w-[48rem] rounded-full bg-primary-800/60 blur-3xl"
-        />
-        <div
-          data-hero-luz="b"
-          class="absolute -bottom-[40%] right-[8%] size-[52vw] max-h-[40rem] max-w-[40rem] rounded-full bg-secondary-500/20 blur-3xl"
-        />
-      </div>
-
-      <div data-hero-encoge>
-        <Reveal>
-          <div class="max-w-[58%] max-lg:max-w-none text-left">
-            <p class="text-sm font-semibold text-ink-on-inverse-brand sm:text-base lg:text-lg">
-              <T v={programas.kicker} />
-            </p>
-
-            <h1 class="mt-4 text-3xl font-semibold leading-[1.1] tracking-[-0.02em] text-balance text-ink-inverse sm:text-4xl lg:text-5xl">
-              <span class="block"><T v={programas.hero.titulo} /></span>
-              <span class="block"><Enfasis v={programas.hero.remate} tono="inverso" /></span>
-            </h1>
-
-            <p class="mt-5 max-w-prose text-base font-medium leading-relaxed text-pretty text-secondary-100 sm:text-lg lg:mt-6 lg:text-xl">
-              <T v={programas.hero.texto} />
-            </p>
-
-            <div class="ml-1 mt-8 lg:mt-10">
-              <BotonRelieve href={programas.hero.ctaHref} sobre="oscuro" trackId="programas-hero">
-                <T v={programas.hero.cta} />
-              </BotonRelieve>
-            </div>
-          </div>
-        </Reveal>
-      </div>
-    </Section>
+      aria={programas.aria}
+      kicker={programas.kicker}
+      titulo={programas.hero.titulo}
+      remate={programas.hero.remate}
+      texto={programas.hero.texto}
+      cta={programas.hero.cta}
+      ctaHref={programas.hero.ctaHref}
+      trackId="programas-hero"
+    />
 
     {/* ─── 2 · EL ÍNDICE ─────────────────────────────────────────────────
         Tres enlaces en fila, entre dos filetes. Cada tarjeta es UN enlace
@@ -325,54 +292,3 @@ const tituloPagina = construirTxt(
 
   <Footer />
 </BaseLayout>
-
-<style>
-  /* Las mismas dos luces y el mismo encogimiento que el hero del about. Se
-     repiten aquí y no se sacan a un componente todavía: son dos páginas, y
-     dos copias se leen; el día que haya una tercera, se extrae. */
-  @keyframes programas-luz-a {
-    0%,
-    100% {
-      transform: translate(0, 0) scale(1);
-    }
-    50% {
-      transform: translate(8%, 12%) scale(1.12);
-    }
-  }
-
-  @keyframes programas-luz-b {
-    0%,
-    100% {
-      transform: translate(0, 0) scale(1);
-    }
-    50% {
-      transform: translate(-10%, -8%) scale(1.08);
-    }
-  }
-
-  @keyframes programas-encoger {
-    to {
-      transform: scale(0.92) translateY(-1.5rem);
-      opacity: 0.4;
-    }
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    [data-hero-luz="a"] {
-      animation: programas-luz-a 28s ease-in-out infinite;
-    }
-
-    [data-hero-luz="b"] {
-      animation: programas-luz-b 34s ease-in-out infinite;
-    }
-
-    @supports (animation-timeline: view()) {
-      [data-hero-encoge] {
-        transform-origin: 50% 100%;
-        animation: programas-encoger linear both;
-        animation-timeline: view();
-        animation-range: exit 0% exit 100%;
-      }
-    }
-  }
-</style>

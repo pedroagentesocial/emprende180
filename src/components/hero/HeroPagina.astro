@@ -1,0 +1,158 @@
+---
+import type { Txt } from "@i18n/idioma";
+import T from "@components/i18n/T.astro";
+import Section from "@components/ui/Section.astro";
+import Enfasis from "@components/ui/Enfasis.astro";
+import Reveal from "@components/motion/Reveal.astro";
+import BotonRelieve from "@components/ui/BotonRelieve.astro";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * HERO DE PÁGINA INTERIOR — navy, columna a la izquierda, luces y encogimiento
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * El hero de las páginas que no son la portada ni el about: /programs y
+ * /resources. Nació en el about el 14-09-2026 (sobre la composición de
+ * bossbabe.com/about) y se copió a /programs con la nota de "el día que haya
+ * una tercera, se extrae". La tercera es /resources, y esto es la extracción.
+ * El about ya no lo usa: su hero es el vídeo de presentación.
+ *
+ * ─── LA COMPOSICIÓN ────────────────────────────────────────────────────────
+ *
+ * Todo a la IZQUIERDA, en una columna que no pasa del 58 % del contenedor en
+ * escritorio y ocupa el ancho entero por debajo, con el aire a la derecha a
+ * la vista. Ceja, título en dos trozos —Montserrat y el remate en Fraunces
+ * teal claro—, un párrafo y, si lo hay, el botón. Debajo del párrafo hay un
+ * `<slot>` para lo que cada página quiera añadir (un índice, por ejemplo).
+ *
+ * ⚠️ A LA IZQUIERDA EN TODOS LOS TAMAÑOS: un hero centrado en el teléfono y a
+ * la izquierda en escritorio se leen como dos páginas distintas.
+ *
+ * ─── EL FONDO SE MUEVE, Y EL HERO SE ENCOGE ────────────────────────────────
+ *
+ * Dos manchas de luz —navy claro y teal— derivan despacio sobre el navy, a la
+ * derecha, que es donde está el aire. Ciclo largo y recorrido corto: tiene
+ * que notarse que respira, no que se mueve. Y el contenido se escala del 100
+ * al 92 % y se apaga según el hero sale por arriba, con una animación GUIADA
+ * POR EL SCROLL (`animation-timeline: view()`) que corre en el compositor sin
+ * un solo listener. Donde no exista, se queda quieto.
+ *
+ * ⚠️ EL ENCOGIMIENTO VA EN UNA CAPA APARTE QUE ENVUELVE AL `Reveal`: los dos
+ * animan `transform` y en el mismo elemento se pisarían.
+ *
+ * ⚠️ QUIEN PIDE MENOS MOVIMIENTO NO VE NI LO UNO NI LO OTRO.
+ */
+
+interface Props {
+  id: string;
+  aria: Txt;
+  kicker: Txt;
+  titulo: Txt;
+  /** El remate, en Fraunces. */
+  remate: Txt;
+  texto?: Txt;
+  cta?: Txt;
+  ctaHref?: string;
+  trackId?: string;
+}
+
+const { id, aria, kicker, titulo, remate, texto, cta, ctaHref, trackId } = Astro.props;
+---
+
+<Section
+  id={id}
+  tono="inverse"
+  ritmo="compacto"
+  ariaLabel={aria}
+  class="relative isolate overflow-hidden lg:py-24"
+>
+  <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10">
+    <div
+      data-hero-luz="a"
+      class="absolute -right-[10%] -top-[35%] size-[64vw] max-h-[48rem] max-w-[48rem] rounded-full bg-primary-800/60 blur-3xl"
+    />
+    <div
+      data-hero-luz="b"
+      class="absolute -bottom-[40%] right-[8%] size-[52vw] max-h-[40rem] max-w-[40rem] rounded-full bg-secondary-500/20 blur-3xl"
+    />
+  </div>
+
+  <div data-hero-encoge>
+    <Reveal>
+      <div class="max-w-[58%] max-lg:max-w-none text-left">
+        <p class="text-sm font-semibold text-ink-on-inverse-brand sm:text-base lg:text-lg">
+          <T v={kicker} />
+        </p>
+
+        <h1 class="mt-4 text-3xl font-semibold leading-[1.1] tracking-[-0.02em] text-balance text-ink-inverse sm:text-4xl lg:text-5xl">
+          <span class="block"><T v={titulo} /></span>
+          <span class="block"><Enfasis v={remate} tono="inverso" /></span>
+        </h1>
+
+        {texto && (
+          <p class="mt-5 max-w-prose text-base font-medium leading-relaxed text-pretty text-secondary-100 sm:text-lg lg:mt-6 lg:text-xl">
+            <T v={texto} />
+          </p>
+        )}
+
+        {cta && ctaHref && (
+          <div class="ml-1 mt-8 lg:mt-10">
+            <BotonRelieve href={ctaHref} sobre="oscuro" trackId={trackId}>
+              <T v={cta} />
+            </BotonRelieve>
+          </div>
+        )}
+
+        <slot />
+      </div>
+    </Reveal>
+  </div>
+</Section>
+
+<style>
+  @keyframes hero-pagina-luz-a {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(8%, 12%) scale(1.12);
+    }
+  }
+
+  @keyframes hero-pagina-luz-b {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(-10%, -8%) scale(1.08);
+    }
+  }
+
+  @keyframes hero-pagina-encoger {
+    to {
+      transform: scale(0.92) translateY(-1.5rem);
+      opacity: 0.4;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    [data-hero-luz="a"] {
+      animation: hero-pagina-luz-a 28s ease-in-out infinite;
+    }
+
+    [data-hero-luz="b"] {
+      animation: hero-pagina-luz-b 34s ease-in-out infinite;
+    }
+
+    @supports (animation-timeline: view()) {
+      [data-hero-encoge] {
+        transform-origin: 50% 100%;
+        animation: hero-pagina-encoger linear both;
+        animation-timeline: view();
+        animation-range: exit 0% exit 100%;
+      }
+    }
+  }
+</style>
