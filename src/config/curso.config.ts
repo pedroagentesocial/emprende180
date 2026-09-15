@@ -5302,12 +5302,12 @@ export const copy = {
       es: "Si estás por Salt Lake, pasa a vernos. Una conversación en persona vale más que veinte correos.",
       en: "If you're around Salt Lake, come by. A conversation in person is worth more than twenty emails.",
     },
-    /* ⚠️ EL MAPA DE GOOGLE SE CARGA AL PULSAR, NO AL ABRIR LA PÁGINA. Un
-       `<iframe>` de Google Maps pone cookies de Google en cuanto se pinta, y la
-       regla de esta web es que nada de terceros se conecta sin que el
-       visitante lo pida (ver `lib/consent.ts`). Así que la tarjeta enseña la
-       dirección y un botón, y el botón es lo que trae el mapa. El aviso dice
-       lo que va a pasar, en una línea. */
+    /* ⚠️ ESTOS DOS RÓTULOS NO SE PINTAN DESDE EL 15-09-2026. El mapa de Google
+       nació detrás de un botón "Ver el mapa", porque un `<iframe>` de Maps pone
+       cookies de Google al pintarse y la regla de la web es no conectar con
+       terceros sin que el visitante lo pida (ver `lib/consent.ts`). El cliente
+       pidió que el mapa se viera directamente y el botón se quitó; se dejan
+       por si vuelve. Pendiente: Google Maps en la política de privacidad. */
     mapaCargar: { es: "Ver el mapa", en: "Show the map" },
     mapaAviso: {
       es: "Al verlo se conecta con Google Maps.",

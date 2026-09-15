@@ -129,37 +129,32 @@ const CAJA_ICONO =
         guarda. Si vuelve, la composición de la referencia (bossbabe) está en
         el historial: columna izquierda al 58 %, remate en Fraunces.
 
-        ─── LLENA LA PANTALLA, CON LA BARRA ENCIMA ─────────────────────────
-        El hero mide una pantalla (`h-svh`) y el vídeo la cubre con `cover`,
-        igual que hacía como primera pantalla del slider de la portada. Con
-        la barra flotando transparente encima, una caja 16:9 debajo de una
-        barra blanca —que es lo que hubo un rato— dejaba el vídeo como un
-        reproductor incrustado; a pantalla entera se lee como el hero de la
-        portada, que es lo que se pidió con "el vídeo mejor acomodado".
+        ─── EL FOTOGRAMA ENTERO, SIN RECORTAR ──────────────────────────────
+        La caja mide exactamente lo que mide el vídeo: `aspect-video` a todo el
+        ancho, debajo de la barra sólida. Ni `cover` ni tope de altura: se ve
+        el fotograma completo —rotulación, presentador y subtítulos— en
+        cualquier pantalla, y lo que sobra de alto se hace scroll.
 
-        ⚠️ `cover` RECORTA, Y DÓNDE RECORTA ESTÁ MEDIDO. En escritorio (ventana
-        más ancha que 16:9) recorta arriba y abajo, y el `center 62%` —medido
-        sobre este fotograma, ver la nota larga de HeroVideo.astro— es lo
-        único que salva a la vez la cara del presentador y los subtítulos
-        quemados. En el teléfono (ventana vertical) recorta por los LADOS y
-        se ve poco más de un tercio del ancho: ahí manda la coordenada
-        horizontal, y el `50%` salva al presentador y casi todos los subtítulos
-        a costa de la rotulación de la izquierda. Es el mismo par de encuadres
-        que llevaba en el slider (`encuadreVertical: "50% 50%"`); la solución de
-        verdad para el móvil sigue siendo un montaje vertical del promo.
+        ⚠️ AQUÍ HUBO TRES VERSIONES CON RECORTE Y LAS TRES TAPABAN LA CARA EN
+        ALGUNA PANTALLA. El cliente lo pidió tres veces el 15-09-2026 ("bájalo,
+        no se ve la cara, bájalo"), y la razón es la cuenta de `cover`: la
+        cabeza del presentador arranca al 8 % del alto del fotograma, y en un
+        portátil apaisado de 1920 con la barra encima el hueco queda en 2,3:1,
+        que recorta el 25 % del alto. Con el encuadre al 62 % —el que salva
+        los subtítulos— la ventana visible empieza al 15 % y la cabeza se va.
+        Subir el encuadre salva la cara y se lleva los subtítulos. NO HAY UN
+        NÚMERO QUE SALVE LAS DOS COSAS con ese recorte, así que se quita el
+        recorte: la única forma de que el vídeo "baje" lo que hace falta en
+        todas las pantallas es que mida lo que mide.
 
-        ⚠️ BARRA + HERO = UNA PANTALLA. La barra es la sólida y va en el
-        flujo, así que ocupa sus 92 px (128 en `lg`) arriba y el hero mide lo
-        que queda: `100svh` menos la barra grande, que es la altura con la que
-        nace. Es la misma cuenta que hace el slider de la portada. Con el
-        vídeo a `h-svh` entero, barra y hero sumaban pantalla y cuarto, y el
-        borde de abajo del vídeo —donde van los subtítulos— quedaba fuera.
+        Lo que cuesta: a 1440 de ancho la caja mide 810 y con la barra de 128
+        suma 938, o sea unos 40 px por debajo de una pantalla de 900. A 1920
+        son 1080 y sobresale más. Es scroll, no recorte, y el cliente
+        prefiere ver la cara a ver el vídeo entero sin mover el dedo.
 
-        Y ya no hace falta relleno para apartar el logotipo de la cara del
-        presentador: la barra está encima, no sobre el vídeo. Hubo un
-        `pt-[var(--header-h-grande)]` aquí cuando la barra flotaba; se fue con
-        ella. A 900 de alto el vídeo mide 772 y recorta un 5 % con el
-        `center 62%`: cara y subtítulos dentro.
+        En el teléfono es la misma banda 16:9 que en la portada, con el
+        fotograma entero; el `encuadreVertical` del slider ya no hace falta
+        porque no hay recorte que gobernar.
 
         ⚠️ Y SE ENCOGE AL BAJAR, como antes lo hacía el texto: la caja se
         escala del 100 al 92 % y se apaga según sale por arriba, guiada por el
@@ -188,9 +183,9 @@ const CAJA_ICONO =
     >
       <div
         data-hero-encoge
-        class="relative isolate flex h-[calc(100svh-var(--header-h-grande))] w-full flex-col bg-primary-950 lg:h-[calc(100svh-var(--header-h-grande-lg))]"
+        class="relative isolate aspect-video w-full bg-primary-950"
       >
-        <div class="relative flex-1">
+        <div class="absolute inset-0">
         {/* `aria-hidden` y sin controles nativos: los mandos son el botón de
             sonido, que es un `<button>` de verdad y sí se anuncia. `size-full`
             porque un `<video>` sin medida sale a su tamaño nativo. */}
@@ -207,7 +202,7 @@ const CAJA_ICONO =
           src={about.hero.video.src}
           data-alt-es={about.hero.video.alt.es}
           data-alt-en={about.hero.video.alt.en}
-          class="absolute inset-0 size-full object-cover [object-position:50%_50%] lg:[object-position:center_62%]"
+          class="absolute inset-0 size-full object-cover"
         >
         </video>
 
@@ -761,19 +756,23 @@ const CAJA_ICONO =
         45 / 55: a la izquierda "Visítanos" como título, la dirección entera,
         la frase, el botón de cómo llegar y el correo; a la derecha, el mapa.
 
-        ⚠️ EL MAPA NO SE CARGA HASTA QUE SE PIDE. Un `<iframe>` de Google Maps
+        ⚠️ EL MAPA SE PINTA DIRECTAMENTE, Y ESO ES UNA DECISIÓN DEL CLIENTE.
+        Nació detrás de un botón "Ver el mapa" —un `<iframe>` de Google Maps
         pone cookies de Google en cuanto se pinta, y esta web no conecta con
-        terceros sin que el visitante lo pida (la analítica hace lo mismo,
-        ver `lib/consent.ts`). La tarjeta enseña la dirección con la chincheta
-        y un botón "Ver el mapa"; el guion de abajo mete el `<iframe>` al
-        pulsar, en el idioma de la página. Sin JavaScript queda la tarjeta con
-        la dirección y el botón de "Cómo llegar" al lado, que abre Google Maps
-        en pestaña nueva: nadie se queda sin mapa.
+        terceros sin que el visitante lo pida, ver `lib/consent.ts`— y el
+        cliente lo quitó el 15-09-2026: "el mapa no se ve, haz que se vea".
+        Consecuencia que queda pendiente: Google Maps tiene que aparecer en
+        la lista de proveedores de la política de privacidad
+        (`legal.config.ts`). Los rótulos del botón (`copy.ui.mapaCargar`,
+        `mapaAviso`) se quedan en el config por si vuelve.
 
         El `<iframe>` usa la URL pública de Google Maps con `output=embed`, que
-        no necesita clave de API. Si Google la retira algún día, la tarjeta
-        sigue funcionando y solo falla el botón. */}
-    <Section id="about-visitanos" tono="sunken" ariaLabel={copy.ui.visitanos}>
+        no necesita clave de API, en el idioma con el que se sirvió la página
+        (`hl`); si se cambia el idioma después, el mapa se queda como está.
+        `loading="lazy"`: está al final de la página y no hace falta traerlo
+        hasta que se llega. Fondo blanco (`surface`) y no hundido: el cliente
+        lo pidió así, y con el mapa dentro la franja gris sobraba. */}
+    <Section id="about-visitanos" tono="surface" ariaLabel={copy.ui.visitanos}>
       <div class="grid items-center gap-10 lg:grid-cols-[45fr_55fr] lg:gap-16">
         <Reveal>
           <div>
@@ -803,25 +802,15 @@ const CAJA_ICONO =
         </Reveal>
 
         <Reveal delay={0.1}>
-          <div
-            data-mapa
-            data-consulta={consultaMapa}
-            data-titulo-es={copy.ui.mapaTitulo.es}
-            data-titulo-en={copy.ui.mapaTitulo.en}
-            class="relative aspect-[4/3] overflow-hidden rounded-lg border border-line bg-surface shadow-sm lg:aspect-[5/4]"
-          >
-            <div data-mapa-portada class="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 text-center">
-              <Icono nombre="ubicacion" class="size-12 text-ink-brand" grosor={1.6} />
-              <p class="text-lg font-semibold leading-snug text-balance text-ink sm:text-xl">
-                {contacto.direccion.calle}, {contacto.direccion.ciudad}
-              </p>
-              <BotonRelieve type="button" class="boton-pildora-md mt-2" data-mapa-cargar>
-                <T v={copy.ui.mapaCargar} />
-              </BotonRelieve>
-              <p class="text-sm font-medium text-ink-muted">
-                <T v={copy.ui.mapaAviso} />
-              </p>
-            </div>
+          <div class="relative aspect-[4/3] overflow-hidden rounded-lg border border-line bg-surface-muted shadow-sm lg:aspect-[5/4]">
+            <iframe
+              src={`https://www.google.com/maps?q=${consultaMapa}&z=15&hl=${lang}&output=embed`}
+              title={copy.ui.mapaTitulo[lang]}
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              allowfullscreen
+              class="absolute inset-0 size-full border-0"
+            ></iframe>
           </div>
         </Reveal>
       </div>
@@ -930,29 +919,6 @@ const CAJA_ICONO =
     });
 
     window.addEventListener("e180:idioma", pintar);
-  }
-
-  /* ─── EL MAPA, AL PULSAR ─────────────────────────────────────────────────
-     Mete el `<iframe>` de Google Maps en la tarjeta y quita la portada. El
-     idioma del mapa es el de la página en ese momento (`hl`); si se cambia
-     después, el mapa se queda como está, que es un mal menor frente a
-     recargar un iframe entero por un cambio de rótulos. */
-  const mapa = document.querySelector<HTMLElement>("[data-mapa]");
-  const cargarMapa = mapa?.querySelector<HTMLButtonElement>("[data-mapa-cargar]");
-
-  if (mapa && cargarMapa) {
-    cargarMapa.addEventListener("click", () => {
-      const lang = document.documentElement.lang === "en" ? "en" : "es";
-      const marco = document.createElement("iframe");
-      marco.src = `https://www.google.com/maps?q=${mapa.dataset.consulta}&z=15&hl=${lang}&output=embed`;
-      marco.title = mapa.dataset[lang === "en" ? "tituloEn" : "tituloEs"] ?? "";
-      marco.loading = "lazy";
-      marco.referrerPolicy = "no-referrer-when-downgrade";
-      marco.allowFullscreen = true;
-      marco.className = "absolute inset-0 size-full border-0";
-      mapa.querySelector("[data-mapa-portada]")?.remove();
-      mapa.append(marco);
-    });
   }
 </script>
 
