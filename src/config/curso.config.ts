@@ -2590,60 +2590,16 @@ export const copy = {
      */
     slides: [
       /**
-       * ─── 1 · EL VÍDEO DE PRESENTACIÓN ───────────────────────────────────
+       * ⚠️ AQUÍ IBA EL VÍDEO PROMOCIONAL COMO PRIMERA PANTALLA, y se quitó el
+       * 15-09-2026 a petición del cliente. Era la única pantalla con sonido y
+       * la única sin texto nuestro encima. El archivo (/video/prom.mp4, con
+       * su póster) sigue en /public/video por si vuelve; el botón de sonido y
+       * la lógica de `subtitulos` del slider siguen escritos y se encienden
+       * solos si algún día una pantalla vuelve a declarar `sonido: true`.
        *
-       * Cuarenta segundos a cámara. Es la única imagen del slider que NO lleva
-       * texto encima, y no es un descuido: el vídeo trae sus propios rótulos y
-       * sus subtítulos quemados en la imagen, así que cualquier titular
-       * nuestro se le montaría encima. Los rótulos del vídeo HACEN de titular.
-       *
-       * ⚠️ ES EL ÚNICO CON SONIDO, Y ARRANCA MUDO IGUAL. No es una decisión de
-       * diseño: ningún navegador deja que un vídeo con audio empiece solo. Se
-       * pinta un botón para encenderlo y suena al 20 %. Ese botón es además lo
-       * que exige la WCAG 1.4.2. Ver `HeroVideo.astro`.
-       *
-       * ⚠️ Y AL ENCENDER EL SONIDO SE PARA LA ROTACIÓN. El slider cambia de
-       * imagen cada seis segundos y esto dura cuarenta: sin pararlo, nadie
-       * llegaría al segundo siete de lo que dice. Ver el script del slider.
-       *
-       * ⚠️ EL ARCHIVO ES 854x480 Y ESO NO SE PUEDE ARREGLAR AQUÍ. A pantalla
-       * completa en un portátil de 1440 se estira 1,7 veces y se ve blando.
-       * Si alguna vez hay un máster en 1080p, se vuelve a comprimir y entra
-       * solo. El original está en /originales/video.
+       * El slider pasa a tres pantallas, cada una con su propio vídeo de
+       * fondo: el díptico, la del dolor y el manifiesto.
        */
-      {
-        tipo: "video",
-        video: "/video/prom.mp4",
-        poster: "/video/prom-poster.webp",
-        /**
-         * ⚠️ ESTE ES EL VÍDEO QUE PEOR LLEVA UN MÓVIL, Y NO TIENE ARREGLO EN
-         * CSS. El fotograma lleva tres cosas puestas encima: la rotulación de
-         * la izquierda ("Vol. 01 / PROPUESTA / ¿qué pasaría si...") entre el
-         * 5 % y el 36 % del ancho, el presentador sobre el 48 %, y los
-         * subtítulos quemados centrados abajo, del 31 % al 69 %.
-         *
-         * En vertical solo se ve un 36 % del ancho. El 50 % es el único punto
-         * que salva al presentador Y los subtítulos casi enteros —la ventana
-         * cae en el 32-68 %— pero SE PIERDE LA ROTULACIÓN DE LA IZQUIERDA.
-         * Cualquier otro valor sacrifica algo más importante.
-         *
-         * ⚠️ LA SOLUCIÓN DE VERDAD ES UN MONTAJE VERTICAL DEL PROMO, no un
-         * número aquí: un 9:16 con la rotulación recolocada. Es trabajo de
-         * edición, no de maquetación.
-         */
-        encuadreVertical: "50% 50%",
-        /* Con voz: el botón de sonido solo lo pinta quien declara esto. */
-        sonido: true,
-        /* ⚠️ Y CON SUBTÍTULOS QUEMADOS EN LA IMAGEN, que no es un detalle: los
-           mandos del carrusel van centrados abajo y se sientan justo encima de
-           ellos. Declararlo aquí es lo que hace que el slider los suba
-           mientras esta imagen está a la vista. Ver `HeroSlider`. */
-        subtitulos: true,
-        alt: {
-          es: "Vídeo de presentación de Emprende180",
-          en: "Entrepreneur180 introduction video",
-        },
-      },
 
       /**
        * ─── EL DÍPTICO: DOS PÚBLICOS EN LA MISMA PANTALLA ──────────────────
