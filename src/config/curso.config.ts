@@ -3702,12 +3702,22 @@ export const copy = {
        bloque empieza por "Si…" para que cada lector encuentre el suyo sin
        leer los otros tres. */
     proposito: {
+      /* ⚠️ EL KICKER Y "A QUIÉN LE SIRVE" YA NO SE PINTAN. El cliente pidió el
+         15-09-2026 quitar las cejas de esta sección y centrar el título. El
+         kicker se queda solo como etiqueta accesible de la sección. */
       kicker: { es: "Por qué existimos", en: "Why we exist" },
+      /* La frase, en dos trozos: el arranque en Montserrat y el remate en
+         Fraunces teal, el gesto de todos los titulares del sitio (es el mismo
+         partido que "Los 90 días / que cambian tu rutina" en la portada, que
+         es la sección a la que esta se parece ahora). */
       frase: {
-        es: "Emprende180 existe para que conocer gente deje de ser un gasto de tiempo y pase a ser un oficio.",
-        en: "Entrepreneur180 exists so that knowing people stops being a way to spend your time and starts being a trade.",
+        es: "Emprende180 existe para que conocer gente deje de ser un gasto de tiempo",
+        en: "Entrepreneur180 exists so that knowing people stops being a way to spend your time",
       },
-      paraQuien: { es: "A quién le sirve", en: "Who it's for" },
+      remate: {
+        es: "y pase a ser un oficio.",
+        en: "and starts being a trade.",
+      },
       /* ⚠️ LAS CUATRO FOTOS SON DE BANCO (Pexels, licencia libre sin
          atribución), bajadas el 15-09-2026 a petición del cliente: "imágenes,
          representación gráfica, que tengan contexto con esto". Cada una
@@ -5291,6 +5301,21 @@ export const copy = {
     visitanosTexto: {
       es: "Si estás por Salt Lake, pasa a vernos. Una conversación en persona vale más que veinte correos.",
       en: "If you're around Salt Lake, come by. A conversation in person is worth more than twenty emails.",
+    },
+    /* ⚠️ EL MAPA DE GOOGLE SE CARGA AL PULSAR, NO AL ABRIR LA PÁGINA. Un
+       `<iframe>` de Google Maps pone cookies de Google en cuanto se pinta, y la
+       regla de esta web es que nada de terceros se conecta sin que el
+       visitante lo pida (ver `lib/consent.ts`). Así que la tarjeta enseña la
+       dirección y un botón, y el botón es lo que trae el mapa. El aviso dice
+       lo que va a pasar, en una línea. */
+    mapaCargar: { es: "Ver el mapa", en: "Show the map" },
+    mapaAviso: {
+      es: "Al verlo se conecta con Google Maps.",
+      en: "Showing it connects to Google Maps.",
+    },
+    mapaTitulo: {
+      es: "Mapa de Google con la dirección de Emprende180",
+      en: "Google map with the Entrepreneur180 address",
     },
     pieContacto: { es: "Hablar con nosotros", en: "Talk to us" },
     pieLegal: { es: "Legal", en: "Legal" },

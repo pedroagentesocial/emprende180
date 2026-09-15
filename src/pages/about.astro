@@ -31,7 +31,7 @@ import { articulosPublicados, formatearFecha, tituloBilingue } from "@lib/blog";
  *   4. La barra de cuatro hechos.
  *   5. Las marcas que representamos.
  *   6. Los seis valores del manifiesto.
- *   7. Propósito y los cuatro públicos.
+ *   7. Propósito y los cuatro públicos, en mosaico.
  *   8. El blog, en corto.
  *   9. La lista, tal cual está en la portada.
  *
@@ -70,6 +70,12 @@ import { articulosPublicados, formatearFecha, tituloBilingue } from "@lib/blog";
 export const prerender = false;
 
 const { about, heroSlider } = copy;
+
+/* La dirección tal cual la buscaría alguien en Google Maps, codificada para
+   la URL del `<iframe>`. Es la misma que `contacto.mapaUrl` lleva dentro. */
+const consultaMapa = encodeURIComponent(
+  `${contacto.direccion.calle}, ${contacto.direccion.ciudad}`,
+);
 
 const lang = resolverIdiomaServidor(
   Astro.url,
@@ -566,59 +572,86 @@ const CAJA_ICONO =
     </Section>
 
     {/* ─── 7 · PROPÓSITO Y PÚBLICOS ──────────────────────────────────────
-        Una frase grande y, debajo, cuatro bloques en dos por dos. Cada
-        bloque empieza por "Si…" y lleva SU FOTO arriba: el lector busca el
-        suyo y se salta los otros tres, y la foto es lo que le deja
-        reconocerse antes de leer. Las cuatro son escenas —una cocina, un
-        corrillo, un mostrador, un portátil de noche— y no conceptos: la
-        frase de arriba ya es el concepto.
+        EL MISMO MOSAICO QUE "LOS 90 DÍAS" DE LA PORTADA. Lo pidió el cliente
+        el 15-09-2026: "déjala como la otra sección del índex, tipo mosaico".
+        El título centrado y pegajoso, y debajo los cuatro públicos como filas
+        alternas —foto a un lado, texto al otro, y al revés en la siguiente—
+        pegadas entre sí y a todo el ancho. Ver `01-Plan90.astro` para el
+        porqué de cada decisión (el `order`, el `sticky`, el `z-index`, el `pb-0!`):
+        aquí se copia la forma, no se reinventa.
 
-        ⚠️ LA FOTO SUSTITUYE AL FILETE, no se suma a él. Había un `border-t`
-        que separaba cada bloque del anterior; con la foto encima, el borde
-        de la propia imagen hace ese trabajo y el filete sobraba. Las pidió el
-        cliente el 15-09-2026: "imágenes, representación gráfica, que tengan
-        contexto con esto". Origen y licencia, en el config. */}
-    <Section id="about-proposito" tono="surface" ariaLabel={about.proposito.kicker}>
-      <Reveal>
-        <p class="text-sm font-semibold text-ink-brand sm:text-base">
-          <T v={about.proposito.kicker} />
-        </p>
-        <h2 class="mt-4 max-w-5xl text-3xl font-semibold leading-[1.15] tracking-[-0.02em] text-balance text-ink sm:text-4xl lg:text-5xl">
-          <T v={about.proposito.frase} />
-        </h2>
-      </Reveal>
+        ⚠️ SIN CEJAS. Había dos —"Por qué existimos" sobre la frase y "A quién
+        le sirve" sobre los bloques— y el cliente las quitó. La frase se parte
+        en dos trozos, Montserrat y Fraunces teal, que es lo que hace de
+        jerarquía ahora.
 
-      <Reveal delay={0.1}>
-        <p class="mt-16 text-sm font-semibold text-ink-brand sm:text-base lg:mt-20">
-          <T v={about.proposito.paraQuien} />
-        </p>
-      </Reveal>
+        ⚠️ LA FILA TIENE UNA ALTURA MÍNIMA EN ESCRITORIO (`md:min-h-[22rem]`),
+        y la de la portada no. Allí cada fase trae un párrafo largo y la foto
+        mide lo que mide el texto; aquí cada público son dos frases, y con la
+        altura del texto la foto quedaba en una tira apaisada de 640x220. Con
+        el mínimo la foto respira y el texto se centra en vertical dentro. */}
+    <Section
+      id="about-proposito"
+      tono="surface"
+      ariaLabel={about.proposito.kicker}
+      sinContenedor
+      class="relative pb-0!"
+    >
+      <div class="sticky top-[var(--header-h)] z-20 bg-surface py-5 sm:py-6 lg:top-[var(--header-h-lg)] lg:py-8">
+        <div class="container-page">
+          <Reveal>
+            <h2 class="mx-auto max-w-5xl text-center text-3xl font-extrabold leading-tight text-balance text-ink sm:text-4xl lg:text-5xl">
+              <T v={about.proposito.frase} />{" "}
+              <Enfasis v={about.proposito.remate} />
+            </h2>
+          </Reveal>
+        </div>
+      </div>
 
-      <ul role="list" class="mt-6 grid gap-x-12 gap-y-10 sm:grid-cols-2 lg:gap-x-16 lg:gap-y-12">
+      <div class="mt-4 lg:mt-6">
         {about.proposito.publicos.map((publico, i) => (
-          <Reveal as="li" delay={(i % 2) * 0.08}>
-            <div>
-              <img
-                src={publico.imagen.src}
-                alt={publico.imagen.alt[lang]}
-                data-alt-es={publico.imagen.alt.es}
-                data-alt-en={publico.imagen.alt.en}
-                width={1200}
-                height={900}
-                loading="lazy"
-                decoding="async"
-                class="aspect-[4/3] w-full rounded-lg border border-line object-cover"
-              />
-              <h3 class="mt-6 text-xl font-extrabold text-pretty text-ink sm:text-2xl">
-                <T v={publico.titulo} />
-              </h3>
-              <p class="mt-3 max-w-prose text-base font-medium leading-relaxed text-pretty text-ink-muted sm:text-lg">
-                <T v={publico.texto} />
-              </p>
+          <Reveal delay={0.05}>
+            <div class="grid md:grid-cols-2">
+              <div
+                class:list={[
+                  "relative min-h-[260px] sm:min-h-[320px] md:min-h-[22rem] lg:min-h-[26rem]",
+                  i % 2 === 1 && "md:order-last",
+                ]}
+              >
+                <img
+                  src={publico.imagen.src}
+                  alt={publico.imagen.alt[lang]}
+                  data-alt-es={publico.imagen.alt.es}
+                  data-alt-en={publico.imagen.alt.en}
+                  width={1200}
+                  height={900}
+                  loading="lazy"
+                  decoding="async"
+                  class="absolute inset-0 size-full object-cover"
+                />
+              </div>
+
+              <div
+                class:list={[
+                  "flex flex-col justify-center bg-surface py-10 sm:py-12 lg:py-16",
+                  i % 2 === 1
+                    ? "pl-[var(--gutter-page)] pr-[var(--gutter-page)] md:pr-10 lg:pr-16 xl:pr-24"
+                    : "pl-[var(--gutter-page)] pr-[var(--gutter-page)] md:pl-10 lg:pl-16 xl:pl-24",
+                ]}
+              >
+                <div class="max-w-[34rem]">
+                  <h3 class="font-acento text-3xl italic leading-tight text-ink sm:text-4xl lg:text-5xl">
+                    <T v={publico.titulo} />
+                  </h3>
+                  <p class="mt-5 text-base font-medium leading-relaxed text-pretty text-ink-muted sm:text-lg lg:text-xl">
+                    <T v={publico.texto} />
+                  </p>
+                </div>
+              </div>
             </div>
           </Reveal>
         ))}
-      </ul>
+      </div>
     </Section>
 
     {/* ─── 8 · EL BLOG, EN CORTO ─────────────────────────────────────────
@@ -711,33 +744,81 @@ const CAJA_ICONO =
     </Section>
 
     {/* ─── 8b · VISÍTANOS ────────────────────────────────────────────────
-        Una franja corta, hundida, con la dirección física y el enlace al
-        mapa. Va aquí y no más arriba porque el about es donde alguien
-        comprueba que detrás hay algo real, y una dirección a la que se puede
-        ir es la prueba más difícil de fingir. La misma dirección va en el pie
-        de todas las páginas; aquí se le da sitio propio. */}
-    <Section id="about-visitanos" tono="sunken" ritmo="compacto" ariaLabel={copy.ui.visitanos}>
-      <Reveal>
-        <div class="grid items-center gap-8 lg:grid-cols-[1fr_auto] lg:gap-16">
+        La dirección física con el mapa al lado. Va aquí y no más arriba
+        porque el about es donde alguien comprueba que detrás hay algo real,
+        y una dirección a la que se puede ir es la prueba más difícil de
+        fingir. La misma dirección va en el pie de todas las páginas; aquí se
+        le da sitio propio.
+
+        ⚠️ ERA UNA FRANJA DE UNA LÍNEA Y EL CLIENTE LA VIO POBRE (15-09-2026):
+        "agrega el Google Maps y mejor distribución". Ahora son dos columnas
+        45 / 55: a la izquierda "Visítanos" como título, la dirección entera,
+        la frase, el botón de cómo llegar y el correo; a la derecha, el mapa.
+
+        ⚠️ EL MAPA NO SE CARGA HASTA QUE SE PIDE. Un `<iframe>` de Google Maps
+        pone cookies de Google en cuanto se pinta, y esta web no conecta con
+        terceros sin que el visitante lo pida (la analítica hace lo mismo,
+        ver `lib/consent.ts`). La tarjeta enseña la dirección con la chincheta
+        y un botón "Ver el mapa"; el guion de abajo mete el `<iframe>` al
+        pulsar, en el idioma de la página. Sin JavaScript queda la tarjeta con
+        la dirección y el botón de "Cómo llegar" al lado, que abre Google Maps
+        en pestaña nueva: nadie se queda sin mapa.
+
+        El `<iframe>` usa la URL pública de Google Maps con `output=embed`, que
+        no necesita clave de API. Si Google la retira algún día, la tarjeta
+        sigue funcionando y solo falla el botón. */}
+    <Section id="about-visitanos" tono="sunken" ariaLabel={copy.ui.visitanos}>
+      <div class="grid items-center gap-10 lg:grid-cols-[45fr_55fr] lg:gap-16">
+        <Reveal>
           <div>
-            <p class="text-sm font-semibold text-ink-brand sm:text-base">
+            <h2 class="text-3xl font-extrabold leading-tight text-balance text-ink sm:text-4xl lg:text-5xl">
               <T v={copy.ui.visitanos} />
-            </p>
-            <address class="mt-3 text-2xl font-extrabold leading-tight not-italic text-balance text-ink sm:text-3xl lg:text-4xl">
-              {contacto.direccion.calle},<br class="sm:hidden" />
-              {" "}{contacto.direccion.ciudad}
+            </h2>
+            <address class="mt-6 text-xl font-semibold leading-snug not-italic text-ink sm:text-2xl">
+              {contacto.direccion.calle}<br />
+              {contacto.direccion.ciudad}<br />
+              <T v={contacto.direccion.pais} />
             </address>
-            <p class="mt-4 max-w-prose text-lg font-medium leading-relaxed text-pretty text-ink-muted sm:text-xl">
+            <p class="mt-5 max-w-prose text-lg font-medium leading-relaxed text-pretty text-ink-muted sm:text-xl">
               <T v={copy.ui.visitanosTexto} />
             </p>
+            <div class="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
+              <BotonRelieve href={contacto.mapaUrl} target="_blank" rel="noopener" trackId="about-mapa">
+                <T v={copy.ui.comoLlegar} />
+              </BotonRelieve>
+              <a
+                href={`mailto:${contacto.email}`}
+                class="min-h-11 inline-flex items-center text-base font-semibold text-ink-brand underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              >
+                {contacto.email}
+              </a>
+            </div>
           </div>
-          <div class="ml-1">
-            <BotonRelieve href={contacto.mapaUrl} target="_blank" rel="noopener" trackId="about-mapa">
-              <T v={copy.ui.comoLlegar} />
-            </BotonRelieve>
+        </Reveal>
+
+        <Reveal delay={0.1}>
+          <div
+            data-mapa
+            data-consulta={consultaMapa}
+            data-titulo-es={copy.ui.mapaTitulo.es}
+            data-titulo-en={copy.ui.mapaTitulo.en}
+            class="relative aspect-[4/3] overflow-hidden rounded-lg border border-line bg-surface shadow-sm lg:aspect-[5/4]"
+          >
+            <div data-mapa-portada class="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 text-center">
+              <Icono nombre="ubicacion" class="size-12 text-ink-brand" grosor={1.6} />
+              <p class="text-lg font-semibold leading-snug text-balance text-ink sm:text-xl">
+                {contacto.direccion.calle}, {contacto.direccion.ciudad}
+              </p>
+              <BotonRelieve type="button" class="boton-pildora-md mt-2" data-mapa-cargar>
+                <T v={copy.ui.mapaCargar} />
+              </BotonRelieve>
+              <p class="text-sm font-medium text-ink-muted">
+                <T v={copy.ui.mapaAviso} />
+              </p>
+            </div>
           </div>
-        </div>
-      </Reveal>
+        </Reveal>
+      </div>
     </Section>
 
     {/* ─── 9 · LA LISTA ──────────────────────────────────────────────────
@@ -843,6 +924,29 @@ const CAJA_ICONO =
     });
 
     window.addEventListener("e180:idioma", pintar);
+  }
+
+  /* ─── EL MAPA, AL PULSAR ─────────────────────────────────────────────────
+     Mete el `<iframe>` de Google Maps en la tarjeta y quita la portada. El
+     idioma del mapa es el de la página en ese momento (`hl`); si se cambia
+     después, el mapa se queda como está, que es un mal menor frente a
+     recargar un iframe entero por un cambio de rótulos. */
+  const mapa = document.querySelector<HTMLElement>("[data-mapa]");
+  const cargarMapa = mapa?.querySelector<HTMLButtonElement>("[data-mapa-cargar]");
+
+  if (mapa && cargarMapa) {
+    cargarMapa.addEventListener("click", () => {
+      const lang = document.documentElement.lang === "en" ? "en" : "es";
+      const marco = document.createElement("iframe");
+      marco.src = `https://www.google.com/maps?q=${mapa.dataset.consulta}&z=15&hl=${lang}&output=embed`;
+      marco.title = mapa.dataset[lang === "en" ? "tituloEn" : "tituloEs"] ?? "";
+      marco.loading = "lazy";
+      marco.referrerPolicy = "no-referrer-when-downgrade";
+      marco.allowFullscreen = true;
+      marco.className = "absolute inset-0 size-full border-0";
+      mapa.querySelector("[data-mapa-portada]")?.remove();
+      mapa.append(marco);
+    });
   }
 </script>
 
