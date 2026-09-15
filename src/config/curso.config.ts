@@ -4118,10 +4118,12 @@ export const copy = {
    */
   plan90Portada: {
     aria: { es: "Los 90 días", en: "The 90 days" },
-    titulo: {
-      es: "Los 90 días que cambian tu rutina",
-      en: "The 90 days that change your routine",
-    },
+    /* El título en dos trozos: "Los 90 días" en Montserrat y el remate en
+       Fraunces teal, que es el gesto de todos los titulares del sitio. Se pidió
+       "darle color y cambiar la tipografía" y era esto lo que faltaba: el
+       titular iba entero en Montserrat negro. */
+    titulo: { es: "Los 90 días", en: "The 90 days" },
+    remate: { es: "que cambian tu rutina", en: "that change your routine" },
     fases: [
       {
         numero: "01",

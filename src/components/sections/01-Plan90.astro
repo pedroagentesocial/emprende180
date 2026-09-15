@@ -2,6 +2,7 @@
 import T from "@components/i18n/T.astro";
 import Section from "@components/ui/Section.astro";
 import Reveal from "@components/motion/Reveal.astro";
+import Enfasis from "@components/ui/Enfasis.astro";
 import { copy } from "@config/curso.config";
 import { resolverIdiomaServidor } from "@i18n/idioma";
 
@@ -62,22 +63,32 @@ const lang = resolverIdiomaServidor(
 );
 ---
 
-{/* ⚠️ SOBRE EL AZUL SUAVE, Y NO SOBRE BLANCO. El cliente pidió "darle color":
-    la sección pasa al tono `muted` —la zona azul suave que ya usan valores y la
-    lista— y las celdas de texto se quedan BLANCAS, así que el collage alterna
-    foto, blanco, foto, blanco sobre un campo azul. El titular pegajoso lleva el
-    mismo azul para que, al pegarse, siga siendo parte de la sección y no una
-    barra blanca suelta. */}
-<Section id="plan-90" tono="muted" ariaLabel={plan.aria} sinContenedor class="relative">
+{/* ⚠️ BLANCA Y SIN RELLENO ABAJO. Estuvo un rato en azul suave, y el azul
+    tenía un efecto que no se vio venir: el relleno inferior de la sección se
+    pintaba de ese color y quedaba una franja gris entre la última fila del
+    collage y la sección siguiente. El cliente la vio y la quitó. Ahora el fondo
+    es blanco, el relleno de abajo es cero (`pb-0!`: el `!` hace falta porque
+    `section-y` y `pb-0` escriben la misma propiedad y quién gana lo decide el
+    orden de la hoja) y el aire hasta la siguiente lo pone solo el relleno de
+    ella, que es "poco pero no tanto".
+
+    El color va ahora en el titular, que es donde se pidió: el remate en
+    Fraunces teal. */}
+<Section id="plan-90" tono="surface" ariaLabel={plan.aria} sinContenedor class="relative pb-0!">
   {/* El titular pegajoso: fondo sólido del color de la sección, por encima de
       las filas, y a la altura de la barra compacta. El `Reveal` va DENTRO del
       pegajoso y no al revés: un `transform` en el elemento que se pega no le
       afecta, pero en su padre rompería el `sticky`. */}
-  <div class="sticky top-[var(--header-h)] z-20 bg-surface-muted py-5 sm:py-6 lg:top-[var(--header-h-lg)] lg:py-8">
+  <div class="sticky top-[var(--header-h)] z-20 bg-surface py-5 sm:py-6 lg:top-[var(--header-h-lg)] lg:py-8">
     <div class="container-page">
       <Reveal>
+        {/* Dos trozos en la misma línea: Montserrat y, detrás, el remate en
+            Fraunces teal. Es el mismo gesto que "Tres piezas. / Una forma de
+            trabajar." dos secciones más abajo, así los dos titulares se leen
+            de la misma familia. */}
         <h2 class="text-center text-3xl font-extrabold leading-tight text-balance text-ink sm:text-4xl lg:text-5xl">
-          <T v={plan.titulo} />
+          <T v={plan.titulo} />{" "}
+          <Enfasis v={plan.remate} />
         </h2>
       </Reveal>
     </div>
