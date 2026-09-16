@@ -1,0 +1,153 @@
+---
+import T from "@components/i18n/T.astro";
+import Section from "@components/ui/Section.astro";
+import Reveal from "@components/motion/Reveal.astro";
+import Enfasis from "@components/ui/Enfasis.astro";
+import BotonRelieve from "@components/ui/BotonRelieve.astro";
+import { copy, redesMarca } from "@config/curso.config";
+import { RUTAS_REDES } from "@lib/redes";
+import { resolverIdiomaServidor } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 05 · LA COMUNIDAD, EN INSTAGRAM — seis publicaciones elegidas a mano
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Va entre los testimonios y las preguntas frecuentes: los testimonios son la
+ * comunidad hablando, esto es la comunidad en movimiento, y después llega la
+ * FAQ, que es el cierre racional. La pidió el cliente el 16-09-2026 al
+ * preguntar si se podía "meter una sección como de Instagram y que se vean
+ * las publicaciones".
+ *
+ * ─── UN FEED CURADO, NO UN FEED EN VIVO ─────────────────────────────────────
+ *
+ * Seis cuadrados con seis publicaciones que elige el cliente, cada uno con su
+ * enlace a la publicación en Instagram. NO se conecta a Instagram: ni API, ni
+ * widget de terceros, ni script ajeno. Lo que se gana con eso:
+ *
+ *   · cero cookies y cero terceros, así que no hay que meterlo detrás del
+ *     aviso de consentimiento (ver `lib/consent.ts`);
+ *   · no puede romperse porque Meta cambie la API o caduque un token;
+ *   · pesa lo que pesan seis imágenes de 800x800;
+ *   · el cliente decide qué se ve: no aparece una publicación floja por ser
+ *     la última.
+ *
+ * Lo que se pierde: no se actualiza sola. Cambiar una publicación es cambiar
+ * una imagen y un enlace (ver /public/imagenes/instagram/README.md). Si algún
+ * día se quiere en vivo, el camino es la Graph API de Instagram (cuenta
+ * profesional + app de Facebook + token que se renueva cada 60 días) y esta
+ * sección se queda igual: solo cambia de dónde salen las seis.
+ *
+ * ─── LA REJILLA ─────────────────────────────────────────────────────────────
+ *
+ * Seis en fila desde `lg`, 3x2 en tablet, 2x3 en el teléfono. Cuadrados de
+ * verdad (`aspect-square`) con el radio del resto de fotos del sitio y poco
+ * aire entre ellos: es una rejilla de Instagram, y una rejilla de Instagram
+ * se reconoce por eso. Al pasar el ratón la foto se oscurece un poco y sale el
+ * glifo de Instagram: es lo que dice "esto se pulsa" sin escribirlo.
+ *
+ * ⚠️ UN SOLO BOTÓN. "Seguir en Instagram" al perfil; Facebook va como enlace
+ * de texto en la línea del usuario. Dos botones aquí serían dos llamadas.
+ *
+ * ⚠️ `rel="noopener"` Y PESTAÑA NUEVA: se sale del sitio, y quien vuelve tiene
+ * que encontrar la portada donde la dejó.
+ */
+
+const { instagram } = copy;
+const perfil = redesMarca.find((r) => r.key === "instagram")?.url ?? "";
+const facebook = redesMarca.find((r) => r.key === "facebook")?.url ?? "";
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+---
+
+{
+  perfil && (
+    <Section id="instagram" tono="surface" ariaLabel={instagram.aria}>
+      <Reveal>
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between lg:gap-12">
+          <div>
+            <p class="text-sm font-semibold text-ink-brand sm:text-base">
+              <T v={instagram.kicker} />
+            </p>
+            <h2 class="mt-4 text-3xl font-extrabold leading-tight text-balance text-ink sm:text-4xl lg:text-5xl">
+              <T v={instagram.titulo} />{" "}
+              <Enfasis v={instagram.remate} />
+            </h2>
+          </div>
+
+          {/* El usuario y, al lado, Facebook como enlace de texto. */}
+          <p class="text-base font-medium text-ink-muted sm:text-lg">
+            <a
+              href={perfil}
+              target="_blank"
+              rel="noopener"
+              class="font-semibold text-ink-brand underline-offset-4 hover:underline"
+            >
+              {instagram.usuario}
+            </a>
+            {facebook && (
+              <>
+                {" · "}
+                <a
+                  href={facebook}
+                  target="_blank"
+                  rel="noopener"
+                  class="underline-offset-4 hover:text-ink hover:underline"
+                >
+                  <T v={instagram.tambienFacebook} />
+                </a>
+              </>
+            )}
+          </p>
+        </div>
+      </Reveal>
+
+      <ul role="list" class="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:mt-12 lg:grid-cols-6">
+        {instagram.publicaciones.map((pub, i) => (
+          <Reveal as="li" delay={Math.min(i, 2) * 0.08}>
+            <a
+              href={pub.url}
+              target="_blank"
+              rel="noopener"
+              data-track={`instagram-${i + 1}`}
+              class="group relative block aspect-square overflow-hidden rounded-lg border border-line bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            >
+              <img
+                src={pub.imagen}
+                alt={pub.alt[lang]}
+                data-alt-es={pub.alt.es}
+                data-alt-en={pub.alt.en}
+                width={800}
+                height={800}
+                loading="lazy"
+                decoding="async"
+                class="size-full object-cover transition-transform duration-500 ease-out-soft motion-safe:group-hover:scale-105"
+              />
+              {/* El velo y el glifo, solo al pasar el ratón o al enfocar con el
+                  teclado. `aria-hidden`: el enlace ya se anuncia con el `alt`. */}
+              <span
+                aria-hidden="true"
+                class="absolute inset-0 grid place-items-center bg-primary-950/0 text-white opacity-0 transition-[background-color,opacity] duration-300 ease-out-soft group-hover:bg-primary-950/45 group-hover:opacity-100 group-focus-visible:bg-primary-950/45 group-focus-visible:opacity-100"
+              >
+                <svg viewBox="0 0 24 24" class="size-9" fill="currentColor">
+                  <path d={RUTAS_REDES.instagram} />
+                </svg>
+              </span>
+            </a>
+          </Reveal>
+        ))}
+      </ul>
+
+      <Reveal delay={0.1}>
+        <div class="mt-10 flex justify-center lg:mt-12">
+          <BotonRelieve href={perfil} target="_blank" rel="noopener" trackId="instagram-seguir">
+            <T v={instagram.cta} />
+          </BotonRelieve>
+        </div>
+      </Reveal>
+    </Section>
+  )
+}

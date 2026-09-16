@@ -4748,6 +4748,38 @@ export const copy = {
   },
 
   /**
+   * ─── LA COMUNIDAD, EN INSTAGRAM ────────────────────────────────────────
+   *
+   * Seis publicaciones elegidas a mano, con su imagen y su enlace. Ver
+   * `05-Instagram.astro` para el porqué de que no sea un feed en vivo, y
+   * /public/imagenes/instagram/README.md para cómo se cambia una.
+   *
+   * ⚠️ LAS SEIS SON PLACEHOLDERS (16-09-2026): cuadrados de marca que
+   * enlazan al perfil, hasta que el cliente pase las publicaciones reales
+   * con sus enlaces. Se sustituyen una a una: imagen, `url` y `alt`.
+   *
+   * Sin promesa de cadencia en el título ("lo que compartimos", no "cada
+   * semana"): la regla de no prometer lo que no se puede sostener.
+   */
+  instagram: {
+    aria: { es: "La comunidad en Instagram", en: "The community on Instagram" },
+    kicker: { es: "La comunidad, en Instagram", en: "The community, on Instagram" },
+    titulo: { es: "Lo que compartimos", en: "What we share" },
+    remate: { es: "con la comunidad.", en: "with the community." },
+    usuario: "@emprende180academy",
+    tambienFacebook: { es: "también en Facebook", en: "also on Facebook" },
+    cta: { es: "Seguir en Instagram", en: "Follow on Instagram" },
+    publicaciones: [1, 2, 3, 4, 5, 6].map((n) => ({
+      imagen: `/imagenes/instagram/0${n}.webp`,
+      url: "https://www.instagram.com/emprende180academy/",
+      alt: {
+        es: `Publicación ${n} de Emprende180 en Instagram`,
+        en: `Entrepreneur180 Instagram post ${n}`,
+      },
+    })),
+  },
+
+  /**
    * ─── EL PLAN DE 90 DÍAS ────────────────────────────────────────────────
    *
    * Todo sale del documento "Plan de 90 Días — Prospección Diaria del
