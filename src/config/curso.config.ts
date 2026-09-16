@@ -5363,7 +5363,12 @@ export const copy = {
    */
   /* El rótulo de la banda de logos. Ver 05-Aliados.astro. */
   aliados: {
-    rotulo: { es: "Confían en nosotros", en: "Trusted by" },
+    /* En dos trozos desde el 16-09-2026: "Confían" en Montserrat navy y "en
+       nosotros" en Fraunces teal. El cliente pidió "colores y tipografía
+       diferente" para el rótulo, que iba en versalitas grises; es el mismo
+       gesto de remate de todos los titulares del sitio, en pequeño. */
+    rotulo: { es: "Confían", en: "Trusted" },
+    rotuloRemate: { es: "en nosotros.", en: "by them." },
   },
   banda: {
     etiqueta: { es: "Testimonios de alumnos", en: "Student testimonials" },

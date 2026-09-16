@@ -4,7 +4,8 @@ import Reveal from "@components/motion/Reveal.astro";
 import Icono from "@components/ui/Icono.astro";
 import { aliados, copy } from "@config/curso.config";
 import { logoAliado, medidasAliado } from "@lib/assets";
-import { resolverIdiomaServidor } from "@i18n/idioma";
+import { construirTxt, resolverIdiomaServidor } from "@i18n/idioma";
+import Enfasis from "@components/ui/Enfasis.astro";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -68,6 +69,12 @@ const marcas = aliados.marcas.map((m) => ({
 const lang = resolverIdiomaServidor(
   Astro.url,
   Astro.request.headers.get("accept-language"),
+);
+
+/* El rótulo entero, para la etiqueta accesible de la banda: en pantalla va en
+   dos trozos con dos tipografías, pero se lee de una vez. */
+const rotuloEntero = construirTxt(
+  (l) => `${copy.aliados.rotulo[l]} ${copy.aliados.rotuloRemate[l]}`,
 );
 
 /**
@@ -154,8 +161,12 @@ const duracion = `${marcas.length * 5}s`;
             habría desalineado este rótulo de todos los titulares de la página
             a partir de 1024 px, sin que salte nada. */}
         <Reveal class="shrink-0 pl-[var(--gutter-page)]">
-          <p class="text-sm font-bold tracking-[0.18em] text-ink-subtle uppercase">
-            <T v={copy.aliados.rotulo} />
+          {/* Dos trozos, como los titulares: Montserrat navy y el remate en
+              Fraunces teal. Iba en versalitas grises y el cliente pidió otro
+              color y otra tipografía (16-09-2026). */}
+          <p class="text-lg font-extrabold leading-tight text-ink sm:text-xl">
+            <T v={copy.aliados.rotulo} />{" "}
+            <Enfasis v={copy.aliados.rotuloRemate} />
           </p>
         </Reveal>
 
@@ -168,9 +179,9 @@ const duracion = `${marcas.length * 5}s`;
             data-banda-pista
             class="flex w-max items-center gap-12 py-2 sm:gap-16"
             style={`--duracion:${duracion}`}
-            aria-label={copy.aliados.rotulo[lang]}
-            data-aria-es={copy.aliados.rotulo.es}
-            data-aria-en={copy.aliados.rotulo.en}
+            aria-label={rotuloEntero[lang]}
+            data-aria-es={rotuloEntero.es}
+            data-aria-en={rotuloEntero.en}
           >
             {[0, 1].map((copia) =>
               marcas.map((m) => (
