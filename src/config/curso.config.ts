@@ -2030,8 +2030,10 @@ export const contacto = {
  * existe ni apuntamos a la portada de la red.
  */
 export const redesMarca = [
-  { key: "facebook", label: "Facebook", url: "" }, // SWAP
-  { key: "instagram", label: "Instagram", url: "" }, // SWAP
+  /* Las dos que existen, dadas por el cliente el 16-09-2026. Las demás siguen
+     vacías y no se pintan hasta que haya perfil. */
+  { key: "facebook", label: "Facebook", url: "https://www.facebook.com/Emprende180s" },
+  { key: "instagram", label: "Instagram", url: "https://www.instagram.com/emprende180academy/" },
   { key: "tiktok", label: "TikTok", url: "" }, // SWAP
   { key: "youtube", label: "YouTube", url: "" }, // SWAP
   { key: "linkedin", label: "LinkedIn", url: "" }, // SWAP
@@ -3134,80 +3136,82 @@ export const copy = {
          * renglón y qué mitad lleva el remate en Fraunces itálica. Eso es
          * tipografía, no redacción, y por eso no lleva marca de pendiente.
          */
+        /**
+         * ⚠️ EL TEXTO LO DICTÓ EL CLIENTE EL 16-09-2026, y cambia la
+         * naturaleza de la pantalla: ya no es la definición de "Embajador"
+         * ("Ser Embajador de Emprende180 significa trabajo, dedicación,
+         * autonomía y responsabilidad") sino un titular en dos renglones
+         * como los de las otras dos pantallas, un párrafo y, debajo, "Lo que
+         * nos define" en cinco claves con icono. El manifiesto anterior queda
+         * en el historial (commit anterior a esta nota).
+         *
+         * ⚠️ ES EL MISMO TITULAR QUE LA PANTALLA 2. El cliente lo dictó así
+         * para las dos el mismo día; se le avisó. Si se cambia una, cambiar
+         * aquí o en la 2, no en las dos.
+         */
         manifiesto: [
-          [
-            {
-              es: "Ser Embajador de Emprende180 significa",
-              en: "Being an Entrepreneur180 Ambassador means",
-            },
-          ],
-          [
-            /* ⚠️ LAS CUATRO PALABRAS VAN CON EL MISMO REALCE, Y ANTES NO.
-               "trabajo, dedicación," estuvo en el azul claro de la marca y
-               "autonomía y responsabilidad." en Fraunces itálica, con el
-               argumento de que una ENUMERA y la otra REMATA.
-
-               En pantalla no se lee así: son cuatro palabras de la misma lista,
-               y partirlas en dos tratamientos hacía que parecieran dos ideas
-               distintas en vez de una enumeración. Ahora las cuatro comparten
-               color y tipografía, que es lo que se pidió al verlo montado. */
-            { es: "trabajo, dedicación,", en: "work, dedication,", acento: true },
-            {
-              es: "autonomía y responsabilidad.",
-              en: "autonomy and responsibility.",
-              acento: true,
-            },
-          ],
+          [{ es: "Tu Familia Primero", en: "Your Family First" }],
+          [{ es: "Tu Negocio También", en: "Your Business Too", acento: true }],
         ],
+        cuerpo: {
+          es: "Construye tu fuente de ingresos propia al ritmo de tu casa: entre desayunos, tareas y todo lo que haces todos los días.",
+          en: "Build your own source of income at the pace of your home: between breakfasts, chores and everything you already do every day.",
+        },
 
         /**
-         * Tres palabras, tres iconos, una frase cada una. Los nombres de icono
-         * salen de la tabla cerrada de `Icono.astro`: brújula para la que se
-         * orienta sola, bocadillos para la que habla, personas para la que
-         * lleva a alguien de la mano.
+         * "Lo que nos define": cinco palabras, cinco iconos, una frase cada
+         * una, dictadas por el cliente. Los iconos salen de la tabla cerrada
+         * de `Icono.astro`:
          *
-         * ⚠️ LAS TRES FRASES DICEN LO QUE ERES, NO LO QUE HACES. Es la regla
-         * de esta pantalla y la que más fácil se pierde al reescribirlas: el
-         * método ya se cuenta más abajo con su sección entera, y aquí lo que
-         * se juega es si la persona se quiere llamar así.
+         *   enfoque        diana       — un mensaje, una persona, un resultado
+         *   acción         reloj       — dos horas diarias
+         *   comunidad      personas    — la red de embajadores
+         *   crecimiento    flecha      — un paso más en cada fase
+         *   transformación actualizar  — el giro: quien empieza y quien acaba
          *
-         * ⚠️ Y CADA UNA TIENE DOS MITADES QUE SE EQUILIBRAN. No es un tic de
-         * redacción: es lo que impide que suenen a folleto.
-         *
-         *   autonomía   — la libertad, y su precio. "Nadie te pone el horario"
-         *                 solo, sin lo segundo, promete un chollo.
-         *   carisma     — lo que SÍ hace falta, y lo que no. Nombra el guion
-         *                 para descartarlo, que es la objeción de quien cree
-         *                 que esto es vender.
-         *   solidaridad — a quién le resuelves, y qué obliga eso. Es la que
-         *                 conecta con "responsabilidad" del manifiesto.
-         *
-         * ⚠️ NINGUNA HABLA DE DINERO, y no es timidez: ver la regla 3 de la
-         * cabecera del archivo.
+         * ⚠️ NINGUNA HABLA DE DINERO (regla 3). "Algo real" y "fuente de
+         * ingresos propia" describen la oportunidad, no una cifra.
          */
+        clavesTitulo: { es: "Lo que nos define", en: "What defines us" },
         claves: [
           {
-            icono: "brujula",
-            palabra: { es: "Autonomía", en: "Autonomy" },
+            icono: "diana",
+            palabra: { es: "Enfoque", en: "Focus" },
             frase: {
-              es: "Nadie te pone el horario. Nadie lo hace por ti.",
-              en: "Nobody sets your hours. Nobody does it for you either.",
+              es: "Sin distracciones. Un mensaje, una persona, un resultado a la vez.",
+              en: "No distractions. One message, one person, one result at a time.",
             },
           },
           {
-            icono: "bocadillos",
-            palabra: { es: "Carisma", en: "Charisma" },
+            icono: "reloj",
+            palabra: { es: "Acción", en: "Action" },
             frase: {
-              es: "Tu herramienta es la conversación, no un guion.",
-              en: "Your tool is the conversation, not a script.",
+              es: "La constancia vence a la intensidad. Dos horas diarias construyen algo real.",
+              en: "Consistency beats intensity. Two hours a day build something real.",
             },
           },
           {
             icono: "personas",
-            palabra: { es: "Solidaridad", en: "Solidarity" },
+            palabra: { es: "Comunidad", en: "Community" },
             frase: {
-              es: "Cada caso es alguien que conoces. Por eso se hace bien.",
-              en: "Every case is someone you know. That's why it's done right.",
+              es: "No trabajas solo. Tienes una red activa de embajadores en cada fase.",
+              en: "You don't work alone. You have an active network of ambassadors at every phase.",
+            },
+          },
+          {
+            icono: "flecha",
+            palabra: { es: "Crecimiento", en: "Growth" },
+            frase: {
+              es: "Cada fase te acerca un paso más a dejar de improvisar.",
+              en: "Every phase takes you one step closer to leaving improvisation behind.",
+            },
+          },
+          {
+            icono: "actualizar",
+            palabra: { es: "Transformación", en: "Transformation" },
+            frase: {
+              es: "El Día 90 eres una versión diferente de quien empezó el Día 1.",
+              en: "On Day 90 you are a different version of the person who started on Day 1.",
             },
           },
         ],
@@ -5501,6 +5505,28 @@ export const copy = {
        derecho: media página de gris vacío en medio. Ahora tiene columnas, y
        las columnas necesitan nombre. */
     pieNavegar: { es: "La página", en: "The page" },
+    /* ─── EL CHAT ─────────────────────────────────────────────────────────
+       El botón flotante de abajo a la derecha y su panel. Lo pidió el
+       cliente el 16-09-2026: "un chat widget, será de GHL; por el momento
+       solo pon el botón y todo, después te paso el embebido". Así que esto
+       es la MAQUETA: el botón, el panel con un texto honesto (no finge que
+       haya nadie al otro lado en tiempo real) y las dos salidas que sí
+       funcionan hoy: el formulario y el correo. Ver `ChatWidget.astro` para
+       dónde va el embebido de GoHighLevel cuando llegue. */
+    chat: {
+      abrir: { es: "Abrir el chat", en: "Open chat" },
+      cerrar: { es: "Cerrar el chat", en: "Close chat" },
+      titulo: { es: "¿Hablamos?", en: "Shall we talk?" },
+      texto: {
+        es: "Cuéntanos qué buscas y te contestamos. Si prefieres, déjanos tus datos y te escribe alguien del equipo.",
+        en: "Tell us what you are looking for and we will get back to you. Or leave your details and someone from the team will write to you.",
+      },
+      cta: { es: "Dejar mis datos", en: "Leave my details" },
+      aviso: {
+        es: "Aquí irá el chat de GoHighLevel. Mientras, este es el camino.",
+        en: "The GoHighLevel chat will live here. In the meantime, this is the way.",
+      },
+    },
     /* La página de "no encontrado". Antes salía la de Astro por defecto, en
        inglés, sin barra ni pie y con "404: Not Found" de título. */
     noEncontrada: {

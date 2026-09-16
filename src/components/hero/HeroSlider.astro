@@ -3,6 +3,7 @@ import T from "@components/i18n/T.astro";
 import Button from "@components/ui/Button.astro";
 import Enfasis from "@components/ui/Enfasis.astro";
 import Icono from "@components/ui/Icono.astro";
+import type { NombreIcono } from "@components/ui/Icono.astro";
 import HeroDiptico from "@components/hero/HeroDiptico.astro";
 import HeroManifiesto from "@components/hero/HeroManifiesto.astro";
 import HeroVideo from "@components/hero/HeroVideo.astro";
@@ -228,8 +229,12 @@ interface SlideManifiesto extends ConVideo {
     acento?: boolean;
     azul?: boolean;
   }[])[];
+  /** El párrafo debajo del titular. */
+  cuerpo?: Txt;
+  /** El rótulo de las claves ("Lo que nos define"). */
+  clavesTitulo?: Txt;
   claves: readonly {
-    icono: "brujula" | "bocadillos" | "personas" | "escudo" | "red" | "megafono";
+    icono: NombreIcono;
     palabra: Txt;
     frase: Txt;
   }[];
@@ -461,6 +466,8 @@ const etiquetaPunto = (i: number) =>
             foto={videoDe(slide).video ? undefined : slide.foto}
             alt={videoDe(slide).video ? undefined : slide.alt}
             manifiesto={slide.manifiesto}
+            cuerpo={slide.cuerpo}
+            clavesTitulo={slide.clavesTitulo}
             claves={slide.claves}
             lang={lang}
             sombra={SOMBRA_TEXTO}

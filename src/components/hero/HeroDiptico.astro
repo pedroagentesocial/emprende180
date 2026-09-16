@@ -632,7 +632,12 @@ const LADOS = {
              barra) y `items-end` + `text-right` pegan las tres piezas al
              borde derecho; sin ellos la columna estaría a la derecha pero el
              texto seguiría centrado dentro de ella. */
-          "lg:inset-y-0 lg:left-auto lg:right-0 lg:w-[calc(60%+var(--gutter-page))] lg:items-end lg:justify-start lg:gap-6 lg:pb-40 lg:pt-32 lg:text-right"
+          /* ⚠️ ABAJO A LA DERECHA (`justify-end`), Y NO ARRIBA COMO LA 1. El
+             cliente lo devolvió abajo el 16-09-2026 ("el segundo bájalo donde
+             estaba el texto"): la 1 arriba a la izquierda y la 2 abajo a la
+             derecha se leen como dos esquinas distintas, no como la misma
+             plantilla espejada. El `pb-40` es el hueco de los mandos. */
+          "lg:inset-y-0 lg:left-auto lg:right-0 lg:w-[calc(60%+var(--gutter-page))] lg:items-end lg:justify-end lg:gap-6 lg:pb-40 lg:pt-32 lg:text-right"
         : bloque === "izquierda"
           ? /* ─── ARRIBA A LA IZQUIERDA ──────────────────────────────────
                La misma columna que `derecha`, pegada al otro margen y con el

@@ -5,6 +5,7 @@ import frauncesLatin from "@fontsource-variable/fraunces/files/fraunces-latin-so
 import { sitio, curso, instructor, cifras, contacto, copy, redesMarca } from "@config/curso.config";
 import LegalModal from "@components/legal/LegalModal";
 import CookieBanner from "@components/legal/CookieBanner";
+import ChatWidget from "@components/layout/ChatWidget.astro";
 import {
   IDIOMAS,
   LOCALES,
@@ -356,6 +357,9 @@ const descripciones = { es: descripcion.es, en: descripcion.en };
     {/* Uno por página: escuchan eventos de todo el documento. */}
     <LegalModal client:idle lang={lang} />
     <CookieBanner client:idle lang={lang} />
+    {/* El botón de chat, abajo a la derecha. Hoy es la maqueta a la espera
+        del embebido de GoHighLevel: ver la cabecera del componente. */}
+    <ChatWidget />
 
     {/* Mantiene <title> y la meta description en sincronía con el idioma
         cuando se cambia sin recargar. El resto del texto lo resuelve el CSS. */}

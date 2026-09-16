@@ -1,6 +1,7 @@
 ---
 import T from "@components/i18n/T.astro";
 import Icono from "@components/ui/Icono.astro";
+import type { NombreIcono } from "@components/ui/Icono.astro";
 import Enfasis from "@components/ui/Enfasis.astro";
 import type { Idioma, Txt } from "@i18n/idioma";
 
@@ -40,7 +41,7 @@ import type { Idioma, Txt } from "@i18n/idioma";
 
 interface Clave {
   /** Nombre de icono de `Icono.astro`. Tabla cerrada: ver ese archivo. */
-  icono: "brujula" | "bocadillos" | "personas" | "escudo" | "red" | "megafono";
+  icono: NombreIcono;
   palabra: Txt;
   /** UNA frase corta. Si necesita dos, es que sobra la mitad. */
   frase: Txt;
@@ -70,6 +71,10 @@ interface Props {
     acento?: boolean;
     azul?: boolean;
   }[])[];
+  /** El párrafo debajo del titular. */
+  cuerpo?: Txt;
+  /** El rótulo encima de las claves. */
+  clavesTitulo?: Txt;
   claves: readonly Clave[];
   lang: Idioma;
   /** La sombra de texto del slider. */
@@ -81,6 +86,8 @@ const {
   foto,
   alt,
   manifiesto,
+  cuerpo,
+  clavesTitulo,
   claves,
   lang,
   sombra,
@@ -161,13 +168,20 @@ const {
 
         Lo que crece es de `sm` y de `lg` en adelante: el teléfono se queda en
         el mínimo a propósito. */}
+    {/* ⚠️ DESDE EL 16-09-2026 ESTO ES UN TITULAR, NO UN MANIFIESTO. El texto
+        pasó a ser dos renglones cortos ("Tu Familia Primero / Tu Negocio
+        También"), así que lleva la misma escala `portada` que los titulares de
+        las otras dos pantallas —57 px a 1440, hasta 80— y el mismo reparto:
+        primer renglón de apoyo, segundo grande en Fraunces. La cuenta de los
+        49 caracteres de arriba ya no aplica; se deja porque explica de dónde
+        viene la `clamp` pequeña si algún día vuelve una frase larga. */}
     <h2
-      class="max-w-[80rem] text-balance text-[clamp(1rem,0.125rem+2.95vw,2.75rem)] font-semibold leading-[1.35] tracking-[-0.01em]"
+      class="max-w-[80rem] text-balance text-[clamp(1.75rem,0.5rem+3.6vw,5rem)] font-extrabold leading-[1.02] tracking-[-0.03em]"
       style={`color:#ffffff;${sombra}`}
     >
       {
-        manifiesto.map((linea) => (
-          <span class="block">
+        manifiesto.map((linea, l) => (
+          <span class:list={["block", l === 0 && "text-[0.87em] font-semibold"]}>
             {linea.map((seg, s) => (
               <>
                 {s > 0 ? " " : null}
@@ -216,9 +230,32 @@ const {
         Los huecos y el aire de arriba suben con el cuerpo de letra, por la
         misma razón que en el díptico: tres columnas más grandes con el mismo
         aire entre ellas se leen más apretadas que antes, no más presentes. */}
+    {cuerpo && (
+      <p
+        class="mt-4 max-w-2xl text-balance text-sm font-medium leading-relaxed text-secondary-100 sm:mt-6 sm:text-lg lg:max-w-3xl lg:text-2xl"
+        style={sombra}
+      >
+        <T v={cuerpo} />
+      </p>
+    )}
+
+    {/* ─── LO QUE NOS DEFINE ────────────────────────────────────────────────
+        El rótulo y, debajo, las CINCO claves: en fila desde `lg`, en tres
+        columnas en tablet (la cuarta y la quinta pasan a segunda fila) y
+        apiladas en el teléfono con el icono al lado. Eran tres; el cliente
+        dictó cinco el 16-09-2026 y con cinco en fila el aire entre columnas
+        baja de 14 a 8 para que quepan a 1280. */}
+    {clavesTitulo && (
+      <p
+        class="mt-6 text-xs font-bold tracking-[0.18em] text-secondary-300 uppercase sm:mt-10 sm:text-sm lg:mt-12"
+        style={sombra}
+      >
+        <T v={clavesTitulo} />
+      </p>
+    )}
     <ul
       role="list"
-      class="mt-6 grid w-full max-w-[80rem] gap-3 border-t border-white/25 pt-5 sm:mt-12 sm:grid-cols-3 sm:gap-10 sm:pt-8 lg:mt-16 lg:gap-14 lg:pt-12"
+      class="mt-4 grid w-full max-w-[80rem] gap-3 border-t border-white/25 pt-5 sm:mt-5 sm:grid-cols-3 sm:gap-8 sm:pt-8 lg:grid-cols-5 lg:gap-8 lg:pt-10"
     >
       {
         claves.map((clave) => (
@@ -264,7 +301,7 @@ const {
                 columna ha crecido de 277 a 394 px: con 28 la frase larga de las
                 tres —54 caracteres— se partía en tres renglones en vez de dos. */}
             <p
-              class="mt-1.5 hidden max-w-[34ch] text-pretty text-[0.8125rem] font-medium leading-snug text-secondary-100 sm:mt-2 sm:block sm:max-w-[28ch] sm:text-base lg:max-w-[30ch] lg:text-xl"
+              class="mt-1.5 hidden max-w-[34ch] text-pretty text-[0.8125rem] font-medium leading-snug text-secondary-100 sm:mt-2 sm:block sm:max-w-[28ch] sm:text-base lg:max-w-[30ch] lg:text-lg"
               style={sombra}
             >
               <T v={clave.frase} resaltar />

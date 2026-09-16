@@ -1,0 +1,160 @@
+---
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import BotonRelieve from "@components/ui/BotonRelieve.astro";
+import { copy, contacto } from "@config/curso.config";
+import { resolverIdiomaServidor } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * EL CHAT — el botón flotante de abajo a la derecha y su panel
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * ⚠️ ESTO ES LA MAQUETA, NO EL CHAT. El cliente pidió el 16-09-2026 "un chat
+ * widget, será de GHL; por el momento solo pon el botón y todo, después te
+ * paso el embebido, solo para que se vea como ejemplo". Así que hoy esto es:
+ *
+ *   · el botón redondo teal, fijo abajo a la derecha, con el icono de
+ *     conversación (se convierte en una cruz al abrir);
+ *   · un panel con un texto HONESTO —no finge que haya alguien escribiendo al
+ *     otro lado— y las dos salidas que sí funcionan: el formulario de la
+ *     portada y el correo de contacto.
+ *
+ * ─── DÓNDE VA EL EMBEBIDO DE GOHIGHLEVEL CUANDO LLEGUE ─────────────────────
+ *
+ * GHL da un `<script>` con `data-widget-id`. El día que llegue:
+ *
+ *   1. Se pega el `<script>` en `BaseLayout.astro`, al final del `<body>`,
+ *      con `is:inline` y DETRÁS de la comprobación de consentimiento (el
+ *      widget de GHL pone cookies y carga de un dominio ajeno: no puede
+ *      arrancar hasta que el visitante acepte, igual que la analítica; ver
+ *      `lib/consent.ts`).
+ *   2. Se quita este componente de `BaseLayout`, o se deja solo el botón y
+ *      se le hace abrir el widget de GHL con su API (`window.leadConnector`).
+ *   3. Google Maps y GHL entran en la lista de proveedores de la política de
+ *      privacidad (`legal.config.ts`).
+ *
+ * ─── POR QUÉ NO SE VE MIENTRAS ESTÁ EL AVISO DE COOKIES ────────────────────
+ *
+ * El aviso de cookies ocupa el borde de abajo entero y sus botones caen a la
+ * derecha: el chat encima taparía "Aceptar todas". El guion espera a que el
+ * visitante conteste (o a que ya hubiera contestado) para enseñar el botón.
+ * Usa la misma clave y el mismo evento que el aviso, así que no hay dos
+ * verdades.
+ *
+ * ⚠️ ES UN `<dialog>` NO MODAL (`show()`, no `showModal()`): el chat no puede
+ * secuestrar la página. Escape lo cierra, el foco vuelve al botón.
+ */
+
+const { chat } = copy.ui;
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+---
+
+<div data-chat class="fixed bottom-5 right-5 z-[54] hidden sm:bottom-6 sm:right-6" data-chat-visible="false">
+  <dialog
+    data-chat-panel
+    aria-label={chat.titulo[lang]}
+    data-aria-es={chat.titulo.es}
+    data-aria-en={chat.titulo.en}
+    class="absolute bottom-[calc(100%+0.75rem)] right-0 m-0 w-[min(22rem,calc(100vw-2.5rem))] rounded-3xl border border-line bg-surface p-0 text-ink shadow-2xl open:block"
+  >
+    <div class="flex items-center gap-3 rounded-t-3xl bg-primary-950 px-5 py-4 text-ink-inverse">
+      <span aria-hidden="true" class="grid size-9 shrink-0 place-items-center rounded-full bg-secondary-500 text-primary-950">
+        <Icono nombre="conversacion" class="size-5" grosor={2} />
+      </span>
+      <p class="text-lg font-extrabold leading-tight">
+        <T v={chat.titulo} />
+      </p>
+    </div>
+    <div class="p-5">
+      <p class="text-base font-medium leading-relaxed text-pretty text-ink-muted">
+        <T v={chat.texto} />
+      </p>
+      <div class="mt-5">
+        <BotonRelieve href="/#empezar" class="boton-pildora-md w-full" trackId="chat-datos">
+          <T v={chat.cta} />
+        </BotonRelieve>
+      </div>
+      <a
+        href={`mailto:${contacto.email}`}
+        class="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-ink-brand underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      >
+        {contacto.email}
+      </a>
+      <p class="mt-4 border-t border-line pt-3 text-xs font-medium text-ink-subtle">
+        <T v={chat.aviso} />
+      </p>
+    </div>
+  </dialog>
+
+  <button
+    type="button"
+    data-chat-boton
+    aria-expanded="false"
+    aria-label={chat.abrir[lang]}
+    data-abrir-es={chat.abrir.es}
+    data-abrir-en={chat.abrir.en}
+    data-cerrar-es={chat.cerrar.es}
+    data-cerrar-en={chat.cerrar.en}
+    class="grid size-14 place-items-center rounded-full bg-cta text-ink-inverse shadow-xl transition-transform duration-200 ease-out-soft hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-safe:active:scale-95"
+  >
+    <Icono nombre="conversacion" class="size-6" grosor={2} data-chat-icono-abrir />
+    <Icono nombre="cruz" class="hidden size-6" grosor={2} data-chat-icono-cerrar />
+  </button>
+</div>
+
+<script>
+  import { leerConsentimiento, EVENTO_CONSENTIMIENTO } from "@lib/consent";
+
+  const raiz = document.querySelector<HTMLElement>("[data-chat]");
+  const boton = raiz?.querySelector<HTMLButtonElement>("[data-chat-boton]");
+  const panel = raiz?.querySelector<HTMLDialogElement>("[data-chat-panel]");
+
+  if (raiz && boton && panel) {
+    const claveIdioma = (base: string) =>
+      document.documentElement.lang === "en" ? `${base}En` : `${base}Es`;
+
+    const pintar = () => {
+      const abierto = panel.open;
+      boton.setAttribute("aria-expanded", String(abierto));
+      const etiqueta = boton.dataset[claveIdioma(abierto ? "cerrar" : "abrir")];
+      if (etiqueta) boton.setAttribute("aria-label", etiqueta);
+      boton.querySelector("[data-chat-icono-abrir]")?.classList.toggle("hidden", abierto);
+      boton.querySelector("[data-chat-icono-cerrar]")?.classList.toggle("hidden", !abierto);
+      const titulo = panel.dataset[claveIdioma("aria")];
+      if (titulo) panel.setAttribute("aria-label", titulo);
+    };
+
+    boton.addEventListener("click", () => {
+      if (panel.open) panel.close();
+      else panel.show();
+      pintar();
+    });
+
+    panel.addEventListener("close", pintar);
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && panel.open) {
+        panel.close();
+        boton.focus();
+      }
+    });
+
+    window.addEventListener("e180:idioma", pintar);
+
+    /* Solo cuando el aviso de cookies ya no está en medio. */
+    const mostrar = () => {
+      raiz.classList.remove("hidden");
+      raiz.dataset.chatVisible = "true";
+    };
+    if (leerConsentimiento() !== "sin-respuesta") mostrar();
+    else
+      window.addEventListener(EVENTO_CONSENTIMIENTO, (e) => {
+        if ((e as CustomEvent).detail !== "sin-respuesta") mostrar();
+      });
+  }
+</script>
