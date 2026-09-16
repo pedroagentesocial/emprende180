@@ -1129,7 +1129,12 @@ export const instructor = {
    *   instructor-cuadrado el avatar de autor del blog (about y recursos)
    *   pedro-oficina       la foto del blog en recursos (escritorio, ciudad)
    *   pedro-de-pie        el fondo de la Academia en la portada
-   *   pedro-sentado       la duda que no está, en las preguntas frecuentes
+   *   pedro-sentado       SIN SITIO desde el 16-09-2026: estuvo junto a "la
+   *                       duda que no está" de la FAQ, y al rediseñarla en
+   *                       una tarjeta pequeña con avatar redondo la foto
+   *                       apaisada dejaba la cara diminuta; el avatar es el
+   *                       recorte cuadrado. Queda procesada en /public por
+   *                       si aparece hueco.
    *   pedro-escritorio    la fila de la Academia en /programs
    */
   foto: "/imagenes/instructor/pedro-retrato.webp",
