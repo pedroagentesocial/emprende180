@@ -10,7 +10,7 @@ import { resolverIdiomaServidor } from "@i18n/idioma";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- * 05 · LA COMUNIDAD, EN INSTAGRAM — seis publicaciones elegidas a mano
+ * 05 · LA COMUNIDAD, EN INSTAGRAM — publicaciones elegidas a mano
  * ═══════════════════════════════════════════════════════════════════════════
  *
  * Va entre los testimonios y las preguntas frecuentes: los testimonios son la
@@ -21,14 +21,14 @@ import { resolverIdiomaServidor } from "@i18n/idioma";
  *
  * ─── UN FEED CURADO, NO UN FEED EN VIVO ─────────────────────────────────────
  *
- * Seis cuadrados con seis publicaciones que elige el cliente, cada uno con su
+ * Casillas con las publicaciones que elige el cliente, cada una con su
  * enlace a la publicación en Instagram. NO se conecta a Instagram: ni API, ni
  * widget de terceros, ni script ajeno. Lo que se gana con eso:
  *
  *   · cero cookies y cero terceros, así que no hay que meterlo detrás del
  *     aviso de consentimiento (ver `lib/consent.ts`);
  *   · no puede romperse porque Meta cambie la API o caduque un token;
- *   · pesa lo que pesan seis imágenes de 800x800;
+ *   · pesa lo que pesan unas pocas imágenes de 800x1000;
  *   · el cliente decide qué se ve: no aparece una publicación floja por ser
  *     la última.
  *
@@ -36,15 +36,15 @@ import { resolverIdiomaServidor } from "@i18n/idioma";
  * una imagen y un enlace (ver /public/imagenes/instagram/README.md). Si algún
  * día se quiere en vivo, el camino es la Graph API de Instagram (cuenta
  * profesional + app de Facebook + token que se renueva cada 60 días) y esta
- * sección se queda igual: solo cambia de dónde salen las seis.
+ * sección se queda igual: solo cambia de dónde salen.
  *
  * ─── LA REJILLA ─────────────────────────────────────────────────────────────
  *
- * Seis en fila desde `lg`, 3x2 en tablet, 2x3 en el teléfono. Cuadrados de
- * verdad (`aspect-square`) con el radio del resto de fotos del sitio y poco
- * aire entre ellos: es una rejilla de Instagram, y una rejilla de Instagram
- * se reconoce por eso. Al pasar el ratón la foto se oscurece un poco y sale el
- * glifo de Instagram: es lo que dice "esto se pulsa" sin escribirlo.
+ * Casillas 4:5 —el formato vertical de las publicaciones de la cuenta— con
+ * el radio del resto de fotos del sitio y poco aire entre ellas. Tres en
+ * fila desde `lg` mientras haya tres o menos (hoy son tres); seis en fila a
+ * partir de la cuarta. En tablet, tres; en el teléfono, dos.
+ * Al pasar el ratón la foto se oscurece un poco y sale el glifo de Instagram: es lo que dice "esto se pulsa" sin escribirlo.
  *
  * ⚠️ UN SOLO BOTÓN. "Seguir en Instagram" al perfil; Facebook va como enlace
  * de texto en la línea del usuario. Dos botones aquí serían dos llamadas.
@@ -105,7 +105,15 @@ const lang = resolverIdiomaServidor(
         </div>
       </Reveal>
 
-      <ul role="list" class="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:mt-12 lg:grid-cols-6">
+      {/* Casillas 4:5, que es el formato de las publicaciones (verticales).
+          Con tres o menos van en tres columnas; con más, en seis. */}
+      <ul
+        role="list"
+        class:list={[
+          "mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:mt-12",
+          instagram.publicaciones.length > 3 ? "lg:grid-cols-6" : "lg:grid-cols-3 lg:gap-6",
+        ]}
+      >
         {instagram.publicaciones.map((pub, i) => (
           <Reveal as="li" delay={Math.min(i, 2) * 0.08}>
             <a
@@ -113,7 +121,7 @@ const lang = resolverIdiomaServidor(
               target="_blank"
               rel="noopener"
               data-track={`instagram-${i + 1}`}
-              class="group relative block aspect-square overflow-hidden rounded-lg border border-line bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              class="group relative block aspect-[4/5] overflow-hidden rounded-lg border border-line bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
             >
               <img
                 src={pub.imagen}
@@ -121,7 +129,7 @@ const lang = resolverIdiomaServidor(
                 data-alt-es={pub.alt.es}
                 data-alt-en={pub.alt.en}
                 width={800}
-                height={800}
+                height={1000}
                 loading="lazy"
                 decoding="async"
                 class="size-full object-cover transition-transform duration-500 ease-out-soft motion-safe:group-hover:scale-105"

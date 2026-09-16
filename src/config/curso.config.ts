@@ -4643,9 +4643,14 @@ export const copy = {
    * `05-Instagram.astro` para el porqué de que no sea un feed en vivo, y
    * /public/imagenes/instagram/README.md para cómo se cambia una.
    *
-   * ⚠️ LAS SEIS SON PLACEHOLDERS (16-09-2026): cuadrados de marca que
-   * enlazan al perfil, hasta que el cliente pase las publicaciones reales
-   * con sus enlaces. Se sustituyen una a una: imagen, `url` y `alt`.
+   * Las tres publicaciones reales, pasadas por el cliente el 16-09-2026 (por
+   * ahora la cuenta tiene tres). Las imágenes se bajaron del propio
+   * Instagram a tamaño completo (1080x1350, verticales 4:5) y se guardaron a
+   * 800x1000. Los `alt` describen lo que dice cada pieza.
+   *
+   * ⚠️ SON VERTICALES, Y LA REJILLA LO SABE: las casillas son 4:5, no
+   * cuadradas, y con tres publicaciones van en tres columnas; a partir de la
+   * cuarta la rejilla pasa a seis. Ver `05-Instagram.astro`.
    *
    * Sin promesa de cadencia en el título ("lo que compartimos", no "cada
    * semana"): la regla de no prometer lo que no se puede sostener.
@@ -4658,14 +4663,32 @@ export const copy = {
     usuario: "@emprende180academy",
     tambienFacebook: { es: "también en Facebook", en: "also on Facebook" },
     cta: { es: "Seguir en Instagram", en: "Follow on Instagram" },
-    publicaciones: [1, 2, 3, 4, 5, 6].map((n) => ({
-      imagen: `/imagenes/instagram/0${n}.webp`,
-      url: "https://www.instagram.com/emprende180academy/",
-      alt: {
-        es: `Publicación ${n} de Emprende180 en Instagram`,
-        en: `Entrepreneur180 Instagram post ${n}`,
+    publicaciones: [
+      {
+        imagen: "/imagenes/instagram/01.webp",
+        url: "https://www.instagram.com/emprende180academy/p/Dc6-wPOlVbZ/",
+        alt: {
+          es: "Publicación de Instagram: no necesitas vender para generar ingresos",
+          en: "Instagram post: you don't need to sell to earn income",
+        },
       },
-    })),
+      {
+        imagen: "/imagenes/instagram/02.webp",
+        url: "https://www.instagram.com/emprende180academy/p/Dbvj5xICdEb/",
+        alt: {
+          es: "Publicación de Instagram: construye una red que trabaje contigo",
+          en: "Instagram post: build a network that works with you",
+        },
+      },
+      {
+        imagen: "/imagenes/instagram/03.webp",
+        url: "https://www.instagram.com/emprende180academy/p/DbtMQI3HQz9/",
+        alt: {
+          es: "Publicación de Instagram: genera ingresos en tu tiempo libre",
+          en: "Instagram post: earn income in your free time",
+        },
+      },
+    ],
   },
 
   /**
