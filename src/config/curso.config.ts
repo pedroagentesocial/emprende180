@@ -674,8 +674,10 @@ export const curso = {
     cuotas: { numero: 3, importe: 164 },
 
     nota: {
-      es: "Pago único o 3 mensualidades. Los impuestos dependen de tu país y se calculan al pagar, así que ves el total antes de confirmar.",
-      en: "One payment or 3 installments. Taxes depend on your country and are calculated at checkout, so you see the total before confirming.",
+      /* Sin "pago único ni mensualidades" desde el 16-09-2026: ver la nota de
+         `informes`. El precio no se publica, así que esto no se pinta. */
+      es: "Los impuestos dependen de tu país y se calculan al pagar, así que ves el total antes de confirmar.",
+      en: "Taxes depend on your country and are calculated at checkout, so you see the total before confirming.",
     },
     urlCheckout: "#", // SWAP (HECHO): URL real de la pasarela
 
@@ -4910,12 +4912,11 @@ export const copy = {
       es: "Déjanos tu nombre y tu correo. Te escribimos, te contamos cómo se entra y decides tú.",
       en: "Leave us your name and your email. We'll write, tell you how it works, and you decide.",
     },
-    /* Lo que SÍ se puede decir de dinero sin dar la cifra. */
-    hechos: [
-      { es: "Un solo pago. Ni suscripción ni cargos recurrentes.", en: "One payment. No subscription, no recurring charges." },
-      { es: "El acceso al curso no caduca.", en: "Course access doesn't expire." },
-      { es: "Se puede pagar en {n} partes.", en: "You can pay it in {n} parts." },
-    ],
+    /* ⚠️ AQUÍ HABÍA TRES "HECHOS" DE DINERO ("un solo pago", "se puede pagar en
+       partes", "el acceso no caduca") y se quitaron el 16-09-2026 a petición
+       del cliente: el hero dice "sin inversión inicial" y nada del sitio puede
+       contradecirlo. No se pintaban en ningún sitio (el formulario del cierre
+       va en `minimo`), pero estaban a un cambio de prop de volver. */
     ctaBoton: { es: "Quiero empezar", en: "I want to start" },
     aviso: {
       es: "Te escribimos una vez y resolvemos dudas. Sin insistir después.",
@@ -4972,8 +4973,8 @@ export const copy = {
     aria: { es: "Precio y qué incluye", en: "Price and what's included" },
     titulo: { es: "Todo lo que te llevas", en: "Everything you get" },
     entradilla: {
-      es: "Un solo pago: el curso completo, los diez quizzes y tu Certificación de Embajador al superarlos. El acceso es tuyo para siempre, sin suscripción ni cargos recurrentes.",
-      en: "One payment: the complete course, all ten quizzes and your Ambassador Certification once you pass them. The access is yours for good, with no subscription and no recurring charges.",
+      es: "El curso completo, los diez quizzes y tu Certificación de Embajador al superarlos. El acceso es tuyo para siempre.",
+      en: "The complete course, all ten quizzes and your Ambassador Certification once you pass them. The access is yours for good.",
     },
     cuotas: { es: "o {n} pagos de {importe}", en: "or {n} payments of {importe}" },
     conGarantia: { es: "Con {garantia}.", en: "Includes {garantia}." },

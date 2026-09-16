@@ -18,6 +18,8 @@ import {
   type LeadGuardado,
 } from "@lib/leads";
 import { leadMagnet, contacto, sitio } from "@config/curso.config";
+import { correoMarca } from "@lib/correo";
+import { plantillaPara } from "@lib/correoPlantillas";
 import type { Idioma } from "@i18n/idioma";
 
 export const prerender = false;
@@ -37,108 +39,6 @@ export const prerender = false;
  *   6. Avisar + dar bienvenida  — en paralelo, porque el tiempo de respuesta
  *                                 al lead es parte de la conversión.
  */
-
-/**
- * Email de bienvenida, en el idioma en que la persona rellenó el formulario.
- *
- * Está aquí y no en `curso.config.ts` porque es texto de servidor: nunca llega
- * al navegador y no tiene sentido cargarlo en el bundle. Recibir el correo en
- * un idioma distinto del que usaste para registrarte es la forma más rápida de
- * que lo marquen como spam.
- */
-const BIENVENIDA: Record<
-  Idioma,
-  { asunto: (nombre: string) => string; cuerpo: (nombre: string) => string }
-> = {
-  es: {
-    asunto: (n) => `${n}, empezamos: ${leadMagnet.nombre.es}`,
-    cuerpo: (n) =>
-      [
-        `Hola ${n}:`,
-        ``,
-        `Ya estás dentro de "${leadMagnet.nombre.es}".`,
-        ``,
-        leadMagnet.promesa.es,
-        ``,
-        `Mañana te llega el día 1. Un consejo: mueve este correo a tu bandeja`,
-        `principal para que no se te pierdan los siguientes.`,
-        ``,
-        `Si tienes cualquier duda, responde aquí mismo.`,
-        ``,
-        `— ${sitio.nombre.es}`,
-        sitio.claim.es,
-      ].join("\n"),
-  },
-  en: {
-    asunto: (n) => `${n}, here we go: ${leadMagnet.nombre.en}`,
-    cuerpo: (n) =>
-      [
-        `Hi ${n},`,
-        ``,
-        `You're in: "${leadMagnet.nombre.en}".`,
-        ``,
-        leadMagnet.promesa.en,
-        ``,
-        `Day 1 arrives tomorrow. One tip: drag this email to your primary`,
-        `inbox so the rest don't get buried.`,
-        ``,
-        `Any questions, just hit reply.`,
-        ``,
-        `— ${sitio.nombre.en}`,
-        sitio.claim.en,
-      ].join("\n"),
-  },
-};
-
-/**
- * El acuse de las guías y de la lista.
- *
- * ⚠️ NO ES LA BIENVENIDA DEL MINI-CURSO, Y NO PUEDE SERLO. Ahí se anuncia un
- * "día 1" que llega mañana; quien deja el correo en estas dos secciones no ha
- * pedido ninguna secuencia, ha pedido que le avise cuando publique. Prometerle
- * una cadencia que no existe es la forma más rápida de acabar en spam.
- *
- * Por eso tampoco dice cada cuánto: sale cuando hay algo escrito.
- */
-const CONFIRMACION_LISTA: Record<
-  Idioma,
-  { asunto: (nombre: string) => string; cuerpo: (nombre: string) => string }
-> = {
-  es: {
-    asunto: (n) => `${n}, ya estás en la lista`,
-    cuerpo: (n) =>
-      [
-        `Hola ${n}:`,
-        ``,
-        `Apuntado. La próxima guía que escriba te llega a ti.`,
-        ``,
-        `No hay más correos que ese: ni ofertas, ni una serie de siete días.`,
-        `Te das de baja cuando quieras, desde cualquiera de ellos.`,
-        ``,
-        `Si quieres preguntar algo, responde aquí mismo.`,
-        ``,
-        `— ${sitio.nombre.es}`,
-        sitio.claim.es,
-      ].join("\n"),
-  },
-  en: {
-    asunto: (n) => `${n}, you're on the list`,
-    cuerpo: (n) =>
-      [
-        `Hi ${n},`,
-        ``,
-        `You're in. The next guide I write goes to you.`,
-        ``,
-        `That's the only email you'll get: no offers, no seven day series.`,
-        `Unsubscribe whenever you like, from any of them.`,
-        ``,
-        `If you want to ask something, just hit reply.`,
-        ``,
-        `— ${sitio.nombre.en}`,
-        sitio.claim.en,
-      ].join("\n"),
-  },
-};
 
 const json = (body: LeadResponse, status: number, headers?: HeadersInit) =>
   new Response(JSON.stringify(body), {
@@ -254,7 +154,10 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     return json(
       {
         ok: false,
-        mensaje: mensaje(lang, "noRegistrado").replace("{email}", contacto.email),
+        mensaje: mensaje(lang, "noRegistrado").replace(
+          "{email}",
+          contacto.email,
+        ),
       },
       500,
     );
@@ -295,6 +198,13 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     return exito(lead.idioma);
   }
 
+  /* El remitente CON NOMBRE. La variable de entorno puede traer solo la
+     dirección ("hola@emprende180.com"); en la bandeja eso se lee como la
+     dirección pelada. Si no trae nombre, se le pone el del sitio en el idioma
+     del lead: "Emprende180 <hola@…>" / "Entrepreneur180 <hola@…>". */
+  const remitente = (lang: Idioma) =>
+    from.includes("<") ? from : `${sitio.nombre[lang]} <${from}>`;
+
   const enviar = (cuerpo: Record<string, unknown>) =>
     fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -310,7 +220,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
       // Aviso interno. El asunto lleva el origen para saber qué formulario de
       // la página está convirtiendo sin abrir el mensaje.
       enviar({
-        from,
+        from: remitente("es"),
         to: [to],
         reply_to: lead.email,
         // El aviso interno va siempre en español: lo lees tú, no el lead.
@@ -353,42 +263,43 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
         ].join("\n"),
       }),
 
-      /* El correo que recibe la persona, y cuál es DEPENDE DE LO QUE PIDIÓ.
-         TODO: el día 1 del mini-curso desaparece de aquí cuando la secuencia
-         del autoresponder esté conectada, o el lead lo recibirá dos veces.
+      /* El correo que recibe la persona, y cuál es DEPENDE DE LO QUE PIDIÓ:
+         ver las tres plantillas de arriba y `plantillaPara`. Sale en HTML (la
+         plantilla de marca) y en texto plano a la vez, y con `reply_to` al
+         correo de contacto: responder al correo escribe a una persona.
 
-         ⚠️ A QUIEN PIDE EL PRECIO NO SE LE MANDA NADA AUTOMÁTICO. Ese
-         formulario pide permiso para contestar una pregunta, no para meter a
-         nadie en una secuencia: quien pregunta cuánto cuesta y recibe un curso
-         por correo marca spam, no responde. Le escribe una persona.
-
-         ⚠️ Y a quien se apunta a las guías le llega SU acuse, no la
-         bienvenida del mini-curso: la casilla que marcó hablaba de los
-         artículos. Ver `CONFIRMACION_LISTA`. */
-      ...(lead.origen === "informes"
-        ? []
-        : [
-            enviar({
-              from,
-              to: [lead.email],
-              reply_to: contacto.email,
-              subject: (esLista ? CONFIRMACION_LISTA : BIENVENIDA)[
-                lead.idioma
-              ].asunto(lead.nombre),
-              text: (esLista ? CONFIRMACION_LISTA : BIENVENIDA)[
-                lead.idioma
-              ].cuerpo(lead.nombre),
-            }),
-          ]),
+         ⚠️ A QUIEN PIDE INFORMACIÓN SE LE MANDA UN ACUSE, NO UNA SECUENCIA.
+         Hasta el 16-09-2026 no se le mandaba nada, para que le escribiera
+         una persona y punto; el cliente pidió una bienvenida, y el acuse dice
+         justo eso: que le va a escribir alguien. No lo mete en ninguna
+         cadencia, que es lo que haría que marcara spam. */
+      (() => {
+        const plantilla = plantillaPara(lead.origen)[lead.idioma](lead.nombre);
+        const correo = correoMarca(plantilla);
+        return enviar({
+          from: remitente(lead.idioma),
+          to: [lead.email],
+          reply_to: contacto.email,
+          subject: plantilla.asunto,
+          html: correo.html,
+          text: correo.text,
+        });
+      })(),
     ]);
 
     if (!aviso.ok) {
       // El lead ya está guardado, así que esto no es un error para el usuario:
       // se registra para poder recuperarlo del log.
-      console.error("[lead] Resend rechazó el aviso interno:", await aviso.text());
+      console.error(
+        "[lead] Resend rechazó el aviso interno:",
+        await aviso.text(),
+      );
     }
     if (!bienvenida.ok) {
-      console.error("[lead] Falló el email de bienvenida:", await bienvenida.text());
+      console.error(
+        "[lead] Falló el email de bienvenida:",
+        await bienvenida.text(),
+      );
     }
   } catch (error) {
     // Igual: el lead está a salvo. No se le muestra un error a quien ya se
