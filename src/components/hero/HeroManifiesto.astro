@@ -107,14 +107,11 @@ const {
     </Fragment>
   )}
 
-  {/* El apagado VA SIEMPRE, haya foto o vídeo: es el que sostiene el texto,
-      y aquí hay un párrafo y tres columnas encima. Por debajo de `lg` va
-      abajo, que es donde cae el texto bajo la banda de vídeo; de `lg` para
-      arriba el texto está ARRIBA (ver la nota del bloque) y el apagado sube
-      con él: pegado al borde superior y degradando hacia abajo. */}
+  {/* El apagado de abajo VA SIEMPRE, haya foto o vídeo: es el que sostiene el
+      texto, y aquí hay un párrafo y tres columnas encima. */}
   <div
     aria-hidden="true"
-    class="absolute inset-x-0 bottom-0 -z-10 h-3/5 bg-gradient-to-t from-primary-950 via-primary-950/80 to-transparent lg:bottom-auto lg:top-0 lg:h-4/5 lg:bg-gradient-to-b"
+    class="absolute inset-x-0 bottom-0 -z-10 h-3/5 bg-gradient-to-t from-primary-950 via-primary-950/80 to-transparent"
   />
 
   {/* ⚠️ `pb-24`/`lg:pb-32` NO ES AIRE: ES EL HUECO DE LOS MANDOS DEL SLIDER,
@@ -126,15 +123,14 @@ const {
       —56,25vw— y este bloque empieza después; la barra flota sobre la banda,
       que es lo mismo que hace en un escritorio.
 
-      ⚠️ DE `lg` PARA ARRIBA EL BLOQUE VA PEGADO ARRIBA, NO ABAJO. Nació con
-      `justify-end`, apoyado en el borde de abajo sobre los mandos, y el cliente
-      lo subió el 16-09-2026: "siento muy abajo los textos, que estén en la
-      parte superior". `lg:justify-start` y `lg:pt-36`: los 144 px son la barra
-      grande (128) y un dedo de aire, la misma cuenta que llevan las otras dos
-      pantallas del hero. El `pb` se queda: sigue siendo el hueco de los
-      mandos, aunque el texto ya no se apoye en él. */}
+      ⚠️ ESTE BLOQUE VA ABAJO, APOYADO SOBRE LOS MANDOS, Y ASÍ SE QUEDA. El
+      16-09-2026 se subió arriba por un malentendido: el cliente decía que los
+      textos del hero "estaban muy abajo", pero hablaba de las pantallas 1 y
+      2, que tenían un fallo de `align-self` (ver `HeroDiptico`). Al ver
+      este arriba lo devolvió: "donde estaban antes estaba bien". De `lg` para
+      arriba, `pt-24` es el hueco de la barra. */}
   <div
-    class="flex size-full flex-col items-center justify-end px-[var(--gutter-page)] pb-24 pt-[calc(56.25vw+1rem)] text-center sm:pb-28 lg:justify-start lg:pb-32 lg:pt-36"
+    class="flex size-full flex-col items-center justify-end px-[var(--gutter-page)] pb-24 pt-[calc(56.25vw+1rem)] text-center sm:pb-28 lg:pb-32 lg:pt-24"
   >
     {/* El manifiesto. `h2` porque el `h1` de la página lo pone el hero en sus
         otras imágenes; aquí no hay ninguna frase que conteste "de qué va la

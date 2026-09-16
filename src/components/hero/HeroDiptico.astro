@@ -570,7 +570,16 @@ const LADOS = {
       /* El fondo navy de móvil solo hace falta cuando debajo hay DOS FOTOS
          apiladas y este bloque es la tercera fila. Con un vídeo detrás cubre
          la pantalla entera y el navy solo taparía el vídeo. */
-      sinFotos ? "justify-end self-end" : "bg-primary-950",
+      /* ⚠️ `lg:self-stretch` ES LO QUE DEJA SUBIR EL BLOQUE, y costó verlo. Con
+         vídeo detrás el bloque lleva `self-end` para que en el teléfono se
+         apoye abajo. Pero de `lg` para arriba el bloque es `absolute` con
+         `inset-y-0`, y a una caja absoluta con los dos insets puestos
+         `align-self: end` NO la estira: la encoge a su contenido y la pega al
+         borde de ABAJO del hueco. Por eso el texto de las pantallas 1 y 2 se
+         quedaba abajo aunque llevara `justify-start` y `pt-32`: la caja
+         entera estaba abajo. Con `stretch` la caja vuelve a medir el hueco
+         entero y el contenido sube a donde dice el relleno. */
+      sinFotos ? "justify-end self-end lg:self-stretch" : "bg-primary-950",
       /* ⚠️ LAS DOS RAMAS SON EXCLUYENTES A PROPÓSITO. Escriben las mismas
          propiedades —`left`, `right`, el relleno vertical, el hueco— y dos
          clases de Tailwind que tocan la misma propiedad en el mismo punto de
