@@ -231,9 +231,11 @@ interface SlideManifiesto extends ConVideo {
   }[])[];
   /** El párrafo debajo del titular. */
   cuerpo?: Txt;
-  /** El rótulo de las claves ("Lo que nos define"). */
+  /** El rótulo de las claves. Opcional, como las claves. */
   clavesTitulo?: Txt;
-  claves: readonly {
+  /** Las claves bajo el titular. Opcionales: desde el 16-09-2026 la tercera
+      pantalla no las lleva (pasaron a `01-Define`). */
+  claves?: readonly {
     icono: NombreIcono;
     palabra: Txt;
     frase: Txt;

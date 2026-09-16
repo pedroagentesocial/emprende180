@@ -3056,64 +3056,10 @@ export const copy = {
           es: "¿No sabes qué publicar ni qué decir? Nuestro Plan de 90 días te da las misiones exactas para cada día.",
           en: "Not sure what to post or what to say? Our 90-Day Plan gives you the exact missions for each day.",
         },
+        /* ⚠️ AQUÍ IBAN LAS CINCO CLAVES ("Lo que nos define") y el cliente las
+           sacó a una sección propia el 16-09-2026: ver `copy.define` y
+           `01-Define.astro`. Esta pantalla se queda con el titular y el párrafo. */
 
-        /**
-         * "Lo que nos define": cinco palabras, cinco iconos, una frase cada
-         * una, dictadas por el cliente. Los iconos salen de la tabla cerrada
-         * de `Icono.astro`:
-         *
-         *   enfoque        diana       — un mensaje, una persona, un resultado
-         *   acción         reloj       — dos horas diarias
-         *   comunidad      personas    — la red de embajadores
-         *   crecimiento    flecha      — un paso más en cada fase
-         *   transformación actualizar  — el giro: quien empieza y quien acaba
-         *
-         * ⚠️ NINGUNA HABLA DE DINERO (regla 3). "Algo real" y "fuente de
-         * ingresos propia" describen la oportunidad, no una cifra.
-         */
-        clavesTitulo: { es: "Lo que nos define", en: "What defines us" },
-        claves: [
-          {
-            icono: "diana",
-            palabra: { es: "Enfoque", en: "Focus" },
-            frase: {
-              es: "Sin distracciones. Un mensaje, una persona, un resultado a la vez.",
-              en: "No distractions. One message, one person, one result at a time.",
-            },
-          },
-          {
-            icono: "reloj",
-            palabra: { es: "Acción", en: "Action" },
-            frase: {
-              es: "La constancia vence a la intensidad. Dos horas diarias construyen algo real.",
-              en: "Consistency beats intensity. Two hours a day build something real.",
-            },
-          },
-          {
-            icono: "personas",
-            palabra: { es: "Comunidad", en: "Community" },
-            frase: {
-              es: "No trabajas solo. Tienes una red activa de embajadores en cada fase.",
-              en: "You don't work alone. You have an active network of ambassadors at every phase.",
-            },
-          },
-          {
-            icono: "flecha",
-            palabra: { es: "Crecimiento", en: "Growth" },
-            frase: {
-              es: "Cada fase te acerca un paso más a dejar de improvisar.",
-              en: "Every phase takes you one step closer to leaving improvisation behind.",
-            },
-          },
-          {
-            icono: "actualizar",
-            palabra: { es: "Transformación", en: "Transformation" },
-            frase: {
-              es: "El Día 90 eres una versión diferente de quien empezó el Día 1.",
-              en: "On Day 90 you are a different version of the person who started on Day 1.",
-            },
-          },
-        ],
       },
     ],
 
@@ -4258,13 +4204,18 @@ export const copy = {
           en: "You step outside your own contacts. You open alliances with local businesses that see the same people you do, and you go back over everything you planted in the previous weeks: the contacts that went cold, the conversations left half-finished. The base stops being a list and starts moving on its own.",
         },
         imagen: {
-          src: "/imagenes/hero/banco-charla.webp",
+          /* ⚠️ CAMBIADA EL 16-09-2026: iba `banco-charla` (dos hombres a
+             contraluz) y el cliente la vio oscura y poco ligada al texto. La
+             fase habla de alianzas con negocios de la zona; esto son dos
+             dueños de una tienda de barrio en su local, a plena luz. Pexels
+             8475204, recortada a 1400x1050. */
+          src: "/imagenes/plan90/alianza-local.webp",
           ancho: 1400,
-          alto: 1800,
-          encuadre: "center 35%",
+          alto: 1050,
+          encuadre: "center 40%",
           alt: {
-            es: "Dos personas conversando sentadas a una mesa en la calle",
-            en: "Two people talking at a table out in the street",
+            es: "Dos dueños de una tienda de barrio, con delantal, sonriendo en su local",
+            en: "Two neighbourhood shop owners in aprons, smiling in their store",
           },
         },
       },
@@ -4644,6 +4595,75 @@ export const copy = {
       es: "Todavía no hay nada publicado. Déjame tu correo y te aviso con lo primero.",
       en: "Nothing published yet. Leave me your email and I'll let you know about the first one.",
     },
+  },
+
+  /**
+   * ─── LO QUE NOS DEFINE ─────────────────────────────────────────────────
+   *
+   * Cinco palabras con su frase, dictadas por el cliente el 16-09-2026.
+   * Nacieron en la tercera pantalla del hero y el mismo día pasaron a una
+   * sección propia detrás de "El programa Emprende180" (`01-Define.astro`).
+   */
+  define: {
+    aria: { es: "Lo que nos define", en: "What defines us" },
+    titulo: { es: "Lo que nos", en: "What" },
+    remate: { es: "define.", en: "defines us." },
+    /**
+     * "Lo que nos define": cinco palabras, cinco iconos, una frase cada
+     * una, dictadas por el cliente. Los iconos salen de la tabla cerrada
+     * de `Icono.astro`:
+     *
+     *   enfoque        diana       — un mensaje, una persona, un resultado
+     *   acción         reloj       — dos horas diarias
+     *   comunidad      personas    — la red de embajadores
+     *   crecimiento    flecha      — un paso más en cada fase
+     *   transformación actualizar  — el giro: quien empieza y quien acaba
+     *
+     * ⚠️ NINGUNA HABLA DE DINERO (regla 3). "Algo real" y "fuente de
+     * ingresos propia" describen la oportunidad, no una cifra.
+     */
+    claves: [
+      {
+        icono: "diana",
+        palabra: { es: "Enfoque", en: "Focus" },
+        frase: {
+          es: "Sin distracciones. Un mensaje, una persona, un resultado a la vez.",
+          en: "No distractions. One message, one person, one result at a time.",
+        },
+      },
+      {
+        icono: "reloj",
+        palabra: { es: "Acción", en: "Action" },
+        frase: {
+          es: "La constancia vence a la intensidad. Dos horas diarias construyen algo real.",
+          en: "Consistency beats intensity. Two hours a day build something real.",
+        },
+      },
+      {
+        icono: "personas",
+        palabra: { es: "Comunidad", en: "Community" },
+        frase: {
+          es: "No trabajas solo. Tienes una red activa de embajadores en cada fase.",
+          en: "You don't work alone. You have an active network of ambassadors at every phase.",
+        },
+      },
+      {
+        icono: "flecha",
+        palabra: { es: "Crecimiento", en: "Growth" },
+        frase: {
+          es: "Cada fase te acerca un paso más a dejar de improvisar.",
+          en: "Every phase takes you one step closer to leaving improvisation behind.",
+        },
+      },
+      {
+        icono: "actualizar",
+        palabra: { es: "Transformación", en: "Transformation" },
+        frase: {
+          es: "El Día 90 eres una versión diferente de quien empezó el Día 1.",
+          en: "On Day 90 you are a different version of the person who started on Day 1.",
+        },
+      },
+    ],
   },
 
   /**

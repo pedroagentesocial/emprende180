@@ -1,0 +1,73 @@
+---
+import T from "@components/i18n/T.astro";
+import Section from "@components/ui/Section.astro";
+import Reveal from "@components/motion/Reveal.astro";
+import Enfasis from "@components/ui/Enfasis.astro";
+import Icono from "@components/ui/Icono.astro";
+import { copy } from "@config/curso.config";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 01 · LO QUE NOS DEFINE — cinco palabras, cinco iconos, una frase cada una
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Enfoque, Acción, Comunidad, Crecimiento y Transformación. Nacieron el
+ * 16-09-2026 como el pie de la tercera pantalla del hero, y el mismo día el
+ * cliente las sacó de allí a una sección propia detrás de "El programa
+ * Emprende180": en el hero competían con el titular y se leían pequeñas; aquí
+ * tienen su sitio y su aire. Los textos son los que dictó el cliente
+ * (`copy.define`).
+ *
+ * ─── LA FORMA ───────────────────────────────────────────────────────────────
+ *
+ * Título centrado con el remate en Fraunces y, debajo, las cinco en fila
+ * desde `lg` (dos y tres en tablet, apiladas con el icono al lado en el
+ * teléfono). Sin tarjetas: cada una es un icono en un círculo navy, la
+ * palabra y la frase, separadas por el aire. Es la misma anatomía que los
+ * seis valores del about, que son la otra lista de "lo que creemos" del
+ * sitio, así las dos se leen de la misma familia.
+ *
+ * Sobre azul suave (`muted`): va entre dos secciones blancas —el programa y
+ * el collage de los 90 días— y el cambio de tono es lo que la separa de las
+ * dos sin meter filetes.
+ */
+
+const { define } = copy;
+---
+
+<Section id="define" tono="muted" ariaLabel={define.aria}>
+  <Reveal>
+    <h2 class="text-center text-3xl font-extrabold leading-tight text-balance text-ink sm:text-4xl lg:text-5xl">
+      <T v={define.titulo} />{" "}
+      <Enfasis v={define.remate} />
+    </h2>
+  </Reveal>
+
+  <ul
+    role="list"
+    class="mt-12 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:mt-16 lg:grid-cols-5 lg:gap-x-6"
+  >
+    {
+      define.claves.map((clave, i) => (
+        <Reveal as="li" delay={Math.min(i, 4) * 0.06}>
+          <div class="flex items-start gap-4 text-left lg:flex-col lg:items-center lg:gap-5 lg:text-center">
+            <span
+              aria-hidden="true"
+              class="grid size-14 shrink-0 place-items-center rounded-full bg-primary-950 text-secondary-300 lg:size-16"
+            >
+              <Icono nombre={clave.icono} class="size-7 lg:size-8" grosor={1.6} />
+            </span>
+            <div class="min-w-0">
+              <h3 class="text-xl font-extrabold text-ink sm:text-2xl lg:text-xl xl:text-2xl">
+                <T v={clave.palabra} />
+              </h3>
+              <p class="mt-2 text-base font-medium leading-relaxed text-pretty text-ink-muted sm:text-lg lg:mx-auto lg:max-w-[26ch]">
+                <T v={clave.frase} />
+              </p>
+            </div>
+          </div>
+        </Reveal>
+      ))
+    }
+  </ul>
+</Section>
