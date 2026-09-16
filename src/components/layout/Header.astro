@@ -265,7 +265,10 @@ const logoAlt = {
                    logotipo, que lleva el reparto medido de la barra entera. */
                 /* Cuerpo base y no `lg` en `xl`: el cliente pidió el 16-09-2026 la
                    barra "un poco más pequeña", logotipo y enlaces incluidos. */
-                "group/enlace relative inline-flex min-h-11 items-center px-3.5 text-[0.9375rem] font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2",
+                /* `whitespace-nowrap`: "Quiénes somos" se partía en dos renglones
+                   entre 1024 y 1279 px y la raya del hover quedaba a media
+                   altura del segundo. Un enlace de menú es una sola línea. */
+                "group/enlace relative inline-flex min-h-11 items-center px-3.5 text-[0.9375rem] font-semibold whitespace-nowrap transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2",
                 "after:absolute after:inset-x-4 after:bottom-2.5 after:h-0.5 after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-300 after:ease-[var(--ease-out-soft)] hover:after:scale-x-100",
                 sobreHero
                   ? "text-white/85 hover:text-white focus-visible:outline-focus-inverse"
@@ -339,7 +342,13 @@ const logoAlt = {
             /* `max-w-full object-contain` es la otra mitad de la válvula: ver
                la nota de `lg:min-w-0` en el enlace de arriba. */
             "w-auto max-w-full shrink-0 object-contain transition-[height] duration-300 ease-[var(--ease-out-soft)]",
-            "h-11 max-[440px]:h-9 sm:h-14 group-data-[compacta=true]:h-8",
+            /* ⚠️ EL PRESUPUESTO DEL TELÉFONO, MEDIDO A 390 PX (16-09-2026): la
+               fila tiene 347 px útiles y a la derecha van el idioma (90), el
+               acceso (40), el menú (40) y dos huecos (16): 186. Quedan 161
+               para el logotipo y el hueco, y el logotipo a h-9 medía 172: la
+               página entera hacía scroll horizontal (408 de 390). A h-7 mide
+               134 y entra; de 480 para arriba vuelve a h-10 y desde `sm`, 14. */
+            "h-7 min-[480px]:h-10 sm:h-14 group-data-[compacta=true]:h-7 sm:group-data-[compacta=true]:h-8",
             /* Arriba del todo va grande y al compactarse vuelve a los 36 de
                siempre. Fuera del hero nace ya en el tamaño de antes.
 
@@ -431,7 +440,7 @@ const logoAlt = {
              El selector de idioma se queda en `text-sm` a propósito: es un
              control de dos letras, no un destino, y crecerlo lo convertiría en
              el elemento más grande de la derecha. */
-          "inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-[0.9375rem] font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 max-[359px]:px-1.5 sm:px-3.5",
+          "inline-flex min-h-10 items-center gap-2 rounded-full px-2 text-[0.9375rem] font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 sm:min-h-11 sm:px-3.5",
           sobreHero
             ? "text-white/85 hover:text-white focus-visible:outline-focus-inverse"
             : "text-ink-muted hover:bg-surface-muted hover:text-ink focus-visible:outline-focus",
@@ -496,7 +505,7 @@ const logoAlt = {
             data-etiqueta-cerrar-es={copy.ui.cerrarMenu.es}
             data-etiqueta-cerrar-en={copy.ui.cerrarMenu.en}
             class:list={[
-              "grid size-11 shrink-0 place-items-center rounded-full transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 lg:hidden",
+              "grid size-10 shrink-0 place-items-center rounded-full transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 sm:size-11 lg:hidden",
               sobreHero
                 ? "text-white hover:bg-white/10 focus-visible:outline-focus-inverse"
                 : "text-ink-muted hover:bg-surface-muted hover:text-ink focus-visible:outline-focus",
