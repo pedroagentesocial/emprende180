@@ -1763,207 +1763,64 @@ export const garantia = {
 
 // ─── FAQs ────────────────────────────────────────────────────────────────────
 /**
- * Cada pregunta desactiva una OBJECIÓN DE COMPRA real. Si una no lo hace,
- * sobra. Van después del precio porque las dudas que quedan vivas a esas
- * alturas son justo las que nacen al ver la cifra.
+ * ⚠️ CUATRO PREGUNTAS, LAS QUE DICTÓ EL CLIENTE EL 16-09-2026. Había once
+ * (qué es esto, experiencia en ventas, tiempo a la semana, comunidad, CRM,
+ * atorarse, dejar el trabajo, cómo se gana dinero, ciudad, pagar en partes y
+ * garantía); el cliente las sustituyó por estas cuatro y pidió que se
+ * respondieran. La respuesta de la primera es suya, palabra por palabra; las
+ * otras tres se escribieron sobre lo que el sitio ya afirma y nada más:
  *
- * Las respuestas son completas y honestas: media respuesta genera más duda que
- * ninguna. Donde hace falta un dato tuyo, va marcado `[COMPLETAR: …]`.
+ *   · tiempo     — los tres bloques del plan (60 · 45 · 15) y el reparto
+ *                  final (35 · 70 · 15), de `copy.plan90.dia`;
+ *   · inversión  — "sin inversión inicial", que es lo que dice el hero por
+ *                  decisión del cliente (16-09-2026);
+ *   · día 90     — los hitos del plan (día 78 escribes tus tareas, día 90
+ *                  eliges qué sigue) y la comunidad, que no se acaba.
+ *
+ * Sin cifras de resultados ni de ingresos (regla 3). Sin guion largo en
+ * español. Las once anteriores están en el historial de git.
+ *
+ * Se pintan las cuatro en la portada y en /resources; la primera va abierta.
  */
 export const faqs: Faq[] = [
   {
     pregunta: {
-      es: "No tengo experiencia en el sector. ¿Me va a servir?",
-      en: "I have no experience in this industry. Will this work for me?",
+      es: "¿Necesito experiencia previa?",
+      en: "Do I need previous experience?",
     },
     respuesta: {
-      es: "Sí, está pensado justo para eso. El video 1 empieza explicando qué es Emprende180 y no da por sabido nada: ni el sector, ni los servicios, ni haber pedido un referido antes. Lo que sí hace falta es tiempo para hacerlo y disposición para hablar con gente, que es lo que de verdad mueve la aguja.",
-      en: "Yes, that's exactly who it's built for. Video 1 starts by explaining what Entrepreneur180 is and assumes nothing: not the industry, not the services, not having ever asked for a referral. What you do need is time to do it and a willingness to talk to people, which is what actually moves the needle.",
+      es: "No. El programa empieza desde cero y te guía paso a paso para construir conversaciones reales sin técnicas de venta invasivas.",
+      en: "No. The program starts from zero and guides you step by step to build real conversations, without pushy sales techniques.",
     },
   },
   {
     pregunta: {
-      es: "¿Tengo que tener licencia para ser Embajador?",
-      en: "Do I need a license to be an Ambassador?",
+      es: "¿Cuánto tiempo requiere al día?",
+      en: "How much time does it take each day?",
     },
     respuesta: {
-      /**
-       * ⚠️ REDACTADA PARA NO AFIRMAR NADA QUE NO SE PUEDA SOSTENER.
-       *
-       * Lo peligroso aquí no es callarse: es decir "no hace falta licencia".
-       * Los requisitos para recibir compensación por un referido sobre
-       * servicios de accidentes cambian por estado y por tipo de caso, así que
-       * una frase tranquilizadora en una landing que lee gente de varios
-       * territorios sería falsa en alguno de ellos.
-       *
-       * Por eso la respuesta dice lo único verificable —qué es y qué NO es este
-       * curso— y remite a una llamada para el caso concreto. Si cumplimiento
-       * redacta una versión con los territorios cerrados, sustitúyela.
-       */
-      es: "El curso no te da ninguna licencia ni te habilita para ejercer una actividad regulada. Lo que enseña es a reconocer una situación, pasarla a quien sí puede resolverla y saber dónde termina tu parte. Qué se puede hacer y qué no depende del territorio y del tipo de caso, y por eso el video 9 va entero de ética, cumplimiento y comunicación responsable. Esto no es asesoría legal: si tu situación tiene algo particular, llámame antes de comprar y lo vemos.",
-      en: "The course does not give you a license and does not authorize you to carry out any regulated activity. What it teaches is how to recognize a situation, pass it to someone who can actually resolve it, and know where your part ends. What is and isn't allowed depends on your territory and on the type of case, which is exactly why video 9 is entirely about ethics, compliance and responsible communication. This isn't legal advice: if there's anything particular about your situation, call me before you buy and we'll go through it.",
+      es: "Dos horas. Al principio se reparten en sesenta minutos de prospección, cuarenta y cinco de seguimiento y quince para cerrar el día en el CRM. Hacia el final el reparto cambia: menos gente nueva y más seguimiento, porque ya hay algo que cuidar. La constancia vence a la intensidad: dos horas todos los días construyen más que ocho un sábado.",
+      en: "Two hours. At the start they split into sixty minutes of prospecting, forty-five of follow-up and fifteen to close the day in the CRM. Towards the end the split changes: fewer new people and more follow-up, because by then there is something to look after. Consistency beats intensity: two hours every day build more than eight on a Saturday.",
     },
   },
   {
     pregunta: {
-      es: "¿Cómo gana un Embajador?",
-      en: "How does an Ambassador earn?",
+      es: "¿Hay inversión inicial?",
+      en: "Is there an upfront investment?",
     },
     respuesta: {
-      /**
-       * ⚠️ LA RESPUESTA MÁS DELICADA DE LA PÁGINA, Y LA QUE MÁS SE LEE.
-       *
-       * Una cifra aquí —"un Embajador gana X", "hasta X por referido", incluso
-       * un ejemplo— es una declaración de ingresos. En EE. UU. la FTC las
-       * regula (16 CFR 465) y exige poder documentar que ese resultado es el
-       * típico, no el mejor. Sin ese respaldo, la cifra es sancionable.
-       *
-       * Así que la respuesta hace justo lo contrario de lo que hace una landing
-       * de oportunidad: dice de entrada que esto es FORMACIÓN y no una oferta
-       * de ingresos, y explica POR QUÉ no hay cifras. Decirlo en voz alta
-       * convierte una ausencia sospechosa en una señal de seriedad.
-       */
-      es: "Lo primero, y va en serio: lo que compras aquí es formación, no una oferta de ingresos. En esta página no vas a encontrar ni una cifra de lo que gana nadie, y es a propósito — publicar ingresos que no se puedan documentar caso por caso es engañoso, y en Estados Unidos además es sancionable. Lo que sí te enseña el curso es el rol: qué hace un Embajador, cómo nace una oportunidad a partir de un contacto y dónde termina tu parte. Las condiciones concretas de compensación no forman parte de lo que compras aquí y dependen del servicio y del territorio, así que prefiero explicártelas por teléfono, con tu caso delante y antes de que decidas. Llámame.",
-      en: "First things first, and I mean it: what you're buying here is training, not an income opportunity. You won't find a single earnings figure on this page, and that's deliberate — publishing income that can't be documented case by case is misleading, and in the United States it's also actionable. What the course does teach you is the role: what an Ambassador does, how an opportunity comes out of a contact, and where your part ends. The specific compensation terms aren't part of what you buy here and depend on the service and the territory, so I'd rather walk you through them on the phone, with your situation in front of us and before you decide. Call me.",
+      es: "No. Entras sin inversión inicial. Lo que pones es tiempo, dos horas al día durante noventa días, y la decisión de hacerlo con método. El plan, el CRM y el acompañamiento del equipo van con el programa.",
+      en: "No. There is no upfront investment. What you put in is time, two hours a day for ninety days, and the decision to do it with method. The plan, the CRM and the team's support come with the program.",
     },
   },
   {
     pregunta: {
-      es: "¿Desde dónde puedo trabajar como Embajador?",
-      en: "Where can I work as an Ambassador from?",
+      es: "¿Qué ocurre después del Día 90?",
+      en: "What happens after Day 90?",
     },
     respuesta: {
-      /**
-       * Separa las dos cosas que la pregunta mezcla: dónde puedes HACER el
-       * curso (en cualquier sitio, es online) y a dónde puedes REFERIR (tiene
-       * cobertura por zonas). Sin esa separación, cualquier respuesta corta es
-       * medio falsa.
-       *
-       * Y ofrece comprobarlo ANTES de pagar. Es la respuesta que menos vende de
-       * toda la página y la que más reembolsos evita: alguien que compra desde
-       * una zona sin cobertura no es una venta, es una devolución con un cliente
-       * enfadado con razón.
-       */
-      es: "El curso es online y lo haces desde donde estés: diez videos con su quiz, sin horarios y con acceso de por vida. A dónde puedes referir es otra cosa: los servicios de Accidentes de Auto y Vivienda tienen cobertura por zonas, y eso depende de dónde estés tú y dónde esté tu gente. Antes de pagar, llámame y lo comprobamos en dos minutos. Si tu zona todavía no está cubierta te lo digo y no compras: prefiero eso a devolverte el dinero dentro de un mes.",
-      en: "The course is online and you take it from wherever you are: ten videos with their quizzes, no schedule, lifetime access. Where you can refer is a different question: Auto and Home Accident services have coverage by area, and that depends on where you are and where your people are. Before you pay, call me and we'll check it in two minutes. If your area isn't covered yet I'll tell you and you don't buy: I'd rather do that than refund you a month from now.",
-    },
-  },
-  /* Añadida el 16-09-2026 con el resto de menciones a la comunidad. Solo
-     afirma lo confirmado por el cliente: el mismo método, la llamada de
-     equipo semanal y que alguien contesta. Sin cifras de miembros. */
-  {
-    pregunta: {
-      es: "¿Hay una comunidad detrás, o voy por mi cuenta?",
-      en: "Is there a community behind this, or am I on my own?",
-    },
-    respuesta: {
-      es: "Hay comunidad. Todos los Embajadores trabajan con el mismo método, hay una llamada de equipo cada semana y alguien contesta cuando escribes. Y si ya tienes tu propia comunidad o tu red, aquí aprendes a activarla: con método, sin forzarla y sin dejar de ser tú.",
-      en: "There is. Every Ambassador works with the same method, there is a team call every week, and someone answers when you write. And if you already have a community or a network of your own, this is where you learn to activate it: with method, without forcing it, and without stopping being yourself.",
-    },
-  },
-  {
-    pregunta: {
-      es: "¿El CRM va incluido?",
-      en: "Is the CRM included?",
-    },
-    respuesta: {
-      es: "Sí. El acceso al CRM entra con el programa, no se contrata aparte y no es una herramienta que tengas que poner tú. El video 7 te enseña a usarlo con lo mínimo para empezar: cada contacto y cada oportunidad en un sitio, con su estado al día.",
-      en: "Yes. CRM access comes with the program. It isn't contracted separately and it isn't a tool you have to bring yourself. Video 7 teaches you to use it with the bare minimum to get going: every contact and every opportunity in one place, with its status current.",
-    },
-  },
-  {
-    pregunta: {
-      es: "¿Cuánto tiempo necesito a la semana?",
-      en: "How much time do I need per week?",
-    },
-    respuesta: {
-      /**
-       * "Dos o tres horas" es una RECOMENDACIÓN, no una promesa de resultados,
-       * y está escrita como tal ("cuenta con", no "en X horas consigues Y").
-       * Esa diferencia es la que la mantiene fuera del terreno de las
-       * declaraciones de resultados.
-       *
-       * El reparto —una hora de curso, el resto de conversaciones— es el que
-       * sostiene el argumento de toda la página: lo que mueve la aguja son las
-       * conversaciones, no los videos. Si se cambia la cifra, no se toque el
-       * reparto.
-       */
-      es: "Cuenta con dos o tres horas a la semana: una para el curso y el resto —la parte que de verdad cuenta— para hablar con tus contactos. Si una semana no puedes, no pasa nada: el acceso no caduca y retomas donde lo dejaste. Pero avanzar en los videos sin tener las conversaciones no sirve de mucho.",
-      en: "Plan on two or three hours a week: one for the course and the rest — the part that actually counts — for talking to your contacts. If you miss a week, nothing breaks: access doesn't expire and you pick up where you left off. But moving through the videos without having the conversations doesn't get you far.",
-    },
-  },
-  {
-    pregunta: {
-      es: "¿Los videos son en vivo o grabados?",
-      en: "Are the videos live or recorded?",
-    },
-    respuesta: {
-      es: "Grabados. Los diez videos están disponibles desde el primer día, así que empiezas cuando quieras, avanzas a tu ritmo y repites el que necesites las veces que haga falta. No hay horarios que cuadrar ni clases a las que llegar tarde: lo único que marca el ritmo es el quiz de cada video, que hay que superar para pasar al siguiente.",
-      en: "Recorded. All ten videos are available from day one, so you start whenever you want, go at your own pace and rewatch any of them as often as you need. There are no schedules to juggle and no live classes to be late for: the only thing setting the pace is each video's quiz, which you need to pass to move on.",
-    },
-  },
-  {
-    pregunta: {
-      es: "¿Qué es exactamente la certificación que dan?",
-      en: "What exactly is the certification you give?",
-    },
-    respuesta: {
-      es: "Es la Certificación de Embajador Emprende180, y la emitimos nosotros. No se entrega por comprar el curso ni por darle a «siguiente» diez veces: se emite cuando superas los diez quizzes de validación, uno por cada video. En cuanto apruebas el último te llega por email en PDF, con tu nombre y la fecha de emisión, lista para descargar y compartir. No caduca. Acredita que hiciste el curso entero, incluido el video 9 de ética y cumplimiento, que es justo la parte que un Embajador tiene que poder demostrar.",
-      en: "It's the Entrepreneur180 Ambassador Certification, and we issue it ourselves. It isn't handed out for buying the course, or for clicking “next” ten times: it's issued when you pass all ten validation quizzes, one for each video. The moment you pass the last one it arrives by email as a PDF, with your name and the issue date, ready to download and share. It doesn't expire. It certifies you completed the whole course, video 9 on ethics and compliance included — precisely the part an Ambassador needs to be able to prove.",
-    },
-  },
-  {
-    pregunta: {
-      es: "¿Qué pasa si no paso un quiz?",
-      en: "What happens if I fail a quiz?",
-    },
-    respuesta: {
-      es: "Lo repites, y ya está. Los quizzes no están para filtrarte: están para que no sigas avanzando con un hueco detrás. Si fallas, ves qué parte no te quedó fija, vuelves a ese video y lo intentas otra vez. Puedes repetir cada quiz las veces que necesites, sin esperas entre intentos y sin coste. Para darlo por superado hace falta acertar el 80 % de las preguntas, y hay que superar el de un video para pasar al siguiente. Por eso el orden importa, y por eso la certificación significa algo cuando la tienes.",
-      en: "You retake it, that's all. The quizzes aren't there to screen you out: they're there so you don't move on with a gap behind you. If you get one wrong, you see which part didn't stick, go back to that video and try again. You can retake each quiz as many times as you need, with no waiting between attempts and no cost. Passing takes 80% of the questions right, and you have to pass one video's quiz to move to the next. That's why the order matters, and why the certification means something once you have it.",
-    },
-  },
-  {
-    pregunta: {
-      es: "¿Cuánto tiempo tengo acceso?",
-      en: "How long do I have access?",
-    },
-    respuesta: {
-      es: "Acceso de por vida, incluidas las actualizaciones que hagamos más adelante. Pagas una vez y el material es tuyo: puedes volver al video del CRM dentro de un año, cuando te haga falta. No hay suscripción ni cargos recurrentes.",
-      en: "Lifetime access, including any updates we make later. You pay once and the material is yours: you can come back to the CRM video a year from now, when you need it. No subscription, no recurring charges.",
-    },
-  },
-  {
-    pregunta: {
-      es: "¿Tengo que perseguir a mis amigos y familiares?",
-      en: "Do I have to chase my friends and family?",
-    },
-    respuesta: {
-      es: "No, y el video 6 va precisamente de lo contrario. La diferencia entre incomodar a alguien y ayudarle está en cuándo hablas y qué dices, y eso se entrena. El video 8 además trabaja el otro lado: publicar de forma que te escriban a ti, en vez de tener que escribir tú a todo el mundo.",
-      en: "No, and video 6 is about the opposite. The difference between bothering someone and helping them is when you speak and what you say, and that's trainable. Video 8 works the other side too: posting in a way that gets people to message you, instead of you messaging everyone.",
-    },
-  },
-  {
-    soloCurso: true,
-    pregunta: {
-      es: "¿Puedo pagar en partes?",
-      /* Ver `soloCurso` en la interfaz: no sale en la portada. */
-      en: "Can I pay in installments?",
-    },
-    respuesta: {
-      es: "Sí. Puedes pagar de una vez o repartirlo en 3 mensualidades. Con el pago fraccionado obtienes el acceso completo desde el primer día, no por partes. Los impuestos dependen de tu país y se calculan al pagar, así que ves el importe final antes de confirmar.",
-      en: "Yes. You can pay in one go or split it into 3 monthly payments. With installments you get full access from day one, not in pieces. Taxes depend on your country and are calculated at checkout, so you see the final amount before confirming.",
-    },
-  },
-  {
-    soloCurso: true,
-    pregunta: {
-      es: "¿Cómo funciona la garantía exactamente?",
-      /* Ver `soloCurso` en la interfaz: no sale en la portada. */
-      en: "How exactly does the guarantee work?",
-    },
-    respuesta: {
-      es: "Tienes 30 días desde la compra. Si en ese plazo decides que no es para ti, escribes a nuestro correo de soporte y te devolvemos el 100 %. No hay formulario que rellenar, ni llamada para convencerte de que te quedes, ni preguntas incómodas. Lo único que pedimos es que lo hayas intentado: que hayas visto los primeros videos.",
-      en: "You have 30 days from purchase. If within that window you decide it isn't for you, email our support address and we refund 100%. No form to fill in, no retention call, no awkward questions. The only thing we ask is that you actually tried it: that you watched the first few videos.",
+      es: "El Día 90 no es un final. Desde el Día 78 ya escribes tus propias tareas, y el Día 90 miras tus números y decides qué sigue. Lo que construiste se queda contigo: tu base de contactos organizada, tu sistema de seguimiento y tus fuentes de referidos. Y la comunidad sigue ahí, con la llamada de equipo cada semana.",
+      en: "Day 90 is not an ending. From Day 78 you are already writing your own tasks, and on Day 90 you look at your numbers and decide what comes next. What you built stays with you: your organized contact base, your follow-up system and your referral sources. And the community is still there, with the team call every week.",
     },
   },
 ];
