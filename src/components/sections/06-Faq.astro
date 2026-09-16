@@ -104,17 +104,33 @@ const schemaFaq =
     rompe. El "+" gira 45° y se convierte en "×", y la pregunta abierta se
     pinta en teal. Todo respeta `prefers-reduced-motion`. */}
 <Section id="faq" tono="surface" ariaLabel={copy.faq.aria}>
-  <div class="mx-auto max-w-[56rem]">
-    <Reveal>
-      <h2 class="text-center text-3xl font-extrabold text-balance text-ink sm:text-4xl lg:text-5xl">
-        <T v={copy.faq.titulo} />
-      </h2>
-    </Reveal>
+  {/* ⚠️ DOS COLUMNAS OTRA VEZ, Y ESTA VEZ SIN LA COLUMNA VACÍA. El cliente lo
+      pidió el 16-09-2026 sobre el rediseño de una columna: "manda el título a
+      la derecha y a la izquierda preguntas, y el otro elemento centrado entre
+      los dos". Título pegajoso a la derecha (22rem), la lista a la izquierda,
+      y la tarjeta de Pedro DEBAJO de las dos columnas, centrada en el ancho
+      entero. Lo que antes dejaba media pantalla blanca era la franja de Pedro
+      pegada bajo la lista mientras el título flotaba solo; ahora el título
+      acompaña a la lista y la tarjeta cierra la sección en el centro.
+
+      ORDEN DEL DOM ≠ ORDEN VISUAL. El título va PRIMERO en el marcado y se
+      manda a la derecha con `order`: al revés, un lector de pantalla
+      recorrería la lista entera sin saber de qué sección le hablan. */}
+  <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-x-16 xl:gap-x-24">
+    <aside class="lg:order-2">
+      <div class="lg:sticky lg:top-28">
+        <Reveal>
+          <h2 class="text-3xl font-extrabold text-balance text-ink sm:text-4xl lg:text-5xl">
+            <T v={copy.faq.titulo} />
+          </h2>
+        </Reveal>
+      </div>
+    </aside>
 
     {/* La lista. Filete arriba y uno por pregunta; `name="faq"` hace que abrir
         una cierre la anterior, y el guion de abajo impide que se cierre la que
         está abierta: siempre hay una respuesta a la vista. */}
-    <div class="mt-10 border-t border-line lg:mt-14">
+    <div class="border-t border-line lg:order-1">
       {
         faqsVisibles.map((f, i) => (
           <Reveal delay={Math.min(i, 4) * 0.05}>
@@ -157,13 +173,14 @@ const schemaFaq =
         ))
       }
     </div>
+  </div>
 
     {/* ─── LA DUDA QUE NO ESTÁ EN LA LISTA ─────────────────────────────────
         Tarjeta pequeña y centrada: el avatar redondo de Pedro (es quien
         contesta), la frase, los dos botones en fila y el correo. Llamar, si
         hay número, y dejar los datos en el formulario de Empezar. Con borde y
         sin fondo: sobre blanco, un bloque gris se leía como una franja. */}
-    <Reveal delay={0.1}>
+  <Reveal delay={0.1}>
       <div class="mx-auto mt-12 flex max-w-3xl flex-col items-center gap-6 rounded-3xl border border-line p-6 text-center sm:flex-row sm:items-center sm:gap-8 sm:p-8 sm:text-left lg:mt-16">
         {/* El recorte cuadrado, que existe para los avatares: en un círculo
             de 96 px la foto apaisada del despacho dejaba la cara diminuta. */}
@@ -204,8 +221,7 @@ const schemaFaq =
           <p class="mt-3 text-sm font-medium text-ink-subtle">{contacto.email}</p>
         </div>
       </div>
-    </Reveal>
-  </div>
+  </Reveal>
 </Section>
 
 <style>
