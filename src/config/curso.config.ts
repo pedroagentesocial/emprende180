@@ -3050,31 +3050,27 @@ export const copy = {
         bloque: "derecha",
 
         /**
-         * ⚠️ DESDE EL 16-09-2026 ESTA PANTALLA REPITE EL TEXTO DE LA PRIMERA,
-         * arriba a la derecha y SIN BOTÓN. Lo pidió el cliente tal cual:
-         * "este título para la segunda slide sin botón, posición superior
-         * derecha, solo dos renglones el título, el mismo tamaño que el del
-         * primero". Los dos ganchos de los paneles ("Tienes tiempo, contactos
-         * y aspiración" / "Conoces a media ciudad") se quedan escritos arriba
-         * como red del vídeo, pero con `titular` puesto no se pintan.
+         * ⚠️ EL TEXTO DE ESTA PANTALLA LO DICTÓ EL CLIENTE EL 16-09-2026, en la
+         * misma anatomía que la primera (titular en dos renglones, párrafo) y
+         * SIN BOTÓN ni nota: arriba a la derecha, al mismo tamaño que la
+         * primera. Le habla a quien lleva una casa: el negocio entra "al ritmo
+         * de tu casa", no al revés. Los dos ganchos de los paneles ("Tienes
+         * tiempo, contactos y aspiración" / "Conoces a media ciudad") se
+         * quedan escritos arriba como red del vídeo, pero con `titular` puesto
+         * no se pintan.
          *
-         * Mismo titular, mismo párrafo y la misma nota que la primera; la
-         * nota se pinta aunque no haya botón. Si algún día se quiere volver a
-         * los dos ganchos, basta quitar `titular` y `nota` y devolver el
-         * apoyo de antes: "Una o dos horas al día, sin dejar lo que ya haces.
-         * Sin jefe, sin horario fijo y sin pedir permiso."
+         * "Fuente de ingresos propia" describe la oportunidad, sin cifra ni
+         * plazo: sigue del lado seguro de la regla 3. El inglés no es calco:
+         * "chores" es lo que se dice para "tareas" de la casa, y "the pace of
+         * your home" conserva la idea de que el ritmo lo pone la casa.
          */
         titular: [
-          [{ es: "Tu Giro de 180°", en: "Your 180° Turn" }],
-          [{ es: "Empieza Aquí", en: "Starts Here", acento: true }],
+          [{ es: "Tu Familia Primero", en: "Your Family First" }],
+          [{ es: "Tu Negocio También", en: "Your Business Too", acento: true }],
         ],
         subtitulo: {
-          es: "Un programa de 90 días para construir un negocio propio con método, constancia y acompañamiento real.",
-          en: "A 90-day program to build a business of your own, with method, consistency and real support.",
-        },
-        nota: {
-          es: "Solo 2 horas al día. Sin inversión inicial.",
-          en: "Just 2 hours a day. No upfront investment.",
+          es: "Construye tu fuente de ingresos propia al ritmo de tu casa: entre desayunos, tareas y todo lo que haces todos los días.",
+          en: "Build your own source of income at the pace of your home: between breakfasts, chores and everything you already do every day.",
         },
 
         /* ⚠️ SIN `cta`, Y QUE FALTE NO ES UN DESCUIDO. Solo la primera imagen
