@@ -396,32 +396,55 @@ const CAJA_ICONO =
         barra de cifras en una empresa de meses solo se sostiene si no
         pretende ser otra cosa. Ver la nota de `copy.about`. */}
     <Section id="about-barra" tono="inverse" ritmo="compacto" ariaLabel={about.barra.kicker}>
-      <Reveal>
-        <p class="text-center text-sm font-semibold text-ink-on-inverse-brand sm:text-base">
-          <T v={about.barra.kicker} />
-        </p>
+      {/* ⚠️ EL RETRATO DE ESTUDIO VA AL LADO DE LOS CUATRO HECHOS desde el
+          16-09-2026: los hechos son de Pedro y de su negocio (los años, las
+          empresas, el estado), y una cara al lado de una cifra es lo que hace
+          que la cifra sea de alguien. Era el único de los retratos que no
+          tenía sitio, y este es el suyo: 13rem, 4:5, a la izquierda, y los
+          cuatro hechos a la derecha en fila. En el teléfono la foto va
+          encima, centrada, y los hechos debajo en dos por dos. */}
+      <div class="grid items-center gap-10 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-16">
+        <Reveal>
+          <img
+            src={instructor.retratos.estudio.src}
+            alt={instructor.retratos.estudio.alt[lang]}
+            data-alt-es={instructor.retratos.estudio.alt.es}
+            data-alt-en={instructor.retratos.estudio.alt.en}
+            width={instructor.retratos.estudio.ancho}
+            height={instructor.retratos.estudio.alto}
+            loading="lazy"
+            decoding="async"
+            class="mx-auto aspect-[4/5] w-full max-w-[13rem] rounded-lg border border-primary-800 object-cover object-top"
+          />
+        </Reveal>
 
-        {/* Dos por fila en el teléfono, cuatro desde `lg`. El filete entre
-            celdas solo aparece cuando están en fila: apiladas, sería una
-            raya vertical entre cosas que ya están separadas por el aire. */}
-        <dl class="mt-8 grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-4 lg:gap-x-0">
-          {about.barra.datos.map((dato, i) => (
-            <div
-              class:list={[
-                "text-center lg:px-6",
-                i > 0 && "lg:border-l lg:border-white/15",
-              ]}
-            >
-              <dd class="text-5xl font-extrabold leading-none tracking-[-0.03em] text-ink-inverse lg:text-6xl">
-                {dato.valor}
-              </dd>
-              <dt class="mx-auto mt-3 max-w-[14ch] text-base font-medium text-balance text-secondary-100 sm:text-lg">
-                <T v={dato.etiqueta} />
-              </dt>
-            </div>
-          ))}
-        </dl>
-      </Reveal>
+        <Reveal delay={0.08}>
+          <p class="text-center text-sm font-semibold text-ink-on-inverse-brand sm:text-base lg:text-left">
+            <T v={about.barra.kicker} />
+          </p>
+
+          {/* Dos por fila en el teléfono, cuatro desde `lg`. El filete entre
+              celdas solo aparece cuando están en fila: apiladas, sería una
+              raya vertical entre cosas que ya están separadas por el aire. */}
+          <dl class="mt-8 grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-4 lg:gap-x-0">
+            {about.barra.datos.map((dato, i) => (
+              <div
+                class:list={[
+                  "text-center lg:px-6",
+                  i > 0 && "lg:border-l lg:border-white/15",
+                ]}
+              >
+                <dd class="text-5xl font-extrabold leading-none tracking-[-0.03em] text-ink-inverse lg:text-6xl">
+                  {dato.valor}
+                </dd>
+                <dt class="mx-auto mt-3 max-w-[14ch] text-base font-medium text-balance text-secondary-100 sm:text-lg">
+                  <T v={dato.etiqueta} />
+                </dt>
+              </div>
+            ))}
+          </dl>
+        </Reveal>
+      </div>
     </Section>
 
     {/* ─── 5 · LAS MARCAS ────────────────────────────────────────────────
@@ -685,11 +708,14 @@ const CAJA_ICONO =
 
             <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
               <div class="flex items-center gap-3">
+                {/* El recorte cuadrado, que existe para los avatares; el
+                    retrato con la planta ya está tres pantallas más arriba,
+                    en la carta, y repetirlo aquí en pequeño no sumaba. */}
                 <img
-                  src={instructor.foto}
+                  src={instructor.fotoCuadrada}
                   alt=""
-                  width={800}
-                  height={1000}
+                  width={600}
+                  height={600}
                   loading="lazy"
                   decoding="async"
                   class="size-12 shrink-0 rounded-full object-cover object-top"

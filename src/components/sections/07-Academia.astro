@@ -4,7 +4,7 @@ import Section from "@components/ui/Section.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Enfasis from "@components/ui/Enfasis.astro";
 import BotonRelieve from "@components/ui/BotonRelieve.astro";
-import { copy } from "@config/curso.config";
+import { copy, instructor } from "@config/curso.config";
 import { resolverIdiomaServidor } from "@i18n/idioma";
 
 /**
@@ -44,10 +44,12 @@ const lang = resolverIdiomaServidor(
   Astro.request.headers.get("accept-language"),
 );
 
-/* ⚠️ Foto de banco, como el resto de la página. Esta es de las pocas que no
-   desentona con lo que dice el texto —alguien trabajando de noche en su
-   cocina—, pero sigue sin ser una alumna. Ver el README de /public/imagenes. */
-const FOTO = "/imagenes/secciones/temario.webp";
+/* ⚠️ LA FOTO ES PEDRO, no una de banco, desde el 16-09-2026. La Academia la
+   escribió y la da él, y esta era la única sección de la portada que hablaba
+   de la formación sin enseñar a quien la firma. Es la de pie en su oficina:
+   él en el centro del fotograma, que con el escenario al 135 % cae sobre el
+   70 % de la sección, a la derecha del texto. */
+const FOTO = instructor.retratos.dePie;
 ---
 
 {/* ─── LA FOTO ES EL FONDO, NO UNA COLUMNA ────────────────────────────────
@@ -91,12 +93,12 @@ const FOTO = "/imagenes/secciones/temario.webp";
       se la quiere, y lo que sobra lo recorta el `overflow-hidden` del padre.
       En móvil no se aplica: ahí no hay columna de texto al lado. */}
   <img
-    src={FOTO}
-    alt={academia.foto[lang]}
-    data-alt-es={academia.foto.es}
-    data-alt-en={academia.foto.en}
-    width={1000}
-    height={800}
+    src={FOTO.src}
+    alt={FOTO.alt[lang]}
+    data-alt-es={FOTO.alt.es}
+    data-alt-en={FOTO.alt.en}
+    width={FOTO.ancho}
+    height={FOTO.alto}
     loading="lazy"
     decoding="async"
     class="absolute inset-y-0 left-0 -z-10 h-full w-full max-w-none object-cover object-[center_40%] lg:w-[135%]"

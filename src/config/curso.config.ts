@@ -1110,19 +1110,67 @@ export const instructor = {
   ] satisfies Txt[],
 
   /**
-   * ⚠️ LLEGARON CINCO FOTOS Y SOLO SE USAN DOS. En las otras tres sale una
-   * persona distinta —más joven, otra cara— y sus nombres de archivo decían
-   * "para diseño", así que pueden ser de banco o de otro miembro del equipo.
-   * Publicar cualquiera de ellas con "Retrato de Pedro Lira" en el `alt` sería
-   * afirmar quién es alguien sin saberlo. Están guardadas en /originales.
+   * ⚠️ LAS CINCO FOTOS SON DE PEDRO, Y SE USAN LAS CINCO. Aquí decía que en
+   * tres de ellas salía "una persona distinta" y por eso solo se publicaban
+   * dos; el cliente lo desmintió el 16-09-2026 ("no has usado todas las
+   * imágenes de Pedro") y pidió que se usaran. Los originales siguen en
+   * /originales/instructor (113 MB en bruto); aquí viven las versiones de
+   * 45-115 KB.
    *
-   * Los archivos en bruto pesaban 113 MB y estaban dentro de /public, o sea que
-   * se habrían servido tal cual. Aquí viven las versiones de 90-110 KB.
+   * Dónde va cada una, para no repetir la misma cara dos veces en una
+   * pantalla:
+   *
+   *   pedro-retrato       la carta del about (retrato con la planta)
+   *   instructor          la barra de hechos del about (estudio, gafas)
+   *   instructor-cuadrado el avatar de autor del blog (about y recursos)
+   *   pedro-oficina       la foto del blog en recursos (escritorio, ciudad)
+   *   pedro-de-pie        el fondo de la Academia en la portada
+   *   pedro-sentado       la duda que no está, en las preguntas frecuentes
+   *   pedro-escritorio    la fila de la Academia en /programs
    */
   foto: "/imagenes/instructor/pedro-retrato.webp",
   fotoCuadrada: "/imagenes/instructor/instructor-cuadrado.webp",
   /** Horizontal, con su oficina detrás. Para los huecos anchos. */
   fotoOficina: "/imagenes/instructor/pedro-oficina.webp",
+  /** Los demás retratos, cada uno con su `alt`: describen la escena, no solo el nombre. */
+  retratos: {
+    estudio: {
+      src: "/imagenes/instructor/instructor.webp",
+      ancho: 800,
+      alto: 1000,
+      alt: {
+        es: "Pedro Lira, de traje y con gafas, en un retrato de estudio",
+        en: "Pedro Lira in a suit and glasses, studio portrait",
+      },
+    },
+    dePie: {
+      src: "/imagenes/instructor/pedro-de-pie.webp",
+      ancho: 1800,
+      alto: 1200,
+      alt: {
+        es: "Pedro Lira de pie en su oficina, sonriendo con las manos juntas",
+        en: "Pedro Lira standing in his office, smiling with his hands together",
+      },
+    },
+    sentado: {
+      src: "/imagenes/instructor/pedro-sentado.webp",
+      ancho: 1800,
+      alto: 1200,
+      alt: {
+        es: "Pedro Lira sentado en su oficina, escuchando con la mano en la barbilla",
+        en: "Pedro Lira sitting in his office, listening with his hand on his chin",
+      },
+    },
+    escritorio: {
+      src: "/imagenes/instructor/pedro-escritorio.webp",
+      ancho: 1500,
+      alto: 1000,
+      alt: {
+        es: "Pedro Lira trabajando en su escritorio, frente al monitor",
+        en: "Pedro Lira working at his desk, in front of the monitor",
+      },
+    },
+  },
   fotoAlt: {
     es: "Retrato de Pedro Lira, fundador de Emprende180",
     en: "Portrait of Pedro Lira, founder of Entrepreneur180",
@@ -4151,10 +4199,10 @@ export const copy = {
      */
     cta: { es: "Ver los programas", en: "See the programs" },
     ctaHref: "#como-trabajar",
-    foto: {
-      es: "Una persona sentada a la mesa de su cocina, de noche, trabajando con su portátil",
-      en: "Somebody at their kitchen table at night, working on their laptop",
-    },
+    /* ⚠️ Desde el 16-09-2026 la foto de fondo es Pedro de pie en su oficina
+       (`instructor.retratos.dePie`), no la de banco del hombre en la cocina: la
+       Academia la da él, y esta era la única sección que hablaba de la
+       formación sin enseñar a quien la escribió. El `alt` vive con la foto. */
   },
 
   /**
@@ -4381,8 +4429,10 @@ export const copy = {
 
        ⚠️ LAS IMÁGENES SON LAS QUE HAY EN EL PROYECTO, y dos de las tres son
        un apaño honesto:
-         · Academia: `secciones/temario.webp`, la misma que usa la Academia
-           de la portada. Un hombre estudiando en casa con el portátil.
+         · Academia: Pedro en su escritorio (`instructor/pedro-escritorio`),
+           desde el 16-09-2026. Antes iba `secciones/temario.webp`, un hombre
+           de banco estudiando; quien escribió la Academia es mejor foto que
+           quien la estudia, y además es real.
          · CRM: NO HAY captura ni foto del CRM en el repositorio. Va una
            agenda con la semana escrita a mano (`resultados/04`), que dice
            "contactos al día" sin enseñar una pantalla que no existe. El día
@@ -4426,10 +4476,10 @@ export const copy = {
         ctaHref: "#empezar",
         imagenLado: "derecha",
         imagen: {
-          src: "/imagenes/secciones/temario.webp",
-          ancho: 880,
-          alto: 620,
-          encuadre: "center 40%",
+          src: "/imagenes/instructor/pedro-escritorio.webp",
+          ancho: 1500,
+          alto: 1000,
+          encuadre: "center 50%",
           alt: {
             es: "Un hombre estudiando con el portátil en la mesa de su casa",
             en: "A man studying on his laptop at his kitchen table",

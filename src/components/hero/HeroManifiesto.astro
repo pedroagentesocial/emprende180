@@ -107,11 +107,14 @@ const {
     </Fragment>
   )}
 
-  {/* El apagado de abajo VA SIEMPRE, haya foto o vídeo: es el que sostiene el
-      texto, y aquí hay un párrafo y tres columnas encima. */}
+  {/* El apagado VA SIEMPRE, haya foto o vídeo: es el que sostiene el texto,
+      y aquí hay un párrafo y tres columnas encima. Por debajo de `lg` va
+      abajo, que es donde cae el texto bajo la banda de vídeo; de `lg` para
+      arriba el texto está ARRIBA (ver la nota del bloque) y el apagado sube
+      con él: pegado al borde superior y degradando hacia abajo. */}
   <div
     aria-hidden="true"
-    class="absolute inset-x-0 bottom-0 -z-10 h-3/5 bg-gradient-to-t from-primary-950 via-primary-950/80 to-transparent"
+    class="absolute inset-x-0 bottom-0 -z-10 h-3/5 bg-gradient-to-t from-primary-950 via-primary-950/80 to-transparent lg:bottom-auto lg:top-0 lg:h-4/5 lg:bg-gradient-to-b"
   />
 
   {/* ⚠️ `pb-24`/`lg:pb-32` NO ES AIRE: ES EL HUECO DE LOS MANDOS DEL SLIDER,
@@ -121,10 +124,17 @@ const {
       ⚠️ Y EL `pt` DEL MÓVIL ES LA ALTURA DE LA BANDA DE VÍDEO, no el hueco de
       la barra. Por debajo de `lg` el vídeo ocupa una franja 16:9 arriba
       —56,25vw— y este bloque empieza después; la barra flota sobre la banda,
-      que es lo mismo que hace en un escritorio. De `lg` para arriba vuelve el
-      `pt-24` de siempre, que ahí sí es el hueco de la barra. */}
+      que es lo mismo que hace en un escritorio.
+
+      ⚠️ DE `lg` PARA ARRIBA EL BLOQUE VA PEGADO ARRIBA, NO ABAJO. Nació con
+      `justify-end`, apoyado en el borde de abajo sobre los mandos, y el cliente
+      lo subió el 16-09-2026: "siento muy abajo los textos, que estén en la
+      parte superior". `lg:justify-start` y `lg:pt-36`: los 144 px son la barra
+      grande (128) y un dedo de aire, la misma cuenta que llevan las otras dos
+      pantallas del hero. El `pb` se queda: sigue siendo el hueco de los
+      mandos, aunque el texto ya no se apoye en él. */}
   <div
-    class="flex size-full flex-col items-center justify-end px-[var(--gutter-page)] pb-24 pt-[calc(56.25vw+1rem)] text-center sm:pb-28 lg:pb-32 lg:pt-24"
+    class="flex size-full flex-col items-center justify-end px-[var(--gutter-page)] pb-24 pt-[calc(56.25vw+1rem)] text-center sm:pb-28 lg:justify-start lg:pb-32 lg:pt-36"
   >
     {/* El manifiesto. `h2` porque el `h1` de la página lo pone el hero en sus
         otras imágenes; aquí no hay ninguna frase que conteste "de qué va la

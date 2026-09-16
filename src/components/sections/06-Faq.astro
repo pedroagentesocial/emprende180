@@ -4,7 +4,7 @@ import Section from "@components/ui/Section.astro";
 import Reveal from "@components/motion/Reveal.astro";
 import Button from "@components/ui/Button.astro";
 import Icono from "@components/ui/Icono.astro";
-import { faqs, contacto, copy } from "@config/curso.config";
+import { faqs, contacto, copy, instructor } from "@config/curso.config";
 import { resolverIdiomaServidor, LOCALES } from "@i18n/idioma";
 import { faltaPorRellenar, resaltarPendientes } from "@lib/pendientes";
 
@@ -103,7 +103,23 @@ const schemaFaq =
               surge la que no está. Llamar, si hay número, y dejar los datos en
               el formulario de Empezar. El correo escrito debajo, para quien
               prefiera copiarlo. */}
-          <p class="mt-8 text-lg font-bold text-balance text-ink sm:text-xl">
+          {/* Pedro, escuchando. Va justo encima de "¿te queda una duda?"
+              porque es quien la contesta: la foto pone cara al "escríbeme".
+              Es la de la mano en la barbilla, que es el gesto de escuchar; se
+              añadió el 16-09-2026 con el resto de retratos que faltaban. */}
+          <img
+            src={instructor.retratos.sentado.src}
+            alt={instructor.retratos.sentado.alt[lang]}
+            data-alt-es={instructor.retratos.sentado.alt.es}
+            data-alt-en={instructor.retratos.sentado.alt.en}
+            width={instructor.retratos.sentado.ancho}
+            height={instructor.retratos.sentado.alto}
+            loading="lazy"
+            decoding="async"
+            class="mt-8 aspect-[3/2] w-full max-w-sm rounded-lg border border-line object-cover"
+          />
+
+          <p class="mt-6 text-lg font-bold text-balance text-ink sm:text-xl">
             <T v={copy.faq.quedaDuda} />
           </p>
           <p class="mt-2 text-base font-medium text-pretty text-ink-muted sm:text-lg">
