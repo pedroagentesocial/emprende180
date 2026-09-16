@@ -158,8 +158,12 @@ export const privacidad: DocumentoLegal = {
           en: "Resend (USA): delivery of the mini-course emails.",
         },
         {
-          es: "Google Ireland Ltd. / Google LLC: analítica, solo si la aceptaste.",
-          en: "Google Ireland Ltd. / Google LLC: analytics, only if you accepted it.",
+          es: "Google Ireland Ltd. / Google LLC: analítica, solo si la aceptaste; y el mapa de Google Maps de la página \"Quiénes somos\", que carga desde sus servidores al abrirla.",
+          en: "Google Ireland Ltd. / Google LLC: analytics, only if you accepted it; and the Google Maps map on the \"About us\" page, which loads from their servers when you open it.",
+        },
+        {
+          es: "HighLevel Inc. (EE. UU.), la plataforma LeadConnector: el chat en vivo del sitio, solo si aceptaste las cookies, y la gestión de los datos que nos dejas en los formularios.",
+          en: "HighLevel Inc. (USA), the LeadConnector platform: the site's live chat, only if you accepted cookies, and the handling of the details you leave in our forms.",
         },
         {
           es: "[COMPLETAR: la pasarela de pago, cuando esté conectada.]",

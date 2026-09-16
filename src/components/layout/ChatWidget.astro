@@ -10,37 +10,31 @@ import { resolverIdiomaServidor } from "@i18n/idioma";
  * EL CHAT — el botón flotante de abajo a la derecha y su panel
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * ⚠️ ESTO ES LA MAQUETA, NO EL CHAT. El cliente pidió el 16-09-2026 "un chat
- * widget, será de GHL; por el momento solo pon el botón y todo, después te
- * paso el embebido, solo para que se vea como ejemplo". Así que hoy esto es:
+ * DOS CHATS, Y CUÁL SE VE LO DECIDE EL CONSENTIMIENTO DE COOKIES:
  *
- *   · el botón redondo teal, fijo abajo a la derecha, con el icono de
- *     conversación (se convierte en una cruz al abrir);
- *   · un panel con un texto HONESTO —no finge que haya alguien escribiendo al
- *     otro lado— y las dos salidas que sí funcionan: el formulario de la
- *     portada y el correo de contacto.
+ *   · Si el visitante ACEPTA las cookies, se carga el widget de GoHighLevel
+ *     (LeadConnector; el `<script>` lo pasó el cliente el 16-09-2026 y sus datos
+ *     viven en `copy.ui.chat.ghl`). Es un chat de verdad, con su propia burbuja
+ *     abajo a la derecha, y esta maqueta se esconde para no tener dos.
+ *   · Si NO ha contestado o RECHAZA, se enseña esta maqueta: el botón redondo
+ *     teal y un panel HONESTO —no finge que haya nadie al otro lado— con las
+ *     dos salidas que funcionan sin terceros: el formulario y el correo.
  *
- * ─── DÓNDE VA EL EMBEBIDO DE GOHIGHLEVEL CUANDO LLEGUE ─────────────────────
+ * ⚠️ EL WIDGET DE GHL NO SE CARGA SIN CONSENTIMIENTO, Y NO ES OPCIONAL. Pone
+ * cookies y carga de un dominio ajeno, igual que la analítica: es
+ * exactamente lo que el aviso de cookies pregunta antes de hacer. Cargarlo
+ * antes dejaría el aviso en papel mojado (ver `lib/consent.ts`). Quien rechaza
+ * no se queda sin hablar con nosotros: se queda con la maqueta.
  *
- * GHL da un `<script>` con `data-widget-id`. El día que llegue:
+ * El `<script>` se crea aquí con `document.createElement` y no está en el HTML:
+ * así el navegador no puede descargarlo por su cuenta antes de tiempo. Se
+ * carga una sola vez por página.
  *
- *   1. Se pega el `<script>` en `BaseLayout.astro`, al final del `<body>`,
- *      con `is:inline` y DETRÁS de la comprobación de consentimiento (el
- *      widget de GHL pone cookies y carga de un dominio ajeno: no puede
- *      arrancar hasta que el visitante acepte, igual que la analítica; ver
- *      `lib/consent.ts`).
- *   2. Se quita este componente de `BaseLayout`, o se deja solo el botón y
- *      se le hace abrir el widget de GHL con su API (`window.leadConnector`).
- *   3. Google Maps y GHL entran en la lista de proveedores de la política de
- *      privacidad (`legal.config.ts`).
+ * ─── POR QUÉ LA MAQUETA NO SE VE MIENTRAS ESTÁ EL AVISO DE COOKIES ─────────
  *
- * ─── POR QUÉ NO SE VE MIENTRAS ESTÁ EL AVISO DE COOKIES ────────────────────
- *
- * El aviso de cookies ocupa el borde de abajo entero y sus botones caen a la
- * derecha: el chat encima taparía "Aceptar todas". El guion espera a que el
- * visitante conteste (o a que ya hubiera contestado) para enseñar el botón.
- * Usa la misma clave y el mismo evento que el aviso, así que no hay dos
- * verdades.
+ * El aviso ocupa el borde de abajo entero y sus botones caen a la derecha: el
+ * chat encima taparía "Aceptar todas". El guion espera a que el visitante
+ * conteste (o a que ya hubiera contestado) para enseñar lo que toque.
  *
  * ⚠️ ES UN `<dialog>` NO MODAL (`show()`, no `showModal()`): el chat no puede
  * secuestrar la página. Escape lo cierra, el foco vuelve al botón.
@@ -54,7 +48,14 @@ const lang = resolverIdiomaServidor(
 );
 ---
 
-<div data-chat class="fixed bottom-5 right-5 z-[54] hidden sm:bottom-6 sm:right-6" data-chat-visible="false">
+<div
+  data-chat
+  data-ghl-loader={chat.ghl.loader}
+  data-ghl-recursos={chat.ghl.recursos}
+  data-ghl-widget={chat.ghl.widgetId}
+  class="fixed bottom-5 right-5 z-[54] hidden sm:bottom-6 sm:right-6"
+  data-chat-visible="false"
+>
   <dialog
     data-chat-panel
     aria-label={chat.titulo[lang]}
@@ -85,6 +86,8 @@ const lang = resolverIdiomaServidor(
       >
         {contacto.email}
       </a>
+      {/* La letra pequeña dice por qué este chat es el que es: el de verdad
+          solo se carga si se aceptan las cookies. */}
       <p class="mt-4 border-t border-line pt-3 text-xs font-medium text-ink-subtle">
         <T v={chat.aviso} />
       </p>
@@ -146,15 +149,40 @@ const lang = resolverIdiomaServidor(
 
     window.addEventListener("e180:idioma", pintar);
 
-    /* Solo cuando el aviso de cookies ya no está en medio. */
-    const mostrar = () => {
+    /* Lo que se enseña, según el consentimiento. Ver la cabecera. */
+    const ghl = raiz.dataset;
+    let ghlCargado = false;
+
+    const mostrarMaqueta = () => {
       raiz.classList.remove("hidden");
       raiz.dataset.chatVisible = "true";
     };
-    if (leerConsentimiento() !== "sin-respuesta") mostrar();
-    else
-      window.addEventListener(EVENTO_CONSENTIMIENTO, (e) => {
-        if ((e as CustomEvent).detail !== "sin-respuesta") mostrar();
-      });
+    const esconderMaqueta = () => {
+      if (panel.open) panel.close();
+      raiz.classList.add("hidden");
+      raiz.dataset.chatVisible = "false";
+    };
+    const cargarGhl = () => {
+      if (ghlCargado || !ghl.ghlLoader || !ghl.ghlWidget) return;
+      ghlCargado = true;
+      const script = document.createElement("script");
+      script.src = ghl.ghlLoader;
+      script.dataset.resourcesUrl = ghl.ghlRecursos ?? "";
+      script.dataset.widgetId = ghl.ghlWidget;
+      script.async = true;
+      document.body.append(script);
+      esconderMaqueta();
+    };
+
+    const decidir = (estado: string) => {
+      if (estado === "aceptado") cargarGhl();
+      else if (estado === "rechazado") mostrarMaqueta();
+      /* "sin-respuesta": nada a la vista hasta que conteste. */
+    };
+
+    decidir(leerConsentimiento());
+    window.addEventListener(EVENTO_CONSENTIMIENTO, (e) => {
+      decidir((e as CustomEvent).detail);
+    });
   }
 </script>

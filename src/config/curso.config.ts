@@ -5435,6 +5435,18 @@ export const copy = {
        funcionan hoy: el formulario y el correo. Ver `ChatWidget.astro` para
        dónde va el embebido de GoHighLevel cuando llegue. */
     chat: {
+      /**
+       * El widget de GoHighLevel (LeadConnector). Lo pasó el cliente el
+       * 16-09-2026. Se carga SOLO cuando el visitante acepta las cookies (pone
+       * cookies y carga de un dominio ajeno); mientras no las acepte, o si las
+       * rechaza, se enseña la maqueta propia: el botón con el panel que lleva
+       * al formulario y al correo. Vacío → nunca se carga y la maqueta manda.
+       */
+      ghl: {
+        loader: "https://widgets.leadconnectorhq.com/loader.js",
+        recursos: "https://widgets.leadconnectorhq.com/chat-widget/loader.js",
+        widgetId: "6aaad7154f83a252fd321ddb",
+      },
       abrir: { es: "Abrir el chat", en: "Open chat" },
       cerrar: { es: "Cerrar el chat", en: "Close chat" },
       titulo: { es: "¿Hablamos?", en: "Shall we talk?" },
@@ -5444,8 +5456,8 @@ export const copy = {
       },
       cta: { es: "Dejar mis datos", en: "Leave my details" },
       aviso: {
-        es: "Aquí irá el chat de GoHighLevel. Mientras, este es el camino.",
-        en: "The GoHighLevel chat will live here. In the meantime, this is the way.",
+        es: "El chat en vivo se activa al aceptar las cookies. Mientras, este es el camino.",
+        en: "Live chat turns on once you accept cookies. In the meantime, this is the way.",
       },
     },
     /* La página de "no encontrado". Antes salía la de Astro por defecto, en
