@@ -3049,12 +3049,32 @@ export const copy = {
          */
         bloque: "derecha",
 
-        /* El apoyo dice CÓMO entra esto en una vida que ya está llena, que es
-           la objeción inmediata a los dos ganchos de arriba. Sin cifras de
-           dinero: solo de tiempo, que sí se puede sostener. */
+        /**
+         * ⚠️ DESDE EL 16-09-2026 ESTA PANTALLA REPITE EL TEXTO DE LA PRIMERA,
+         * arriba a la derecha y SIN BOTÓN. Lo pidió el cliente tal cual:
+         * "este título para la segunda slide sin botón, posición superior
+         * derecha, solo dos renglones el título, el mismo tamaño que el del
+         * primero". Los dos ganchos de los paneles ("Tienes tiempo, contactos
+         * y aspiración" / "Conoces a media ciudad") se quedan escritos arriba
+         * como red del vídeo, pero con `titular` puesto no se pintan.
+         *
+         * Mismo titular, mismo párrafo y la misma nota que la primera; la
+         * nota se pinta aunque no haya botón. Si algún día se quiere volver a
+         * los dos ganchos, basta quitar `titular` y `nota` y devolver el
+         * apoyo de antes: "Una o dos horas al día, sin dejar lo que ya haces.
+         * Sin jefe, sin horario fijo y sin pedir permiso."
+         */
+        titular: [
+          [{ es: "Tu Giro de 180°", en: "Your 180° Turn" }],
+          [{ es: "Empieza Aquí", en: "Starts Here", acento: true }],
+        ],
         subtitulo: {
-          es: "Una o dos horas al día, sin dejar lo que ya haces. Sin jefe, sin horario fijo y sin pedir permiso.",
-          en: "One or two hours a day, without dropping what you already do. No boss, no fixed hours, no permission to ask for.",
+          es: "Un programa de 90 días para construir un negocio propio con método, constancia y acompañamiento real.",
+          en: "A 90-day program to build a business of your own, with method, consistency and real support.",
+        },
+        nota: {
+          es: "Solo 2 horas al día. Sin inversión inicial.",
+          en: "Just 2 hours a day. No upfront investment.",
         },
 
         /* ⚠️ SIN `cta`, Y QUE FALTE NO ES UN DESCUIDO. Solo la primera imagen

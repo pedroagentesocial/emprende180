@@ -100,7 +100,7 @@ interface Props {
    */
   titular?: Panel["titulo"];
   subtitulo: Txt;
-  /** La línea de debajo del botón, en Fraunces. Solo se pinta con `cta`. */
+  /** La línea de debajo del botón, en Fraunces. Con o sin `cta`. */
   nota?: Txt;
   /**
    * ─── DÓNDE VAN LOS DOS TITULARES ────────────────────────────────────────
@@ -664,7 +664,12 @@ const LADOS = {
         pantalla con otro y puede crecer) y es el `h1`. Sin él, los dos de los
         paneles a la escala `ancho`, como siempre. */}
     {!alLado && titular && (
-      <HeroTitular titulo={titular} escala="portada" nivel="h1" sombra={sombra} />
+      <HeroTitular
+        titulo={titular}
+        escala="portada"
+        nivel={prioritaria ? "h1" : "h2"}
+        sombra={sombra}
+      />
     )}
     {!alLado && !titular && (
       <div
@@ -754,7 +759,7 @@ const LADOS = {
         se sientan lado a lado, alineados por el centro del botón. El cliente
         lo pidió así el 16-09-2026: "enseguida abajo el botón y después en la
         misma línea el otro texto". */}
-    {cta && (
+    {(cta || nota) && (
       <div
         class:list={[
           "flex flex-wrap items-center justify-center gap-x-6 gap-y-3",
@@ -762,15 +767,17 @@ const LADOS = {
           bloque === "derecha" && "lg:justify-end",
         ]}
       >
-        <Button
-          href={cta.href}
-          variant="primary"
-          size="xl"
-          sobre="oscuro"
-          trackId={trackId}
-        >
-          <T v={cta.texto} />
-        </Button>
+        {cta && (
+          <Button
+            href={cta.href}
+            variant="primary"
+            size="xl"
+            sobre="oscuro"
+            trackId={trackId}
+          >
+            <T v={cta.texto} />
+          </Button>
+        )}
 
         {nota && (
           <p
