@@ -3145,17 +3145,19 @@ export const copy = {
          * nos define" en cinco claves con icono. El manifiesto anterior queda
          * en el historial (commit anterior a esta nota).
          *
-         * ⚠️ ES EL MISMO TITULAR QUE LA PANTALLA 2. El cliente lo dictó así
-         * para las dos el mismo día; se le avisó. Si se cambia una, cambiar
-         * aquí o en la 2, no en las dos.
+         * Titular y párrafo dictados por el cliente el 16-09-2026 (segunda
+         * versión del día: la primera repetía el de la pantalla 2 y la cambió
+         * por esta). Habla de lo que más frena a quien empieza —no saber qué
+         * decir— y contesta con el plan: misiones exactas para cada día. "Plan
+         * de 90 días" es el nombre del plan del cliente, con mayúsculas suyas.
          */
         manifiesto: [
-          [{ es: "Tu Familia Primero", en: "Your Family First" }],
-          [{ es: "Tu Negocio También", en: "Your Business Too", acento: true }],
+          [{ es: "Sin improvisar:", en: "No improvising:" }],
+          [{ es: "Te damos un plan diario.", en: "We give you a daily plan.", acento: true }],
         ],
         cuerpo: {
-          es: "Construye tu fuente de ingresos propia al ritmo de tu casa: entre desayunos, tareas y todo lo que haces todos los días.",
-          en: "Build your own source of income at the pace of your home: between breakfasts, chores and everything you already do every day.",
+          es: "¿No sabes qué publicar ni qué decir? Nuestro Plan de 90 días te da las misiones exactas para cada día.",
+          en: "Not sure what to post or what to say? Our 90-Day Plan gives you the exact missions for each day.",
         },
 
         /**
