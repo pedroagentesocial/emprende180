@@ -129,7 +129,11 @@ const columnaDos = enlacesPagina.slice(3, 6);
       <!-- ── La página ─────────────────────────────────────────────────────── -->
       {/* Los tres primeros del menú. El resto, en la columna de al lado: ver
           la nota de `enlacesPagina`. */}
-      <nav aria-label={copy.ui.pieNavegar[lang]}>
+      <nav
+        aria-label={copy.ui.pieNavegar[lang]}
+        data-aria-es={copy.ui.pieNavegar.es}
+        data-aria-en={copy.ui.pieNavegar.en}
+      >
         <ul class="grid text-sm">
           {
             columnaUno.map((n) => (
@@ -153,7 +157,11 @@ const columnaDos = enlacesPagina.slice(3, 6);
           cierre, en la barra flotante y en las preguntas, y las tres se fueron
           antes. Si algún día vuelve a hacer falta que alguien pueda llamar sin
           rellenar un formulario, este es el sitio donde vivía. */}
-      <nav aria-label={copy.ui.pieNavegar[lang]}>
+      <nav
+        aria-label={copy.ui.pieNavegar[lang]}
+        data-aria-es={copy.ui.pieNavegar.es}
+        data-aria-en={copy.ui.pieNavegar.en}
+      >
         <ul class="grid text-sm">
           {
             columnaDos.map((n) => (
