@@ -40,6 +40,12 @@ import { copy } from "@config/curso.config";
  * Fondo blanco, como pidió el cliente: es la continuación del programa de
  * arriba, y el collage de los 90 días que viene después ya trae sus fotos.
  *
+ * ⚠️ RITMO COMPACTO Y AIRE INTERIOR CORTO. El cliente lo pidió el mismo día:
+ * "no le des tanto padding arriba y abajo, que esté muy incorporada a las
+ * demás secciones". Va con el relleno de las secciones de trámite y con la
+ * mitad de aire entre el título y la línea: se lee como parte del programa
+ * de arriba, no como un bloque aparte.
+ *
  * ─── LOS ICONOS ─────────────────────────────────────────────────────────────
  *
  *   enfoque        diana      — un punto, un resultado
@@ -52,7 +58,7 @@ import { copy } from "@config/curso.config";
 const { define } = copy;
 ---
 
-<Section id="define" tono="surface" ariaLabel={define.aria}>
+<Section id="define" tono="surface" ritmo="compacto" ariaLabel={define.aria}>
   <Reveal>
     <h2 class="text-center text-3xl font-extrabold leading-tight text-balance text-ink sm:text-4xl lg:text-5xl">
       <T v={define.titulo} />{" "}
@@ -60,7 +66,7 @@ const { define } = copy;
     </h2>
   </Reveal>
 
-  <div data-linea-tiempo class="relative mt-12 lg:mt-20">
+  <div data-linea-tiempo class="relative mt-8 lg:mt-12">
     {/* La línea. En el teléfono, vertical a la izquierda, a la altura del
         centro del nodo (1.75rem = la mitad de 3.5rem); en escritorio,
         horizontal a la altura del centro del nodo (2rem = la mitad de 4rem)

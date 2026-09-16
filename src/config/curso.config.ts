@@ -5178,10 +5178,11 @@ export const copy = {
     aria: { es: "Preguntas frecuentes", en: "Frequently asked questions" },
     /* A secas, a petición del cliente (15-09-2026). Decía "Preguntas que
        probablemente te estás haciendo". */
-    titulo: {
-      es: "Preguntas frecuentes",
-      en: "Frequently asked questions",
-    },
+    /* En dos trozos desde el 16-09-2026, a petición del cliente: "Preguntas"
+       en Montserrat y "frecuentes" en Fraunces teal, el remate de todos los
+       titulares del sitio. */
+    titulo: { es: "Preguntas", en: "Frequently asked" },
+    remate: { es: "frecuentes", en: "questions" },
 
     /**
      * La columna del título es lo único que se ve mientras se recorren las
