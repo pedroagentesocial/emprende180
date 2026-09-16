@@ -181,8 +181,11 @@ const {
   trackId,
 } = Astro.props;
 
-/* La promesa es el `h1` salvo que haya un titular propio. */
-const Sub = titular ? "p" : "h1";
+/* La promesa es el `h1` SOLO en la primera pantalla y solo si esa pantalla no
+   trae titular propio. Antes cada díptico ponía su `h1` y la portada tenía dos:
+   la primera pantalla ya lleva el suyo en el titular ("Tu Giro de 180°") y la
+   segunda es un gancho, no el título de la página. */
+const Sub = !titular && prioritaria ? "h1" : "p";
 
 /**
  * ⚠️ ESTO LLEGÓ A SER `composicion === "lados" && !sinFotos`, y el cambio

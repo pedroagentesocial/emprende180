@@ -11,6 +11,7 @@ import {
   articulosPublicados,
   formatearFecha,
   minutosDeLectura,
+  tituloBilingue,
 } from "@lib/blog";
 import { construirTxt } from "@i18n/idioma";
 import { resolverIdiomaServidor } from "@i18n/idioma";
@@ -53,8 +54,11 @@ const enOtroIdioma = articulo.data.idioma !== idiomaLector;
 
 const minutos = minutosDeLectura(articulo.body ?? "");
 
+/* En inglés, el título traducido si el artículo lo trae: el cuerpo sigue en
+   español, pero la pestaña y el resultado de búsqueda se leen en el idioma
+   de quien busca. */
 const tituloPagina = construirTxt(
-  (l) => `${articulo.data.titulo} · ${sitio.nombre[l]}`,
+  (l) => `${tituloBilingue(articulo)[l]} · ${sitio.nombre[l]}`,
 );
 const descripcion = construirTxt(() => articulo.data.resumen);
 ---

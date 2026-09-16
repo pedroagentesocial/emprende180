@@ -2,7 +2,7 @@
 import "@/styles/global.css";
 import montserratLatin from "@fontsource-variable/montserrat/files/montserrat-latin-wght-normal.woff2?url";
 import frauncesLatin from "@fontsource-variable/fraunces/files/fraunces-latin-soft-italic.woff2?url";
-import { sitio, curso, instructor, cifras, contacto, copy } from "@config/curso.config";
+import { sitio, curso, instructor, cifras, contacto, copy, redesMarca } from "@config/curso.config";
 import LegalModal from "@components/legal/LegalModal";
 import CookieBanner from "@components/legal/CookieBanner";
 import {
@@ -72,6 +72,27 @@ const ogImagen = new URL(sitio.ogImagen, base).href;
    Se emite SOLO en el idioma activo: un JSON-LD con dos idiomas mezclados no
    es válido, y `inLanguage` tiene que coincidir con lo que se está sirviendo.
    ─────────────────────────────────────────────────────────────────────────── */
+const schemaOrganizacion = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: sitio.nombre[lang],
+  url: sitio.url,
+  logo: new URL(sitio.logo.src, base).href,
+  email: contacto.email,
+  telephone: contacto.telefono,
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: contacto.direccion.calle,
+    addressLocality: "Cottonwood Heights",
+    addressRegion: "UT",
+    postalCode: "84121",
+    addressCountry: "US",
+  },
+  ...(redesMarca.some((r) => r.url)
+    ? { sameAs: redesMarca.filter((r) => r.url).map((r) => r.url) }
+    : {}),
+};
+
 const schemaCourse = {
   "@context": "https://schema.org",
   "@type": "Course",
@@ -260,6 +281,15 @@ const descripciones = { es: descripcion.es, en: descripcion.en };
     <script
       type="application/ld+json"
       set:html={JSON.stringify(schemaCourse)}
+      is:inline
+    />
+    {/* La organización, con su dirección física. Va en todas las páginas: es
+        la ficha de quién publica esto, no de una página concreta. Sin redes
+        (`sameAs`) mientras las URLs del config sigan vacías: un `sameAs` a una
+        cadena vacía es peor que ninguno. */}
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify(schemaOrganizacion)}
       is:inline
     />
 

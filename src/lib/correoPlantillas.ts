@@ -39,7 +39,7 @@ const ACUSE_INFORMES: Record<Idioma, Plantilla> = {
       "Ya tenemos tus datos. Te escribe alguien del equipo, en persona.",
     saludo: `Hola, ${n}:`,
     parrafos: [
-      "Gracias por dar el primer paso. Ya tenemos tus datos y en breve te escribe alguien del equipo, en persona, para contarte cómo se entra en Emprende180 y resolver lo que quieras preguntar.",
+      "Gracias por dar el primer paso. Ya tenemos tus datos y en breve te escribe alguien del equipo, en persona, para contarte cómo se entra en la comunidad de Embajadores de Emprende180 y resolver lo que quieras preguntar.",
       "Mientras tanto, esto es lo que hay detrás: un programa de 90 días para construir un negocio propio con método, constancia y acompañamiento real. Solo 2 horas al día. Sin inversión inicial.",
       "Si prefieres adelantarte, responde a este correo y cuéntanos desde dónde nos escribes y qué te gustaría saber.",
     ],
@@ -54,7 +54,7 @@ const ACUSE_INFORMES: Record<Idioma, Plantilla> = {
       "We have your details. Someone from the team will write to you personally.",
     saludo: `Hi ${n},`,
     parrafos: [
-      "Thanks for taking the first step. We have your details, and someone from the team will write to you personally soon to explain how to join Entrepreneur180 and answer anything you want to ask.",
+      "Thanks for taking the first step. We have your details, and someone from the team will write to you personally soon to explain how to join the Entrepreneur180 Ambassador community and answer anything you want to ask.",
       "In the meantime, here is what is behind it: a 90-day program to build a business of your own, with method, consistency and real support. Just 2 hours a day. No upfront investment.",
       "If you would rather get ahead, reply to this email and tell us where you are writing from and what you would like to know.",
     ],

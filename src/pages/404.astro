@@ -1,0 +1,82 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import Header from "@components/layout/Header.astro";
+import Footer from "@components/layout/Footer.astro";
+import T from "@components/i18n/T.astro";
+import Section from "@components/ui/Section.astro";
+import Enfasis from "@components/ui/Enfasis.astro";
+import BotonRelieve from "@components/ui/BotonRelieve.astro";
+import Icono from "@components/ui/Icono.astro";
+import { copy, cta, sitio } from "@config/curso.config";
+import { construirTxt } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 404 — la página que no existe
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Hasta el 16-09-2026 no había: Astro servía la suya, en inglés, sin barra,
+ * sin pie y con "404: Not Found" de título. Para una web que está a punto de
+ * salir a producción eso es la única pantalla sin marca. Esta lleva la barra,
+ * el pie, el título en el idioma del visitante y los cuatro enlaces del menú
+ * como salida.
+ *
+ * ⚠️ `noindex`: una página de error no tiene que aparecer en el buscador, y
+ * el `canonical` que pondría BaseLayout apuntaría a la URL rota.
+ */
+export const prerender = false;
+
+const { noEncontrada } = copy.ui;
+
+const tituloPagina = construirTxt(
+  (l) => `${noEncontrada.titulo[l]} · ${sitio.nombre[l]}`,
+);
+---
+
+<BaseLayout titulo={tituloPagina} descripcion={noEncontrada.texto} noindex>
+  <Header />
+
+  <main id="contenido">
+    <Section id="no-encontrada" tono="surface" ritmo="amplio" ariaLabel={noEncontrada.codigo}>
+      <div class="mx-auto max-w-3xl text-center">
+        <p class="text-sm font-bold tracking-[0.18em] text-ink-brand uppercase">
+          <T v={noEncontrada.codigo} />
+        </p>
+        <h1 class="mt-4 text-4xl font-extrabold leading-tight text-balance text-ink sm:text-5xl lg:text-6xl">
+          <T v={noEncontrada.titulo} />{" "}
+          <Enfasis v={noEncontrada.remate} />
+        </h1>
+        <p class="mx-auto mt-6 max-w-prose text-lg font-medium leading-relaxed text-pretty text-ink-muted sm:text-xl">
+          <T v={noEncontrada.texto} />
+        </p>
+
+        <div class="mt-10">
+          <BotonRelieve href="/" trackId="404-portada">
+            <T v={noEncontrada.volver} />
+          </BotonRelieve>
+        </div>
+
+        {/* Las mismas cuatro salidas del menú, como enlaces de texto: quien
+            aterriza en un 404 casi siempre venía a una de ellas. */}
+        <ul role="list" class="mt-12 flex flex-wrap justify-center gap-x-8 gap-y-3 border-t border-line pt-8">
+          {cta.navegacion.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                class="group inline-flex min-h-11 items-center gap-2 text-base font-semibold text-ink-muted transition-colors hover:text-ink-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:text-lg"
+              >
+                <T v={item.texto} />
+                <Icono
+                  nombre="flecha"
+                  class="size-4 shrink-0 transition-transform duration-200 ease-out-soft group-hover:translate-x-1"
+                />
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </Section>
+  </main>
+
+  <Footer />
+</BaseLayout>

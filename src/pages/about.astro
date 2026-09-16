@@ -181,6 +181,18 @@ const CAJA_ICONO =
       sinContenedor
       class="relative isolate overflow-hidden py-0!"
     >
+      {/* ⚠️ EL H1 DE LA PÁGINA, SOLO PARA LECTORES Y BUSCADORES. El hero es el
+          vídeo y no lleva texto a la vista; sin esto la página no tenía `h1`,
+          que es la primera cosa que mira un rastreador. Es la frase de misión
+          aprobada (`about.hero.titulo`), la misma que se dejó de pintar. */}
+      <h1 class="sr-only">
+        {about.hero.titulo.map((linea) => (
+          <>
+            <T v={linea} />{" "}
+          </>
+        ))}
+      </h1>
+
       <div
         data-hero-encoge
         class="relative isolate aspect-video w-full bg-primary-950"

@@ -175,8 +175,10 @@ export const sitio = {
   url: "https://emprende180.vercel.app", // SWAP: dominio definitivo
 
   titulo: {
-    es: "Emprende180 — Conviértete en Embajador",
-    en: "Entrepreneur180 — Become an Ambassador",
+    /* Con punto medio y no con guion largo: la regla del sitio en español,
+       y en un `<title>` el guion largo además se parte raro en la pestaña. */
+    es: "Emprende180 · Conviértete en Embajador",
+    en: "Entrepreneur180 · Become an Ambassador",
   },
   descripcion: {
     /* ⚠️ ESTO ES LO QUE SALE EN GOOGLE Y AL COMPARTIR EL ENLACE, así que es lo
@@ -1846,6 +1848,19 @@ export const faqs: Faq[] = [
       en: "The course is online and you take it from wherever you are: ten videos with their quizzes, no schedule, lifetime access. Where you can refer is a different question: Auto and Home Accident services have coverage by area, and that depends on where you are and where your people are. Before you pay, call me and we'll check it in two minutes. If your area isn't covered yet I'll tell you and you don't buy: I'd rather do that than refund you a month from now.",
     },
   },
+  /* Añadida el 16-09-2026 con el resto de menciones a la comunidad. Solo
+     afirma lo confirmado por el cliente: el mismo método, la llamada de
+     equipo semanal y que alguien contesta. Sin cifras de miembros. */
+  {
+    pregunta: {
+      es: "¿Hay una comunidad detrás, o voy por mi cuenta?",
+      en: "Is there a community behind this, or am I on my own?",
+    },
+    respuesta: {
+      es: "Hay comunidad. Todos los Embajadores trabajan con el mismo método, hay una llamada de equipo cada semana y alguien contesta cuando escribes. Y si ya tienes tu propia comunidad o tu red, aquí aprendes a activarla: con método, sin forzarla y sin dejar de ser tú.",
+      en: "There is. Every Ambassador works with the same method, there is a team call every week, and someone answers when you write. And if you already have a community or a network of your own, this is where you learn to activate it: with method, without forcing it, and without stopping being yourself.",
+    },
+  },
   {
     pregunta: {
       es: "¿El CRM va incluido?",
@@ -2435,7 +2450,10 @@ export const copy = {
    */
   pruebaSocial: {
     aria: { es: "Resultados de los alumnos", en: "Student results" },
-    kicker: { es: "No serías la primera", en: "You wouldn't be the first" },
+    /* "La comunidad de Embajadores" desde el 16-09-2026 (antes "No serías la
+       primera"): los testimonios son la comunidad hablando, y el cliente pidió
+       que se la nombrara. */
+    kicker: { es: "La comunidad de Embajadores", en: "The Ambassador community" },
     /* ⚠️ DECÍA "MUJERES COMO TÚ" Y ERA FALSO. De los seis testimonios que hay,
        tres son de hombres: José, Carlos y Miguel. Un titular que solo nombra a
        las mujeres encima de una rejilla donde sale medio pueblo no es un matiz
@@ -3257,6 +3275,18 @@ export const copy = {
         es: "Emprende180 es un plan estructurado de prospección diaria para embajadores. En 90 días construyes una base de contactos organizada, un sistema de seguimiento que funciona solo y fuentes de referidos que trabajan para ti. Todo sin dejar de vivir tu vida.",
         en: "Entrepreneur180 is a structured daily prospecting plan for ambassadors. In 90 days you build an organized contact base, a follow-up system that runs on its own, and referral sources that work for you. All without putting your life on hold.",
       },
+      /* ─── LA COMUNIDAD ───────────────────────────────────────────────────
+         Pedido por el cliente el 16-09-2026: "más uso de comunidad" en los
+         puntos estratégicos. Este párrafo sale aquí y en el método de
+         /programs (leen el mismo texto). Lo que afirma es lo confirmado: el
+         mismo método para todos, la llamada de equipo semanal
+         (`plan90.acompanamiento`) y alguien que contesta. Y la segunda idea que
+         pidió: quien ya tiene una comunidad, aquí aprende a activarla. Sin
+         cifras de miembros, que no las tenemos. */
+      {
+        es: "Y no lo haces solo. Entras en una comunidad de Embajadores que trabaja con el mismo método, con una llamada de equipo cada semana y alguien que contesta. Si ya tienes una comunidad, aquí aprendes a activarla.",
+        en: "And you are not on your own. You join a community of Ambassadors working with the same method, with a team call every week and someone who answers. If you already have a community, this is where you learn to activate it.",
+      },
     ],
 
     /**
@@ -3816,8 +3846,8 @@ export const copy = {
             },
           },
           texto: {
-            es: "Ya te preguntan a ti primero. La diferencia es que ahora hay algo detrás de tu respuesta.",
-            en: "People already come to you first. The difference is that now there's something behind your answer.",
+            es: "Ya te preguntan a ti primero. La diferencia es que ahora hay algo detrás de tu respuesta. Y si ya tienes una comunidad, aquí se potencia: aprendes a activarla con método y sin forzarla.",
+            en: "People already come to you first. The difference is that now there's something behind your answer. And if you already have a community, this is where it gets stronger: you learn to activate it with method, without forcing it.",
           },
         },
         {
@@ -4396,8 +4426,8 @@ export const copy = {
       },
       remate: { es: "en un solo lugar.", en: "all in one place." },
       texto: {
-        es: "La Academia, el CRM y el seguimiento, sin resumir nada.",
-        en: "The Academy, the CRM, and the follow-up, with nothing left out.",
+        es: "La Academia, el CRM, el seguimiento y la comunidad que avanza contigo, sin resumir nada.",
+        en: "The Academy, the CRM, the follow-up and the community moving with you, with nothing left out.",
       },
       cta: { es: "Ver cómo funciona", en: "See how it works" },
       ctaHref: "#academia",
@@ -4902,15 +4932,18 @@ export const copy = {
    * quiero decir", que es justo la conclusión que hay que evitar.
    */
   informes: {
-    kicker: { es: "Empezar", en: "Getting started" },
+    /* "Únete a la comunidad" desde el 16-09-2026 (antes "Empezar"): el
+       formulario es la puerta de la comunidad de Embajadores, y es lo que el
+       cliente quiere que se lea al llegar aquí. */
+    kicker: { es: "Únete a la comunidad", en: "Join the community" },
     titulo: [
       { es: "El primer paso", en: "The first step" },
       { es: "lo das tú, cuando quieras.", en: "is yours, whenever you want.", enfasis: true },
     ],
     /* El porqué, sin rodeos: es lo que separa "reservado" de "sospechoso". */
     porQue: {
-      es: "Déjanos tu nombre y tu correo. Te escribimos, te contamos cómo se entra y decides tú.",
-      en: "Leave us your name and your email. We'll write, tell you how it works, and you decide.",
+      es: "Déjanos tu nombre y tu correo. Te escribimos, te contamos cómo se entra en la comunidad de Embajadores y decides tú.",
+      en: "Leave us your name and your email. We'll write, tell you how to join the Ambassador community, and you decide.",
     },
     /* ⚠️ AQUÍ HABÍA TRES "HECHOS" DE DINERO ("un solo pago", "se puede pagar en
        partes", "el acceso no caduca") y se quitaron el 16-09-2026 a petición
@@ -5452,6 +5485,18 @@ export const copy = {
        derecho: media página de gris vacío en medio. Ahora tiene columnas, y
        las columnas necesitan nombre. */
     pieNavegar: { es: "La página", en: "The page" },
+    /* La página de "no encontrado". Antes salía la de Astro por defecto, en
+       inglés, sin barra ni pie y con "404: Not Found" de título. */
+    noEncontrada: {
+      titulo: { es: "Esta página no existe", en: "This page doesn't exist" },
+      remate: { es: "o ya no está aquí.", en: "or it isn't here anymore." },
+      texto: {
+        es: "Puede que el enlace esté mal escrito o que hayamos movido la página. Lo que buscas seguramente está en uno de estos sitios.",
+        en: "The link may be misspelled, or we may have moved the page. What you are looking for is probably in one of these places.",
+      },
+      volver: { es: "Ir a la portada", en: "Go to the home page" },
+      codigo: { es: "Error 404", en: "Error 404" },
+    },
     visitanos: { es: "Visítanos", en: "Visit us" },
     comoLlegar: { es: "Cómo llegar", en: "Get directions" },
     visitanosTexto: {

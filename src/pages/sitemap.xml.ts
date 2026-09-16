@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
 import { articulosPublicados } from "@lib/blog";
 import { documentosPorSlug } from "@config/legal.config";
+import { IDIOMAS } from "@i18n/idioma";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -82,15 +83,36 @@ export const GET: APIRoute = async () => {
     })),
   ];
 
+  /* ─── UNA ENTRADA POR IDIOMA, CON SUS ALTERNATIVAS ────────────────────────
+     El `canonical` de cada página lleva `?lang=` (ver BaseLayout), así que la
+     URL que Google tiene que encontrar aquí es ESA, no la pelada: un mapa que
+     anuncia `/about` y una página que se declara `/about?lang=es` son dos
+     direcciones distintas para el rastreador. Cada ruta sale dos veces, una
+     por idioma, y cada una lista a la otra como `xhtml:link hreflang` y al
+     español como `x-default`, igual que el `<head>`. */
+  const conIdioma = (ruta: string, lang: string) =>
+    `${base}${ruta}?lang=${lang}`;
+  const alternativas = (ruta: string) =>
+    [
+      ...IDIOMAS.map(
+        (l) =>
+          `    <xhtml:link rel="alternate" hreflang="${l}" href="${conIdioma(ruta, l)}" />`,
+      ),
+      `    <xhtml:link rel="alternate" hreflang="x-default" href="${conIdioma(ruta, "es")}" />`,
+    ].join("\n");
+
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${entradas
-  .map(
-    (e) => `  <url>
-    <loc>${base}${e.ruta}</loc>${e.lastmod ? `\n    <lastmod>${e.lastmod}</lastmod>` : ""}
+  .flatMap((e) =>
+    IDIOMAS.map(
+      (lang) => `  <url>
+    <loc>${conIdioma(e.ruta, lang)}</loc>${e.lastmod ? `\n    <lastmod>${e.lastmod}</lastmod>` : ""}
     <changefreq>${e.frecuencia}</changefreq>
     <priority>${e.prioridad}</priority>
+${alternativas(e.ruta)}
   </url>`,
+    ),
   )
   .join("\n")}
 </urlset>
