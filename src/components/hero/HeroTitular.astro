@@ -50,10 +50,17 @@ interface Props {
   escala?: "mitad" | "ancho" | "libre";
   /** La sombra de texto del slider. */
   sombra: string;
+  /**
+   * `h2` por defecto: los titulares de los dípticos son ganchos y el `h1` es la
+   * promesa de debajo. Cuando la pantalla lleva UN titular propio (ver
+   * `titular` en `HeroDiptico`), ese titular sí es el `h1` de la página.
+   */
+  nivel?: "h1" | "h2";
   class?: string;
 }
 
-const { titulo, escala = "mitad", sombra, class: className = "" } = Astro.props;
+const { titulo, escala = "mitad", sombra, nivel = "h2", class: className = "" } = Astro.props;
+const Tag = nivel;
 
 /**
  * ⚠️ TABLA CERRADA Y CLASES ESCRITAS ENTERAS. Tailwind lee el código como
@@ -179,7 +186,7 @@ const APOYO = "text-[0.87em] font-semibold";
 {/* ⚠️ `h2` Y NO `h1`: el `h1` de la página es la frase de abajo, la única
     que dice de qué va esto. Estas dos son GANCHOS, y un gancho no sirve de
     titular de página. Ver el bloque central de `HeroDiptico`. */}
-<h2 class:list={[ESCALAS[escala], className]}>
+<Tag class:list={[ESCALAS[escala], className]}>
   {
     titulo.map((linea, l) => (
       <span
@@ -204,4 +211,4 @@ const APOYO = "text-[0.87em] font-semibold";
       </span>
     ))
   }
-</h2>
+</Tag>

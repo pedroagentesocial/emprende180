@@ -2850,30 +2850,44 @@ export const copy = {
         bloque: "izquierda",
 
         /**
-         * ⚠️ ESTA FRASE DICE "GENERA INGRESOS EXTRA" Y ESO ES UNA PROMESA DE
-         * INGRESO. Va tal cual la pidió el cliente y se queda, pero conviene
-         * saber dónde está el límite: la FTC (16 CFR 465) y la PROFECO
-         * permiten describir la OPORTUNIDAD y prohíben afirmar un RESULTADO
-         * que no se pueda documentar con datos de Embajadores normales.
+         * ─── EL TEXTO ENTERO LO DICTÓ EL CLIENTE EL 16-09-2026 ─────────────
          *
-         * "Genera ingresos extra" está del lado seguro mientras NO se le
-         * ponga cifra, plazo ni frecuencia. En cuanto alguien escriba "hasta
-         * 2.000 al mes" o "desde la primera semana", hace falta el respaldo
-         * documental. Ver la regla 3 de la cabecera del archivo.
+         * "Cambia todo el texto por esto": un titular en dos renglones, un
+         * párrafo, el botón y una línea debajo del botón. Con eso la primera
+         * pantalla deja de ser un díptico de dos ganchos y pasa a ser un hero
+         * clásico; los dos titulares de los paneles de arriba ya no se
+         * pintan (`titular` manda), pero sus fotos siguen siendo la red del
+         * vídeo.
+         *
+         * "Tu Giro de 180°" va como renglón de apoyo, en Montserrat, y
+         * "Empieza Aquí" grande y en Fraunces: el cliente pidió "diferentes
+         * tipografías", y es el mismo gesto de remate de todo el sitio.
+         *
+         * ⚠️ "SIN INVERSIÓN INICIAL" ES UNA AFIRMACIÓN QUE HAY QUE PODER
+         * SOSTENER. El resto del sitio habla de "un solo pago" y de "pagar en
+         * partes" (`informes.hechos`, la FAQ del curso). Si el programa de
+         * Embajadores tiene coste de entrada, esta línea es falsa y hay que
+         * quitarla o matizarla ("sin inventario", "sin cuota mensual"…). Va
+         * tal cual se dictó; se le avisó al cliente.
+         *
+         * "Negocio propio" y "acompañamiento real" describen la oportunidad,
+         * no un resultado: siguen del lado seguro de la regla 3.
          */
+        titular: [
+          [{ es: "Tu Giro de 180°", en: "Your 180° Turn" }],
+          [{ es: "Empieza Aquí", en: "Starts Here", acento: true }],
+        ],
         subtitulo: {
-          es: "Únete a la comunidad de Embajadores Emprende180 y genera ingresos extra ayudando a tu gente a conseguir su casa o recuperarse de un accidente.",
-          en: "Join the Entrepreneur180 Ambassador community and earn extra income helping your people get their home or recover from an accident.",
+          es: "Un programa de 90 días para construir un negocio propio con método, constancia y acompañamiento real.",
+          en: "A 90-day program to build a business of your own, with method, consistency and real support.",
         },
-
-        /* ⚠️ "QUIERO SER EMBAJADOR" Y NO "REGÍSTRATE", y no es cuestión de
-           gusto: uno nombra a quién te conviertes y el otro nombra el
-           trámite. Lleva al cierre, que es el único sitio de la página donde
-           se puede pedir información. Sustituye al CTA común de las otras dos
-           imágenes, que va a ver cómo funciona. */
         cta: {
-          texto: { es: "Quiero ser Embajador", en: "I want to be an Ambassador" },
+          texto: { es: "Comenzar el Día 1", en: "Start Day 1" },
           href: "#empezar",
+        },
+        nota: {
+          es: "Solo 2 horas al día. Sin inversión inicial.",
+          en: "Just 2 hours a day. No upfront investment.",
         },
       },
       /**

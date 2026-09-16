@@ -86,7 +86,22 @@ interface Panel {
 
 interface Props {
   paneles: readonly Panel[];
+  /**
+   * ─── UN TITULAR EN VEZ DE DOS ───────────────────────────────────────────
+   *
+   * Cuando está, el bloque pinta ESTE titular y no los dos de los paneles.
+   * Es lo que pidió el cliente para la primera pantalla el 16-09-2026: un
+   * hero clásico —titular, párrafo, botón y una línea debajo— en vez del
+   * díptico de dos ganchos. Los paneles siguen llegando porque sus fotos son
+   * la red del vídeo; sus títulos, con esto puesto, no se ven.
+   *
+   * Y cambia la jerarquía: este titular es el `h1` de la página y la
+   * `subtitulo` baja a párrafo. Sin él, el `h1` sigue siendo la promesa.
+   */
+  titular?: Panel["titulo"];
   subtitulo: Txt;
+  /** La línea de debajo del botón, en Fraunces. Solo se pinta con `cta`. */
+  nota?: Txt;
   /**
    * ─── DÓNDE VAN LOS DOS TITULARES ────────────────────────────────────────
    *
@@ -153,7 +168,9 @@ interface Props {
 
 const {
   paneles,
+  titular,
   subtitulo,
+  nota,
   composicion = "lados",
   bloque = "centro",
   sinFotos = false,
@@ -163,6 +180,9 @@ const {
   prioritaria = false,
   trackId,
 } = Astro.props;
+
+/* La promesa es el `h1` salvo que haya un titular propio. */
+const Sub = titular ? "p" : "h1";
 
 /**
  * ⚠️ ESTO LLEGÓ A SER `composicion === "lados" && !sinFotos`, y el cambio
@@ -632,7 +652,13 @@ const LADOS = {
         El `gap` propio y no el del padre: entre los dos titulares hace falta
         más aire que entre el titular y la frase de abajo, o se leen como un
         solo bloque de cuatro renglones. */}
-    {!alLado && (
+    {/* Con `titular`, un solo titular grande (escala `libre`: no comparte
+        pantalla con otro y puede crecer) y es el `h1`. Sin él, los dos de los
+        paneles a la escala `ancho`, como siempre. */}
+    {!alLado && titular && (
+      <HeroTitular titulo={titular} escala="libre" nivel="h1" sombra={sombra} />
+    )}
+    {!alLado && !titular && (
       <div
         class:list={[
           "flex flex-col items-center gap-5 sm:gap-10 lg:gap-12",
@@ -679,7 +705,9 @@ const LADOS = {
         huérfana del final, y aquí lo que se quiere es que los DOS renglones
         midan parecido. Con dos líneas centradas, una larga y una corta se ven
         como un descuadre. */}
-    <h1
+    {/* `h1` salvo que la pantalla traiga su propio titular: entonces esto es
+        el párrafo de debajo. Ver `titular` en las props. */}
+    <Sub
       class:list={[
         "max-w-2xl text-balance text-sm font-medium leading-relaxed text-secondary-100 sm:text-lg",
         /* En la columna de la derecha se queda en 20 px y no en 22: son 142
@@ -691,7 +719,7 @@ const LADOS = {
       style={sombra}
     >
       <T v={subtitulo} />
-    </h1>
+    </Sub>
 
     {/* ⚠️ EL BOTÓN ES OPCIONAL, Y QUE FALTE NO ES UN DESCUIDO. Solo la primera
         imagen pide algo; las siguientes cuentan y dejan seguir bajando. Tres
@@ -715,6 +743,21 @@ const LADOS = {
       >
         <T v={cta.texto} />
       </Button>
+    )}
+
+    {/* La línea de debajo del botón, en Fraunces itálica y un punto más clara:
+        otra tipografía a propósito, para que no se lea como la continuación
+        del párrafo sino como la letra pequeña que quita la última pega
+        ("solo 2 horas al día, sin inversión inicial"). `-mt-1` porque el `gap`
+        del bloque está pensado para separar piezas grandes y esta va pegada
+        al botón, que es de quien habla. */}
+    {cta && nota && (
+      <p
+        class="-mt-1 max-w-xl font-acento text-base italic text-secondary-100 sm:text-lg lg:text-xl"
+        style={sombra}
+      >
+        <T v={nota} />
+      </p>
     )}
   </div>
 </div>
