@@ -8,34 +8,51 @@ import { copy } from "@config/curso.config";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- * 01 · LO QUE NOS DEFINE — cinco palabras, cinco iconos, una frase cada una
+ * 01 · LO QUE NOS DEFINE — cinco claves en una línea del tiempo
  * ═══════════════════════════════════════════════════════════════════════════
  *
  * Enfoque, Acción, Comunidad, Crecimiento y Transformación. Nacieron el
- * 16-09-2026 como el pie de la tercera pantalla del hero, y el mismo día el
- * cliente las sacó de allí a una sección propia detrás de "El programa
- * Emprende180": en el hero competían con el titular y se leían pequeñas; aquí
- * tienen su sitio y su aire. Los textos son los que dictó el cliente
- * (`copy.define`).
+ * 16-09-2026 como el pie de la tercera pantalla del hero y el mismo día
+ * pasaron a esta sección, detrás de "El programa Emprende180". Los textos son
+ * los que dictó el cliente (`copy.define`).
  *
- * ─── LA FORMA ───────────────────────────────────────────────────────────────
+ * ─── UNA LÍNEA DEL TIEMPO, Y NO CINCO COLUMNAS ──────────────────────────────
  *
- * Título centrado con el remate en Fraunces y, debajo, las cinco en fila
- * desde `lg` (dos y tres en tablet, apiladas con el icono al lado en el
- * teléfono). Sin tarjetas: cada una es un icono en un círculo navy, la
- * palabra y la frase, separadas por el aire. Es la misma anatomía que los
- * seis valores del about, que son la otra lista de "lo que creemos" del
- * sitio, así las dos se leen de la misma familia.
+ * La primera versión eran cinco columnas con un círculo navy cada una, sobre
+ * azul suave. El cliente la vio "fea" y pidió "una línea del tiempo,
+ * centralizada": las cinco claves van en orden —del enfoque del primer día a
+ * la transformación del día 90— y una línea las une, que es lo que dice que
+ * son un recorrido y no una lista.
  *
- * Sobre azul suave (`muted`): va entre dos secciones blancas —el programa y
- * el collage de los 90 días— y el cambio de tono es lo que la separa de las
- * dos sin meter filetes.
+ *   · Escritorio: una línea horizontal que atraviesa los cinco nodos a la
+ *     altura del icono; debajo de cada nodo, el número, la palabra y la
+ *     frase, centrados. La línea SE DIBUJA al entrar la sección (escala de 0
+ *     a 1 desde la izquierda, 900 ms) y los nodos aparecen escalonados
+ *     detrás de ella: el `Reveal` de cada nodo va con retardo creciente.
+ *   · Tablet y teléfono: la misma línea, vertical y a la izquierda, con el
+ *     nodo sobre ella y el texto a la derecha. Es la forma que una línea del
+ *     tiempo tiene en una columna estrecha.
+ *
+ * Los nodos son círculos BLANCOS con borde teal y el icono en teal, no
+ * círculos navy rellenos: sobre blanco, cinco discos navy pesaban más que el
+ * título. El blanco deja pasar la línea por detrás y el borde hace de punto.
+ *
+ * Fondo blanco, como pidió el cliente: es la continuación del programa de
+ * arriba, y el collage de los 90 días que viene después ya trae sus fotos.
+ *
+ * ─── LOS ICONOS ─────────────────────────────────────────────────────────────
+ *
+ *   enfoque        diana      — un punto, un resultado
+ *   acción         calendario — la constancia diaria
+ *   comunidad      personas   — la red
+ *   crecimiento    grafica    — la curva que sube (nuevo en Icono.astro)
+ *   transformación giro       — la vuelta de 180° (nuevo en Icono.astro)
  */
 
 const { define } = copy;
 ---
 
-<Section id="define" tono="muted" ariaLabel={define.aria}>
+<Section id="define" tono="surface" ariaLabel={define.aria}>
   <Reveal>
     <h2 class="text-center text-3xl font-extrabold leading-tight text-balance text-ink sm:text-4xl lg:text-5xl">
       <T v={define.titulo} />{" "}
@@ -43,31 +60,74 @@ const { define } = copy;
     </h2>
   </Reveal>
 
-  <ul
-    role="list"
-    class="mt-12 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:mt-16 lg:grid-cols-5 lg:gap-x-6"
-  >
-    {
-      define.claves.map((clave, i) => (
-        <Reveal as="li" delay={Math.min(i, 4) * 0.06}>
-          <div class="flex items-start gap-4 text-left lg:flex-col lg:items-center lg:gap-5 lg:text-center">
-            <span
-              aria-hidden="true"
-              class="grid size-14 shrink-0 place-items-center rounded-full bg-primary-950 text-secondary-300 lg:size-16"
-            >
-              <Icono nombre={clave.icono} class="size-7 lg:size-8" grosor={1.6} />
-            </span>
-            <div class="min-w-0">
-              <h3 class="text-xl font-extrabold text-ink sm:text-2xl lg:text-xl xl:text-2xl">
-                <T v={clave.palabra} />
-              </h3>
-              <p class="mt-2 text-base font-medium leading-relaxed text-pretty text-ink-muted sm:text-lg lg:mx-auto lg:max-w-[26ch]">
-                <T v={clave.frase} />
-              </p>
+  <div data-linea-tiempo class="relative mt-12 lg:mt-20">
+    {/* La línea. En el teléfono, vertical a la izquierda, a la altura del
+        centro del nodo (1.75rem = la mitad de 3.5rem); en escritorio,
+        horizontal a la altura del centro del nodo (2rem = la mitad de 4rem)
+        y sin llegar a los bordes, que es donde caen los centros del primer
+        y del último nodo (10 % = la mitad de una quinta parte). Se dibuja al
+        entrar: ver el <style> de abajo. */}
+    <div
+      aria-hidden="true"
+      data-linea
+      class="absolute bottom-7 left-7 top-7 w-px origin-top bg-secondary-300 lg:bottom-auto lg:left-[10%] lg:right-[10%] lg:top-8 lg:h-px lg:w-auto lg:origin-left"
+    />
+
+    <ol role="list" class="relative grid gap-10 lg:grid-cols-5 lg:gap-4">
+      {
+        define.claves.map((clave, i) => (
+          <Reveal as="li" delay={0.15 + i * 0.12}>
+            <div class="flex items-start gap-5 lg:flex-col lg:items-center lg:gap-0 lg:text-center">
+              {/* El nodo: círculo blanco con borde teal, el icono dentro. */}
+              <span
+                aria-hidden="true"
+                class="grid size-14 shrink-0 place-items-center rounded-full border-2 border-secondary-500 bg-surface text-ink-brand shadow-sm lg:size-16"
+              >
+                <Icono nombre={clave.icono} class="size-6 lg:size-7" grosor={1.75} />
+              </span>
+              <div class="min-w-0 pt-1 lg:pt-6">
+                <p class="text-xs font-bold tracking-[0.18em] text-ink-brand uppercase">
+                  {String(i + 1).padStart(2, "0")}
+                </p>
+                <h3 class="mt-1.5 text-xl font-extrabold text-ink sm:text-2xl lg:text-xl 2xl:text-2xl">
+                  <T v={clave.palabra} />
+                </h3>
+                <p class="mt-2 text-base font-medium leading-relaxed text-pretty text-ink-muted sm:text-lg lg:mx-auto lg:max-w-[24ch] lg:text-base xl:text-lg">
+                  <T v={clave.frase} />
+                </p>
+              </div>
             </div>
-          </div>
-        </Reveal>
-      ))
-    }
-  </ul>
+          </Reveal>
+        ))
+      }
+    </ol>
+  </div>
 </Section>
+
+<style>
+  /* La línea nace encogida y se dibuja cuando el primer nodo se hace visible
+     (el `Reveal` del primero le pone `reveal-visible`; el selector mira si
+     hay algún nodo visible dentro del bloque). Los nodos salen detrás con
+     su propio retardo, así que la línea llega antes que cada punto. */
+  .js-reveal [data-linea-tiempo] [data-linea] {
+    transform: scaleY(0);
+    transition: transform 900ms var(--ease-out-expo) 100ms;
+  }
+  .js-reveal [data-linea-tiempo]:has([data-reveal].reveal-visible) [data-linea] {
+    transform: scaleY(1);
+  }
+  @media (min-width: 64rem) {
+    .js-reveal [data-linea-tiempo] [data-linea] {
+      transform: scaleX(0);
+    }
+    .js-reveal [data-linea-tiempo]:has([data-reveal].reveal-visible) [data-linea] {
+      transform: scaleX(1);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .js-reveal [data-linea-tiempo] [data-linea] {
+      transform: none;
+      transition: none;
+    }
+  }
+</style>

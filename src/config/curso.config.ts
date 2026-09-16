@@ -1129,12 +1129,10 @@ export const instructor = {
    *   instructor-cuadrado el avatar de autor del blog (about y recursos)
    *   pedro-oficina       la foto del blog en recursos (escritorio, ciudad)
    *   pedro-de-pie        el fondo de la Academia en la portada
-   *   pedro-sentado       SIN SITIO desde el 16-09-2026: estuvo junto a "la
-   *                       duda que no está" de la FAQ, y al rediseñarla en
-   *                       una tarjeta pequeña con avatar redondo la foto
-   *                       apaisada dejaba la cara diminuta; el avatar es el
-   *                       recorte cuadrado. Queda procesada en /public por
-   *                       si aparece hueco.
+   *   pedro-sentado       "El programa Emprende180" de la portada, en un
+   *                       recorte vertical (identidad/pedro-vertical.webp).
+   *                       Antes estuvo en la FAQ; el avatar de allí es ahora
+   *                       el recorte cuadrado.
    *   pedro-escritorio    la fila de la Academia en /programs
    */
   foto: "/imagenes/instructor/pedro-retrato.webp",
@@ -3222,15 +3220,20 @@ export const copy = {
      * díptico del héroe y el collage del cierre. Aquí una sola persona mirando
      * a cámara sostiene mejor la frase que dos sellos recortados.
      */
+    /* ⚠️ PEDRO, DESDE EL 16-09-2026. Iba la mujer al teléfono (que pasó a la
+       fase 3 del collage) y el cliente pidió "una de Pedro" para el programa:
+       quien lo escribió, al lado de lo que es. Es la foto sentado con la mano
+       en la barbilla, recortada a vertical 800x1040 por su lado (la
+       original es apaisada y él cae en el tercio izquierdo), que era la única
+       de las siete que no tenía sitio. */
     foto: {
-      src: "/imagenes/identidad/mujer-vertical.webp",
+      src: "/imagenes/identidad/pedro-vertical.webp",
       alt: {
-        es: "Una mujer hablando por teléfono sentada junto a la ventana de su casa",
-        en: "A woman on the phone sitting by the window at home",
+        es: "Pedro Lira sentado en su oficina, escuchando con la mano en la barbilla",
+        en: "Pedro Lira sitting in his office, listening with his hand on his chin",
       },
-      /* Vertical contra hueco vertical: el recorte es mínimo y la cara cae
-         sobre el tercio de arriba, así que la ventana sube un punto. */
-      encuadre: "50% 35%",
+      /* La cara cae en el tercio de arriba del recorte. */
+      encuadre: "50% 30%",
     },
   },
 
@@ -4204,18 +4207,20 @@ export const copy = {
           en: "You step outside your own contacts. You open alliances with local businesses that see the same people you do, and you go back over everything you planted in the previous weeks: the contacts that went cold, the conversations left half-finished. The base stops being a list and starts moving on its own.",
         },
         imagen: {
-          /* ⚠️ CAMBIADA EL 16-09-2026: iba `banco-charla` (dos hombres a
-             contraluz) y el cliente la vio oscura y poco ligada al texto. La
-             fase habla de alianzas con negocios de la zona; esto son dos
-             dueños de una tienda de barrio en su local, a plena luz. Pexels
-             8475204, recortada a 1400x1050. */
-          src: "/imagenes/plan90/alianza-local.webp",
-          ancho: 1400,
-          alto: 1050,
-          encuadre: "center 40%",
+          /* ⚠️ CAMBIADA DOS VECES EL 16-09-2026. Iba `banco-charla` (dos hombres
+             a contraluz, oscura); pasó a dos tenderos en su local; y el
+             cliente pidió "clara y alguien con un celular, tal vez la que
+             tenemos en el programa". Es esa: la mujer al teléfono junto a la
+             ventana, que hasta hoy abría "El programa Emprende180" (ese hueco
+             lo ocupa ahora Pedro). Vertical en un hueco apaisado: `cover`
+             recorta arriba y abajo, y el 30 % deja la cara y el teléfono. */
+          src: "/imagenes/identidad/mujer-vertical.webp",
+          ancho: 800,
+          alto: 1040,
+          encuadre: "50% 30%",
           alt: {
-            es: "Dos dueños de una tienda de barrio, con delantal, sonriendo en su local",
-            en: "Two neighbourhood shop owners in aprons, smiling in their store",
+            es: "Una mujer hablando por teléfono sentada junto a la ventana de su casa",
+            en: "A woman on the phone sitting by the window at home",
           },
         },
       },
@@ -4613,11 +4618,11 @@ export const copy = {
      * una, dictadas por el cliente. Los iconos salen de la tabla cerrada
      * de `Icono.astro`:
      *
-     *   enfoque        diana       — un mensaje, una persona, un resultado
-     *   acción         reloj       — dos horas diarias
-     *   comunidad      personas    — la red de embajadores
-     *   crecimiento    flecha      — un paso más en cada fase
-     *   transformación actualizar  — el giro: quien empieza y quien acaba
+     *   enfoque        diana      — un mensaje, una persona, un resultado
+     *   acción         calendario — la constancia diaria
+     *   comunidad      personas   — la red de embajadores
+     *   crecimiento    grafica    — la curva que sube
+     *   transformación giro       — la vuelta de 180°: quien empieza y quien acaba
      *
      * ⚠️ NINGUNA HABLA DE DINERO (regla 3). "Algo real" y "fuente de
      * ingresos propia" describen la oportunidad, no una cifra.
@@ -4632,7 +4637,7 @@ export const copy = {
         },
       },
       {
-        icono: "reloj",
+        icono: "calendario",
         palabra: { es: "Acción", en: "Action" },
         frase: {
           es: "La constancia vence a la intensidad. Dos horas diarias construyen algo real.",
@@ -4648,7 +4653,7 @@ export const copy = {
         },
       },
       {
-        icono: "flecha",
+        icono: "grafica",
         palabra: { es: "Crecimiento", en: "Growth" },
         frase: {
           es: "Cada fase te acerca un paso más a dejar de improvisar.",
@@ -4656,7 +4661,7 @@ export const copy = {
         },
       },
       {
-        icono: "actualizar",
+        icono: "giro",
         palabra: { es: "Transformación", en: "Transformation" },
         frase: {
           es: "El Día 90 eres una versión diferente de quien empezó el Día 1.",
