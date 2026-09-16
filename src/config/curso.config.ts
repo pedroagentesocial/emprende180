@@ -5370,8 +5370,8 @@ export const copy = {
     /* La tercera no es ninguna de las dos caras del héroe: es una
        conversación entre dos, que es de lo que va la sección. */
     fotoTerciaria: {
-      es: "Dos personas conversando sentadas en una mesa",
-      en: "Two people talking at a table",
+      es: "Dos amigos conversando con un café en un balcón",
+      en: "Two friends chatting over coffee on a balcony",
     },
     /** Distintivo sobre el titular. Dice dónde está: es el final de la página. */
     kicker: { es: "Último paso", en: "Last step" },
