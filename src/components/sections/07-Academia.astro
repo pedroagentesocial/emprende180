@@ -91,7 +91,14 @@ const FOTO = instructor.retratos.dePie;
       Sacándola al 135 % y pegándola a la izquierda, el centro de la foto cae
       sobre el 70 % de la sección: la persona se va a la derecha, que es donde
       se la quiere, y lo que sobra lo recorta el `overflow-hidden` del padre.
-      En móvil no se aplica: ahí no hay columna de texto al lado. */}
+      En móvil no se aplica: ahí no hay columna de texto al lado.
+
+      ⚠️ EL ENCUADRE VERTICAL ES `center 20%`, Y ERA 40. La foto es 3:2 y al
+      135 % del ancho mide casi el doble de alto que la sección, así que
+      `cover` solo enseña la mitad del fotograma; con el 40 % la ventana
+      empezaba a un cuarto de la altura y le cortaba la cabeza a Pedro, que
+      arranca al 15 %. Con el 20 % se ve del 10 % al 60 %: cabeza entera y
+      torso. El cliente lo vio ("sale cortada la cabeza"), 16-09-2026. */}
   <img
     src={FOTO.src}
     alt={FOTO.alt[lang]}
@@ -101,7 +108,7 @@ const FOTO = instructor.retratos.dePie;
     height={FOTO.alto}
     loading="lazy"
     decoding="async"
-    class="absolute inset-y-0 left-0 -z-10 h-full w-full max-w-none object-cover object-[center_40%] lg:w-[135%]"
+    class="absolute inset-y-0 left-0 -z-10 h-full w-full max-w-none object-cover object-[center_20%] lg:w-[135%]"
   />
 
   {/* El velo. Arranca opaco donde cae el texto y se apaga hacia la derecha,
@@ -117,7 +124,11 @@ const FOTO = instructor.retratos.dePie;
     <Reveal>
       {/* La columna de texto ocupa poco más de la mitad: lo que sobra a la
           derecha no está vacío, es la foto. */}
-      <div class="max-w-xl lg:max-w-[34rem]">
+      {/* ⚠️ 38rem Y NO 34: con 34 el título inglés ("No fixed schedule.") se
+          partía en dos renglones a 48 px y el titular salía en tres líneas
+          en vez de dos. A 608 px cabe entero en las dos lenguas. La foto
+          sigue teniendo su mitad: Pedro cae sobre el 70 % de la sección. */}
+      <div class="max-w-xl lg:max-w-[38rem]">
         <p class="text-sm font-semibold text-ink-on-inverse-brand sm:text-base">
           <T v={academia.kicker} />
         </p>
