@@ -13,7 +13,10 @@ import { IDIOMAS, cambiarIdioma, idioma, type Idioma } from "@i18n/idioma";
  * toca el scroll ni ensucia el historial con una entrada por cada clic.
  */
 
-const ETIQUETAS: Record<Idioma, { corta: string; larga: Record<Idioma, string> }> = {
+const ETIQUETAS: Record<
+  Idioma,
+  { corta: string; larga: Record<Idioma, string> }
+> = {
   es: { corta: "ES", larga: { es: "Ver en español", en: "View in Spanish" } },
   en: { corta: "EN", larga: { es: "Ver en inglés", en: "View in English" } },
 };
@@ -85,7 +88,9 @@ export function LanguageSwitch({
                  el dedo que apunta a ES cae en EN. Con 48 y algo de aire, el
                  objetivo real deja de solaparse con el vecino. */
               /* `relative` para quedar por encima de la píldora, que va detrás. */
-              "relative min-h-12 min-w-12 rounded-full px-3 text-sm font-bold transition-colors duration-200",
+              /* 44 px, el mínimo táctil, y no 48: la barra entera bajó un
+                 punto el 16-09-2026 a petición del cliente. */
+              "relative min-h-11 min-w-11 rounded-full px-2.5 text-[0.8125rem] font-bold transition-colors duration-200",
               "focus-visible:outline-2 focus-visible:outline-offset-2",
               oscuro
                 ? "focus-visible:outline-focus-inverse"

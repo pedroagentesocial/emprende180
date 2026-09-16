@@ -16,7 +16,7 @@ import { testimonios, cifras, copy, curso, garantia } from "@config/curso.config
    Que las seis citas de maquetación ni siquiera existan en el servidor
    publicado es más garantía que cualquier aviso en pantalla. */
 import { testimoniosMuestra } from "@config/testimonios.muestra";
-import { construirTxt } from "@i18n/idioma";
+import { resolverIdiomaServidor, construirTxt } from "@i18n/idioma";
 import { faltaPorRellenar } from "@lib/pendientes";
 import { formatNumber, formatMoney, formatNota, interpolar } from "@i18n/formato";
 
@@ -150,6 +150,11 @@ const resumenSinFuente = construirTxt((l) =>
    con él. Es el mismo motivo por el que la sección 09 verifica su desglose. */
 const fundador = copy.pruebaSocial.fundador;
 
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
 /* El primero cita las dos cifras del ancla, así que sin precio público se
    cambia por su versión sin números. Ver `puntoPrecioSinCifras`. */
 const puntosBase = curso.precio.publico
@@ -255,7 +260,30 @@ const puntos = puntosBase.map((p) => ({
             `montarBandas()` sigue cargándose desde `05-Aliados.astro`: ahora
             solo sirve a la banda de logos, pero es el sitio correcto igual. */}
         <div class="container-page mt-12">
-          <CarruselTestimonios items={lista} class="mx-auto max-w-5xl" />
+          <CarruselTestimonios items={lista} />
+        </div>
+
+        {/* ─── LA FOTO DE LA COMUNIDAD ─────────────────────────────────────
+            Debajo de las tarjetas, centrada y ancha: tres mujeres conversando
+            en un sofá. La pidió el cliente el 16-09-2026 ("una imagen nueva
+            llamada stocks abajo de las cards, centrada") y la subió él a
+            /public/imagenes/testimonios; aquí se sirve recortada a 16:9 y a
+            1600 px, no los 6000x4000 y 2,4 MB del original. Es de banco y no
+            son alumnas; lo dice el `alt` sin adornos. */}
+        <div class="container-page mt-12 lg:mt-16">
+          <Reveal>
+            <img
+              src={copy.pruebaSocial.foto.src}
+              alt={copy.pruebaSocial.foto.alt[lang]}
+              data-alt-es={copy.pruebaSocial.foto.alt.es}
+              data-alt-en={copy.pruebaSocial.foto.alt.en}
+              width={1600}
+              height={900}
+              loading="lazy"
+              decoding="async"
+              class="mx-auto aspect-video w-full max-w-5xl rounded-lg border-[0.5px] border-line object-cover"
+            />
+          </Reveal>
         </div>
 
         {/* ─── Y LOS LOGOS, EN LA MISMA ZONA Y SIN COSTURA ─────────────────

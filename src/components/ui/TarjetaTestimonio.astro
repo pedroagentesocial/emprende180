@@ -40,6 +40,24 @@ interface Props {
 }
 
 const { testimonio: t, grande = false, class: className = "" } = Astro.props;
+
+/**
+ * ⚠️ EL AVATAR SON LAS INICIALES MIENTRAS NO HAYA FOTO REAL, Y NO UNA FOTO DE
+ * BANCO. El cliente pidió el 16-09-2026 "imagen en círculo de la persona,
+ * búscalas tú": buscar caras de banco y ponerlas junto al nombre real de un
+ * alumno sería enseñar como Carlos Ramírez a alguien que no es Carlos
+ * Ramírez. Un testimonio con nombre real y cara ajena es un testimonio
+ * falseado, y la FTC (16 CFR 255) lo trata como endoso engañoso. Las
+ * iniciales en el círculo de marca dan el peso visual del avatar sin
+ * afirmar nada que no sea verdad; el día que llegue la foto de cada uno
+ * (`foto` en el config), entra sola en el mismo hueco.
+ */
+const iniciales = t.nombre
+  .split(/\s+/)
+  .filter(Boolean)
+  .slice(0, 2)
+  .map((p) => p[0]!.toUpperCase())
+  .join("");
 ---
 
 <article
@@ -48,31 +66,9 @@ const { testimonio: t, grande = false, class: className = "" } = Astro.props;
        él, la imagen sale por las cuatro puntas del radio. */
     "flex h-full flex-col overflow-hidden rounded-lg border-[0.5px] border-line bg-surface",
     grande ? "min-h-[320px] lg:min-h-[380px]" : "min-h-[260px]",
-    /* En fila solo desde `sm`. En un teléfono, foto y texto lado a lado dejan
-       la cita en una columna de 180 px. */
-    t.foto && "sm:flex-row",
     className,
   ]}
 >
-  {
-    t.foto && (
-      /* Alto fijo en móvil —donde va arriba y a lo ancho— y alto completo de la
-         tarjeta desde `sm`, donde va al lado. */
-      <div class="h-56 w-full shrink-0 sm:h-auto sm:w-[38%]">
-        {/* El `alt` es el nombre y nada más: es un nombre propio, así que no se
-            traduce, y no se le antepone "foto de" porque eso ya lo anuncia el
-            lector de pantalla. */}
-        <img
-          src={t.foto}
-          alt={t.nombre}
-          loading="lazy"
-          decoding="async"
-          class="size-full object-cover"
-        />
-      </div>
-    )
-  }
-
   <div class:list={["flex flex-1 flex-col justify-center gap-5", grande ? "p-7 sm:p-10 lg:p-12" : "p-6 sm:p-7"]}>
     <blockquote>
       <p
@@ -88,11 +84,38 @@ const { testimonio: t, grande = false, class: className = "" } = Astro.props;
     {/* `cite` dentro de `footer` y no dentro del `blockquote`: la
         especificación dice que el contenido de `blockquote` es LA CITA, y la
         atribución no forma parte de lo que la persona dijo. */}
-    <footer>
-      <p class:list={["font-medium text-ink", grande ? "text-lg" : "text-base"]}>{t.nombre}</p>
-      <p class:list={["mt-0.5 text-ink-subtle", grande ? "text-sm sm:text-base" : "text-[0.8125rem]"]}>
-        <T v={t.contexto} />
-      </p>
+    <footer class="flex items-center gap-3.5">
+      {/* El avatar: la foto si existe; si no, las iniciales sobre el navy de
+          marca. Ver la nota del frontmatter. */}
+      {
+        t.foto ? (
+          <img
+            src={t.foto}
+            alt=""
+            width={96}
+            height={96}
+            loading="lazy"
+            decoding="async"
+            class:list={["shrink-0 rounded-full object-cover", grande ? "size-14" : "size-12"]}
+          />
+        ) : (
+          <span
+            aria-hidden="true"
+            class:list={[
+              "grid shrink-0 place-items-center rounded-full bg-primary-900 font-bold tracking-wide text-secondary-300",
+              grande ? "size-14 text-base" : "size-12 text-sm",
+            ]}
+          >
+            {iniciales}
+          </span>
+        )
+      }
+      <div class="min-w-0">
+        <p class:list={["font-semibold text-ink", grande ? "text-lg" : "text-base"]}>{t.nombre}</p>
+        <p class:list={["mt-0.5 text-ink-subtle", grande ? "text-sm sm:text-base" : "text-[0.8125rem]"]}>
+          <T v={t.contexto} />
+        </p>
+      </div>
     </footer>
   </div>
 </article>

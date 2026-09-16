@@ -2343,6 +2343,16 @@ export const copy = {
        primera"): los testimonios son la comunidad hablando, y el cliente pidió
        que se la nombrara. */
     kicker: { es: "La comunidad de Embajadores", en: "The Ambassador community" },
+    /* La foto ancha de debajo del carrusel. La subió el cliente el 16-09-2026
+       (`stock2.jpg`, 6000x4000); aquí va recortada a 16:9 y a 1600 px. Es de
+       banco: tres mujeres conversando en un sofá, no alumnas. */
+    foto: {
+      src: "/imagenes/testimonios/comunidad.webp",
+      alt: {
+        es: "Tres mujeres conversando sentadas en un sofá",
+        en: "Three women talking on a sofa",
+      },
+    },
     /* ⚠️ DECÍA "MUJERES COMO TÚ" Y ERA FALSO. De los seis testimonios que hay,
        tres son de hombres: José, Carlos y Miguel. Un titular que solo nombra a
        las mujeres encima de una rejilla donde sale medio pueblo no es un matiz

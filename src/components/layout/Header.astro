@@ -263,7 +263,9 @@ const logoAlt = {
                 /* ⚠️ EL CUERPO GRANDE ESPERA A `xl`, Y NO ES UN CAPRICHO:
                    entre 1024 y 1279 la fila ya va justa. Ver la nota del
                    logotipo, que lleva el reparto medido de la barra entera. */
-                "group/enlace relative inline-flex min-h-12 items-center px-4 text-base font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 xl:text-lg",
+                /* Cuerpo base y no `lg` en `xl`: el cliente pidió el 16-09-2026 la
+                   barra "un poco más pequeña", logotipo y enlaces incluidos. */
+                "group/enlace relative inline-flex min-h-11 items-center px-3.5 text-[0.9375rem] font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2",
                 "after:absolute after:inset-x-4 after:bottom-2.5 after:h-0.5 after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-300 after:ease-[var(--ease-out-soft)] hover:after:scale-x-100",
                 sobreHero
                   ? "text-white/85 hover:text-white focus-visible:outline-focus-inverse"
@@ -363,8 +365,10 @@ const logoAlt = {
                  quedaría grande al hacer scroll en cualquier pantalla de 1280
                  para arriba. */
             sobreHero
-              ? "lg:h-14 lg:group-data-[compacta=true]:h-9 xl:h-20 xl:group-data-[compacta=true]:h-9 2xl:h-24 2xl:group-data-[compacta=true]:h-9"
-              : "lg:h-14 lg:group-data-[compacta=true]:h-9",
+              /* Un escalón menos en cada corte (14→12, 20→16, 24→20): "un
+                 poco más pequeño", 16-09-2026. La compacta se queda en 9. */
+              ? "lg:h-12 lg:group-data-[compacta=true]:h-9 xl:h-16 xl:group-data-[compacta=true]:h-9 2xl:h-20 2xl:group-data-[compacta=true]:h-9"
+              : "lg:h-12 lg:group-data-[compacta=true]:h-9",
           ]}
           fetchpriority={l === lang ? "high" : "low"}
           loading={l === lang ? "eager" : "lazy"}
@@ -427,7 +431,7 @@ const logoAlt = {
              El selector de idioma se queda en `text-sm` a propósito: es un
              control de dos letras, no un destino, y crecerlo lo convertiría en
              el elemento más grande de la derecha. */
-          "inline-flex min-h-12 items-center gap-2 rounded-full px-3 text-base font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 max-[359px]:px-1.5 sm:px-4 xl:text-lg",
+          "inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-[0.9375rem] font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 max-[359px]:px-1.5 sm:px-3.5",
           sobreHero
             ? "text-white/85 hover:text-white focus-visible:outline-focus-inverse"
             : "text-ink-muted hover:bg-surface-muted hover:text-ink focus-visible:outline-focus",
