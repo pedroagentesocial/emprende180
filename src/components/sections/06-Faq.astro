@@ -84,7 +84,14 @@ const schemaFaq =
     ORDEN DEL DOM ≠ ORDEN VISUAL. El encabezado va PRIMERO en el marcado y se
     manda a la derecha con `order`: al revés, un lector de pantalla recorrería
     la lista entera sin saber de qué sección le hablan. */}
-<Section id="faq" tono="muted" ariaLabel={copy.faq.aria}>
+{/* ⚠️ FONDO BLANCO Y TARJETAS EN GRIS, Y ERA AL REVÉS. El cliente lo invirtió
+    el 16-09-2026: la sección iba en azul suave con las preguntas en blanco;
+    ahora la sección es blanca y cada pregunta es una tarjeta `surface-muted`.
+    Y el bloque de Pedro —foto, "¿te queda una duda?", botones y correo— baja
+    de la columna del título a una franja debajo de las preguntas: el título
+    se queda pegajoso a la derecha, solo, y la salida humana se encuentra al
+    acabar de leer, que es cuando hace falta. */}
+<Section id="faq" tono="surface" ariaLabel={copy.faq.aria}>
   <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_24rem] lg:gap-x-16 xl:gap-x-24">
     <aside class="lg:order-2">
       <div class="lg:sticky lg:top-28">
@@ -97,55 +104,6 @@ const schemaFaq =
             <T v={copy.faq.titulo} />
           </h2>
 
-          {/* ─── LA DUDA QUE NO ESTÁ EN LA LISTA ──────────────────────────
-              Debajo del título y no cerrando la sección a lo ancho: así queda
-              a la vista mientras se recorren las preguntas, que es cuando
-              surge la que no está. Llamar, si hay número, y dejar los datos en
-              el formulario de Empezar. El correo escrito debajo, para quien
-              prefiera copiarlo. */}
-          {/* Pedro, escuchando. Va justo encima de "¿te queda una duda?"
-              porque es quien la contesta: la foto pone cara al "escríbeme".
-              Es la de la mano en la barbilla, que es el gesto de escuchar; se
-              añadió el 16-09-2026 con el resto de retratos que faltaban. */}
-          <img
-            src={instructor.retratos.sentado.src}
-            alt={instructor.retratos.sentado.alt[lang]}
-            data-alt-es={instructor.retratos.sentado.alt.es}
-            data-alt-en={instructor.retratos.sentado.alt.en}
-            width={instructor.retratos.sentado.ancho}
-            height={instructor.retratos.sentado.alto}
-            loading="lazy"
-            decoding="async"
-            class="mt-8 aspect-[3/2] w-full max-w-sm rounded-lg border border-line object-cover"
-          />
-
-          <p class="mt-6 text-lg font-bold text-balance text-ink sm:text-xl">
-            <T v={copy.faq.quedaDuda} />
-          </p>
-          <p class="mt-2 text-base font-medium text-pretty text-ink-muted sm:text-lg">
-            <T v={copy.faq.quedaDudaTexto} />
-          </p>
-
-          <div class="mt-6 flex flex-col items-start gap-3">
-            {
-              contacto.telefono && (
-                <Button href={`tel:${contacto.telefono}`} trackId="faq-llamada">
-                  <Icono nombre="telefono" class="size-4 shrink-0" grosor={2} />
-                  <T v={copy.instructor.llamame} />
-                </Button>
-              )
-            }
-
-            {/* Con la barra: la sección vive en la portada y en /resources
-                desde el 15-09-2026, y desde la segunda un ancla pelada no
-                llevaría a ningún sitio. En la portada es el mismo salto. */}
-            <Button href="/#empezar" trackId="faq-contacto">
-              <Icono nombre="conversacion" class="size-4 shrink-0" grosor={2} />
-              <T v={copy.faq.contactar} />
-            </Button>
-          </div>
-
-          <p class="mt-4 text-sm text-ink-subtle">{contacto.email}</p>
         </Reveal>
       </div>
     </aside>
@@ -160,7 +118,7 @@ const schemaFaq =
               data-faq
               name="faq"
               open={i === 0}
-              class="group rounded-lg border-[0.5px] border-line bg-surface transition-colors duration-200 ease-out-soft open:border-secondary-300 open:bg-secondary-50/40 hover:border-line-strong open:hover:border-secondary-300"
+              class="group rounded-lg border-[0.5px] border-line bg-surface-muted transition-colors duration-200 ease-out-soft open:border-secondary-300 open:bg-secondary-50/60 hover:border-line-strong open:hover:border-secondary-300"
             >
               {/* `items-start` y no `items-center`: con el "+" centrado sobre el
                   bloque, una pregunta de una línea y otra de tres lo dejaban a
@@ -206,6 +164,54 @@ const schemaFaq =
     </div>
 
   </div>
+
+  {/* ─── LA DUDA QUE NO ESTÁ EN LA LISTA ───────────────────────────────────
+      Debajo de las preguntas y a todo el ancho: Pedro escuchando a la
+      izquierda (es quien contesta, la foto pone cara al "escríbeme") y, a
+      la derecha, la frase, los dos botones en fila y el correo. Llamar, si
+      hay número, y dejar los datos en el formulario de Empezar; el correo
+      escrito debajo para quien prefiera copiarlo. Misma tarjeta gris que las
+      preguntas, para que se lea como la última de la lista. */}
+  <Reveal>
+    <div class="mt-10 grid items-center gap-8 rounded-lg bg-surface-muted p-6 sm:p-8 md:grid-cols-[16rem_minmax(0,1fr)] md:gap-10 lg:mt-12 lg:p-10">
+      <img
+        src={instructor.retratos.sentado.src}
+        alt={instructor.retratos.sentado.alt[lang]}
+        data-alt-es={instructor.retratos.sentado.alt.es}
+        data-alt-en={instructor.retratos.sentado.alt.en}
+        width={instructor.retratos.sentado.ancho}
+        height={instructor.retratos.sentado.alto}
+        loading="lazy"
+        decoding="async"
+        class="aspect-[3/2] w-full rounded-lg border border-line object-cover md:aspect-[4/3]"
+      />
+      <div>
+        <p class="text-xl font-extrabold text-balance text-ink sm:text-2xl">
+          <T v={copy.faq.quedaDuda} />
+        </p>
+        <p class="mt-2 max-w-prose text-base font-medium text-pretty text-ink-muted sm:text-lg">
+          <T v={copy.faq.quedaDudaTexto} />
+        </p>
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          {
+            contacto.telefono && (
+              <Button href={`tel:${contacto.telefono}`} trackId="faq-llamada">
+                <Icono nombre="telefono" class="size-4 shrink-0" grosor={2} />
+                <T v={copy.instructor.llamame} />
+              </Button>
+            )
+          }
+          {/* Con la barra: la sección vive en la portada y en /resources, y
+              desde la segunda un ancla pelada no llevaría a ningún sitio. */}
+          <Button href="/#empezar" trackId="faq-contacto">
+            <Icono nombre="conversacion" class="size-4 shrink-0" grosor={2} />
+            <T v={copy.faq.contactar} />
+          </Button>
+        </div>
+        <p class="mt-4 text-sm font-medium text-ink-subtle">{contacto.email}</p>
+      </div>
+    </div>
+  </Reveal>
 </Section>
 
 {schemaFaq && <script is:inline type="application/ld+json" set:html={JSON.stringify(schemaFaq)} />}

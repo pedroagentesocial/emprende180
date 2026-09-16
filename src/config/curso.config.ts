@@ -1823,6 +1823,31 @@ export const faqs: Faq[] = [
       en: "Day 90 is not an ending. From Day 78 you are already writing your own tasks, and on Day 90 you look at your numbers and decide what comes next. What you built stays with you: your organized contact base, your follow-up system and your referral sources. And the community is still there, with the team call every week.",
     },
   },
+  /* Las dos que se añadieron con permiso del cliente ("si quieres agrega 2
+     preguntas más que funcionen", 16-09-2026). Contestan las dos dudas que
+     el resto de la página deja abiertas: qué se hace cada día (los tres
+     bloques del plan, `copy.plan90.dia`) y hasta dónde llega tu parte (la regla
+     5 del documento del cliente, `copy.plan90.limite`). */
+  {
+    pregunta: {
+      es: "¿Qué hago exactamente cada día?",
+      en: "What exactly do I do each day?",
+    },
+    respuesta: {
+      es: "Cada día tiene su misión escrita, no hay que inventar nada. Se reparte en tres bloques: prospección, que es escribir a gente nueva y pedir referidos por mensaje; seguimiento, que es retomar las conversaciones abiertas y los contactos que se enfriaron; y el cierre del día en el CRM, donde quedan las tareas, los contactos y las notas. Si no está en el CRM, no existió.",
+      en: "Every day comes with its mission written down, so there is nothing to invent. It splits into three blocks: prospecting, which means messaging new people and asking for referrals; follow-up, which means picking up open conversations and contacts that went cold; and closing the day in the CRM, where the tasks, contacts and notes live. If it is not in the CRM, it did not happen.",
+    },
+  },
+  {
+    pregunta: {
+      es: "¿Tengo que saber del producto de cada empresa?",
+      en: "Do I need to know each company's product inside out?",
+    },
+    respuesta: {
+      es: "No. Tu parte es conectar: presentar a alguien que confía en ti con una empresa que lleva años haciendo bien su trabajo. Lo técnico lo resuelve el equipo certificado de cada empresa. Tú no diagnosticas, no prometes resultados ni cierras nada que no te toque: tú conectas y el equipo certificado resuelve.",
+      en: "No. Your part is to connect: introducing someone who trusts you to a company that has been doing its job well for years. The technical side is handled by each company's certified team. You do not diagnose, promise results or close anything that is not yours to close: you connect, and the certified team takes it from there.",
+    },
+  },
 ];
 
 // ─── Contacto ────────────────────────────────────────────────────────────────
