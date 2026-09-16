@@ -47,7 +47,7 @@ interface Props {
    * ⚠️ NO ES "GRANDE Y PEQUEÑO": son dos cálculos distintos contra dos anchos
    * distintos. Ver la tabla de medidas en `HeroDiptico.astro`.
    */
-  escala?: "mitad" | "ancho" | "libre";
+  escala?: "mitad" | "ancho" | "libre" | "portada";
   /** La sombra de texto del slider. */
   sombra: string;
   /**
@@ -178,6 +178,16 @@ const ESCALAS = {
      centro caben en 950 px de alto con sitio de sobra. */
   libre:
     "text-[clamp(1.25rem,0.125rem+2.875vw,4.125rem)] font-extrabold leading-[1.04] tracking-[-0.03em]",
+  /* ─── `portada` ──────────────────────────────────────────────────────────
+     El titular ÚNICO de la primera pantalla ("Tu Giro de 180° / Empieza
+     Aquí"), desde el 16-09-2026. Va solo en su columna del 60 % y sus dos
+     renglones son cortos (15 y 12 caracteres), así que puede crecer mucho
+     más que `libre`, que estaba pensado para renglones de 36: 57 px a 1440, 73
+     a 1920 y el tope de 80 a partir de 2130. El renglón de apoyo va al 0,87
+     de eso. El cliente lo pidió "más grande" dos veces; esta es la escala
+     que lo hace. */
+  portada:
+    "text-[clamp(1.75rem,0.5rem+3.6vw,5rem)] font-extrabold leading-[1.02] tracking-[-0.03em]",
 } as const;
 
 const APOYO = "text-[0.87em] font-semibold";
