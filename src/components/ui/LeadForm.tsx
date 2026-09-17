@@ -647,11 +647,45 @@ export function LeadForm({
                 : "focus-visible:outline-focus",
             ].join(" ")}
           />
-          <span>
-            {/* Lo corto siempre a la vista; lo largo, plegado debajo. El botón
-                de plegar es un <button>: no altera la casilla (stopPropagation
-                y preventDefault, porque vive dentro del <label>). */}
-            {t(consentimiento.resumen)}{" "}
+          <span className="min-w-0 flex-1">
+            {/* ⚠️ EL TEXTO COMPLETO, SIEMPRE, Y ES EL MISMO QUE SE PLIEGA. Plegado
+                se ve recortado a dos renglones (`line-clamp-2`) con puntos
+                suspensivos; "Ver más" lo despliega entero, con sus enlaces, y
+                "Ver menos" lo vuelve a recortar. El cliente lo pidió así el
+                17-09-2026: nada de resumen ni de reescribirlo, el texto que
+                dictó, que se pliegue y se despliegue. */}
+            <span
+              id={idDe("condiciones")}
+              /* Sin `block`: `line-clamp` necesita `display: -webkit-box` y una
+                 clase de display encima se lo pisaba. Abierto, `line-clamp-none`. */
+              className={
+                condicionesAbiertas ? "line-clamp-none" : "line-clamp-2"
+              }
+            >
+              {t(textoConsentimiento)}
+              <a
+                href={`/legal/${legalConfig.privacidad.slug}`}
+                data-legal={legalConfig.privacidad.slug}
+                // El clic en el enlace no debe alternar la casilla.
+                onClick={(e) => e.stopPropagation()}
+                className={claseEnlace}
+              >
+                {t(consentimiento.enlacePrivacidad)}
+              </a>
+              {t(consentimiento.conector)}
+              <a
+                href={`/legal/${legalConfig.terminos.slug}`}
+                data-legal={legalConfig.terminos.slug}
+                onClick={(e) => e.stopPropagation()}
+                className={claseEnlace}
+              >
+                {t(consentimiento.enlaceTerminos)}
+              </a>
+              {t(consentimiento.textoDespues)}
+            </span>
+            {/* El botón de plegar es un <button>: no altera la casilla
+                (stopPropagation y preventDefault, porque vive dentro del
+                <label>). */}
             <button
               type="button"
               aria-expanded={condicionesAbiertas}
@@ -661,7 +695,10 @@ export function LeadForm({
                 e.stopPropagation();
                 setCondicionesAbiertas((v) => !v);
               }}
-              className={[claseEnlace, "cursor-pointer"].join(" ")}
+              className={[
+                claseEnlace,
+                "mt-1 block cursor-pointer text-[0.8125rem]",
+              ].join(" ")}
             >
               {t(
                 condicionesAbiertas
@@ -671,47 +708,6 @@ export function LeadForm({
             </button>
           </span>
         </label>
-        <AnimatePresence initial={false}>
-          {condicionesAbiertas && (
-            <motion.div
-              id={idDe("condiciones")}
-              initial={reducir ? false : { opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={reducir ? { opacity: 0 } : { opacity: 0, height: 0 }}
-              transition={
-                reducir
-                  ? { duration: 0 }
-                  : { duration: 0.28, ease: [0.16, 1, 0.3, 1] }
-              }
-              className="overflow-hidden"
-            >
-              <p
-                className={[
-                  "pl-9 pt-1 text-left text-[0.8125rem] leading-relaxed",
-                  inverso ? "text-secondary-200/90" : "text-ink-muted",
-                ].join(" ")}
-              >
-                {t(textoConsentimiento)}
-                <a
-                  href={`/legal/${legalConfig.privacidad.slug}`}
-                  data-legal={legalConfig.privacidad.slug}
-                  className={claseEnlace}
-                >
-                  {t(consentimiento.enlacePrivacidad)}
-                </a>
-                {t(consentimiento.conector)}
-                <a
-                  href={`/legal/${legalConfig.terminos.slug}`}
-                  data-legal={legalConfig.terminos.slug}
-                  className={claseEnlace}
-                >
-                  {t(consentimiento.enlaceTerminos)}
-                </a>
-                {t(consentimiento.textoDespues)}
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
         {errores.consentimiento && (
           <p
             id={errorIdDe("consentimiento")}

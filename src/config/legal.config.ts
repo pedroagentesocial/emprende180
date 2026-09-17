@@ -507,20 +507,15 @@ export const consentimiento = {
     en: "I agree to receive emails, phone calls, and text messages from Entrepreneur180 regarding my inquiry, including follow-up messages, appointment reminders, service updates, and requests for information. Message frequency varies. Message and data rates may apply. Text STOP to opt out. Consent is not a condition of purchase or service. See our ",
   },
   /**
-   * ⚠️ LA CASILLA VA PLEGADA. El texto entero son seis renglones y el cliente
-   * lo vio "muy grande" (17-09-2026). Lo que se ve al cargar es esta línea
-   * corta, que ya dice a qué se consiente, y un botón "Ver condiciones" que
-   * despliega el texto completo con sus enlaces. El texto completo está
-   * siempre en la página (no se carga al pulsar, se muestra), así que el
-   * consentimiento sigue siendo informado: lo dicho en corto y lo dicho en
-   * largo son lo mismo, y la versión larga está a un toque.
+   * ⚠️ LA CASILLA VA PLEGADA, PERO CON EL TEXTO ENTERO. El texto son seis
+   * renglones y el cliente lo vio "muy grande" (17-09-2026); hubo una versión
+   * con una frase resumen y la rechazó: "necesito que tenga todo el script,
+   * solo que se pliegue y se despliegue". Así que lo que se pliega es EL MISMO
+   * texto, recortado a dos renglones con puntos suspensivos, y "Ver más" lo
+   * abre entero con sus enlaces. Nada se reescribe.
    */
-  resumen: {
-    es: "Acepto recibir correos, llamadas y mensajes de texto de Emprende180 sobre mi solicitud.",
-    en: "I agree to receive emails, calls and text messages from Entrepreneur180 about my inquiry.",
-  },
-  verMas: { es: "Ver condiciones", en: "See terms" },
-  verMenos: { es: "Ocultar condiciones", en: "Hide terms" },
+  verMas: { es: "Ver más", en: "Read more" },
+  verMenos: { es: "Ver menos", en: "Read less" },
   enlacePrivacidad: { es: "aviso de privacidad", en: "Privacy Policy" },
   conector: { es: " y nuestros ", en: " and " },
   enlaceTerminos: { es: "términos y condiciones", en: "Terms & Conditions" },
