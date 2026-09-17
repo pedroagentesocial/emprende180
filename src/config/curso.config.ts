@@ -1871,10 +1871,13 @@ export const contacto = {
    *
    * Vacío (`""`) esconde el botón en todas partes.
    */
-  telefono: "+18017557181",
+  /* El número lo dio el cliente el 17-09-2026 (antes había otro, el 801). Se
+     enseña en el botón flotante de llamar, en la FAQ, en el pie y en la
+     ficha de Organization para Google. */
+  telefono: "+13855883717",
   /** Cómo se enseña escrito. Se separa del `tel:` porque el enlace no lleva
    *  espacios y el texto sí. */
-  telefonoVisible: "(801) 755-7181",
+  telefonoVisible: "(385) 588-3717",
   /** Formato internacional, solo dígitos. Vacío para ocultar el botón. */
   whatsapp: "", // SWAP (HECHO)
   whatsappMensaje: {
@@ -5560,6 +5563,11 @@ export const copy = {
     pieContacto: { es: "Hablar con nosotros", en: "Talk to us" },
     pieLegal: { es: "Legal", en: "Legal" },
     pieLlamar: { es: "Llamar", en: "Call" },
+    /* El botón flotante de llamar, encima del chat. `llamar` es la etiqueta
+       accesible con el número; `llamarCorto` el verbo de la pastilla que se
+       despliega al pasar el cursor. */
+    llamar: { es: "Llamar al {numero}", en: "Call {numero}" },
+    llamarCorto: { es: "Llámanos", en: "Call us" },
     pieRedes: { es: "Síguenos", en: "Follow us" },
 
     /* El rótulo de los perfiles que todavía no existen. Estaba escrito a mano

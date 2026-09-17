@@ -1,0 +1,73 @@
+---
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import { copy, contacto } from "@config/curso.config";
+import { construirTxt, resolverIdiomaServidor } from "@i18n/idioma";
+import { interpolar } from "@i18n/formato";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * EL BOTÓN DE LLAMAR — flotante, justo encima del chat
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Un círculo navy con el icono del teléfono, fijo abajo a la derecha y
+ * encima de la burbuja del chat (la de GoHighLevel o la maqueta propia, que
+ * ocupan la misma esquina). Es un enlace `tel:` al número de contacto: en el
+ * teléfono abre el marcador, en el escritorio lo que tenga configurado el
+ * sistema. Lo pidió el cliente el 17-09-2026 al pasar el número.
+ *
+ * ─── DÓNDE SE SIENTA ────────────────────────────────────────────────────────
+ *
+ * Medido con el widget de GoHighLevel cargado (17-09-2026): la burbuja mide
+ * 58 px y se apoya a 20 px del borde, y ENCIMA de ella GHL pinta su saludo
+ * ("Hola, Emprendedor…"), una tarjeta de 72 px de alto que llega hasta 170 px
+ * del borde inferior. Este botón va a 186 px del borde: por encima del saludo,
+ * con un dedo de aire. Cuando el visitante cierra el saludo queda más alto de
+ * lo que haría falta, pero la alternativa —taparlo o quedar tapado por él,
+ * que es lo que pasó en la primera versión— era peor. Con la maqueta propia
+ * (sin GHL) el botón queda alto igual; se acepta por no tener dos alturas.
+ * Comparte el `z-index` del chat para quedar sobre el contenido y bajo el
+ * aviso de cookies (que va a 55).
+ *
+ * ⚠️ AL PASAR EL CURSOR SE DESPLIEGA EL NÚMERO, hacia la izquierda, en una
+ * pastilla blanca. Es lo que le dice a quien mira que no es "otro chat" sino
+ * una llamada, sin escribir el número siempre a la vista. En el teléfono no
+ * hay cursor y basta el icono: pulsar marca.
+ *
+ * Sin número configurado (`contacto.telefono` vacío) no se pinta nada.
+ */
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+const etiqueta = construirTxt((l) =>
+  interpolar(copy.ui.llamar[l], { numero: contacto.telefonoVisible }),
+);
+---
+
+{
+  contacto.telefono && (
+    <a
+      href={`tel:${contacto.telefono}`}
+      data-track="flotante-llamar"
+      aria-label={etiqueta[lang]}
+      data-aria-es={etiqueta.es}
+      data-aria-en={etiqueta.en}
+      class="group fixed bottom-[11.5rem] right-5 z-[54] flex items-center justify-end sm:right-6"
+    >
+      {/* La pastilla con el número, que se despliega a la izquierda al pasar
+          el cursor o al enfocar. `aria-hidden`: el enlace ya lo anuncia. */}
+      <span
+        aria-hidden="true"
+        class="pointer-events-none mr-3 max-w-0 overflow-hidden whitespace-nowrap rounded-full bg-surface text-sm font-bold text-ink opacity-0 shadow-lg ring-1 ring-line transition-[max-width,opacity,padding] duration-300 ease-out-soft group-hover:max-w-56 group-hover:px-4 group-hover:py-2.5 group-hover:opacity-100 group-focus-visible:max-w-56 group-focus-visible:px-4 group-focus-visible:py-2.5 group-focus-visible:opacity-100"
+      >
+        <T v={copy.ui.llamarCorto} /> {contacto.telefonoVisible}
+      </span>
+      <span class="grid size-14 place-items-center rounded-full bg-primary-950 text-white shadow-xl ring-2 ring-white/20 transition-transform duration-200 ease-out-soft group-hover:scale-105 group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-focus motion-safe:group-active:scale-95">
+        <Icono nombre="telefono" class="size-6" grosor={1.9} />
+      </span>
+    </a>
+  )
+}
