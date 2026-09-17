@@ -124,14 +124,15 @@ interface Props {
    *
    *   centro  — a caballo de la costura, centrado en la pantalla.
    *   izquierda — la misma columna del 60 %, pero pegada al margen
-   *             IZQUIERDO y ARRIBA, con el texto alineado a la izquierda. Es
+   *             IZQUIERDO y ABAJO, con el texto alineado a la izquierda. Es
    *             la composición de la primera pantalla: su vídeo tiene a la
-   *             persona en el tercio derecho, así que el texto arriba a la
+   *             persona en el tercio derecho, así que el texto abajo a la
    *             izquierda cae donde no hay nadie que tapar. Los dos
    *             titulares, la promesa y el botón se alinean al borde.
    *   derecha — la misma columna del 60 %, pegada al margen DERECHO y
-   *             ARRIBA, con el texto alineado a la derecha. Es el espejo de
-   *             `izquierda`: las dos pantallas de texto quedan simétricas.
+   *             ABAJO, con el texto alineado a la derecha. Es el espejo de
+   *             `izquierda`: las dos pantallas de texto quedan simétricas y
+   *             a la misma altura (el `pb-24` común de las cuatro).
    *             (Antes: el bloque arranca al 20 % del ancho y llega al margen
    *             derecho. El texto sigue CENTRADO dentro de él: lo que se
    *             mueve es la caja, no la alineación.
@@ -632,12 +633,15 @@ const LADOS = {
              barra) y `items-end` + `text-right` pegan las tres piezas al
              borde derecho; sin ellos la columna estaría a la derecha pero el
              texto seguiría centrado dentro de ella. */
-          /* ⚠️ ABAJO A LA DERECHA (`justify-end`), Y NO ARRIBA COMO LA 1. El
-             cliente lo devolvió abajo el 16-09-2026 ("el segundo bájalo donde
-             estaba el texto"): la 1 arriba a la izquierda y la 2 abajo a la
-             derecha se leen como dos esquinas distintas, no como la misma
-             plantilla espejada. El `pb-40` es el hueco de los mandos. */
-          "lg:inset-y-0 lg:left-auto lg:right-0 lg:w-[calc(60%+var(--gutter-page))] lg:items-end lg:justify-end lg:gap-6 lg:pb-40 lg:pt-32 lg:text-right"
+          /* ⚠️ ABAJO A LA DERECHA (`justify-end`), Y NO ARRIBA COMO LA 1
+             estuvo un rato. El cliente lo devolvió abajo el 16-09-2026 ("el
+             segundo bájalo donde estaba el texto") y ese mismo día pidió que
+             TODAS las pantallas tuvieran el texto a la misma altura: el
+             `pb-24` es el número común de las cuatro —la 1 abajo a la
+             izquierda, esta abajo a la derecha—, así que la pareja de
+             esquinas se conserva y lo que se iguala es la altura. Los mandos
+             ocupan de 32 a 76 px desde abajo: con 96 quedan 20 de aire. */
+          "lg:inset-y-0 lg:left-auto lg:right-0 lg:w-[calc(60%+var(--gutter-page))] lg:items-end lg:justify-end lg:gap-6 lg:pb-24 lg:pt-32 lg:text-right"
         : bloque === "izquierda"
           ? /* ─── ARRIBA A LA IZQUIERDA ──────────────────────────────────
                La misma columna que `derecha`, pegada al otro margen y con el
@@ -649,12 +653,23 @@ const LADOS = {
                `text-left` alinean las tres piezas al borde; sin ellos la
                columna estaría a la izquierda pero el texto seguiría centrado
                dentro de ella. */
-            /* ⚠️ `lg:pt-32` Y NO 36: 128 px, el alto exacto de la barra grande
-               que flota encima, sin el dedo de aire que llevaba. El cliente
-               pidió el bloque "arriba del todo" el 16-09-2026 (lo veía
-               "siempre en la misma posición"). Más arriba no se puede sin
-               meterse bajo el menú, que ocupa esa esquina. */
-            "lg:inset-y-0 lg:left-0 lg:right-auto lg:w-[calc(60%+var(--gutter-page))] lg:items-start lg:justify-start lg:gap-6 lg:pb-40 lg:pt-32 lg:text-left"
+            /* ⚠️ ABAJO A LA IZQUIERDA, DESDE EL 16-09-2026. El bloque nació
+               arriba a la izquierda —pegado a la barra, luego bajado 48 px— y
+               ese mismo día el cliente pidió que TODAS las pantallas tuvieran
+               el texto a la misma altura: el `pb-24` de abajo es el número
+               común de las cuatro (ver la rama de la derecha). Quedan 20 px
+               de aire sobre los mandos, que ocupan de 32 a 76 px desde el
+               borde.
+
+               ⚠️ `items-start` Y NO `items-end`, QUE ES LO QUE HIZO EL PRIMER
+               INTENTO. Bajarlo a abajo solo exige `justify-end` (el eje
+               vertical); el horizontal lo sigue mandando `items-*`, y con
+               `items-end` las cajas se encogen a su contenido y se pegan al
+               borde DERECHO de la columna: el titular, el párrafo y el botón
+               quedaban cada uno en una posición distinta, flotando hacia el
+               centro de la pantalla. `items-start` es el ancla izquierda, el
+               espejo exacto de la rama de la derecha. */
+            "lg:inset-y-0 lg:left-0 lg:right-auto lg:w-[calc(60%+var(--gutter-page))] lg:items-start lg:justify-end lg:gap-6 lg:pb-24 lg:pt-32 lg:text-left"
           : /* La banda de siempre, de lado a lado y pegada abajo. Con los
                titulares dentro (composición `centro`) reserva un poco más. */
             "lg:inset-x-0 lg:bottom-0 lg:gap-9 lg:pt-0 " +

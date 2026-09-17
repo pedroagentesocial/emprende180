@@ -13,7 +13,7 @@ import { interpolar } from "@i18n/formato";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- * HERO · TRES IMÁGENES QUE ROTAN
+ * HERO · CUATRO IMÁGENES QUE ROTAN
  * ═══════════════════════════════════════════════════════════════════════════
  *
  * La segunda dirección visual: la foto ocupa la pantalla entera y el texto va
@@ -56,11 +56,13 @@ import { interpolar } from "@i18n/formato";
  *
  * ─── SE PUEDE PARAR, Y NO ES UN EXTRA ──────────────────────────────────────
  *
- * Tres imágenes rotando cada seis segundos son contenido en movimiento de más
- * de cinco: la WCAG 2.2.2 (nivel A) exige poder detenerlo. De ahí el botón de
- * pausa y los tres puntos, que además sirven para elegir imagen. Con
- * `prefers-reduced-motion` no rota: se queda en la primera y los puntos siguen
- * funcionando a mano.
+ * Cuatro imágenes rotando cada seis segundos son contenido en movimiento de
+ * más de cinco: la WCAG 2.2.2 (nivel A) exige poder detenerlo. De ahí el
+ * botón de pausa.
+ *
+ * ⚠️ EL CLIENTE LO QUITÓ UN RATO el 16-09-2026 y lo devolvió ese mismo día
+ * a su sitio, junto a los puntos. Con `prefers-reduced-motion` el hero no
+ * rota, y los mandos siguen funcionando a mano.
  */
 
 const { heroSlider } = copy;
@@ -240,6 +242,9 @@ interface SlideManifiesto extends ConVideo {
     palabra: Txt;
     frase: Txt;
   }[];
+  /** Dónde se apoya el bloque de texto en pantalla grande. Las cuatro
+      pantallas alternan de lado. Ver `bloque` en `HeroManifiesto`. */
+  bloque?: "centro" | "izquierda" | "derecha";
 }
 
 /* Se reconoce por `paneles`, que es lo único que ninguna imagen normal tiene.
@@ -405,14 +410,40 @@ const etiquetaPunto = (i: number) =>
             llevarlo y ninguna tiene por qué saber de vídeo. Cada plantilla
             solo se entera de una cosa: si ya hay fondo, no pinta el suyo. */}
         {videoDe(slide).video && (
-          <HeroVideo
-            src={videoDe(slide).video!}
-            poster={videoDe(slide).poster!}
-            alt={videoDe(slide).videoAlt ?? heroSlider.aria}
-            encuadreVertical={videoDe(slide).encuadreVertical}
-            banda={esVideoSolo(slide) ? "centrada" : "arriba"}
-            prioritario={i === 0}
-          />
+          <Fragment>
+            <HeroVideo
+              src={videoDe(slide).video!}
+              poster={videoDe(slide).poster!}
+              alt={videoDe(slide).videoAlt ?? heroSlider.aria}
+              encuadreVertical={videoDe(slide).encuadreVertical}
+              banda={esVideoSolo(slide) ? "centrada" : "arriba"}
+              prioritario={i === 0}
+            />
+
+            {/* ─── EL APAGADO DE ABAJO, IGUAL EN LAS CUATRO ───────────────
+                Un degradado navy de abajo arriba que sostiene el texto de
+                todas las pantallas por igual. Antes lo pintaba solo el
+                manifiesto (`HeroManifiesto`), y con el doble de fuerza: las
+                pantallas 3 y 4 se veían más oscuras que las 1 y 2.
+
+                Se centraliza aquí —para todo el que tenga vídeo de fondo— y
+                se rebaja a petición del cliente (16-09-2026): que se note que
+                sostiene, no que ensombrece. Ese mismo día el cliente la
+                volvió a subir UN PUNTO (de 45 a 60 en el arranque): quería
+                que "se notara un poco más", sin volver al navy casi sólido de
+                antes. El manifiesto sigue trayendo el suyo, pero solo para
+                cuando pinta su foto de red y no hay vídeo detrás.
+
+                ⚠️ EN MÓVIL NO SE VE, Y ES LO CORRECTO. Por debajo de `lg` el
+                vídeo es una banda 16:9 arriba y el texto vive debajo, sobre
+                el navy del propio hero: un degradado navy sobre navy no
+                pinta nada. De `lg` para arriba vuelve el vídeo a pantalla
+                completa y aquí es donde el degradado hace su trabajo. */}
+            <div
+              aria-hidden="true"
+              class="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-3/5 bg-gradient-to-t from-primary-950/60 via-primary-950/25 to-transparent"
+            />
+          </Fragment>
         )}
 
         {esVideoSolo(slide) ? (
@@ -471,6 +502,7 @@ const etiquetaPunto = (i: number) =>
             cuerpo={slide.cuerpo}
             clavesTitulo={slide.clavesTitulo}
             claves={slide.claves}
+            bloque={slide.bloque}
             lang={lang}
             sombra={SOMBRA_TEXTO}
             prioritaria={i === 0}
@@ -607,38 +639,59 @@ const etiquetaPunto = (i: number) =>
   }
 
   {/* ─── LOS MANDOS ─────────────────────────────────────────────────────────
-      Abajo a la izquierda, lejos del texto y del botón. Los tres puntos dicen
-      en qué imagen vas y dejan elegir; el botón para. Ver la nota de la
-      cabecera: sin esto, el hero incumple la WCAG.
+      Un solo grupo centrado: flecha atrás, puntos, pausa y flecha adelante.
+      Las flechas saltan de pantalla a mano, los puntos dicen en cuál vas y
+      dejan elegir, la pausa detiene la rotación (WCAG 2.2.2).
 
-      ⚠️ ESTABAN ABAJO A LA IZQUIERDA Y AHORA VAN CENTRADOS, debajo del botón,
-      formando con él el grupo de mandos del hero. El orden que se lee es
-      promesa -> botón -> mandos.
+      ⚠️ LAS FLECHAS PASARON POR LOS EXTREMOS DE LA CAJA el 16-09-2026 —el
+      cliente las pidió "a los costados de la barra"— y ese mismo día las
+      devolvió al centro ("más pegadas a la barra central"): todo el grupo
+      junto se lee como un solo control, y a las orillas parecían dos widgets
+      sueltos. También quitó la pausa y la devolvió el mismo día.
 
-      Y se centran en las TRES imágenes, no solo en el díptico, aunque el botón
-      de las otras dos esté a la derecha. Es una decisión, no un descuido: unos
-      mandos centrados se leen como los mandos DEL HERO; en una esquina se leen
-      como un widget suelto que no se sabe a qué pertenece.
-
-      ⚠️ Y NO PUEDEN VIVIR DENTRO DEL DÍPTICO, aunque sea ahí donde se agrupan.
-      Sirven a las tres imágenes y el bloque del díptico solo existe mientras la
-      primera está activa: metidos ahí, desaparecerían al entrar la segunda y el
-      hero dejaría de poder pararse mientras se mueve, que es justo lo que exige
-      la WCAG 2.2.2. Lo que los coloca es el `pb` del bloque central del
-      díptico, que les reserva el hueco. Ver su nota.
+      ⚠️ Y NO PUEDEN VIVIR DENTRO DEL DÍPTICO, aunque sea ahí donde se
+      agrupan. Sirven a las cuatro imágenes y el bloque del díptico solo
+      existe mientras la primera está activa: metidos ahí, desaparecerían al
+      entrar la segunda y el hero dejaría de poder navegarse mientras se
+      mueve. Lo que los coloca es el `pb` del bloque central del díptico, que
+      les reserva el hueco. Ver su nota.
 
       ⚠️ `pointer-events-none` EN LA CAJA Y `pointer-events-auto` EN LO QUE SE
       PULSA. Esta caja cruza la pantalla entera pero lo que hay dentro ocupa
-      140 px: el resto es aire, y ese aire se pintaba POR ENCIMA del hero, así
-      que se comía los clics del botón. */}
+      unos 390 px: el resto es aire, y ese aire se pintaba POR ENCIMA del
+      hero, así que se comía los clics de lo que hay debajo. */}
   {/* ⚠️ `bottom` EN CSS Y NO EN UNA CLASE, porque depende de qué imagen esté a
       la vista: ver el bloque de estilos de abajo. Cuando la que se ve lleva
       subtítulos quemados, los mandos suben para no sentarse encima. */}
   <div
     data-hero-mandos
-    class="container-page pointer-events-none absolute inset-x-0 bottom-8 flex items-center justify-center gap-5"
+    class="container-page pointer-events-none absolute inset-x-0 bottom-8 flex items-center justify-center gap-1.5 lg:gap-5"
   >
-    <ul role="list" class="pointer-events-auto flex items-center gap-2">
+    {/* La flecha de atrás, pegada a los puntos. El cliente la pidió "junto a
+        la barra central" el 16-09-2026, después de probarlas en los extremos
+        de la caja: todo el grupo de mandos viaja junto y se lee como un solo
+        control. Comparte estilo con la pausa: círculo con borde fino y sin
+        fondo —el degradado de abajo del vídeo ya le da contraste. */}
+    <button
+      type="button"
+      data-hero-anterior
+      aria-label={heroSlider.anterior[lang]}
+      data-aria-es={heroSlider.anterior.es}
+      data-aria-en={heroSlider.anterior.en}
+      class="pointer-events-auto grid size-10 shrink-0 place-items-center rounded-full border border-white/40 text-white transition-colors duration-200 hover:border-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse max-[359px]:hidden lg:size-11"
+    >
+      <Icono nombre="flechaAtras" class="size-4" grosor={2} />
+    </button>
+
+    {/* ⚠️ LOS CUATRO PIEZAS JUNTAS NO CABEN EN 320 PX, y la cuenta manda en
+        los tamaños de abajo. La fila completa —flecha, cuatro puntos, pausa,
+        flecha— pide 436 px con los tamaños de escritorio; a 320 la caja útil
+        son 288. Se recuperan sin tocar la pausa ni los puntos de `lg` para
+        arriba: por debajo, todo encoge a 40 px (`size-10`) y las flechas se
+        esconden bajo 360 —el mismo corte que usa el selector de idioma de la
+        barra—, que es justo el ancho en el que dejan de caber. En un 360 la
+        fila pide 322 y la caja da 328: 6 px de margen, medido. */}
+    <ul role="list" class="pointer-events-auto flex items-center gap-1.5 lg:gap-2">
       {
         heroSlider.slides.map((_, i) => (
           <li>
@@ -649,7 +702,7 @@ const etiquetaPunto = (i: number) =>
               aria-label={etiquetaPunto(i)[lang]}
               data-aria-es={etiquetaPunto(i).es}
               data-aria-en={etiquetaPunto(i).en}
-              class="grid size-11 place-items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+              class="grid size-10 place-items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse lg:size-11"
             >
               <span
                 aria-hidden="true"
@@ -662,6 +715,10 @@ const etiquetaPunto = (i: number) =>
       }
     </ul>
 
+    {/* La pausa, de vuelta en su sitio después del rodeo del 16-09-2026 (el
+        cliente la quitó y la devolvió el mismo día). Es lo que exige la
+        WCAG 2.2.2: la rotación es contenido en movimiento de más de cinco
+        segundos y tiene que poder detenerse. Ver la nota de la cabecera. */}
     <button
       type="button"
       data-hero-pausa
@@ -673,10 +730,22 @@ const etiquetaPunto = (i: number) =>
       data-etiqueta-pausar-en={heroSlider.pausar.en}
       data-etiqueta-reanudar-es={heroSlider.reanudar.es}
       data-etiqueta-reanudar-en={heroSlider.reanudar.en}
-      class="pointer-events-auto grid size-11 place-items-center rounded-full border border-white/40 text-white transition-colors duration-200 hover:border-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+      class="pointer-events-auto grid size-10 shrink-0 place-items-center rounded-full border border-white/40 text-white transition-colors duration-200 hover:border-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse lg:size-11"
     >
       <Icono nombre="pausa" class="size-4" grosor={2} data-icono-pausa />
       <Icono nombre="play" class="hidden size-4" grosor={1} data-icono-play />
+    </button>
+
+    {/* La flecha de adelante, espejo de la de atrás. */}
+    <button
+      type="button"
+      data-hero-siguiente
+      aria-label={heroSlider.siguiente[lang]}
+      data-aria-es={heroSlider.siguiente.es}
+      data-aria-en={heroSlider.siguiente.en}
+      class="pointer-events-auto grid size-10 shrink-0 place-items-center rounded-full border border-white/40 text-white transition-colors duration-200 hover:border-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse max-[359px]:hidden lg:size-11"
+    >
+      <Icono nombre="flecha" class="size-4" grosor={2} />
     </button>
   </div>
 </section>
@@ -724,6 +793,8 @@ const etiquetaPunto = (i: number) =>
     const textos = [...hero.querySelectorAll<HTMLElement>("[data-texto]")];
     const puntos = [...hero.querySelectorAll<HTMLElement>("[data-punto]")];
     const boton = hero.querySelector<HTMLButtonElement>("[data-hero-pausa]");
+    const botonAnterior = hero.querySelector<HTMLButtonElement>("[data-hero-anterior]");
+    const botonSiguiente = hero.querySelector<HTMLButtonElement>("[data-hero-siguiente]");
     const botonSonido = hero.querySelector<HTMLButtonElement>("[data-hero-sonido]");
     if (fondos.length < 2) return;
 
@@ -819,6 +890,18 @@ const etiquetaPunto = (i: number) =>
         arrancar();
       }),
     );
+
+    /* Las dos flechas, una en cada extremo de la barra de mandos. Hacen lo
+       mismo que los puntos: saltan a la pantalla de al lado y la cuenta de
+       la rotación empieza de nuevo. */
+    botonAnterior?.addEventListener("click", () => {
+      pintar((actual - 1 + fondos.length) % fondos.length);
+      arrancar();
+    });
+    botonSiguiente?.addEventListener("click", () => {
+      pintar((actual + 1) % fondos.length);
+      arrancar();
+    });
 
     const claveIdioma = (base: string) =>
       document.documentElement.lang === "en" ? `${base}En` : `${base}Es`;
