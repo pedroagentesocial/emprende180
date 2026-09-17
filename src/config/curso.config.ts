@@ -4174,13 +4174,13 @@ export const copy = {
     aria: { es: "La Academia", en: "The Academy" },
     kicker: { es: "La Academia", en: "The Academy" },
     titulo: [
-      { es: "Sin horario fijo.", en: "No fixed schedule." },
-      { es: "Solo el tuyo.", en: "Only yours.", enfasis: true },
+      { es: "Aprende a construir tu red.", en: "Learn to build your network." },
+      { es: "Paso a paso, a tu propio ritmo.", en: "Step by step, at your own pace.", enfasis: true },
     ],
     texto: [
       {
-        es: "Los programas de Emprende180 y el método que los sostiene, en videos cortos y en orden. Sin clases en vivo, sin horario que cumplir: avanzas cuando puedes, y si hoy no puedes, mañana sigue ahí.",
-        en: "The Entrepreneur180 programs and the method that holds them together, in short videos and in order. No live classes, no schedule to keep: you move forward when you can, and if today isn't the day, it's still there tomorrow.",
+        es: "En La Academia Emprende180 adquieres las habilidades para generar ingresos con tus contactos. Accede a programas estructurados sin horarios fijos: aprende cuando puedas y avanza con el respaldo de nuestro equipo.",
+        en: "At the Entrepreneur180 Academy, gain the skills to generate income through your contacts. Access structured programs on your schedule: learn when you can and grow with our team's support.",
       },
       {
         es: "Cada programa cierra con un quiz que confirma que lo tienes.",
