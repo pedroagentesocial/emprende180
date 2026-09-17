@@ -71,8 +71,9 @@ interface LeadFormProps {
    */
   /** Se conserva por compatibilidad: desde el 15-09-2026 no cambia el dibujo. */
   relieve?: boolean;
-  /** Microcopy bajo el formulario (aviso de privacidad / anti-spam). */
-  aviso: Txt;
+  /** Microcopy bajo el formulario (anti-spam). Opcional: el cierre no lo lleva
+   *  desde el 17-09-2026, a petición del cliente. */
+  aviso?: Txt;
   /** Estado de éxito. */
   exitoTitulo: Txt;
   exitoTexto: Txt;
@@ -153,6 +154,12 @@ export function LeadForm({
     {},
   );
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
+  /* La casilla, controlada: el botón de enviar no se activa sin ella. Antes
+     bastaba con `required` y la validación; el cliente pidió que no se pueda
+     ni intentar (17-09-2026). */
+  const [consentido, setConsentido] = useState(false);
+  /* El texto largo del consentimiento, plegado por defecto. */
+  const [condicionesAbiertas, setCondicionesAbiertas] = useState(false);
 
   const reducir = useReducedMotion();
   const baseId = useId();
@@ -620,6 +627,8 @@ export function LeadForm({
             name="consentimiento"
             type="checkbox"
             required
+            checked={consentido}
+            onChange={(e) => setConsentido(e.currentTarget.checked)}
             disabled={enviando}
             aria-invalid={errores.consentimiento ? true : undefined}
             aria-describedby={
@@ -639,28 +648,70 @@ export function LeadForm({
             ].join(" ")}
           />
           <span>
-            {t(textoConsentimiento)}
-            <a
-              href={`/legal/${legalConfig.privacidad.slug}`}
-              data-legal={legalConfig.privacidad.slug}
-              // El clic en el enlace no debe alternar la casilla.
-              onClick={(e) => e.stopPropagation()}
-              className={claseEnlace}
+            {/* Lo corto siempre a la vista; lo largo, plegado debajo. El botón
+                de plegar es un <button>: no altera la casilla (stopPropagation
+                y preventDefault, porque vive dentro del <label>). */}
+            {t(consentimiento.resumen)}{" "}
+            <button
+              type="button"
+              aria-expanded={condicionesAbiertas}
+              aria-controls={idDe("condiciones")}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setCondicionesAbiertas((v) => !v);
+              }}
+              className={[claseEnlace, "cursor-pointer"].join(" ")}
             >
-              {t(consentimiento.enlacePrivacidad)}
-            </a>
-            {t(consentimiento.conector)}
-            <a
-              href={`/legal/${legalConfig.terminos.slug}`}
-              data-legal={legalConfig.terminos.slug}
-              onClick={(e) => e.stopPropagation()}
-              className={claseEnlace}
-            >
-              {t(consentimiento.enlaceTerminos)}
-            </a>
-            {t(consentimiento.textoDespues)}
+              {t(
+                condicionesAbiertas
+                  ? consentimiento.verMenos
+                  : consentimiento.verMas,
+              )}
+            </button>
           </span>
         </label>
+        <AnimatePresence initial={false}>
+          {condicionesAbiertas && (
+            <motion.div
+              id={idDe("condiciones")}
+              initial={reducir ? false : { opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={reducir ? { opacity: 0 } : { opacity: 0, height: 0 }}
+              transition={
+                reducir
+                  ? { duration: 0 }
+                  : { duration: 0.28, ease: [0.16, 1, 0.3, 1] }
+              }
+              className="overflow-hidden"
+            >
+              <p
+                className={[
+                  "pl-9 pt-1 text-left text-[0.8125rem] leading-relaxed",
+                  inverso ? "text-secondary-200/90" : "text-ink-muted",
+                ].join(" ")}
+              >
+                {t(textoConsentimiento)}
+                <a
+                  href={`/legal/${legalConfig.privacidad.slug}`}
+                  data-legal={legalConfig.privacidad.slug}
+                  className={claseEnlace}
+                >
+                  {t(consentimiento.enlacePrivacidad)}
+                </a>
+                {t(consentimiento.conector)}
+                <a
+                  href={`/legal/${legalConfig.terminos.slug}`}
+                  data-legal={legalConfig.terminos.slug}
+                  className={claseEnlace}
+                >
+                  {t(consentimiento.enlaceTerminos)}
+                </a>
+                {t(consentimiento.textoDespues)}
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
         {errores.consentimiento && (
           <p
             id={errorIdDe("consentimiento")}
@@ -694,7 +745,8 @@ export function LeadForm({
 
       <button
         type="submit"
-        disabled={enviando}
+        disabled={enviando || !consentido}
+        aria-disabled={!consentido || undefined}
         data-track={`lead-${origen}`}
         data-sobre={inverso ? "oscuro" : "claro"}
         className={[
@@ -727,18 +779,19 @@ export function LeadForm({
         )}
       </button>
 
-      <p
-        className={[
-          // 13 px en móvil y 12 de `sm` en adelante. Es letra pequeña de
-          // verdad —"sin spam, te das de baja en un clic"—, pero es también lo
-          // que desactiva el miedo a dejar el correo, y a 12 px en un teléfono
-          // no se lee.
-          "mt-3 text-center text-[0.8125rem]",
-          inverso ? "text-primary-300" : "text-ink-subtle",
-        ].join(" ")}
-      >
-        {t(aviso)}
-      </p>
+      {aviso && (
+        <p
+          className={[
+            // 13 px: es letra pequeña de verdad —"sin spam, te das de baja en
+            // un clic"—, pero es también lo que desactiva el miedo a dejar el
+            // correo, y a 12 px en un teléfono no se lee.
+            "mt-3 text-center text-[0.8125rem]",
+            inverso ? "text-primary-300" : "text-ink-subtle",
+          ].join(" ")}
+        >
+          {t(aviso)}
+        </p>
+      )}
     </form>
   );
 }

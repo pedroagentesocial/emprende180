@@ -506,6 +506,21 @@ export const consentimiento = {
     es: "Acepto recibir correos electrónicos, llamadas y mensajes de texto de Emprende180 sobre mi solicitud, incluidos seguimientos, recordatorios de citas, novedades del servicio y peticiones de información. La frecuencia de los mensajes varía. Pueden aplicarse tarifas de mensajes y datos. Envía STOP para darte de baja. El consentimiento no es condición de compra ni de servicio. Consulta nuestro ",
     en: "I agree to receive emails, phone calls, and text messages from Entrepreneur180 regarding my inquiry, including follow-up messages, appointment reminders, service updates, and requests for information. Message frequency varies. Message and data rates may apply. Text STOP to opt out. Consent is not a condition of purchase or service. See our ",
   },
+  /**
+   * ⚠️ LA CASILLA VA PLEGADA. El texto entero son seis renglones y el cliente
+   * lo vio "muy grande" (17-09-2026). Lo que se ve al cargar es esta línea
+   * corta, que ya dice a qué se consiente, y un botón "Ver condiciones" que
+   * despliega el texto completo con sus enlaces. El texto completo está
+   * siempre en la página (no se carga al pulsar, se muestra), así que el
+   * consentimiento sigue siendo informado: lo dicho en corto y lo dicho en
+   * largo son lo mismo, y la versión larga está a un toque.
+   */
+  resumen: {
+    es: "Acepto recibir correos, llamadas y mensajes de texto de Emprende180 sobre mi solicitud.",
+    en: "I agree to receive emails, calls and text messages from Entrepreneur180 about my inquiry.",
+  },
+  verMas: { es: "Ver condiciones", en: "See terms" },
+  verMenos: { es: "Ocultar condiciones", en: "Hide terms" },
   enlacePrivacidad: { es: "aviso de privacidad", en: "Privacy Policy" },
   conector: { es: " y nuestros ", en: " and " },
   enlaceTerminos: { es: "términos y condiciones", en: "Terms & Conditions" },
