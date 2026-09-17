@@ -478,41 +478,37 @@ export const documentosPorSlug: Record<string, DocumentoLegal> = {
 
 export const consentimiento = {
   /**
-   * Casilla de aceptación obligatoria.
-   *
-   * `true` por defecto y a propósito: bajo RGPD (UE), Ley 1581 de habeas data
-   * (Colombia), LFPDPPP (México) y LGPD (Brasil) el consentimiento tiene que
-   * ser una acción afirmativa y expresa. Premarcar la casilla NO vale.
+   * Casilla de aceptación obligatoria, sin premarcar: el consentimiento tiene
+   * que ser una acción afirmativa y expresa (TCPA para llamadas y mensajes,
+   * CAN-SPAM para el correo, y cualquier norma de datos que se mire).
    */
   requerido: true,
-  textoAntes: {
-    es: "Acepto recibir los emails del mini-curso y he leído el ",
-    en: "I agree to receive the mini-course emails and I've read the ",
-  },
+
   /**
-   * ⚠️ EL CONSENTIMIENTO DICE A QUÉ SE CONSIENTE, Y NO SON LA MISMA COSA.
+   * ⚠️ EL MISMO TEXTO EN TODOS LOS FORMULARIOS DESDE EL 17-09-2026. Lo dictó
+   * el cliente en inglés y pidió que fuera igual en español y en todos los
+   * formularios del sitio. Antes cada formulario tenía el suyo (mini-curso,
+   * informes, lista) porque consentían a cosas distintas; ahora todos piden
+   * lo mismo, que es lo que el equipo hace de verdad con quien deja sus
+   * datos: escribir, llamar y mandar mensajes sobre la solicitud.
    *
-   * Quien pide el precio no se está apuntando a siete correos diarios: está
-   * pidiendo que le contesten una pregunta. Reutilizar ahí la casilla del
-   * mini-curso es pedir permiso para una cosa y hacer otra, que es
-   * exactamente lo que el RGPD llama consentimiento no informado —y de paso
-   * la forma más rápida de acabar marcado como spam.
+   * Es la fórmula de consentimiento expreso que pide la TCPA para llamadas y
+   * SMS (frecuencia variable, tarifas, STOP para salir, y que consentir no es
+   * condición de compra), y enlaza al aviso de privacidad y a los términos.
+   * El aviso de privacidad repite este mismo texto en su sección de correos,
+   * llamadas y mensajes, para que los dos digan lo mismo.
+   *
+   * Se corrigieron las erratas del original ("Entrepeneur", "remainders",
+   * "reates", "ndition"). "Emprende180" en español y "Entrepreneur180" en
+   * inglés, como en todo el sitio.
    */
-  textoAntesInformes: {
-    es: "Acepto que me contacten y he leído el ",
-    en: "I agree to be contacted and I've read the ",
+  texto: {
+    es: "Acepto recibir correos electrónicos, llamadas y mensajes de texto de Emprende180 sobre mi solicitud, incluidos seguimientos, recordatorios de citas, novedades del servicio y peticiones de información. La frecuencia de los mensajes varía. Pueden aplicarse tarifas de mensajes y datos. Envía STOP para darte de baja. El consentimiento no es condición de compra ni de servicio. Consulta nuestro ",
+    en: "I agree to receive emails, phone calls, and text messages from Entrepreneur180 regarding my inquiry, including follow-up messages, appointment reminders, service updates, and requests for information. Message frequency varies. Message and data rates may apply. Text STOP to opt out. Consent is not a condition of purchase or service. See our ",
   },
-  /**
-   * El de las dos secciones que reparten los artículos del blog (las guías y
-   * la lista). No dice "mini-curso" porque no hay mini-curso, y no dice
-   * "precio" porque no se va a llamar a nadie: se consiente a UNA cosa, que es
-   * recibir lo que se publique.
-   */
-  textoAntesLista: {
-    es: "Acepto recibir los correos de Emprende180 y he leído el ",
-    en: "I agree to receive emails from Entrepreneur180 and I have read the ",
-  },
-  enlaceTexto: { es: "aviso de privacidad", en: "privacy notice" },
+  enlacePrivacidad: { es: "aviso de privacidad", en: "Privacy Policy" },
+  conector: { es: " y nuestros ", en: " and " },
+  enlaceTerminos: { es: "términos y condiciones", en: "Terms & Conditions" },
   textoDespues: { es: ".", en: "." },
   nota: {
     es: "Puedes darte de baja en un clic desde cualquiera de los correos.",

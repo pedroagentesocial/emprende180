@@ -39,7 +39,9 @@ import { useIdioma } from "@i18n/react";
 
 /* El alias `FormEvent` de @types/react 19 está marcado como obsoleto, así que
    el tipo del evento se deriva de la propia prop `onSubmit` de <form>. */
-type EventoEnvio = Parameters<NonNullable<ComponentProps<"form">["onSubmit"]>>[0];
+type EventoEnvio = Parameters<
+  NonNullable<ComponentProps<"form">["onSubmit"]>
+>[0];
 
 type Origen =
   | "hero"
@@ -147,7 +149,9 @@ export function LeadForm({
   lang: langServidor,
 }: LeadFormProps) {
   const [estado, setEstado] = useState<Estado>("inactivo");
-  const [errores, setErrores] = useState<Partial<Record<CampoLead, string>>>({});
+  const [errores, setErrores] = useState<Partial<Record<CampoLead, string>>>(
+    {},
+  );
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
 
   const reducir = useReducedMotion();
@@ -170,13 +174,16 @@ export function LeadForm({
 
   const inverso = tono === "inverso";
 
-  /* A qué se consiente, según el formulario. Ver la nota de `variante`. */
-  const textoConsentimiento =
-    variante === "informes"
-      ? consentimiento.textoAntesInformes
-      : variante === "lista"
-        ? consentimiento.textoAntesLista
-        : consentimiento.textoAntes;
+  /* El mismo texto de consentimiento en todos los formularios desde el
+     17-09-2026 (ver `consentimiento` en legal.config). `variante` sigue
+     decidiendo el resto —campos, botón, éxito—, pero ya no el permiso. */
+  const textoConsentimiento = consentimiento.texto;
+  const claseEnlace = [
+    "font-semibold underline underline-offset-2",
+    inverso
+      ? "text-ink-inverse hover:text-secondary-300"
+      : "text-ink-brand hover:text-secondary-800",
+  ].join(" ");
 
   /** Enfoca el primer campo con error, siguiendo el orden visual. */
   function enfocarPrimerError(errs: Partial<Record<CampoLead, string>>) {
@@ -269,7 +276,11 @@ export function LeadForm({
       <motion.div
         initial={reducir ? false : { opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={reducir ? { duration: 0 } : { duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        transition={
+          reducir
+            ? { duration: 0 }
+            : { duration: 0.35, ease: [0.22, 1, 0.36, 1] }
+        }
         role="status"
         aria-live="polite"
         className={[
@@ -283,15 +294,32 @@ export function LeadForm({
           aria-hidden="true"
           className={[
             "mx-auto mb-4 grid size-12 place-items-center rounded-full",
-            inverso ? "bg-secondary-500 text-primary-950" : "bg-success-600 text-white",
+            inverso
+              ? "bg-secondary-500 text-primary-950"
+              : "bg-success-600 text-white",
           ].join(" ")}
         >
-          <svg viewBox="0 0 24 24" fill="none" className="size-6" strokeWidth="3">
-            <path d="M20 6 9 17l-5-5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            className="size-6"
+            strokeWidth="3"
+          >
+            <path
+              d="M20 6 9 17l-5-5"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </div>
 
-        <p className={["text-xl font-bold", inverso ? "text-ink-inverse" : "text-ink"].join(" ")}>
+        <p
+          className={[
+            "text-xl font-bold",
+            inverso ? "text-ink-inverse" : "text-ink",
+          ].join(" ")}
+        >
           {t(exitoTitulo)}
         </p>
         <p
@@ -312,7 +340,9 @@ export function LeadForm({
   /* `CampoLead` son los campos que el servidor puede rechazar uno a uno. El
      cupón no es uno de ellos a propósito: no bloquea el envío, así que nunca
      lleva error debajo. Por eso el parámetro admite también su nombre. */
-  const claseInput = (campo: CampoLead | "cupon" | "telefono" | "recomendadoPor") =>
+  const claseInput = (
+    campo: CampoLead | "cupon" | "telefono" | "recomendadoPor",
+  ) =>
     [
       // min-h-11 = 44 px táctil · text-base = 16 px, si no iOS hace zoom
       "min-h-11 w-full rounded-lg border px-4 py-3 text-base",
@@ -335,7 +365,10 @@ export function LeadForm({
     <form onSubmit={alEnviar} noValidate className="w-full">
       {/* Trampa para bots. Fuera de pantalla y oculta a lectores de pantalla:
           una persona no lo ve ni con teclado, un bot lo rellena. */}
-      <div aria-hidden="true" className="absolute -left-[9999px] size-0 overflow-hidden">
+      <div
+        aria-hidden="true"
+        className="absolute -left-[9999px] size-0 overflow-hidden"
+      >
         <label htmlFor={idDe(HONEYPOT_FIELD)}>No rellenar este campo</label>
         <input
           id={idDe(HONEYPOT_FIELD)}
@@ -353,9 +386,7 @@ export function LeadForm({
           <label
             htmlFor={idDe("nombre")}
             className={[
-              sinEtiquetas
-                ? "sr-only"
-                : "mb-1.5 block text-sm font-medium",
+              sinEtiquetas ? "sr-only" : "mb-1.5 block text-sm font-medium",
               inverso ? "text-secondary-200" : "text-ink",
             ].join(" ")}
           >
@@ -379,7 +410,10 @@ export function LeadForm({
             className={claseInput("nombre")}
           />
           {errores.nombre && (
-            <p id={errorIdDe("nombre")} className="mt-1.5 text-sm font-medium text-error-500">
+            <p
+              id={errorIdDe("nombre")}
+              className="mt-1.5 text-sm font-medium text-error-500"
+            >
               {errores.nombre}
             </p>
           )}
@@ -390,9 +424,7 @@ export function LeadForm({
           <label
             htmlFor={idDe("email")}
             className={[
-              sinEtiquetas
-                ? "sr-only"
-                : "mb-1.5 block text-sm font-medium",
+              sinEtiquetas ? "sr-only" : "mb-1.5 block text-sm font-medium",
               inverso ? "text-secondary-200" : "text-ink",
             ].join(" ")}
           >
@@ -421,7 +453,10 @@ export function LeadForm({
             className={claseInput("email")}
           />
           {errores.email && (
-            <p id={errorIdDe("email")} className="mt-1.5 text-sm font-medium text-error-500">
+            <p
+              id={errorIdDe("email")}
+              className="mt-1.5 text-sm font-medium text-error-500"
+            >
               {errores.email}
             </p>
           )}
@@ -515,47 +550,47 @@ export function LeadForm({
           que además otros pagan menos. Vuelve solo el día que
           `curso.precio.publico` vuelva a ser `true`. */}
       {variante === "minicurso" && curso.precio.publico && (
-      <details className="mt-4">
-        <summary
-          className={[
-            "inline-flex min-h-11 cursor-pointer list-none items-center text-sm font-medium underline underline-offset-4",
-            inverso ? "text-secondary-200" : "text-ink-brand",
-          ].join(" ")}
-        >
-          {t(copy.formulario.cuponEnlace)}
-        </summary>
+        <details className="mt-4">
+          <summary
+            className={[
+              "inline-flex min-h-11 cursor-pointer list-none items-center text-sm font-medium underline underline-offset-4",
+              inverso ? "text-secondary-200" : "text-ink-brand",
+            ].join(" ")}
+          >
+            {t(copy.formulario.cuponEnlace)}
+          </summary>
 
-        <div className="mt-2">
-          <label
-            htmlFor={idDe("cupon")}
-            className={[
-              "mb-1.5 block text-sm font-medium",
-              inverso ? "text-secondary-200" : "text-ink",
-            ].join(" ")}
-          >
-            {t(copy.formulario.cuponEtiqueta)}
-          </label>
-          <input
-            id={idDe("cupon")}
-            name="cupon"
-            type="text"
-            autoComplete="off"
-            autoCapitalize="characters"
-            spellCheck={false}
-            placeholder={t(copy.formulario.cuponPlaceholder)}
-            disabled={enviando}
-            className={claseInput("cupon")}
-          />
-          <p
-            className={[
-              "mt-1.5 text-[0.8125rem]",
-              inverso ? "text-secondary-200/80" : "text-ink-subtle",
-            ].join(" ")}
-          >
-            {t(copy.formulario.cuponAyuda)}
-          </p>
-        </div>
-      </details>
+          <div className="mt-2">
+            <label
+              htmlFor={idDe("cupon")}
+              className={[
+                "mb-1.5 block text-sm font-medium",
+                inverso ? "text-secondary-200" : "text-ink",
+              ].join(" ")}
+            >
+              {t(copy.formulario.cuponEtiqueta)}
+            </label>
+            <input
+              id={idDe("cupon")}
+              name="cupon"
+              type="text"
+              autoComplete="off"
+              autoCapitalize="characters"
+              spellCheck={false}
+              placeholder={t(copy.formulario.cuponPlaceholder)}
+              disabled={enviando}
+              className={claseInput("cupon")}
+            />
+            <p
+              className={[
+                "mt-1.5 text-[0.8125rem]",
+                inverso ? "text-secondary-200/80" : "text-ink-subtle",
+              ].join(" ")}
+            >
+              {t(copy.formulario.cuponAyuda)}
+            </p>
+          </div>
+        </details>
       )}
 
       {/* CONSENTIMIENTO DE DATOS.
@@ -598,7 +633,9 @@ export function LeadForm({
             className={[
               "mt-0.5 size-6 shrink-0 rounded-xs accent-secondary-600",
               "focus-visible:outline-2 focus-visible:outline-offset-2",
-              inverso ? "focus-visible:outline-focus-inverse" : "focus-visible:outline-focus",
+              inverso
+                ? "focus-visible:outline-focus-inverse"
+                : "focus-visible:outline-focus",
             ].join(" ")}
           />
           <span>
@@ -608,12 +645,18 @@ export function LeadForm({
               data-legal={legalConfig.privacidad.slug}
               // El clic en el enlace no debe alternar la casilla.
               onClick={(e) => e.stopPropagation()}
-              className={[
-                "font-semibold underline underline-offset-2",
-                inverso ? "text-ink-inverse hover:text-secondary-300" : "text-ink-brand hover:text-secondary-800",
-              ].join(" ")}
+              className={claseEnlace}
             >
-              {t(consentimiento.enlaceTexto)}
+              {t(consentimiento.enlacePrivacidad)}
+            </a>
+            {t(consentimiento.conector)}
+            <a
+              href={`/legal/${legalConfig.terminos.slug}`}
+              data-legal={legalConfig.terminos.slug}
+              onClick={(e) => e.stopPropagation()}
+              className={claseEnlace}
+            >
+              {t(consentimiento.enlaceTerminos)}
             </a>
             {t(consentimiento.textoDespues)}
           </span>
@@ -639,7 +682,9 @@ export function LeadForm({
             transition={reducir ? { duration: 0 } : { duration: 0.2 }}
             className={[
               "mt-4 overflow-hidden rounded-lg px-4 py-3 text-sm font-medium",
-              inverso ? "bg-error-700/40 text-error-50" : "bg-error-50 text-error-700",
+              inverso
+                ? "bg-error-700/40 text-error-50"
+                : "bg-error-50 text-error-700",
             ].join(" ")}
           >
             {errorGeneral}
@@ -664,7 +709,9 @@ export function LeadForm({
              con el cambio de estilo. */
           "boton-pildora mt-5 w-full",
           "focus-visible:outline-2 focus-visible:outline-offset-2",
-          inverso ? "focus-visible:outline-focus-inverse" : "focus-visible:outline-focus",
+          inverso
+            ? "focus-visible:outline-focus-inverse"
+            : "focus-visible:outline-focus",
         ].join(" ")}
       >
         {enviando ? (
