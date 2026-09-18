@@ -2593,8 +2593,9 @@ export const copy = {
        * la lógica de `subtitulos` del slider siguen escritos y se encienden
        * solos si algún día una pantalla vuelve a declarar `sonido: true`.
        *
-       * El slider pasa a tres pantallas, cada una con su propio vídeo de
-       * fondo: el díptico, la del dolor y el manifiesto.
+       * El slider pasa a cuatro pantallas, cada una con su propio vídeo de
+       * fondo: el díptico, la del dolor, el manifiesto y la plantilla por
+       * personalizar (la cuarta, rellenada por el cliente).
        */
 
       /**
@@ -2765,6 +2766,11 @@ export const copy = {
          * al borde. Con el promocional fuera del slider esta pasó a ser la
          * primera pantalla, y el cliente la quiso así. Encaja con el vídeo: la
          * persona está en el tercio derecho, y el texto cae donde no hay nadie.
+         *
+         * El 16-09-2026 el cliente lo bajó un punto y, el mismo día, pidió que
+         * TODAS las pantallas tuvieran el texto a la misma altura: esta pasó
+         * de arriba a ABAJO A LA IZQUIERDA, con el mismo `pb-24` que las
+         * otras tres (ver `HeroDiptico`).
          */
         composicion: "centro",
         bloque: "izquierda",
@@ -3061,10 +3067,85 @@ export const copy = {
            sacó a una sección propia el 16-09-2026: ver `copy.define` y
            `01-Define.astro`. Esta pantalla se queda con el titular y el párrafo. */
 
+        /* ⚠️ EL TEXTO SE APOYA ABAJO A LA IZQUIERDA, y es parte del patrón que
+           pidió el cliente el 16-09-2026: las cuatro pantallas alternan de
+           lado —1 izquierda, 2 derecha, 3 izquierda, 4 derecha— para que la
+           rotación no se lea como la misma plantilla repetida. Ver `bloque`
+           en `HeroManifiesto`. */
+        bloque: "izquierda",
+
+      },
+      /**
+       * ─── 4 · TU PANTALLA: LA PLANTILLA PARA PERSONALIZAR ────────────────
+       *
+       * ⚠️ ESTA PANTALLA ES TUYA: ES LA ÚNICA DEL SLIDER SIN CONTENIDO
+       * DEFINITIVO. Todo lo que trae es de muestra y se ve resaltado en ámbar
+       * en la página mientras no lo rellenes. Los pasos, en orden:
+       *
+       *   1. EL VÍDEO. Deja tu archivo en `public/video/hero-4.mp4`, la misma
+       *      carpeta de la que ya salen los otros tres fondos. Formato: MP4
+       *      (H.264), horizontal 16:9, 10–14 s, SIN audio y lo más ligero que
+       *      se pueda (ideal < 1 MB: hero-1 pesa 5,6 MB y se nota al cargar).
+       *      Para que el bucle no dé un salto al reiniciarse, el último
+       *      fotograma tiene que parecerse al primero (el README de
+       *      /public/video explica el truco del palíndromo).
+       *
+       *      ⚠️ MIENTRAS EL ARCHIVO NO EXISTA, esta pantalla se ve en navy
+       *      oscuro con el texto encima. No rompe nada: es el fondo de
+       *      seguridad del propio slider.
+       *
+       *   2. EL TEXTO. Sustituye los `[COMPLETAR: …]` de `manifiesto` y
+       *      `cuerpo` por tu texto, en español Y en inglés. El primer renglón
+       *      es la frase corta de apoyo (se pinta más pequeña), el segundo es
+       *      el titular grande —con `acento: true` se remata en Fraunces
+       *      itálica, el mismo recurso del resto de la web— y `cuerpo` es el
+       *      párrafo de debajo.
+       *
+       *      ⚠️ EL TEXTO TIENE QUE SER CORTO, sobre todo el párrafo: en un
+       *      teléfono el hero reserva una altura fija para el texto (medida
+       *      para la pantalla más cargada) y un párrafo largo puede salirse de
+       *      su hueco. Una o dos frases, no más.
+       *
+       *   3. (Opcional) EL ENCUADRE EN MÓVIL. En un teléfono el vídeo se ve
+       *      recortado a una franja vertical, y `encuadreVertical` dice qué
+       *      parte del fotograma queda visible: "50% 50%" es el centro. Si tu
+       *      vídeo tiene a la persona a un lado, mueve el PRIMER número (60% =
+       *      al 60 % desde la izquierda). Sin este campo se usa `center 62%`,
+       *      que está medido para el vídeo de la pantalla 1.
+       *
+       *   4. (Opcional) EL PÓSTER. Si tienes el primer fotograma en WebP,
+       *      déjalo en `public/video/hero-4-poster.webp`: es lo que se ve
+       *      mientras el vídeo carga. Sin él, navy.
+       *
+       * La forma es la de la pantalla 3: titular + párrafo. El texto se apoya
+       * abajo a la DERECHA (`bloque`), siguiendo la alternancia de las cuatro
+       * pantallas: 1 izquierda, 2 derecha, 3 izquierda, 4 derecha. Si la
+       * quieres con botón como la pantalla 1, pídeselo a Claude.
+       */
+      {
+        tipo: "manifiesto",
+        video: "/video/hero-4.mp4",
+        poster: "/video/hero-4-poster.webp",
+        videoAlt: {
+          es: "Descripción corta de tu vídeo, para lectores de pantalla",
+          en: "Short description of your video, for screen readers",
+        },
+        manifiesto: [
+          [{ es: "Emprende mientras", en: "Build While Your" }],
+          [{ es: "tu bebé descansa", en: "baby rests", acento: true }],
+        ],
+        cuerpo: {
+          es: "No necesitas salir a trabajar 8 horas ni descuidar a tu familia para tener tu propio dinero.",
+          en: "You don't need to go out to work for 8 hours or neglect your family to have your own money.",
+        },
+
+        /* La otra mitad del patrón de alternancia: esta pantalla cae a la
+           derecha. */
+        bloque: "derecha",
       },
     ],
 
-    /* Un solo botón, y el mismo en las tres. Dos botones en un hero que cambia
+    /* Un solo botón, y el mismo en las cuatro. Dos botones en un hero que cambia
        cada seis segundos son dos decisiones que tomar mientras la pantalla se
        mueve.
 
@@ -3076,13 +3157,20 @@ export const copy = {
       href: "#como-trabajar",
     },
 
-    /* Los mandos. La rotación es contenido en movimiento de más de cinco
-       segundos, así que la WCAG 2.2.2 exige poder pararla: no es un extra. */
+    /* Los mandos: las dos flechas, los puntos y la pausa. La rotación es
+       contenido en movimiento de más de cinco segundos, así que la WCAG
+       2.2.2 exige poder pararla: no es un extra. (El cliente la quitó un
+       rato el 16-09-2026 y la devolvió el mismo día.) */
     /* El botón de sonido del vídeo de presentación. Dice lo que VA A PASAR al
        pulsarlo, no el estado en el que está: "activar el sonido" y no "está
        mudo". Es la diferencia entre un botón y un cartel. */
     activarSonido: { es: "Activar el sonido", en: "Turn the sound on" },
     silenciarSonido: { es: "Silenciar", en: "Mute" },
+
+    /* Las dos flechas pegadas a los puntos, en la barra de mandos del hero:
+       saltan de pantalla a mano. */
+    anterior: { es: "Pantalla anterior", en: "Previous screen" },
+    siguiente: { es: "Siguiente pantalla", en: "Next screen" },
 
     pausar: { es: "Pausar la presentación", en: "Pause the slideshow" },
     reanudar: { es: "Reanudar la presentación", en: "Resume the slideshow" },
@@ -4089,13 +4177,13 @@ export const copy = {
     aria: { es: "La Academia", en: "The Academy" },
     kicker: { es: "La Academia", en: "The Academy" },
     titulo: [
-      { es: "Sin horario fijo.", en: "No fixed schedule." },
-      { es: "Solo el tuyo.", en: "Only yours.", enfasis: true },
+      { es: "Aprende a construir tu red.", en: "Learn to build your network." },
+      { es: "Paso a paso, a tu propio ritmo.", en: "Step by step, at your own pace.", enfasis: true },
     ],
     texto: [
       {
-        es: "Los programas de Emprende180 y el método que los sostiene, en videos cortos y en orden. Sin clases en vivo, sin horario que cumplir: avanzas cuando puedes, y si hoy no puedes, mañana sigue ahí.",
-        en: "The Entrepreneur180 programs and the method that holds them together, in short videos and in order. No live classes, no schedule to keep: you move forward when you can, and if today isn't the day, it's still there tomorrow.",
+        es: "En La Academia Emprende180 adquieres las habilidades para generar ingresos con tus contactos. Accede a programas estructurados sin horarios fijos: aprende cuando puedas y avanza con el respaldo de nuestro equipo.",
+        en: "At the Entrepreneur180 Academy, gain the skills to generate income through your contacts. Access structured programs on your schedule: learn when you can and grow with our team's support.",
       },
       {
         es: "Cada programa cierra con un quiz que confirma que lo tienes.",
@@ -4500,12 +4588,12 @@ export const copy = {
     aria: { es: "Recursos gratis", en: "Free resources" },
     kicker: { es: "Recursos", en: "Resources" },
     titulo: [
-      { es: "Para cuando no hay tiempo,", en: "For when there's no time" },
-      { es: "de dar la vuelta larga.", en: "to take the long way round.", enfasis: true },
+      { es: "Todo lo que necesitas, a un clic.", en: "Everything you need, one click away." },
+      { es: "Conocimiento práctico para tu día a día.", en: "Practical knowledge for you day to day.", enfasis: true },
     ],
     texto: {
-      es: "El paso a paso, sin rodeos. Se abren y se leen. Ni registro, ni prueba gratis.",
-      en: "Step by step, no detours. You open them and read. No sign-up, no free trial.",
+      es: "Accede al instante a nuestras guías y artículos. Sin registros, sin letras pequeñas y totalmente gratis: solo abres, aprendes y aplicas.",
+      en: "Access inmediately to our guides and articles. No sign-ups, no catch, completely free: just open, learn, and apply.",
     },
     cta: { es: "Explorar recursos", en: "Explore resources" },
 
@@ -4546,7 +4634,7 @@ export const copy = {
     indice: [
       { texto: { es: "Los artículos", en: "The articles" }, ancla: "#blog" },
       { texto: { es: "El plan de 90 días", en: "The 90-day plan" }, ancla: "#plan" },
-      { texto: { es: "Preguntas frecuentes", en: "Common questions" }, ancla: "#faq" },
+      { texto: { es: "Preguntas frecuentes", en: "Frequently Asked Questions" }, ancla: "#faq" },
       { texto: { es: "Avísame del siguiente", en: "Tell me about the next one" }, ancla: "#avisame" },
     ],
     masArticulos: { es: "Más artículos", en: "More articles" },

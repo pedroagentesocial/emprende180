@@ -33,10 +33,15 @@ import type { Idioma, Txt } from "@i18n/idioma";
  *
  * ─── EL CONTRASTE ──────────────────────────────────────────────────────────
  *
- * Aquí hay MÁS texto que en los dípticos —un párrafo y tres columnas— así que
- * el velo no puede ser un degradado lateral: es un apagado de abajo arriba que
- * cubre la mitad inferior, más un tinte general suave. Las caras de la foto
- * están en el tercio de arriba y se quedan fuera de los dos.
+ * Aquí hay MÁS texto que en los dípticos —un párrafo y a veces las claves— así
+ * que el velo no puede ser un degradado lateral: es un apagado de abajo arriba
+ * que cubre la mitad inferior, más un tinte general suave.
+ *
+ * ⚠️ DESDE EL 16-09-2026 EL APAGADO LO PINTA EL SLIDER, no este componente. El
+ * cliente quiso la misma sombra en las cuatro pantallas y mucho más suave, así
+ * que se centralizó en `HeroSlider` para todo vídeo de fondo. Este lo sigue
+ * pintando SOLO cuando le toca pintar su foto (sin vídeo detrás), que es el
+ * único caso que el slider no cubre.
  */
 
 interface Clave {
@@ -76,6 +81,19 @@ interface Props {
   /** El rótulo encima de las claves. */
   clavesTitulo?: Txt;
   claves?: readonly Clave[];
+  /**
+   * Dónde se apoya el bloque de texto en pantalla grande.
+   *
+   *   centro    — centrado, como siempre. El valor por defecto.
+   *   izquierda — pegado al margen izquierdo, con el texto alineado a la
+   *               izquierda. Las cuatro pantallas del slider alternan de
+   *               lado: 1 izquierda, 2 derecha, 3 izquierda, 4 derecha.
+   *   derecha   — el espejo.
+   *
+   * ⚠️ SOLO DE `lg` PARA ARRIBA. En un teléfono no hay sitio para desplazar
+   * nada: el bloque ocupa el ancho entero y se queda centrado.
+   */
+  bloque?: "centro" | "izquierda" | "derecha";
   lang: Idioma;
   /** La sombra de texto del slider. */
   sombra: string;
@@ -89,6 +107,7 @@ const {
   cuerpo,
   clavesTitulo,
   claves = [],
+  bloque = "centro",
   lang,
   sombra,
   prioritaria = false,
@@ -111,15 +130,16 @@ const {
         class="absolute inset-0 -z-10 size-full object-cover object-top"
       />
       <div aria-hidden="true" class="absolute inset-0 -z-10 bg-primary-950/45" />
+
+      {/* El apagado de abajo SOLO cuando la foto es de este componente. Con
+          vídeo detrás lo pinta el slider, igual y más suave para las cuatro
+          pantallas. Ver la nota de la cabecera. */}
+      <div
+        aria-hidden="true"
+        class="absolute inset-x-0 bottom-0 -z-10 h-3/5 bg-gradient-to-t from-primary-950 via-primary-950/80 to-transparent"
+      />
     </Fragment>
   )}
-
-  {/* El apagado de abajo VA SIEMPRE, haya foto o vídeo: es el que sostiene el
-      texto, y aquí hay un párrafo y tres columnas encima. */}
-  <div
-    aria-hidden="true"
-    class="absolute inset-x-0 bottom-0 -z-10 h-3/5 bg-gradient-to-t from-primary-950 via-primary-950/80 to-transparent"
-  />
 
   {/* ⚠️ `pb-24`/`lg:pb-32` NO ES AIRE: ES EL HUECO DE LOS MANDOS DEL SLIDER,
       que van centrados a 32 px del borde de abajo y ocupan 44 de alto. Ver la
@@ -137,7 +157,17 @@ const {
       este arriba lo devolvió: "donde estaban antes estaba bien". De `lg` para
       arriba, `pt-24` es el hueco de la barra. */}
   <div
-    class="flex size-full flex-col items-center justify-end px-[var(--gutter-page)] pb-24 pt-[calc(56.25vw+var(--header-h-grande)+1rem)] text-center sm:pb-28 lg:pb-32 lg:pt-24"
+    class:list={[
+      "flex size-full flex-col items-center justify-end px-[var(--gutter-page)] pb-24 pt-[calc(56.25vw+1rem)] text-center sm:pb-28 lg:pt-24",
+      bloque === "centro" && "lg:pb-32",
+      /* ⚠️ `pb-24` ES LA ALTURA COMÚN DE LAS CUATRO PANTALLAS. El cliente
+         pidió el 16-09-2026 que el texto de todas estuviera a la misma
+         altura, y este es el número que comparten con los dos dípticos (ver
+         `HeroDiptico`). Dejan 20 px de aire sobre los mandos, que ocupan de
+         32 a 76 px desde abajo. */
+      bloque === "izquierda" && "lg:items-start lg:text-left lg:pb-24",
+      bloque === "derecha" && "lg:items-end lg:text-right lg:pb-24",
+    ]}
   >
     {/* El manifiesto. `h2` porque el `h1` de la página lo pone el hero en sus
         otras imágenes; aquí no hay ninguna frase que conteste "de qué va la
@@ -235,7 +265,9 @@ const {
         class="mt-4 max-w-2xl text-balance text-sm font-medium leading-relaxed text-secondary-100 sm:mt-6 sm:text-lg lg:max-w-4xl lg:text-2xl"
         style={sombra}
       >
-        <T v={cuerpo} />
+        {/* Igual que los renglones del titular: si el párrafo trae un
+            [COMPLETAR: …], se resalta en ámbar hasta que se rellene. */}
+        <T v={cuerpo} resaltar />
       </p>
     )}
 

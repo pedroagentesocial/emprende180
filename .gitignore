@@ -24,6 +24,13 @@ marca-originales/originales-sin-procesar/
 # ⚠️ Guarda una copia fuera del repo: aquí tampoco hay red de seguridad.
 /originales/
 
+# Los cuatro vídeos de fondo del hero SIN comprimir (los de cámara, 4-7 MB
+# cada uno). En /public/video viven las versiones 720p CRF 23 que se sirven
+# (ver scripts/comprimir-videos-hero.mjs). Igual que arriba: no se versionan
+# para no inflar el historial de git.
+# ⚠️ Guarda una copia fuera del repo: aquí tampoco hay red de seguridad.
+/video-originales/
+
 # env
 .env
 .env.production
