@@ -6,6 +6,7 @@ import { sitio, curso, instructor, cifras, contacto, copy, redesMarca } from "@c
 import LegalModal from "@components/legal/LegalModal";
 import CookieBanner from "@components/legal/CookieBanner";
 import ChatWidget from "@components/layout/ChatWidget.astro";
+import BotonLlamar from "@components/layout/BotonLlamar.astro";
 import {
   IDIOMAS,
   LOCALES,
@@ -360,6 +361,8 @@ const descripciones = { es: descripcion.es, en: descripcion.en };
     {/* El botón de chat, abajo a la derecha. Hoy es la maqueta a la espera
         del embebido de GoHighLevel: ver la cabecera del componente. */}
     <ChatWidget />
+    {/* El botón de llamar, encima de la burbuja del chat. */}
+    <BotonLlamar />
 
     {/* Mantiene <title> y la meta description en sincronía con el idioma
         cuando se cambia sin recargar. El resto del texto lo resuelve el CSS. */}

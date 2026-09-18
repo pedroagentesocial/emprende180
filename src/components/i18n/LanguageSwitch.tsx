@@ -58,7 +58,9 @@ export function LanguageSwitch({
       role="radiogroup"
       aria-label={actual === "es" ? "Idioma" : "Language"}
       className={[
-        "relative flex items-center gap-1 rounded-full border p-1",
+        /* Sin hueco entre los dos botones: el paso de la píldora es el ancho
+           del botón, y con un hueco de 4 px se desalineaba 4 px en EN. */
+        "relative flex items-center gap-0 rounded-full border p-1",
         oscuro ? "border-white/30 bg-white/10" : "border-line bg-surface-muted",
       ].join(" ")}
     >
@@ -67,7 +69,7 @@ export function LanguageSwitch({
       <span
         aria-hidden="true"
         className={[
-          "pointer-events-none absolute top-1 bottom-1 left-1 w-12 rounded-full",
+          "pointer-events-none absolute top-1 bottom-1 left-1 w-10 rounded-full sm:w-11",
           "transition-transform duration-300 ease-[var(--ease-out-soft)]",
           oscuro ? "bg-white/90" : "bg-surface shadow-xs",
         ].join(" ")}
@@ -90,7 +92,7 @@ export function LanguageSwitch({
               /* `relative` para quedar por encima de la píldora, que va detrás. */
               /* 44 px, el mínimo táctil, y no 48: la barra entera bajó un
                  punto el 16-09-2026 a petición del cliente. */
-              "relative min-h-11 min-w-11 rounded-full px-2.5 text-[0.8125rem] font-bold transition-colors duration-200",
+              "relative min-h-10 min-w-10 rounded-full px-2 text-[0.8125rem] font-bold transition-colors duration-200 sm:min-h-11 sm:min-w-11 sm:px-2.5",
               "focus-visible:outline-2 focus-visible:outline-offset-2",
               oscuro
                 ? "focus-visible:outline-focus-inverse"

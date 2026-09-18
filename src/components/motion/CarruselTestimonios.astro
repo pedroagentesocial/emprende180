@@ -99,7 +99,10 @@ const posicion = (i: number) =>
 
   {/* Flecha, puntos, pausa, flecha. Centrados bajo las tarjetas y a 44 px cada
       uno. El rótulo de posición está solo para el lector de pantalla. */}
-  <div class="mt-8 flex items-center justify-center gap-3 sm:gap-4">
+  {/* En el teléfono los puntos bajan a una segunda fila (`order-last` y
+      `basis-full`): seis puntos de 44 px más las flechas y la pausa no caben
+      en 320 px en una sola línea, y desbordaban la página. */}
+  <div class="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
     <button
       type="button"
       data-carrusel-antes
@@ -113,7 +116,7 @@ const posicion = (i: number) =>
 
     {/* Los puntos se pintan todos y el guion esconde los que sobran según
         cuántas tarjetas caben: con tres a la vista hay N − 2 posiciones. */}
-    <ul role="list" data-puntos class="flex items-center gap-1">
+    <ul role="list" data-puntos class="flex items-center justify-center gap-1 max-sm:order-last max-sm:basis-full">
       {
         items.map((_, i) => (
           <li>

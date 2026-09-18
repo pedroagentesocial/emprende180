@@ -195,13 +195,22 @@ const {
        exactamente lo que mide la imagen, y lo que hay debajo es el bloque
        de texto sobre navy.
 
-       ⚠️ EL `aspect-video` Y EL `pt` DE LAS PLANTILLAS TIENEN QUE MOVERSE
-       JUNTOS. El texto se aparta de la banda con `pt-[calc(56.25vw+...)]`,
-       que es la misma altura calculada a mano. Si un día la banda deja de
-       ser 16:9, hay que cambiar los dos sitios o el texto se le mete
-       encima. */
+       ⚠️ LA BANDA EMPIEZA DEBAJO DE LA BARRA, NO EN EL PÍXEL CERO. La barra
+       flota transparente sobre el hero y mide 92 px en el teléfono
+       (`--header-h-grande`); con la banda arrancando arriba, la barra tapaba el
+       tercio superior del vídeo —la cara de la persona— y lo que asomaba
+       debajo se leía como un vídeo cortado. El cliente lo vio el 16-09-2026
+       ("los vídeos siguen estirándose hacia abajo, que queden en original").
+       Ahora la banda baja 92 px, se ve el fotograma ENTERO, y lo que hay
+       detrás de la barra es el navy de la sección.
+
+       ⚠️ EL `aspect-video`, ESTE `top` Y EL `pt` DE LAS PLANTILLAS TIENEN QUE
+       MOVERSE JUNTOS. El texto se aparta de la banda con
+       `pt-[calc(56.25vw+var(--header-h-grande)+...)]`, que es la misma altura
+       calculada a mano. Si un día la banda deja de ser 16:9 o cambia la
+       barra, hay que cambiar los tres sitios o el texto se le mete encima. */
     "absolute inset-x-0 -z-10 aspect-video w-full object-cover",
-    banda === "centrada" ? "top-1/2 -translate-y-1/2" : "top-0",
+    banda === "centrada" ? "top-1/2 -translate-y-1/2" : "top-[var(--header-h-grande)]",
     /* De `lg` para arriba vuelve a llenarlo todo: ahí el hueco ya es
        apaisado y el recorte es mínimo. */
     "lg:inset-0 lg:aspect-auto lg:size-full lg:translate-y-0",
@@ -233,7 +242,7 @@ const {
   aria-hidden="true"
   class:list={[
     "absolute inset-x-0 -z-10 aspect-video w-full",
-    banda === "centrada" ? "top-1/2 -translate-y-1/2" : "top-0",
+    banda === "centrada" ? "top-1/2 -translate-y-1/2" : "top-[var(--header-h-grande)]",
     "lg:inset-0 lg:aspect-auto lg:h-full lg:translate-y-0",
     velo,
   ]}
