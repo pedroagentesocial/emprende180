@@ -4588,12 +4588,12 @@ export const copy = {
     aria: { es: "Recursos gratis", en: "Free resources" },
     kicker: { es: "Recursos", en: "Resources" },
     titulo: [
-      { es: "Para cuando no hay tiempo,", en: "For when there's no time" },
-      { es: "de dar la vuelta larga.", en: "to take the long way round.", enfasis: true },
+      { es: "Todo lo que necesitas, a un clic.", en: "Everything you need, one click away." },
+      { es: "Conocimiento práctico para tu día a día.", en: "Practical knowledge for you day to day.", enfasis: true },
     ],
     texto: {
-      es: "El paso a paso, sin rodeos. Se abren y se leen. Ni registro, ni prueba gratis.",
-      en: "Step by step, no detours. You open them and read. No sign-up, no free trial.",
+      es: "Accede al instante a nuestras guías y artículos. Sin registros, sin letras pequeñas y totalmente gratis: solo abres, aprendes y aplicas.",
+      en: "Access inmediately to our guides and articles. No sign-ups, no catch, completely free: just open, learn, and apply.",
     },
     cta: { es: "Explorar recursos", en: "Explore resources" },
 
@@ -4634,7 +4634,7 @@ export const copy = {
     indice: [
       { texto: { es: "Los artículos", en: "The articles" }, ancla: "#blog" },
       { texto: { es: "El plan de 90 días", en: "The 90-day plan" }, ancla: "#plan" },
-      { texto: { es: "Preguntas frecuentes", en: "Common questions" }, ancla: "#faq" },
+      { texto: { es: "Preguntas frecuentes", en: "Frequently Asked Questions" }, ancla: "#faq" },
       { texto: { es: "Avísame del siguiente", en: "Tell me about the next one" }, ancla: "#avisame" },
     ],
     masArticulos: { es: "Más artículos", en: "More articles" },
