@@ -3134,7 +3134,7 @@ export const copy = {
        de vivir tu vida") pasa a punto y seguido: es la regla de todo el sitio
        en español. El inglés no es traducción literal. */
     titulo: { es: "El programa", en: "The program" },
-    subtitulo: { es: "Emprende180.", en: "Entrepreneur180." },
+    subtitulo: { es: "Emprende180", en: "Entrepreneur180" },
 
     cuerpo: [
       {
