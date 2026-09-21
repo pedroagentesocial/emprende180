@@ -53,6 +53,7 @@ const lang = resolverIdiomaServidor(
   data-ghl-loader={chat.ghl.loader}
   data-ghl-recursos={chat.ghl.recursos}
   data-ghl-widget={chat.ghl.widgetId}
+  data-ghl-source={chat.ghl.source}
   class="fixed bottom-5 right-5 z-[54] hidden sm:bottom-6 sm:right-6"
   data-chat-visible="false"
 >
@@ -169,6 +170,7 @@ const lang = resolverIdiomaServidor(
       script.src = ghl.ghlLoader;
       script.dataset.resourcesUrl = ghl.ghlRecursos ?? "";
       script.dataset.widgetId = ghl.ghlWidget;
+      if (ghl.ghlSource) script.dataset.source = ghl.ghlSource;
       script.async = true;
       document.body.append(script);
       esconderMaqueta();

@@ -10,7 +10,7 @@ import {
   type LeadResponse,
 } from "@lib/schema";
 import { consentimiento, legalConfig } from "@config/legal.config";
-import { copy, curso } from "@config/curso.config";
+import { copy, curso, contacto } from "@config/curso.config";
 import type { Txt, Idioma } from "@i18n/idioma";
 import { useIdioma } from "@i18n/react";
 
@@ -275,6 +275,49 @@ export function LeadForm({
     } finally {
       enVuelo.current = false;
     }
+  }
+
+  // ── Formularios apagados ──────────────────────────────────────────────────
+  // Ver `copy.ui.formularios`: mientras `ocultos` sea true no se pinta el formulario
+  // en ninguna sección, sino esta nota con el chat y el teléfono. Todo lo
+  // demás del componente sigue intacto para volver con un solo cambio.
+  if (copy.ui.formularios.ocultos) {
+    return (
+      <div
+        className={[
+          "rounded-2xl border p-6 text-center sm:p-7",
+          inverso
+            ? "border-white/20 bg-white/5 text-ink-inverse"
+            : "border-line bg-surface text-ink",
+        ].join(" ")}
+      >
+        <p className="text-lg font-extrabold">
+          {t(copy.ui.formularios.titulo)}
+        </p>
+        <p
+          className={[
+            "mx-auto mt-2 max-w-prose text-base font-medium leading-relaxed text-pretty",
+            inverso ? "text-secondary-100" : "text-ink-muted",
+          ].join(" ")}
+        >
+          {t(copy.ui.formularios.texto)}
+        </p>
+        {contacto.telefono && (
+          <a
+            href={`tel:${contacto.telefono}`}
+            data-track={`lead-${origen}-llamar`}
+            className={[
+              "mt-5 inline-flex min-h-11 items-center gap-2 font-bold underline underline-offset-4",
+              inverso
+                ? "text-secondary-300 hover:text-white"
+                : "text-ink-brand hover:text-secondary-800",
+            ].join(" ")}
+          >
+            {t(copy.ui.formularios.llamar)} {contacto.telefonoVisible}
+          </a>
+        )}
+      </div>
+    );
   }
 
   // ── Estado de éxito ───────────────────────────────────────────────────────

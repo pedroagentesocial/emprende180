@@ -5501,6 +5501,27 @@ export const copy = {
        haya nadie al otro lado en tiempo real) y las dos salidas que sí
        funcionan hoy: el formulario y el correo. Ver `ChatWidget.astro` para
        dónde va el embebido de GoHighLevel cuando llegue. */
+    /**
+     * ─── LOS FORMULARIOS, APAGADOS ────────────────────────────────────────
+     *
+     * `ocultos: true` quita el formulario de captura de TODAS las secciones que
+     * lo llevan (el cierre de la portada y de Programas, la lista y las guías
+     * de Recursos) y pinta en su lugar una nota con las dos vías que sí
+     * funcionan: el chat y el teléfono. Lo pidió el cliente el 21-09-2026
+     * "en lo que lo aprueban": el consentimiento de llamadas y mensajes está
+     * en revisión y hasta entonces no se recogen datos por formulario. Poner
+     * `false` los devuelve todos a la vez.
+     */
+    formularios: {
+      ocultos: true,
+      titulo: { es: "Muy pronto", en: "Coming soon" },
+      texto: {
+        es: "Estamos terminando de habilitar el formulario. Mientras, escríbenos por el chat o llámanos y te contamos cómo se entra.",
+        en: "We're finishing setting up the form. In the meantime, message us on the chat or give us a call and we'll explain how to join.",
+      },
+      llamar: { es: "Llamar al", en: "Call" },
+    },
+
     chat: {
       /**
        * El widget de GoHighLevel (LeadConnector). Lo pasó el cliente el
@@ -5512,7 +5533,10 @@ export const copy = {
       ghl: {
         loader: "https://widgets.leadconnectorhq.com/loader.js",
         recursos: "https://widgets.leadconnectorhq.com/chat-widget/loader.js",
-        widgetId: "6aaad7154f83a252fd321ddb",
+        /* Segundo widget, pasado por el cliente el 21-09-2026; el primero
+           (6aaad715…) se retira. Trae además `data-source="WEB_USER"`. */
+        widgetId: "6ab1931b599f010aecfd12a3",
+        source: "WEB_USER",
       },
       abrir: { es: "Abrir el chat", en: "Open chat" },
       cerrar: { es: "Cerrar el chat", en: "Close chat" },
