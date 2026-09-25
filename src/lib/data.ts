@@ -597,7 +597,7 @@ function memoryRepo(): Repo {
     .map(normaliseEmail)
     .filter(Boolean);
 
-  if (!adminEmails.length) adminEmails.push("contact@emprende180.com");
+  if (!adminEmails.length) adminEmails.push("support@emprende180.com");
 
   /**
    * ─── THE DEMO PASSWORD ────────────────────────────────────────────────────

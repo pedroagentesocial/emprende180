@@ -111,7 +111,7 @@ const TEXTOS = {
   },
 } as const;
 
-const CORREO = "contact@emprende180.com";
+const CORREO = "support@emprende180.com";
 
 /**
  * La página, escrita a mano y sin depender de nada.

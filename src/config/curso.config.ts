@@ -1856,10 +1856,11 @@ export const faqs: Faq[] = [
 // ─── Contacto ────────────────────────────────────────────────────────────────
 
 export const contacto = {
-  /* ⚠️ contact@ Y NO hola@. Lo fijó el cliente el 15-09-2026. Es el que se
-     enseña en las preguntas frecuentes, el del pie, el del schema y el de
-     respuesta de los correos de acceso: cambia aquí y cambia en todos. */
-  email: "contact@emprende180.com",
+  /* ⚠️ support@ DESDE EL 25-09-2026, y antes fue contact@ (15-09) y hola@. Es
+     el que se enseña en las preguntas frecuentes, el del pie, el del aviso de
+     privacidad, el del schema y el de respuesta de los correos: cambia aquí y
+     cambia en todos. */
+  email: "support@emprende180.com",
   /**
    * Teléfono para el botón de "Llámame ahora". Formato internacional.
    *
@@ -5504,6 +5505,9 @@ export const copy = {
     /**
      * ─── LOS FORMULARIOS, APAGADOS ────────────────────────────────────────
      *
+     * ⚠️ ENCENDIDOS OTRA VEZ DESDE EL 25-09-2026: el cliente confirmó que la
+     * mensajería quedó validada. Estuvieron apagados del 21 al 25.
+     *
      * `ocultos: true` quita el formulario de captura de TODAS las secciones que
      * lo llevan (el cierre de la portada y de Programas, la lista y las guías
      * de Recursos) y pinta en su lugar una nota con las dos vías que sí
@@ -5513,7 +5517,7 @@ export const copy = {
      * `false` los devuelve todos a la vez.
      */
     formularios: {
-      ocultos: true,
+      ocultos: false,
       titulo: { es: "Muy pronto", en: "Coming soon" },
       texto: {
         es: "Estamos terminando de habilitar el formulario. Mientras, escríbenos por el chat o llámanos y te contamos cómo se entra.",
@@ -5533,10 +5537,11 @@ export const copy = {
       ghl: {
         loader: "https://widgets.leadconnectorhq.com/loader.js",
         recursos: "https://widgets.leadconnectorhq.com/chat-widget/loader.js",
-        /* Segundo widget, pasado por el cliente el 21-09-2026; el primero
-           (6aaad715…) se retira. Trae además `data-source="WEB_USER"`. */
-        widgetId: "6ab1931b599f010aecfd12a3",
-        source: "WEB_USER",
+        /* ⚠️ TERCER CAMBIO DE WIDGET. El 21-09-2026 se pasó al 6ab1931b… con
+           `data-source="WEB_USER"`, y el 25-09 el cliente volvió al primero, que
+           es el que va sin `source`. Si vuelve a cambiar: solo estas dos líneas. */
+        widgetId: "6aaad7154f83a252fd321ddb",
+        source: "",
       },
       abrir: { es: "Abrir el chat", en: "Open chat" },
       cerrar: { es: "Cerrar el chat", en: "Close chat" },

@@ -53,7 +53,7 @@ export const responsable = {
   nombre: "Emprende180",
   direccion: "1515 East Fort Union Blvd, Cottonwood Heights, UT 84121",
   pais: { es: "Estados Unidos", en: "United States" },
-  email: "contact@emprende180.com",
+  email: "support@emprende180.com",
   telefono: "(385) 588-3717",
 } as const;
 
