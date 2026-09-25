@@ -4500,20 +4500,24 @@ export const copy = {
   recursos: {
     aria: { es: "Recursos gratis", en: "Free resources" },
     kicker: { es: "Recursos", en: "Resources" },
-    /* ⚠️ REESCRITO EL 25-09-2026. Decía "Para cuando no hay tiempo, de dar la
-       vuelta larga" y "El paso a paso, sin rodeos. Se abren y se leen. Ni
-       registro, ni prueba gratis"; al cliente no le gustaba ni la frase ni lo
-       que prometía. Y además describía unas guías descargables que no
-       existen: lo que hay en /resources son los artículos, el plan de 90 días
-       entero y las preguntas frecuentes. El texto nuevo nombra eso, y ofrece
-       lo único que de verdad ofrece: verlo por dentro antes de decidir. */
+    /* ⚠️ REESCRITO DOS VECES EL 25-09-2026, y el porqué importa. Decía "Para
+       cuando no hay tiempo, de dar la vuelta larga / El paso a paso, sin
+       rodeos. Se abren y se leen. Ni registro, ni prueba gratis": al cliente
+       no le gustaba, y además describía unas guías descargables que no
+       existen. La segunda versión ("Mira por dentro antes de decidir")
+       prometía el plan de 90 días completo, y el cliente aclaró que esta
+       página NO es eso: es donde se comparten artículos de apoyo, vídeos y
+       recursos. Esta tercera dice justo eso y nada más.
+
+       ⚠️ NO SE NOMBRAN LOS VÍDEOS HASTA QUE HAYA ALGUNO. "Material de apoyo"
+       los cubre cuando lleguen sin prometerlos hoy. */
     titulo: [
-      { es: "Mira por dentro", en: "See how it works" },
-      { es: "antes de decidir.", en: "before you decide.", enfasis: true },
+      { es: "Aquí compartimos", en: "Here we share" },
+      { es: "lo que sabemos.", en: "what we know.", enfasis: true },
     ],
     texto: {
-      es: "Los artículos, el plan de 90 días completo y las preguntas que más nos hacen. Abierto: sin registro y sin coste.",
-      en: "The articles, the full 90-day plan, and the questions we get asked most. All open: no sign-up, no cost.",
+      es: "Lo que publicamos para quien está empezando: artículos, material de apoyo y las preguntas que más nos llegan.",
+      en: "What we publish for anyone starting out: articles, support material, and the questions we get most.",
     },
     cta: { es: "Explorar recursos", en: "Explore resources" },
 
