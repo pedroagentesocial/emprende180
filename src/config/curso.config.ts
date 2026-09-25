@@ -4547,9 +4547,6 @@ export const copy = {
        añade es lo que ya existe y estaba repartido por el sitio o guardado en
        el config sin pintarse:
 
-         · el plan de 90 días, de un vistazo: el día en tres bloques, las
-           cuatro fases y los tres hitos (`copy.plan90`, escrito sobre el
-           documento del cliente y quitado de la portada el 10-09-2026);
          · las preguntas frecuentes, las mismas de la portada;
          · el aviso del siguiente artículo.
 
@@ -4557,11 +4554,13 @@ export const copy = {
        página. Si una se quita, se quita de aquí. */
     indice: [
       { texto: { es: "Los artículos", en: "The articles" }, ancla: "#blog" },
-      { texto: { es: "El plan de 90 días", en: "The 90-day plan" }, ancla: "#plan" },
       { texto: { es: "Preguntas frecuentes", en: "Common questions" }, ancla: "#faq" },
       { texto: { es: "Avísame del siguiente", en: "Tell me about the next one" }, ancla: "#avisame" },
     ],
     masArticulos: { es: "Más artículos", en: "More articles" },
+    /* ⚠️ LOS TRES RÓTULOS DEL PLAN YA NO SE PINTAN: su sección salió de
+       /resources el 25-09-2026 (ver la cabecera de esa página). Se quedan por
+       si vuelve. */
     planTitulo: { es: "El plan de 90 días,", en: "The 90-day plan," },
     planRemate: { es: "de un vistazo.", en: "at a glance." },
     /* Reglas de tono de la tarjeta navy: son las tres frases del plan que ya
