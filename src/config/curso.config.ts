@@ -896,19 +896,22 @@ export const aliados = {
 
     /* ─── LOS OTROS PROYECTOS DEL GRUPO ─────────────────────────────────────
        Los pidió el cliente el 06-10-2026: "agrega de mis otros proyectos los
-       logos". Car Injury Clinic ya salía en las tarjetas del about pero no en
-       esta banda; Health Care PI entra con su símbolo, que es lo único que
-       publica su web; Venture180 y Lira Medical tienen el dominio aparcado
-       (Hostinger lo confirma) y por eso van sin `url` y sin logo: la banda los
-       pinta con su nombre, como a las cuatro de abajo.
+       logos" y, al preguntarle de dónde sacarlos, "están en la carpeta de
+       /websites". De ahí salen: cada logo viene del repositorio del proyecto,
+       no de una descarga de internet, y por eso son los archivos buenos.
+
+       ⚠️ VENTURE180 Y LIRA MEDICAL SIGUEN SIN `url`: el dominio está aparcado
+       (comprobado el 06-10-2026). Lo que sí tienen ya es logo, así que la
+       banda los pinta con su marca en vez de con el nombre tipográfico.
 
        ⚠️ LOS RUBROS QUE NO SE PUEDEN COMPROBAR VAN MARCADOS. El de Car Injury
        Clinic sale de lo que ya decía el about (atención médica y apoyo legal
-       tras un accidente). Health Care PI, Venture180 y Lira Medical no dicen
-       en ninguna parte accesible a qué se dedican con exactitud, así que su
-       rubro queda pendiente en vez de inventado. En la banda no se ve (ahí
-       solo sale el logo o el nombre), pero se usaría en cuanto alguien lo
-       pinte en otro sitio. */
+       tras un accidente); el de Health Care PI y el de Reviví MedSpa los dice
+       su propio logotipo ("accident health insurance", "medspa"), que es una
+       fuente tan buena como su web. Venture180 y Lira Medical no dicen en
+       ninguna parte accesible a qué se dedican con exactitud, así que su rubro
+       queda pendiente en vez de inventado. En la banda no se ve (ahí solo sale
+       el logo), pero se usaría en cuanto alguien lo pinte en otro sitio. */
     {
       nombre: "Car Injury Clinic",
       rubro: {
@@ -920,9 +923,10 @@ export const aliados = {
     },
     {
       nombre: "Health Care PI",
+      /* Lo dice su propio logotipo: "accident health insurance". */
       rubro: {
-        es: "[COMPLETAR: qué resuelve, en tres palabras]",
-        en: "[COMPLETAR: what it handles, in three words]",
+        es: "Seguro médico por accidente",
+        en: "Accident health insurance",
       },
       url: "https://healthcarepi.com",
       logo: "healthcarepi",
@@ -945,6 +949,30 @@ export const aliados = {
       },
       url: null as string | null,
       logo: "liramedical",
+    },
+    /* ⚠️ ESTA NO LA NOMBRÓ EL CLIENTE, LA NOMBRA VENTURE180. El cliente pidió
+       "car injury clinic, venture180, Lira Medical, Health Care PI y así", y
+       el "y así" se resuelve con una fuente, no a ojo: el propio Venture180
+       guarda en `public/marcas/` las marcas del grupo, y ahí está Reviví
+       MedSpa junto a El Señor de las Casas, Broker Lenders, Skilled Trade
+       Manpower, Car Injury Clinic y Lira Medical, que ya estaban todas en esta
+       banda. Es la única que faltaba de esa lista, así que entra.
+
+       ⚠️ Y NO ENTRAN LAS DEMÁS WEBS DE /websites (MedClaim PI, NeuroCare PI,
+       Orthopedic PI, PainManagement ER, PI Medical Doctor, PI Physical
+       Therapy, Utah Accident Firm): tienen logo listo, pero NO aparecen en el
+       portafolio de Venture180, así que no hay nada que diga si son del grupo
+       o encargos de la agencia. Esta banda afirma una relación real; la
+       diferencia entre un negocio del Ecosistema y un cliente de diseño no se
+       adivina. En cuanto el cliente diga cuáles son suyas, se añaden igual que
+       esta: logo a /public/imagenes/aliados/, medidas en assets.ts y aquí. */
+    {
+      nombre: "Reviví MedSpa",
+      /* "Medspa" lo dice el propio logotipo; el resto de su web es estética y
+         bienestar, pero con dos palabras basta y no se inventa nada. */
+      rubro: { es: "Estética y bienestar", en: "Aesthetics and wellness" },
+      url: null as string | null,
+      logo: "revivimedspa",
     },
 
     /* ─── LAS CUATRO QUE TODAVÍA NO TIENEN NI WEB NI LOGO ────────────────────

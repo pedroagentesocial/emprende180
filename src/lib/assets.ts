@@ -204,7 +204,25 @@ const MEDIDAS_ALIADOS: Record<string, { w: number; h: number }> = {
      blanca, no se veía. La blanca se guarda como `carinjuryclinics-blanco`,
      que es el nombre que busca `logoAliado(..., "oscuro")`. */
   carinjuryclinics: { w: 1082, h: 705 },
-  healthcarepi: { w: 1018, h: 814 },
+  /* ⚠️ RE-EXPORTADO EL 06-10-2026 A PARTIR DEL ORIGINAL de healthcarepi.com
+     ("Logo original.png", 3805x1603). El archivo anterior era casi cuadrado
+     (1018x814) y en una banda que fija la ALTURA eso deja 50 px de ancho: el
+     símbolo de las manos se leía, pero "HEALTHCARE PI" quedaba en un gris
+     ilegible. Con el lockup entero son 95 px y se lee el nombre, que es lo
+     único que esta franja tiene que conseguir. */
+  healthcarepi: { w: 900, h: 379 },
+
+  /* Los tres del 06-10-2026, sacados de los proyectos locales del grupo:
+     `venture/public/brand/logo-nav-c.png`, el logo de lira-medical y la marca
+     de Reviví que guarda el propio Venture180 en `public/marcas/`.
+
+     ⚠️ DE VENTURE180 HAY DOS VERSIONES y las dos hacen falta: `logo-nav-c` es
+     la de color (va sobre blanco, que es donde está la banda) y `logo-nav` es
+     la blanca, guardada como `venture180-blanco` porque es el nombre que
+     busca `logoAliado(..., "oscuro")`. Misma pareja que Car Injury Clinic. */
+  venture180: { w: 800, h: 169 },
+  liramedical: { w: 700, h: 299 },
+  revivimedspa: { w: 400, h: 108 },
 };
 
 export const medidasAliado = (archivo: string) =>
