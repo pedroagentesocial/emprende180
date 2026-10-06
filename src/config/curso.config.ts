@@ -2807,8 +2807,11 @@ export const copy = {
           href: "#empezar",
         },
         nota: {
-          es: "Solo 2 horas al día. Sin inversión inicial.",
-          en: "Just 2 hours a day. No upfront investment.",
+          /* ⚠️ DECÍA "Solo 2 horas al día. Sin inversión inicial." y el cliente
+             la cambió entera el 06-10-2026. Si se quiere recuperar la segunda
+             frase, va aquí detrás. */
+          es: "Invertir 2 horas al día.",
+          en: "Invest 2 hours a day.",
         },
       },
       /**
@@ -2970,8 +2973,10 @@ export const copy = {
           [{ es: "Tu Negocio También", en: "Your Business Too", acento: true }],
         ],
         subtitulo: {
-          es: "Construye tu fuente de ingresos propia al ritmo de tu casa: entre desayunos, tareas y todo lo que haces todos los días.",
-          en: "Build your own source of income at the pace of your home: between breakfasts, chores and everything you already do every day.",
+          /* Sin el "todo" de "y todo lo que haces todos los días": con "todos"
+             dos palabras después sonaba raro (06-10-2026). */
+          es: "Construye tu fuente de ingresos propia al ritmo de tu casa: entre desayunos, tareas y lo que haces todos los días.",
+          en: "Build your own source of income at the pace of your home: between breakfasts, chores and what you already do every day.",
         },
 
         /* ⚠️ SIN `cta`, Y QUE FALTE NO ES UN DESCUIDO. Solo la primera imagen
