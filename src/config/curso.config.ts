@@ -3181,7 +3181,9 @@ export const copy = {
     datos: [
       { valor: { es: "90", en: "90" }, etiqueta: { es: "días de plan", en: "days of plan" } },
       { valor: { es: "2", en: "2" }, etiqueta: { es: "horas al día", en: "hours a day" } },
-      { valor: { es: "4", en: "4" }, etiqueta: { es: "fases de crecimiento", en: "growth phases" } },
+      /* Seis desde el 06-10-2026: el cliente amplió el plan de cuatro fases a
+         seis. Las dos nuevas están sin escribir; ver `plan90Portada.fases`. */
+      { valor: { es: "6", en: "6" }, etiqueta: { es: "fases de crecimiento", en: "growth phases" } },
       {
         valor: { es: "Todos", en: "All" },
         etiqueta: { es: "tus contactos, organizados en el CRM", en: "your contacts, organized in the CRM" },
@@ -4176,13 +4178,18 @@ export const copy = {
           en: "You start from zero, and that's fine. You build your list of 100 contacts, load it into the CRM and learn to hold real conversations. By the end of this phase you have more than 150 organized contacts and 25 deep conversations.",
         },
         imagen: {
-          src: "/imagenes/resultados/01.webp",
+          /* ⚠️ EL ORDEN DE LAS FOTOS SE ALTERNA: mujer, papel, mujer, papel…
+             Lo pidió el cliente el 06-10-2026 y es lo que impide que el
+             collage se lea como dos bloques, uno de manos y otro de caras.
+             Esta es vertical en un hueco apaisado: `cover` recorta arriba y
+             abajo, y el 30 % deja dentro la cara y el teléfono. */
+          src: "/imagenes/identidad/mujer-vertical.webp",
           ancho: 800,
-          alto: 600,
-          encuadre: "center 40%",
+          alto: 1040,
+          encuadre: "50% 30%",
           alt: {
-            es: "Una mano escribiendo una lista en una libreta, con un café al lado",
-            en: "A hand writing a list in a notebook, with a coffee beside it",
+            es: "Una mujer hablando por teléfono sentada junto a la ventana de su casa",
+            en: "A woman on the phone sitting by the window at home",
           },
         },
       },
@@ -4196,13 +4203,13 @@ export const copy = {
           en: "What you did from memory now has a place. Every contact gets its stage, its tag and its next step, and follow-up stops depending on you remembering. On day 45 you sit down with your leader and decide together: carry on, adjust or pause.",
         },
         imagen: {
-          src: "/imagenes/resultados/04.webp",
+          src: "/imagenes/resultados/01.webp",
           ancho: 800,
           alto: 600,
-          encuadre: "center 45%",
+          encuadre: "center 55%",
           alt: {
-            es: "Una agenda abierta con la semana escrita a mano, junto a un teclado",
-            en: "An open planner with the week written out by hand, next to a keyboard",
+            es: "Una mano escribiendo una lista en una libreta, con un café al lado",
+            en: "A hand writing a list in a notebook, with a coffee beside it",
           },
         },
       },
@@ -4216,20 +4223,13 @@ export const copy = {
           en: "You step outside your own contacts. You open alliances with local businesses that see the same people you do, and you go back over everything you planted in the previous weeks: the contacts that went cold, the conversations left half-finished. The base stops being a list and starts moving on its own.",
         },
         imagen: {
-          /* ⚠️ CAMBIADA DOS VECES EL 16-09-2026. Iba `banco-charla` (dos hombres
-             a contraluz, oscura); pasó a dos tenderos en su local; y el
-             cliente pidió "clara y alguien con un celular, tal vez la que
-             tenemos en el programa". Es esa: la mujer al teléfono junto a la
-             ventana, que hasta hoy abría "El programa Emprende180" (ese hueco
-             lo ocupa ahora Pedro). Vertical en un hueco apaisado: `cover`
-             recorta arriba y abajo, y el 30 % deja la cara y el teléfono. */
-          src: "/imagenes/identidad/mujer-vertical.webp",
+          src: "/imagenes/resultados/06.webp",
           ancho: 800,
-          alto: 1040,
-          encuadre: "50% 30%",
+          alto: 600,
+          encuadre: "center 40%",
           alt: {
-            es: "Una mujer hablando por teléfono sentada junto a la ventana de su casa",
-            en: "A woman on the phone sitting by the window at home",
+            es: "Una mujer hablando por teléfono al aire libre, con el agua de fondo",
+            en: "A woman on the phone outdoors, with water in the background",
           },
         },
       },
@@ -4246,13 +4246,67 @@ export const copy = {
           en: "You prove that what you built holds on its own. On day 78 you start writing your own tasks. Day 90 isn't an ending: it's the starting point for the next 90.",
         },
         imagen: {
-          src: "/imagenes/resultados/06.webp",
+          src: "/imagenes/resultados/04.webp",
           ancho: 800,
           alto: 600,
-          encuadre: "center 30%",
+          encuadre: "center 50%",
           alt: {
-            es: "Una mujer hablando por teléfono al aire libre, con el agua de fondo",
-            en: "A woman on the phone outdoors, with water in the background",
+            es: "Una agenda abierta con la semana escrita a mano, junto a un teclado",
+            en: "An open planner with the week written out by hand, next to a keyboard",
+          },
+        },
+      },
+      /**
+       * ⚠️ LAS FASES 05 Y 06 ESTÁN POR ESCRIBIR. El cliente amplió el plan de
+       * cuatro a seis fases el 06-10-2026 y pidió dejarlas "por agregarse,
+       * pero ya ahí para visualizar": se pintan con su número, su foto y un
+       * rótulo de "próximamente", y en cuanto llegue el texto se sustituye
+       * aquí y ya está.
+       *
+       * ⚠️ Y CON ELLAS CAMBIAN LOS RANGOS DE DÍAS DE LAS CUATRO DE ARRIBA. Si
+       * los 90 días se reparten ahora en seis fases, "Días 1-20", "21-45",
+       * "46-70" y "71-90" dejan de cuadrar. Están sin tocar a propósito: los
+       * nuevos los decide el cliente con el texto.
+       *
+       * Las fotos siguen la alternancia: mujer, papel.
+       */
+      {
+        numero: "05",
+        rango: { es: "Próximamente", en: "Coming soon" },
+        nombre: { es: "Fase por definir", en: "Phase to be defined" },
+        reparto: null,
+        texto: {
+          es: "Estamos terminando de escribir esta fase. Muy pronto, aquí.",
+          en: "We're still writing this phase. Coming here soon.",
+        },
+        imagen: {
+          src: "/imagenes/plan90/mujer-escribiendo.webp",
+          ancho: 800,
+          alto: 600,
+          encuadre: "center 40%",
+          alt: {
+            es: "Una mujer tomando notas junto a su portátil en la cocina",
+            en: "A woman taking notes next to her laptop in the kitchen",
+          },
+        },
+      },
+      {
+        numero: "06",
+        rango: { es: "Próximamente", en: "Coming soon" },
+        nombre: { es: "Fase por definir", en: "Phase to be defined" },
+        reparto: null,
+        texto: {
+          es: "Estamos terminando de escribir esta fase. Muy pronto, aquí.",
+          en: "We're still writing this phase. Coming here soon.",
+        },
+        imagen: {
+          src: "/imagenes/plan90/mano-lista.webp",
+          ancho: 800,
+          alto: 600,
+          encuadre: "center 50%",
+          alt: {
+            es: "Una mano escribiendo una lista de tareas en una libreta",
+            en: "A hand writing a to-do list in a notebook",
           },
         },
       },

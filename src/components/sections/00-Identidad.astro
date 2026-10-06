@@ -213,13 +213,19 @@ const RADIO = "rounded-lg";
               escala que la barra del about, para que las dos páginas cuenten
               sus datos igual. Ver `identidad.datos` para de dónde sale cada uno
               y por qué el cuarto no es un número. */}
+          {/* ⚠️ LA CIFRA VA CENTRADA SOBRE SU ETIQUETA desde el 06-10-2026. Iba
+              alineada a la izquierda, y con etiquetas de dos renglones ("tus
+              contactos, organizados en el CRM") el número quedaba descolgado
+              en una esquina. `text-center` en la celda y `mx-auto` en la etiqueta,
+              que lleva medida propia: sin él, el texto se centra DENTRO de una
+              caja que sigue pegada a la izquierda. */}
           <dl class="mt-8 grid grid-cols-2 gap-x-6 gap-y-6 border-t-[0.5px] border-line pt-7 lg:grid-cols-4">
             {identidad.datos.map((d) => (
-              <div>
+              <div class="text-center">
                 <dd class="text-3xl font-extrabold leading-none tracking-[-0.02em] text-ink sm:text-4xl">
                   <T v={d.valor} />
                 </dd>
-                <dt class="mt-2 max-w-[16ch] text-sm font-medium text-pretty text-ink-muted sm:text-base">
+                <dt class="mx-auto mt-2 max-w-[16ch] text-sm font-medium text-balance text-ink-muted sm:text-base">
                   <T v={d.etiqueta} />
                 </dt>
               </div>
