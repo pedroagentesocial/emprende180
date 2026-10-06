@@ -1591,13 +1591,13 @@ export const testimonios: Testimonio[] = [
     fuente: "directo",
   },
   {
-    nombre: "Iztel González",
+    nombre: "Itzel González",
     contexto: { es: "Equipo HCPI", en: "HCPI team" },
     cita: {
       es: "Me ayudó a tener un método. Antes hacía las cosas cuando me acordaba; ahora sé qué toca cada día y por qué. Es un cambio pequeño que se nota en todo lo demás.",
       en: "It gave me a method. Before, I did things whenever I remembered to; now I know what each day calls for and why. It's a small change that shows up in everything else.",
     },
-    foto: "/imagenes/testimonios/iztel-gonzalez.webp",
+    foto: "/imagenes/testimonios/itzel-gonzalez.webp",
     estrellas: 5,
     fuente: "directo",
   },
@@ -3973,14 +3973,22 @@ export const copy = {
         cta: { es: "Quiero mi acceso", en: "I want my access" },
         href: "#empezar",
       },
+      /* ⚠️ ERA "EL SEGUIMIENTO" Y PASÓ A "EL APOYO" el 06-10-2026. El cambio no
+         es de palabra: la pieza ya no es solo la revisión semanal, también es
+         con quién cuentas cuando lo que preguntan se sale de tu parte. Por eso
+         entra el despacho contable aliado, que el cliente pidió nombrar.
+
+         ⚠️ Y NO SE DICE DE QUÉ DESPACHO SE TRATA hasta que el cliente pase el
+         nombre: una firma con nombre propio en una web es una afirmación
+         comprobable. Cuando llegue, se escribe aquí y en /programs. */
       {
         icono: "seguimiento",
-        titulo: { es: "El seguimiento", en: "The follow-up" },
+        titulo: { es: "El apoyo", en: "The support" },
         texto: {
-          es: "No es un video más. Cada semana, alguien del equipo revisa tu avance contigo. Así nunca dependes de adivinar si vas bien.",
-          en: "It isn't one more video. Every week, someone on the team goes over your progress with you. So you never have to guess whether you're on track.",
+          es: "No es un video más. Cada semana, alguien del equipo revisa tu avance contigo. Y para lo que se sale de tu parte tienes respaldo: un despacho contable aliado que atiende las dudas fiscales de tus referidos y las tuyas.",
+          en: "It isn't one more video. Every week, someone on the team goes over your progress with you. And for whatever falls outside your part, you have backup: a partner accounting firm that handles the tax questions your referrals have, and your own.",
         },
-        cta: { es: "Ver el seguimiento", en: "See the follow-up" },
+        cta: { es: "Ver el apoyo", en: "See the support" },
         href: "#empezar",
       },
     ],
@@ -4365,7 +4373,7 @@ export const copy = {
     aria: { es: "Programas", en: "Programs" },
     kicker: { es: "Programas", en: "Programs" },
     descripcion: {
-      es: "La Academia, el CRM y el seguimiento de Emprende180, explicados enteros y en un solo lugar.",
+      es: "La Academia, el CRM y el apoyo de Emprende180, explicados enteros y en un solo lugar.",
       en: "The Entrepreneur180 Academy, CRM and follow-up, explained in full, all in one place.",
     },
 
@@ -4380,8 +4388,8 @@ export const copy = {
       },
       remate: { es: "en un solo lugar.", en: "all in one place." },
       texto: {
-        es: "La Academia, el CRM, el seguimiento y la comunidad que avanza contigo, sin resumir nada.",
-        en: "The Academy, the CRM, the follow-up and the community moving with you, with nothing left out.",
+        es: "La Academia, el CRM, el apoyo y la comunidad que avanza contigo, sin resumir nada.",
+        en: "The Academy, the CRM, the support and the community moving with you, with nothing left out.",
       },
       cta: { es: "Ver cómo funciona", en: "See how it works" },
       ctaHref: "#academia",
@@ -4414,10 +4422,10 @@ export const copy = {
       {
         numero: "03",
         ancla: "#seguimiento",
-        titulo: { es: "El seguimiento", en: "The follow-up" },
+        titulo: { es: "El apoyo", en: "The support" },
         texto: {
-          es: "Alguien del equipo revisa tu avance cada semana.",
-          en: "Someone from the team checks your progress every week.",
+          es: "El equipo cada semana, y un despacho contable aliado detrás.",
+          en: "The team every week, and a partner accounting firm behind you.",
         },
       },
     ],
@@ -4517,22 +4525,24 @@ export const copy = {
       {
         id: "seguimiento",
         numero: "03",
-        categoria: { es: "El seguimiento", en: "The follow-up" },
+        categoria: { es: "El apoyo", en: "The support" },
         titulo: {
-          es: "No es un video más.",
-          en: "It's not just another video.",
+          es: "Nunca estás solo con una duda.",
+          en: "You're never alone with a question.",
         },
         parrafos: [
           {
-            es: "Cada semana, alguien del equipo revisa tu avance contigo: qué se movió, qué no, y qué sigue.",
-            en: "Every week, someone from the team goes over your progress with you: what moved, what didn't, and what's next.",
+            es: "Cada semana, alguien del equipo revisa tu avance contigo: qué se movió, qué no, y qué sigue. Así nunca dependes de adivinar si vas bien, y compartes ese espacio con otros Embajadores en el mismo punto que tú.",
+            en: "Every week, someone from the team goes over your progress with you: what moved, what didn't, and what's next. That way you never have to guess whether you're on track, and you share that space with other Ambassadors at the same stage as you.",
           },
           {
-            es: "Así nunca dependes de adivinar si vas bien. Y no lo haces solo: compartes ese espacio con otros Embajadores en el mismo punto que tú.",
-            en: "That way you never have to guess whether you're on track. And you're not doing it alone: you share that space with other Ambassadors at the same stage as you.",
+            /* ⚠️ EL DESPACHO CONTABLE, SIN NOMBRE HASTA QUE LO PASE EL CLIENTE.
+               Ver la nota de la tercera pieza en `comoTrabajar`. */
+            es: "Y hay más gente detrás de ti. Un despacho contable aliado atiende las dudas fiscales que aparecen cuando alguien decide dar el paso: ni tú tienes que resolverlas ni tienes que fingir que las sabes.",
+            en: "And there are more people behind you. A partner accounting firm handles the tax questions that come up when someone decides to take the step: you don't have to solve them, and you don't have to pretend you know the answers.",
           },
         ],
-        cta: { es: "Ver el seguimiento", en: "See the follow-up" },
+        cta: { es: "Ver el apoyo", en: "See the support" },
         ctaHref: "#empezar",
         imagenLado: "derecha",
         imagen: {

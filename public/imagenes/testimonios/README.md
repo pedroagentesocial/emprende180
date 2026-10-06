@@ -17,7 +17,7 @@ conviene cambiarlas por la foto de cada persona en cuanto estén.
 | `claudia-gonzalez.webp` | Claudia González |
 | `martha-soberanis.webp` | Martha Soberanis |
 | `jesus-rodriguez.webp` | Jesús Rodríguez |
-| `iztel-gonzalez.webp` | Iztel González |
+| `itzel-gonzalez.webp` | Itzel González |
 | `marco-munguia.webp` | Marco Munguía |
 | `vanessa.webp` | Vanessa |
 | `liz.webp` | Liz |
