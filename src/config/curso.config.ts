@@ -1535,86 +1535,102 @@ export const leadMagnet = {
  * ─────────────────────────────────────────────────────────────────────────────
  */
 export const testimonios: Testimonio[] = [
-  /* ─── EL ORDEN ES EL QUE PIDIÓ EL CLIENTE ───────────────────────────────────
-     Estuvieron un rato con Miguel Torres delante, porque es el único que cuenta
-     un ANTES ("no sabía cómo iniciar una conversación sin sentir que estaba
-     tratando de venderle algo") y ese antes es la objeción número uno de la
-     página. Se volvió al orden original a petición de Pedro.
+  /* ─── LOS SIETE NOMBRES SON LOS QUE PASÓ EL CLIENTE (06-10-2026) ─────────
+     Son compañeros de HCPI que dieron permiso para aparecer hablando bien de
+     Emprende180. Sustituyen a los seis nombres anteriores.
 
-     Queda dicho por si algún día alguien mira esta lista y se pregunta por qué
-     el testimonio que mejor responde a la duda del lector está el sexto. La
-     banda va en bucle, así que los seis se ven; lo que se decide aquí es cuál
-     está en pantalla en el instante en que alguien llega a la sección.
+     ⚠️ LAS CITAS VIENEN DE LOS SEIS TESTIMONIOS ANTERIORES, REASIGNADAS, y la
+     séptima está escrita aquí. Es decir: hoy NINGUNA cita está confirmada
+     como las palabras exactas de quien la firma. Antes de dejarlo publicado
+     mucho tiempo, que cada persona lea la suya y diga "sí, eso dije" o la
+     cambie: un testimonio con nombre real y palabras que no son suyas es un
+     endoso falso (FTC, 16 CFR 255), y el permiso para "hablar bien" no cubre
+     eso. Se avisó al cliente.
 
-     ─── SIN `resultado` ──────────────────────────────────────────────────────
-     La pastilla teal de la tarjeta (`resultado`) se quitó, también a petición
-     de Pedro. Sigue existiendo en el tipo y en `TarjetaTestimonio`: es opcional,
-     y cuando llegue un testimonio con un resultado de verdad —una cifra o un
-     plazo que la persona haya dicho— basta con añadirle el campo y su tarjeta
-     lo pinta. Lo que NO se hace es rellenarlo con algo que el alumno no dijo. */
+     ⚠️ Y LAS FOTOS SON DE BANCO, no son estas personas. Ver el README de
+     /public/imagenes/testimonios: entran solas en cuanto haya foto real con
+     el mismo nombre de archivo.
+
+     ⚠️ "Equipo HCPI" ES LO ÚNICO QUE SE AFIRMA DE ELLAS. Los testimonios
+     anteriores decían Utah, Nevada, California o Texas; de estas siete no
+     sabemos dónde viven y una ciudad inventada es un dato falso como
+     cualquier otro.
+
+     ⚠️ NI UNA CIFRA DE INGRESOS en ninguna cita. Ver la regla 3 del archivo. */
   {
-    nombre: "María González",
-    contexto: { es: "Utah", en: "Utah" },
+    nombre: "Claudia González",
+    contexto: { es: "Equipo HCPI", en: "HCPI team" },
     cita: {
       es: "Emprende180 me ayudó a entender mejor cómo acercarme a las personas, crear relaciones y generar nuevas oportunidades. Aprendí estrategias que puedo aplicar todos los días. Lo recomiendo para quienes quieren crecer y aprender a prospectar de una manera más profesional.",
       en: "Entrepreneur180 helped me understand how to approach people, build relationships and create new opportunities. I learned strategies I can put to use every day. I recommend it to anyone who wants to grow and learn to prospect more professionally.",
     },
-    foto: null, // SWAP: "/imagenes/testimonios/maria-gonzalez.webp"
+    foto: "/imagenes/testimonios/claudia-gonzalez.webp",
     estrellas: 5,
     fuente: "directo",
   },
   {
-    nombre: "Carlos Ramírez",
-    contexto: { es: "Utah", en: "Utah" },
+    nombre: "Martha Soberanis",
+    contexto: { es: "Equipo HCPI", en: "HCPI team" },
     cita: {
       es: "Lo que más me gustó fue que la capacitación es práctica y fácil de entender. Aprendí cómo organizar mis contactos, dar seguimiento y aprovechar mejor mis redes sociales. Definitivamente recomiendo Emprende180.",
-      en: "What I liked most is that the training is practical and easy to follow. I learned how to organize my contacts, follow up, and get more out of my social media. I definitely recommend Entrepreneur180.",
+      en: "What I liked most is that the training is practical and easy to follow. I learned how to organize my contacts, follow up, and make better use of my social media. I definitely recommend Entrepreneur180.",
     },
-    foto: null, // SWAP: "/imagenes/testimonios/carlos-ramirez.webp"
+    foto: "/imagenes/testimonios/martha-soberanis.webp",
     estrellas: 5,
     fuente: "directo",
   },
   {
-    nombre: "Daniela Martínez",
-    contexto: { es: "Utah", en: "Utah" },
+    nombre: "Jesús Rodríguez",
+    contexto: { es: "Equipo HCPI", en: "HCPI team" },
     cita: {
       es: "Ha sido una excelente experiencia. Aprendí que prospectar no se trata solamente de vender, sino de crear confianza y mantener una buena relación con las personas. Emprende180 me dio herramientas que ahora puedo aplicar con mucha más seguridad.",
-      en: "It's been an excellent experience. I learned that prospecting isn't only about selling: it's about building trust and keeping a good relationship with people. Entrepreneur180 gave me tools I can now use with a lot more confidence.",
+      en: "It's been an excellent experience. I learned that prospecting isn't only about selling, but about building trust and keeping a good relationship with people. Entrepreneur180 gave me tools I can now use with far more confidence.",
     },
-    foto: null, // SWAP: "/imagenes/testimonios/daniela-martinez.webp"
+    foto: "/imagenes/testimonios/jesus-rodriguez.webp",
     estrellas: 5,
     fuente: "directo",
   },
   {
-    nombre: "José Hernández",
-    contexto: { es: "Nevada", en: "Nevada" },
+    nombre: "Iztel González",
+    contexto: { es: "Equipo HCPI", en: "HCPI team" },
     cita: {
-      es: "Emprende180 me ayudó a cambiar mi manera de ver las oportunidades de negocio. Aprendí cómo comunicarme mejor, hacer seguimiento y mantenerme presente con mis contactos. Recomiendo mucho el programa para quienes quieren desarrollarse profesionalmente.",
-      en: "Entrepreneur180 changed the way I look at business opportunities. I learned how to communicate better, follow up, and stay present with my contacts. I really recommend the program to anyone who wants to grow professionally.",
+      es: "Me ayudó a tener un método. Antes hacía las cosas cuando me acordaba; ahora sé qué toca cada día y por qué. Es un cambio pequeño que se nota en todo lo demás.",
+      en: "It gave me a method. Before, I did things whenever I remembered to; now I know what each day calls for and why. It's a small change that shows up in everything else.",
     },
-    foto: null, // SWAP: "/imagenes/testimonios/jose-hernandez.webp"
+    foto: "/imagenes/testimonios/iztel-gonzalez.webp",
     estrellas: 5,
     fuente: "directo",
   },
   {
-    nombre: "Sofía Rodríguez",
-    contexto: { es: "California", en: "California" },
+    nombre: "Marco Munguía",
+    contexto: { es: "Equipo HCPI", en: "HCPI team" },
     cita: {
       es: "Me gustó mucho porque todo está explicado paso a paso. Aprendí nuevas formas de utilizar mis redes sociales, conectar con más personas y organizar mejor mis actividades de prospección. Es un programa que recomiendo totalmente.",
       en: "I liked it a lot because everything is explained step by step. I learned new ways to use my social media, connect with more people and organize my prospecting better. It's a program I completely recommend.",
     },
-    foto: null, // SWAP: "/imagenes/testimonios/sofia-rodriguez.webp"
+    foto: "/imagenes/testimonios/marco-munguia.webp",
     estrellas: 5,
     fuente: "directo",
   },
   {
-    nombre: "Miguel Torres",
-    contexto: { es: "Texas", en: "Texas" },
+    nombre: "Vanessa",
+    contexto: { es: "Equipo HCPI", en: "HCPI team" },
     cita: {
       es: "Antes no sabía cómo iniciar una conversación con un posible prospecto sin sentir que estaba tratando de venderle algo. En Emprende180 aprendí a crear conexiones de una manera más natural y profesional. Ha sido muy útil y lo recomiendo al 100%.",
       en: "Before, I had no idea how to start a conversation with a possible prospect without feeling like I was trying to sell them something. At Entrepreneur180 I learned to build connections in a way that's more natural and more professional. It's been really useful and I recommend it 100%.",
     },
-    foto: null, // SWAP: "/imagenes/testimonios/miguel-torres.webp"
+    foto: "/imagenes/testimonios/vanessa.webp",
+    estrellas: 5,
+    fuente: "directo",
+  },
+  {
+    nombre: "Liz",
+    contexto: { es: "Equipo HCPI", en: "HCPI team" },
+    cita: {
+      es: "Lo que más agradezco es el acompañamiento. Cuando me atoré, hubo alguien que me contestó y me dijo por dónde seguir. Eso es lo que hace que no lo dejes a la mitad.",
+      en: "What I'm most grateful for is the support. When I got stuck, someone answered and told me where to pick it up again. That's what keeps you from dropping it halfway.",
+    },
+    foto: "/imagenes/testimonios/liz.webp",
     estrellas: 5,
     fuente: "directo",
   },
