@@ -894,6 +894,59 @@ export const aliados = {
       logo: "skilledtrademanpower",
     },
 
+    /* ─── LOS OTROS PROYECTOS DEL GRUPO ─────────────────────────────────────
+       Los pidió el cliente el 06-10-2026: "agrega de mis otros proyectos los
+       logos". Car Injury Clinic ya salía en las tarjetas del about pero no en
+       esta banda; Health Care PI entra con su símbolo, que es lo único que
+       publica su web; Venture180 y Lira Medical tienen el dominio aparcado
+       (Hostinger lo confirma) y por eso van sin `url` y sin logo: la banda los
+       pinta con su nombre, como a las cuatro de abajo.
+
+       ⚠️ LOS RUBROS QUE NO SE PUEDEN COMPROBAR VAN MARCADOS. El de Car Injury
+       Clinic sale de lo que ya decía el about (atención médica y apoyo legal
+       tras un accidente). Health Care PI, Venture180 y Lira Medical no dicen
+       en ninguna parte accesible a qué se dedican con exactitud, así que su
+       rubro queda pendiente en vez de inventado. En la banda no se ve (ahí
+       solo sale el logo o el nombre), pero se usaría en cuanto alguien lo
+       pinte en otro sitio. */
+    {
+      nombre: "Car Injury Clinic",
+      rubro: {
+        es: "Atención tras un accidente",
+        en: "Care after an accident",
+      },
+      url: "https://carinjuryclinics.com",
+      logo: "carinjuryclinics",
+    },
+    {
+      nombre: "Health Care PI",
+      rubro: {
+        es: "[COMPLETAR: qué resuelve, en tres palabras]",
+        en: "[COMPLETAR: what it handles, in three words]",
+      },
+      url: "https://healthcarepi.com",
+      logo: "healthcarepi",
+    },
+    {
+      nombre: "Venture180",
+      rubro: {
+        es: "[COMPLETAR: qué resuelve, en tres palabras]",
+        en: "[COMPLETAR: what it handles, in three words]",
+      },
+      /* Dominio aparcado a 06-10-2026: sin enlace hasta que haya web. */
+      url: null as string | null,
+      logo: "venture180",
+    },
+    {
+      nombre: "Lira Medical",
+      rubro: {
+        es: "[COMPLETAR: qué resuelve, en tres palabras]",
+        en: "[COMPLETAR: what it handles, in three words]",
+      },
+      url: null as string | null,
+      logo: "liramedical",
+    },
+
     /* ─── LAS CUATRO QUE TODAVÍA NO TIENEN NI WEB NI LOGO ────────────────────
        Se pintan igual que las demás, con su nombre como logotipo tipográfico y
        sin enlazar a ninguna parte: la relación es real aunque el sitio esté en

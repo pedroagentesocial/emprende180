@@ -199,6 +199,12 @@ const MEDIDAS_ALIADOS: Record<string, { w: number; h: number }> = {
      imágenes sin dimensiones. */
   boltwatts: { w: 909, h: 205 },
   skilledtrademanpower: { w: 643, h: 219 },
+  /* Los dos del 06-10-2026. El de Car Injury Clinic es la versión OSCURA: la
+     que bajamos de su web es blanca (va sobre navy) y en la banda, que es
+     blanca, no se veía. La blanca se guarda como `carinjuryclinics-blanco`,
+     que es el nombre que busca `logoAliado(..., "oscuro")`. */
+  carinjuryclinics: { w: 1082, h: 705 },
+  healthcarepi: { w: 1018, h: 814 },
 };
 
 export const medidasAliado = (archivo: string) =>
