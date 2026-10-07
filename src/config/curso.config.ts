@@ -4038,8 +4038,8 @@ export const copy = {
         icono: "academia",
         titulo: { es: "La Academia", en: "The Academy" },
         texto: {
-          es: "Los programas y el método que los sostiene, en videos cortos y en orden. Aprendes a tu ritmo, con contenido diseñado para que cada módulo construya sobre el anterior. Si te atoras, alguien del equipo contesta.",
-          en: "The programs and the method behind them, in short videos and in order. You learn at your own pace, with content designed so each module builds on the one before. If you get stuck, someone on the team answers.",
+          es: "Los programas y el método que los sostiene, en videos cortos y en orden. Aprendes a tu ritmo, con contenido diseñado para que cada módulo construya sobre el anterior.",
+          en: "The programs and the method behind them, in short videos and in order. You learn at your own pace, with content designed so each module builds on the one before.",
         },
         cta: { es: "Ver la Academia", en: "See the Academy" },
         href: "#academia",
@@ -4054,20 +4054,27 @@ export const copy = {
         cta: { es: "Quiero mi acceso", en: "I want my access" },
         href: "#empezar",
       },
-      /* ⚠️ ERA "EL SEGUIMIENTO" Y PASÓ A "EL APOYO" el 06-10-2026. El cambio no
-         es de palabra: la pieza ya no es solo la revisión semanal, también es
-         con quién cuentas cuando lo que preguntan se sale de tu parte. Por eso
-         entra el despacho contable aliado, que el cliente pidió nombrar.
+      /* ⚠️ ERA "EL SEGUIMIENTO" Y PASÓ A "EL APOYO" el 06-10-2026, y el 07 se
+         corrigió lo que decía. Durante un día habló de un despacho contable
+         aliado; el cliente lo retiró y pidió en su lugar el acompañamiento de
+         un Embajador uno a uno. Fuera queda, entonces, la única afirmación de
+         esta pieza que no se podía comprobar.
 
-         ⚠️ Y NO SE DICE DE QUÉ DESPACHO SE TRATA hasta que el cliente pase el
-         nombre: una firma con nombre propio en una web es una afirmación
-         comprobable. Cuando llegue, se escribe aquí y en /programs. */
+         ⚠️ LO QUE SE PROMETE AQUÍ ES UNA OPERACIÓN, NO UNA FRASE. "Cuando te
+         atoras hay un Embajador que lo ve contigo" solo se puede escribir
+         mientras eso pase de verdad: si un día deja de haber quien conteste,
+         esta es la primera línea que hay que cambiar, porque es la que la
+         persona recuerda cuando se atora y no la atienden.
+
+         ⚠️ POR ESO NO SE PONE PLAZO. Ni "el mismo día" ni "en 24 horas": eso
+         es un compromiso de servicio y no hay nada que lo respalde. Lo que se
+         dice es QUÉ pasa, no EN CUÁNTO. */
       {
         icono: "seguimiento",
         titulo: { es: "El apoyo", en: "The support" },
         texto: {
-          es: "No es un video más. Cada semana, alguien del equipo revisa tu avance contigo. Y para lo que se sale de tu parte tienes respaldo: un despacho contable aliado que atiende las dudas fiscales de tus referidos y las tuyas.",
-          en: "It isn't one more video. Every week, someone on the team goes over your progress with you. And for whatever falls outside your part, you have backup: a partner accounting firm that handles the tax questions your referrals have, and your own.",
+          es: "No es un video más. Cada semana alguien del equipo revisa tu avance contigo, y cuando te atoras hay un Embajador que ya pasó por ahí para verlo contigo, uno a uno. Preguntas, te destrabas y sigues.",
+          en: "It isn't one more video. Every week someone on the team goes over your progress with you, and when you get stuck there's an Ambassador who's been there to work it through with you, one on one. You ask, you get unstuck, you keep going.",
         },
         cta: { es: "Ver el apoyo", en: "See the support" },
         href: "#empezar",
@@ -4505,8 +4512,8 @@ export const copy = {
         ancla: "#seguimiento",
         titulo: { es: "El apoyo", en: "The support" },
         texto: {
-          es: "El equipo cada semana, y un despacho contable aliado detrás.",
-          en: "The team every week, and a partner accounting firm behind you.",
+          es: "El equipo cada semana, y un Embajador uno a uno cuando te atoras.",
+          en: "The team every week, and an Ambassador one on one when you get stuck.",
         },
       },
     ],
@@ -4557,8 +4564,8 @@ export const copy = {
             en: "You learn at your own pace, through short videos in order, with content designed so each module builds on the last. Every program ends with a quiz that confirms you've got it.",
           },
           {
-            es: "No hay clases en vivo ni horarios que cumplir. Si te atoras, alguien del equipo contesta.",
-            en: "There are no live classes or fixed schedules. If you get stuck, someone from the team answers.",
+            es: "No hay clases en vivo ni horarios que cumplir: abres el video cuando puedes, lo pausas y lo retomas donde lo dejaste.",
+            en: "No live classes, no schedule to keep: you open the video when you can, pause it, and pick it up where you left off.",
           },
         ],
         cta: { es: "Empezar la Academia", en: "Start the Academy" },
@@ -4617,10 +4624,16 @@ export const copy = {
             en: "Every week, someone from the team goes over your progress with you: what moved, what didn't, and what's next. That way you never have to guess whether you're on track, and you share that space with other Ambassadors at the same stage as you.",
           },
           {
-            /* ⚠️ EL DESPACHO CONTABLE, SIN NOMBRE HASTA QUE LO PASE EL CLIENTE.
-               Ver la nota de la tercera pieza en `comoTrabajar`. */
-            es: "Y hay más gente detrás de ti. Un despacho contable aliado atiende las dudas fiscales que aparecen cuando alguien decide dar el paso: ni tú tienes que resolverlas ni tienes que fingir que las sabes.",
-            en: "And there are more people behind you. A partner accounting firm handles the tax questions that come up when someone decides to take the step: you don't have to solve them, and you don't have to pretend you know the answers.",
+            /* ⚠️ ESTO SUSTITUYE AL DESPACHO CONTABLE (07-10-2026). Ver la nota
+               de la tercera pieza en `comoTrabajar`: lo que se promete es que
+               haya quien conteste, y eso es una operación, no una frase.
+
+               El párrafo está escrito con el caso concreto a propósito —"tu
+               contacto y tu mensaje delante"— porque "te damos apoyo" no lo
+               cree nadie y "vemos TU mensaje" sí: es la diferencia entre una
+               promesa y una escena. */
+            es: "Y entre llamada y llamada tampoco te quedas solo. Cuando algo se te atora, hay un Embajador que ya lo vivió y lo ve contigo uno a uno: no la teoría, tu caso, con tu contacto y tu mensaje delante. Es la diferencia entre darle vueltas una semana y salir de ahí en una conversación.",
+            en: "And between calls you're not on your own either. When something jams, there's an Ambassador who's lived it and works through it with you, one on one: not the theory, your case, with your contact and your message in front of you. That's the difference between circling it for a week and getting out of it in one conversation.",
           },
         ],
         cta: { es: "Ver el apoyo", en: "See the support" },
