@@ -1919,8 +1919,13 @@ export const faqs: Faq[] = [
       en: "What happens after Day 90?",
     },
     respuesta: {
-      es: "El Día 90 no es un final. Desde el Día 78 ya escribes tus propias tareas, y el Día 90 miras tus números y decides qué sigue. Lo que construiste se queda contigo: tu base de contactos organizada, tu sistema de seguimiento y tus fuentes de referidos. Y la comunidad sigue ahí, con la llamada de equipo cada semana.",
-      en: "Day 90 is not an ending. From Day 78 you are already writing your own tasks, and on Day 90 you look at your numbers and decide what comes next. What you built stays with you: your organized contact base, your follow-up system and your referral sources. And the community is still there, with the team call every week.",
+      /* ⚠️ AQUÍ DECÍA "DESDE EL DÍA 78" Y EL DÍA 78 YA NO EXISTE. Era un hito
+         del plan de cuatro fases; el de seis (07-10-2026) corta en los días
+         15, 30, 45, 60, 75 y 90. Prometer en una FAQ un día que el programa no
+         tiene es de las cosas que se descubren al llegar, que es el peor
+         momento. Lo que queda dicho es lo que sigue siendo cierto. */
+      es: "El Día 90 no es un final. Miras tus números y decides qué sigue. Lo que construiste se queda contigo: tu base de contactos organizada, tu sistema de seguimiento y tus fuentes de referidos. Y la comunidad sigue ahí, con la llamada de equipo cada semana.",
+      en: "Day 90 is not an ending. You look at your numbers and decide what comes next. What you built stays with you: your organized contact base, your follow-up system and your referral sources. And the community is still there, with the team call every week.",
     },
   },
   /* Las dos que se añadieron con permiso del cliente ("si quieres agrega 2
@@ -3262,10 +3267,10 @@ export const copy = {
      * ─── LOS CUATRO DATOS DEL PROGRAMA ──────────────────────────────────
      *
      * Los pidió el cliente el 15-09-2026, debajo del párrafo. Los tres primeros
-     * salen del documento del plan de 90 días, tal cual están en `plan90`: 90
-     * días, 2 horas al día (60 de prospección + 45 de seguimiento + 15 de CRM)
-     * y cuatro fases (Fundación, Sistematización, Red y base viva,
-     * Consolidación).
+     * salen del documento del plan de 90 días: 90 días, 2 horas al día (60 de
+     * prospección + 45 de seguimiento + 15 de CRM) y seis fases (Preparar,
+     * Activar, Consolidar, Expandir, Reactivar y Optimizar). Las fases viven
+     * en `plan90Portada.fases`, que es la única lista que se pinta.
      *
      * ⚠️ EL CUARTO NO LLEVA NÚMERO, Y ES A PROPÓSITO. El documento fija una
      * meta de 450 contactos, y la regla del propio `plan90` —que sale de la
@@ -3278,8 +3283,8 @@ export const copy = {
     datos: [
       { valor: { es: "90", en: "90" }, etiqueta: { es: "días de plan", en: "days of plan" } },
       { valor: { es: "2", en: "2" }, etiqueta: { es: "horas al día", en: "hours a day" } },
-      /* Seis desde el 06-10-2026: el cliente amplió el plan de cuatro fases a
-         seis. Las dos nuevas están sin escribir; ver `plan90Portada.fases`. */
+      /* Seis desde el 06-10-2026, y con nombre desde el 07: Preparar, Activar,
+         Consolidar, Expandir, Reactivar y Optimizar. Ver `plan90Portada.fases`. */
       { valor: { es: "6", en: "6" }, etiqueta: { es: "fases de crecimiento", en: "growth phases" } },
       {
         valor: { es: "Todos", en: "All" },
@@ -4247,26 +4252,39 @@ export const copy = {
    * LOS 90 DÍAS, EN LA PORTADA — la sección que va detrás del programa
    * ═══════════════════════════════════════════════════════════════════════
    *
-   * La pidió el cliente el 15-09-2026: el título y, debajo, las cuatro fases
-   * como un collage de filas alternas —foto a un lado, texto al otro, y al
-   * revés en la siguiente—, sin aire entre ellas y a todo el ancho.
+   * La pidió el cliente el 15-09-2026: el título y, debajo, las fases como un
+   * collage de filas alternas —foto a un lado, texto al otro, y al revés en la
+   * siguiente—, sin aire entre ellas y a todo el ancho.
    *
-   * ⚠️ LOS TEXTOS DE LA FASE 1 Y LA 4 LOS DICTÓ EL CLIENTE tal cual, con sus
-   * cifras ("100 contactos", "más de 150 contactos organizados", "25
-   * conversaciones profundas"). Conviene saber que eso contradice la regla
-   * que él mismo fijó en `plan90` —las metas de actividad no se publican—.
-   * Se ponen porque las dictó por escrito para esta sección; si algún día se
-   * quiere volver a la regla, son dos frases.
+   * ─── LAS SEIS FASES SON LAS DEL PLAN NUEVO (07-10-2026) ──────────────────
    *
-   * ⚠️ LAS FASES 2 Y 3 LAS ESCRIBIÓ CLAUDE a partir de los objetivos que ya
-   * estaban en `plan90.fases` y del corte del día 45, porque el cliente pegó
-   * la fase 1 tres veces y solo dictó la 1 y la 4. Van sin la línea de
-   * minutos: el documento da el reparto del principio (60·45·15) y el del
-   * final (35·70·15), y el de las fases de en medio no está escrito en ningún
-   * sitio. Inventarlo sería inventar un dato. Pendientes de que el cliente
-   * las apruebe o las reescriba.
+   * Sustituyen a las cuatro de antes (Fundación, Sistematización, Red y base
+   * viva, Consolidación; 1-20, 21-45, 46-70, 71-90), que ya no existen en
+   * ninguna parte del programa. Los seis tramos SÍ suman 90 días: 7 + 14 + 9 +
+   * 15 + 15 + 30. Si alguien toca un rango, que vuelva a hacer esa suma.
    *
-   * Sin guion largo en español: el que traía la fase 4 pasa a dos puntos.
+   * ⚠️ EL CONTENIDO ES DEL CLIENTE, LA REDACCIÓN NO. Él pasó las seis fases
+   * descritas para operar el plan ("handoff", "grupo C", "corte del Día 60",
+   * "rango esperado") y pidió expresamente reescribirlas a la voz de la
+   * página. No se añadió ningún hecho: cada frase de aquí tiene su origen en
+   * una suya. Lo que se cambió es a quién le habla.
+   *
+   * ⚠️ FALTA EL FINAL DE LA FASE 06. Su descripción se corta a media frase:
+   * "Incluye además el Día 91, que define cómo". El Día 91 no se nombra aquí
+   * hasta que llegue el resto. Ver la nota de la fase.
+   *
+   * ⚠️ SE CAYERON DOS CIFRAS Y FUE A PROPÓSITO. La fase 1 vieja decía "más de
+   * 150 contactos organizados y 25 conversaciones profundas"; las dictó el
+   * cliente, pero no están en el plan nuevo y él confirmó que se van. De paso
+   * vuelve a cumplirse su propia regla de `plan90`: las metas de actividad no
+   * se publican, porque un número junto a "contactos" se lee como promesa.
+   *
+   * ⚠️ LA LÍNEA DE MINUTOS VA SOLO EN LA 01 Y LA 06. El documento da el
+   * reparto del principio (60·45·15) y el del final (35·70·15); el de las
+   * cuatro de en medio no está escrito en ningún sitio, y inventarlo sería
+   * inventar un dato.
+   *
+   * Sin guion largo en español: donde hace falta una pausa van dos puntos.
    */
   plan90Portada: {
     aria: { es: "Los 90 días", en: "The 90 days" },
@@ -4279,15 +4297,15 @@ export const copy = {
     fases: [
       {
         numero: "01",
-        rango: { es: "Días 1–20", en: "Days 1–20" },
-        nombre: { es: "Fundación", en: "Foundation" },
+        rango: { es: "Días 1–7", en: "Days 1–7" },
+        nombre: { es: "Preparar", en: "Prepare" },
         reparto: {
           es: "60 min prospección · 45 min seguimiento · 15 min cierre",
           en: "60 min prospecting · 45 min follow-up · 15 min wrap-up",
         },
         texto: {
-          es: "Empiezas desde cero y eso está bien. Construyes tu lista de 100 contactos, la cargas al CRM y aprendes a sostener conversaciones reales. Al final de esta fase tienes más de 150 contactos organizados y 25 conversaciones profundas.",
-          en: "You start from zero, and that's fine. You build your list of 100 contacts, load it into the CRM and learn to hold real conversations. By the end of this phase you have more than 150 organized contacts and 25 deep conversations.",
+          es: "Antes de acelerar montas el sistema: tus primeros 100 contactos ordenados por cercanía, el CRM listo y la rutina diaria que vas a repetir. Una semana para no improvisar las otras doce.",
+          en: "Before you speed up, you set the system up: your first 100 contacts sorted by how well you know them, the CRM ready, and the daily routine you'll repeat. One week so the other twelve aren't improvised.",
         },
         imagen: {
           /* ⚠️ EL ORDEN DE LAS FOTOS SE ALTERNA: mujer, papel, mujer, papel…
@@ -4307,12 +4325,12 @@ export const copy = {
       },
       {
         numero: "02",
-        rango: { es: "Días 21–45", en: "Days 21–45" },
-        nombre: { es: "Sistematización", en: "Systematizing" },
+        rango: { es: "Días 8–21", en: "Days 8–21" },
+        nombre: { es: "Activar", en: "Activate" },
         reparto: null,
         texto: {
-          es: "Lo que hacías de memoria pasa a tener un sitio. Cada contacto queda con su etapa, su etiqueta y su próximo paso, y el seguimiento deja de depender de que te acuerdes. El día 45 te sientas con tu líder y decidís juntos: sigues, ajustas o pausas.",
-          en: "What you did from memory now has a place. Every contact gets its stage, its tag and its next step, and follow-up stops depending on you remembering. On day 45 you sit down with your leader and decide together: carry on, adjust or pause.",
+          es: "La lista deja de ser una lista. Empiezas a escribir, por mensaje, a los que ya te conocen: primero los cercanos, después los medianos. Nada de vender, conversaciones.",
+          en: "The list stops being a list. You start writing, by message, to the people who already know you: the close ones first, then the middle ring. No selling. Conversations.",
         },
         imagen: {
           src: "/imagenes/resultados/01.webp",
@@ -4327,12 +4345,12 @@ export const copy = {
       },
       {
         numero: "03",
-        rango: { es: "Días 46–70", en: "Days 46–70" },
-        nombre: { es: "Red y base viva", en: "Network and living base" },
+        rango: { es: "Días 22–30", en: "Days 22–30" },
+        nombre: { es: "Consolidar", en: "Consolidate" },
         reparto: null,
         texto: {
-          es: "Sales de tu agenda. Abres alianzas con negocios de tu zona que ven a la misma gente que tú, y vuelves sobre todo lo que sembraste en las semanas anteriores: los contactos que se enfriaron, las conversaciones que quedaron a medias. La base deja de ser una lista y empieza a moverse sola.",
-          en: "You step outside your own contacts. You open alliances with local businesses that see the same people you do, and you go back over everything you planted in the previous weeks: the contacts that went cold, the conversations left half-finished. The base stops being a list and starts moving on its own.",
+          es: "Profundizas lo que ya abriste y te atreves con los contactos lejanos. Al cerrar el mes llegas al primer corte grande, y no con una lista larga: con una base que puedes comprobar.",
+          en: "You go deeper into what you opened and take on the contacts you barely know. You close the month at the first real checkpoint, and not with a long list: with a base you can actually verify.",
         },
         imagen: {
           src: "/imagenes/resultados/06.webp",
@@ -4347,15 +4365,12 @@ export const copy = {
       },
       {
         numero: "04",
-        rango: { es: "Días 71–90", en: "Days 71–90" },
-        nombre: { es: "Consolidación", en: "Consolidation" },
-        reparto: {
-          es: "35 min prospección · 70 min seguimiento · 15 min cierre",
-          en: "35 min prospecting · 70 min follow-up · 15 min wrap-up",
-        },
+        rango: { es: "Días 31–45", en: "Days 31–45" },
+        nombre: { es: "Expandir", en: "Expand" },
+        reparto: null,
         texto: {
-          es: "Demuestras que lo que construiste se sostiene solo. El día 78 empiezas a escribir tus propias tareas. El día 90 no es un final: es el punto de partida para los siguientes 90.",
-          en: "You prove that what you built holds on its own. On day 78 you start writing your own tasks. Day 90 isn't an ending: it's the starting point for the next 90.",
+          es: "Sales de tu agenda: nuevas fuentes de contactos, un seguimiento con cadencia fija y la primera vez que pasas a alguien al equipo especializado. Llegas a la mitad del reto con un sistema que ya rinde sin sorpresas.",
+          en: "You go beyond your own address book: new sources of contacts, follow-up on a fixed cadence, and the first time you hand someone over to the specialist team. You reach the halfway mark with a system that already performs without surprises.",
         },
         imagen: {
           src: "/imagenes/resultados/04.webp",
@@ -4368,28 +4383,14 @@ export const copy = {
           },
         },
       },
-      /**
-       * ⚠️ LAS FASES 05 Y 06 ESTÁN POR ESCRIBIR. El cliente amplió el plan de
-       * cuatro a seis fases el 06-10-2026 y pidió dejarlas "por agregarse,
-       * pero ya ahí para visualizar": se pintan con su número, su foto y un
-       * rótulo de "próximamente", y en cuanto llegue el texto se sustituye
-       * aquí y ya está.
-       *
-       * ⚠️ Y CON ELLAS CAMBIAN LOS RANGOS DE DÍAS DE LAS CUATRO DE ARRIBA. Si
-       * los 90 días se reparten ahora en seis fases, "Días 1-20", "21-45",
-       * "46-70" y "71-90" dejan de cuadrar. Están sin tocar a propósito: los
-       * nuevos los decide el cliente con el texto.
-       *
-       * Las fotos siguen la alternancia: mujer, papel.
-       */
       {
         numero: "05",
-        rango: { es: "Próximamente", en: "Coming soon" },
-        nombre: { es: "Fase por definir", en: "Phase to be defined" },
+        rango: { es: "Días 46–60", en: "Days 46–60" },
+        nombre: { es: "Reactivar", en: "Reactivate" },
         reparto: null,
         texto: {
-          es: "Estamos terminando de escribir esta fase. Muy pronto, aquí.",
-          en: "We're still writing this phase. Coming here soon.",
+          es: "Vuelves sobre los que se enfriaron, que son más de los que crees, sin dejar de abrir conversaciones nuevas. Al Día 60 la base no solo crece, acelera.",
+          en: "You go back to the ones who went quiet, and there are more of them than you think, without easing off on new conversations. By Day 60 the base isn't just growing, it's picking up speed.",
         },
         imagen: {
           src: "/imagenes/plan90/mujer-escribiendo.webp",
@@ -4404,12 +4405,15 @@ export const copy = {
       },
       {
         numero: "06",
-        rango: { es: "Próximamente", en: "Coming soon" },
-        nombre: { es: "Fase por definir", en: "Phase to be defined" },
-        reparto: null,
+        rango: { es: "Días 61–90", en: "Days 61–90" },
+        nombre: { es: "Optimizar", en: "Optimize" },
+        reparto: {
+          es: "35 min prospección · 70 min seguimiento · 15 min cierre",
+          en: "35 min prospecting · 70 min follow-up · 15 min wrap-up",
+        },
         texto: {
-          es: "Estamos terminando de escribir esta fase. Muy pronto, aquí.",
-          en: "We're still writing this phase. Coming here soon.",
+          es: "Menos gente nueva y más cierre: el sistema ya está, ahora se trata de que convierta. El Día 90 miras tus números y decides qué sigue.",
+          en: "Fewer new people, more closing: the system is built, now it has to convert. On Day 90 you look at your numbers and decide what comes next.",
         },
         imagen: {
           src: "/imagenes/plan90/mano-lista.webp",
@@ -4944,6 +4948,16 @@ export const copy = {
    * palabra "meta" se lee como una promesa. La regla 5 del propio documento
    * dice "nunca prometas resultados, montos, tiempos ni diagnósticos".
    */
+  /* ⚠️ ESTE BLOQUE NO SE PINTA EN NINGUNA PÁGINA (comprobado el 07-10-2026).
+     Era la sección del plan de `/resources`, que se quitó el 06-10 a petición
+     del cliente: esa página es de artículos y material de apoyo, no del plan.
+     El texto se deja porque está aprobado y cuesta más reescribirlo que
+     guardarlo, pero NADA de aquí se lee en el sitio.
+
+     Lo que sí se mantiene al día son los HECHOS: las fases de abajo son las
+     seis del plan nuevo, no las cuatro viejas. Un bloque muerto con datos
+     caducados es una trampa para el siguiente que lo reviva. La lista que de
+     verdad se ve es `plan90Portada.fases`. */
   plan90: {
     aria: { es: "El plan de 90 días", en: "The 90-day plan" },
     kicker: { es: "Después del curso", en: "After the course" },
@@ -4952,8 +4966,8 @@ export const copy = {
       en: "The 90 days that change your routine",
     },
     entradilla: {
-      es: "Cuatro fases y un trabajo que cabe en una frase: un mensaje, a una persona, con su nombre.",
-      en: "Four phases and work that fits in one sentence: one message, to one person, by name.",
+      es: "Seis fases y un trabajo que cabe en una frase: un mensaje, a una persona, con su nombre.",
+      en: "Six phases and work that fits in one sentence: one message, to one person, by name.",
     },
 
     /* El dato que más cualifica de toda la página: espanta a quien no puede
@@ -5028,47 +5042,68 @@ export const copy = {
     },
 
     /* `dias` es el ANCHO de cada fase en la barra, y sale de los días que dura:
-       20, 25, 25 y 20 de un total de 90. La barra no es una decoración con
-       cuatro trozos iguales, es el calendario a escala. */
-    fasesTitulo: { es: "Las cuatro fases", en: "The four phases" },
+       7, 14, 9, 15, 15 y 30 de un total de 90. La barra no es una decoración
+       con seis trozos iguales, es el calendario a escala, y con estos tramos
+       se nota: la primera fase es una franja estrecha y la última ocupa un
+       tercio. */
+    fasesTitulo: { es: "Las seis fases", en: "The six phases" },
     fases: [
       {
-        dias: 20,
-        rango: { es: "Días 1–20", en: "Days 1–20" },
-        nombre: { es: "Fundación", en: "Foundation" },
-        /* El primer referido se pide el DÍA 10 según el plan, o sea dentro
-           de esta fase. Se dice aquí y no más adelante porque es lo que
-           sorprende: no hay que esperar tres meses para pedirlo. */
+        dias: 7,
+        rango: { es: "Días 1–7", en: "Days 1–7" },
+        nombre: { es: "Preparar", en: "Prepare" },
         objetivo: {
-          es: "Construyes tu base y pides tu primer referido, sin vender nada.",
-          en: "You build your base and ask for your first referral, without selling anything.",
+          es: "Tus 100 primeros contactos, el CRM y la rutina diaria.",
+          en: "Your first 100 contacts, the CRM and the daily routine.",
         },
       },
       {
-        dias: 25,
-        rango: { es: "Días 21–45", en: "Days 21–45" },
-        nombre: { es: "Sistematización", en: "Systematizing" },
+        dias: 14,
+        rango: { es: "Días 8–21", en: "Days 8–21" },
+        nombre: { es: "Activar", en: "Activate" },
+        /* El primer referido se pide el DÍA 10 según el plan, o sea dentro de
+           esta fase. Con las cuatro fases viejas caía en la primera; con las
+           seis cae aquí. Se dice porque es lo que sorprende: no hay que
+           esperar tres meses para pedirlo. */
         objetivo: {
-          es: "Cada contacto con su etapa, su etiqueta y su próximo paso.",
-          en: "Every contact with its stage, its tag and its next step.",
+          es: "Las primeras conversaciones reales, y tu primer referido.",
+          en: "Your first real conversations, and your first referral.",
         },
       },
       {
-        dias: 25,
-        rango: { es: "Días 46–70", en: "Days 46–70" },
-        nombre: { es: "Red y base viva", en: "Network and living base" },
+        dias: 9,
+        rango: { es: "Días 22–30", en: "Days 22–30" },
+        nombre: { es: "Consolidar", en: "Consolidate" },
         objetivo: {
-          es: "Alianzas locales y reactivación de todo lo que sembraste.",
-          en: "Local alliances, and reactivating everything you sowed.",
+          es: "Entran los contactos lejanos y la base ya se puede comprobar.",
+          en: "The distant contacts come in, and the base can be verified.",
         },
       },
       {
-        dias: 20,
-        rango: { es: "Días 71–90", en: "Days 71–90" },
-        nombre: { es: "Consolidación", en: "Consolidation" },
+        dias: 15,
+        rango: { es: "Días 31–45", en: "Days 31–45" },
+        nombre: { es: "Expandir", en: "Expand" },
         objetivo: {
-          es: "La rutina se sostiene sola. Cierras y decides qué sigue.",
-          en: "The routine holds on its own. You close up and decide what's next.",
+          es: "Nuevas fuentes, cadencia fija y el primer pase al equipo.",
+          en: "New sources, a fixed cadence, and the first handover to the team.",
+        },
+      },
+      {
+        dias: 15,
+        rango: { es: "Días 46–60", en: "Days 46–60" },
+        nombre: { es: "Reactivar", en: "Reactivate" },
+        objetivo: {
+          es: "Recuperas a los que se enfriaron sin dejar de abrir nuevas.",
+          en: "You win back the ones who went quiet, and keep opening new ones.",
+        },
+      },
+      {
+        dias: 30,
+        rango: { es: "Días 61–90", en: "Days 61–90" },
+        nombre: { es: "Optimizar", en: "Optimize" },
+        objetivo: {
+          es: "Menos volumen y más conversión. Cierras y decides qué sigue.",
+          en: "Less volume, more conversion. You close up and decide what's next.",
         },
       },
     ],
@@ -5077,9 +5112,14 @@ export const copy = {
        son lo que hace creíble el resto —un plan que admite que a la mitad te
        puede decir "esto no es para ti" no está vendiendo humo— y para eso no
        hacen falta párrafos. */
+    /* ⚠️ ERAN TRES Y SON DOS: el Día 78 se cayó con el plan nuevo. El de seis
+       fases (07-10-2026) corta en los días 15, 30, 45, 60, 75 y 90, y de esos
+       seis solo se sabe qué pasa en el 45 y en el 90. Los otros cuatro no se
+       escriben a ojo. El cliente decidió no publicar la lista de cortes, así
+       que esto se queda como estaba menos el día que ya no existe. */
     hitosTitulo: {
-      es: "Tres días que no son de trámite",
-      en: "Three days that aren't a formality",
+      es: "Dos días que no son de trámite",
+      en: "Two days that aren't a formality",
     },
     hitos: [
       {
@@ -5087,13 +5127,6 @@ export const copy = {
         texto: {
           es: "Corte con tu líder: sigues, ajustas o pausas.",
           en: "Checkpoint with your leader: carry on, adjust or pause.",
-        },
-      },
-      {
-        dia: { es: "Día 78", en: "Day 78" },
-        texto: {
-          es: "Dejas de recibir tareas y escribes las tuyas.",
-          en: "You stop being handed tasks and write your own.",
         },
       },
       {
