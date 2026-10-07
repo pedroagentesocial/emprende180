@@ -4308,9 +4308,14 @@ export const copy = {
           en: "Before you speed up, you set the system up: your first 100 contacts sorted by how well you know them, the CRM ready, and the daily routine you'll repeat. One week so the other twelve aren't improvised.",
         },
         imagen: {
-          /* ⚠️ EL ORDEN DE LAS FOTOS SE ALTERNA: mujer, papel, mujer, papel…
-             Lo pidió el cliente el 06-10-2026 y es lo que impide que el
-             collage se lea como dos bloques, uno de manos y otro de caras.
+          /* ⚠️ LA ALTERNANCIA MUJER/PAPEL YA NO ES EXACTA, Y ES A PROPÓSITO.
+             El cliente la pidió el 06-10-2026 (mujer, papel, mujer, papel…) y
+             el 07 cambió las fases 04 y 06 a grupos de gente hablando. Hoy el
+             collage va: una, papel, una, grupo, una, grupo. O sea, el papel
+             queda al principio y la gente al final, que es justo el arco del
+             programa: empiezas con una lista y acabas con conversaciones.
+             Quien añada una fase, que mire la secuencia entera antes.
+
              Esta es vertical en un hueco apaisado: `cover` recorta arriba y
              abajo, y el 30 % deja dentro la cara y el teléfono. */
           src: "/imagenes/identidad/mujer-vertical.webp",
@@ -4373,13 +4378,18 @@ export const copy = {
           en: "You go beyond your own address book: new sources of contacts, follow-up on a fixed cadence, and the first time you hand someone over to the specialist team. You reach the halfway mark with a system that already performs without surprises.",
         },
         imagen: {
-          src: "/imagenes/resultados/04.webp",
+          /* ⚠️ ERA LA AGENDA SOBRE EL TECLADO Y AHORA ES GENTE HABLANDO
+             (07-10-2026, a petición del cliente). La foto de papel contaba
+             una fase que ya no existe; esta cuenta la que hay: "Expandir" es
+             salir de tu agenda y hablar con gente nueva, y eso no se ve en
+             una libreta. */
+          src: "/imagenes/plan90/grupo-conversando.webp",
           ancho: 800,
           alto: 600,
-          encuadre: "center 50%",
+          encuadre: "center 45%",
           alt: {
-            es: "Una agenda abierta con la semana escrita a mano, junto a un teclado",
-            en: "An open planner with the week written out by hand, next to a keyboard",
+            es: "Tres mujeres conversando sentadas en un sofá, junto a un ventanal",
+            en: "Three women talking on a sofa next to a large window",
           },
         },
       },
@@ -4416,13 +4426,17 @@ export const copy = {
           en: "Fewer new people, more closing: the system is built, now it has to convert. On Day 90 you look at your numbers and decide what comes next.",
         },
         imagen: {
-          src: "/imagenes/plan90/mano-lista.webp",
+          /* Las tres mujeres con el café las pidió el cliente para esta fase
+             (07-10-2026). Cierra el collage con gente y no con papel, que es
+             lo que cierra el programa: la rutina ya está montada y lo que
+             queda son conversaciones. */
+          src: "/imagenes/plan90/tres-mujeres-cafe.webp",
           ancho: 800,
           alto: 600,
           encuadre: "center 50%",
           alt: {
-            es: "Una mano escribiendo una lista de tareas en una libreta",
-            en: "A hand writing a to-do list in a notebook",
+            es: "Tres mujeres hablando con un café en la mano",
+            en: "Three women talking, each holding a coffee",
           },
         },
       },
