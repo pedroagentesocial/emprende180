@@ -58,6 +58,19 @@ export function isPrivatePath(pathname: string): boolean {
     pathname.startsWith("/student/") ||
     pathname === "/login" ||
     pathname.startsWith("/login/") ||
+    /* ⚠️ /subscribe ENTRÓ EN ESTA LISTA EL 13-10-2026, Y LLEGÓ TARDE. Nació
+       como una página de captación y por eso no estaba; desde que CREA LA
+       CUENTA y abre sesión es tan sensible como el login.
+
+       Lo que le faltaba, y se vio en la revisión de seguridad:
+
+        · X-Frame-Options. Sin él, cualquiera puede meter esta página en un
+          iframe invisible sobre otra cosa y conseguir que alguien rellene sus
+          datos y marque el consentimiento sin saber dónde está. En un
+          formulario que además crea una cuenta, eso no es teórico.
+        · Cache-Control. La respuesta abre sesión: no tiene que quedarse en
+          ninguna caché compartida por el camino. */
+    pathname === "/subscribe" ||
     pathname.startsWith("/api/")
   );
 }
