@@ -180,7 +180,26 @@ const hasNotice = !!error || signedOut || !!postError || postSent;
 const claveCaptcha = captchaSiteKey();
 
 /* El logotipo horizontal de la marca, para la columna izquierda. */
-const logo = lang === "en" ? sitio.logoHorizontalEn : sitio.logoHorizontal;
+/**
+ * ⚠️ LOS DOS LOGOTIPOS SE PINTAN SIEMPRE, Y EL CSS ESCONDE EL QUE NO TOCA.
+ *
+ * Hasta el 13-10-2026 aquí se elegía UNO con el idioma que resolvía el
+ * servidor, y salía el inglés con la página en español. El motivo: el idioma
+ * se puede cambiar en el navegador sin recargar (ver `LanguageSwitch` y el
+ * evento `e180:idioma`), y una imagen elegida en el servidor no se entera. Si
+ * además el navegador pedía inglés por cabecera, la primera pintada ya salía
+ * cruzada.
+ *
+ * Es el mismo montaje que la barra del sitio: `data-t` en cada uno y la regla
+ * `html[lang="es"] [data-t="en"]` de `global.css` haciendo el trabajo. Y no
+ * cuesta ancho de banda: el navegador no descarga la imagen de un elemento con
+ * `display:none` heredado.
+ */
+const LOGOS = {
+  es: sitio.logoHorizontal,
+  en: sitio.logoHorizontalEn,
+} as const;
+const NOMBRE = { es: "Emprende180", en: "Entrepreneur180" } as const;
 
 /* El enlace de vuelta al inicio, con las mismas palabras que /subscribe. */
 const irA = lang === "en" ? "Go to" : "Ir a";
@@ -219,13 +238,17 @@ const irAlInicio = lang === "en" ? "Go to the home page" : "Ir al inicio";
     <header class="acceso-barra">
       <a href="/" class="acceso-volver" aria-label={irAlInicio}>
         <span class="acceso-volver-texto">{irA}</span>
-        <img
-          src={logo.src}
-          width={logo.w}
-          height={logo.h}
-          alt={sitio.nombre[lang]}
-          fetchpriority="high"
-        />
+        {(["es", "en"] as const).map((l) => (
+          <img
+            data-t={l}
+            lang={l}
+            src={LOGOS[l].src}
+            width={LOGOS[l].w}
+            height={LOGOS[l].h}
+            alt={NOMBRE[l]}
+            fetchpriority="high"
+          />
+        ))}
       </a>
       <LanguageSwitch client:load lang={lang} tono="claro" />
     </header>

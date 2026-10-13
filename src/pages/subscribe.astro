@@ -82,10 +82,21 @@ const lang = resolverIdiomaServidor(
 
 const r = copy.registro;
 
-const logo = lang === "en" ? sitio.logoHorizontalEn : sitio.logoHorizontal;
-const logoBlanco =
-  lang === "en" ? sitio.logoHorizontalBlancoEn : sitio.logoHorizontalBlanco;
-const nombre = lang === "en" ? "Entrepreneur180" : "Emprende180";
+/**
+ * ⚠️ LOS DOS LOGOTIPOS SE PINTAN SIEMPRE Y EL CSS ESCONDE EL QUE NO TOCA. Ver
+ * la nota larga en `login.astro`: elegir uno en el servidor sacaba el inglés
+ * con la página en español, porque el idioma se cambia en el navegador sin
+ * recargar y una imagen ya pintada no se entera.
+ */
+const LOGOS = {
+  es: sitio.logoHorizontal,
+  en: sitio.logoHorizontalEn,
+} as const;
+const LOGOS_BLANCO = {
+  es: sitio.logoHorizontalBlanco,
+  en: sitio.logoHorizontalBlancoEn,
+} as const;
+const NOMBRE = { es: "Emprende180", en: "Entrepreneur180" } as const;
 
 /* ⚠️ EL ENLACE AL INICIO LLEVA "Ir a" DELANTE DEL LOGOTIPO. Solo, el cliente
    no entendió que aquello fuera un enlace a ninguna parte: una marca en una
@@ -107,13 +118,17 @@ const refInicial = (Astro.url.searchParams.get("ref") ?? "")
       <div class="franja-fondo" aria-hidden="true"></div>
       <a href="/" class="franja-logo" aria-label={irAlInicio}>
         <span class="franja-logo-texto">{irA}</span>
-        <img
-          src={logoBlanco.src}
-          width={logoBlanco.w}
-          height={logoBlanco.h}
-          alt={nombre}
-          fetchpriority="high"
-        />
+        {(["es", "en"] as const).map((l) => (
+          <img
+            data-t={l}
+            lang={l}
+            src={LOGOS_BLANCO[l].src}
+            width={LOGOS_BLANCO[l].w}
+            height={LOGOS_BLANCO[l].h}
+            alt={NOMBRE[l]}
+            fetchpriority="high"
+          />
+        ))}
       </a>
     </aside>
 
@@ -190,14 +205,18 @@ const refInicial = (Astro.url.searchParams.get("ref") ?? "")
               entera, "Entra a Emprende180". */}
           <h1 class="titular">
             <span class="titular-texto"><T v={r.titulo} /></span>
-            <img
-              class="titular-logo"
-              src={logo.src}
-              width={logo.w}
-              height={logo.h}
-              alt={nombre}
-              fetchpriority="high"
-            />
+            {(["es", "en"] as const).map((l) => (
+              <img
+                class="titular-logo"
+                data-t={l}
+                lang={l}
+                src={LOGOS[l].src}
+                width={LOGOS[l].w}
+                height={LOGOS[l].h}
+                alt={NOMBRE[l]}
+                fetchpriority="high"
+              />
+            ))}
           </h1>
 
           <p class="remate"><Enfasis v={r.remate} /></p>
