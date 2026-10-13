@@ -4112,18 +4112,20 @@ export const copy = {
         en: "Leave us your details and we'll walk you through the Entrepreneur180 90-day program.",
       },
     },
-    kicker: { es: "Registro", en: "Sign up" },
-    titulo: { es: "Déjanos tus datos", en: "Leave us your details" },
-    remate: { es: "y te escribimos.", en: "and we'll be in touch." },
+    kicker: { es: "Crear cuenta", en: "Create account" },
+    titulo: { es: "Entra a la plataforma", en: "Get into the platform" },
+    remate: { es: "Empieza el Día 1.", en: "Start Day 1." },
     texto: {
-      es: "Un minuto. Te contamos cómo funciona el programa de 90 días y respondemos lo que quieras preguntar.",
-      en: "One minute. We'll explain how the 90-day program works and answer whatever you want to ask.",
+      es: "Creas tu cuenta y entras. Dentro están los videos, el plan diario y el CRM donde no se te pierde nadie.",
+      en: "Create your account and you're in. Inside are the videos, the daily plan and the CRM where nobody slips through.",
     },
-    cta: { es: "Quiero información", en: "Send me the details" },
-    exitoTitulo: { es: "Quedó registrado", en: "You're on the list" },
+    cta: { es: "Crear mi cuenta", en: "Create my account" },
+    /* Esta pantalla sólo la ve quien NO pudo entrar: una cuenta dada de baja
+       que vuelve a registrarse. El resto se va derecho a /student. */
+    exitoTitulo: { es: "Mira tu correo", en: "Check your email" },
     exitoTexto: {
-      es: "Te escribimos al correo que nos dejaste.",
-      en: "We'll write to the email you gave us.",
+      es: "Te mandamos un enlace para entrar. Caduca en veinte minutos.",
+      en: "We sent you a link to get in. It expires in twenty minutes.",
     },
   },
 

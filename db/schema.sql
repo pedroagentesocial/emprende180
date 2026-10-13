@@ -180,3 +180,45 @@ CREATE INDEX IF NOT EXISTS cupones_activo ON cupones (activo, creado_en DESC);
 -- TEXTO y no una clave foránea: si algún día se borra el cupón, la ficha del
 -- alumno tiene que seguir diciendo con qué promesa entró.
 ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS cupon text;
+
+-- ─── LO QUE PIDE EL ALTA DESDE LA WEB (13-10-2026) ──────────────────────────
+-- Hasta hoy las cuentas las creaba un agente desde el panel y con el correo
+-- bastaba. Con /subscribe se da de alta la propia persona, y estas son las
+-- columnas de lo que escribe.
+--
+-- ⚠️ EL APELLIDO VA APARTE DE `nombre` Y NO PEGADO A ÉL. Partir "Ana Ruiz
+-- Pérez" después, adivinando dónde acaba el nombre, falla con cualquier
+-- apellido compuesto, que en esta clientela son la mitad. Se pregunta en dos
+-- campos y se guarda en dos.
+ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS apellido text;
+
+-- ⚠️ EL TELÉFONO SE GUARDA TAL Y COMO LO ESCRIBEN. Nada de normalizar a E.164
+-- aquí: esta gente escribe "(385) 588-3717", "385 588 3717" y "+1 385…", y una
+-- normalización a medias deja números que no se pueden marcar. Lo arregla quien
+-- lo vaya a marcar, o el día que haya envío de SMS de verdad.
+ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS telefono text;
+
+-- Si ese número recibe WhatsApp. Lo pregunta el formulario con una casilla.
+-- Con público hispano en EE. UU. la mitad de los números son de WhatsApp y la
+-- otra mitad de SMS, y sin esto se adivina en cada contacto.
+ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS whatsapp boolean;
+
+-- Dónde vive. Dos campos y no una dirección: es la zona horaria de la llamada
+-- de equipo y si le queda cerca algo presencial, no un envío postal.
+ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS ciudad text;
+ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS estado text;
+
+-- Cómo nos encontró: 'revista' | 'facebook' | 'instagram' | 'tiktok' |
+-- 'youtube' | 'referido' | 'otro'.
+--
+-- Sin CHECK, por lo mismo que `rol` y `tipo`: la lista vive en el código y una
+-- restricción aquí obligaría a migrar cada vez que se abra un canal nuevo.
+--
+-- ⚠️ NO ES LO MISMO QUE `cupon` NI LO SUSTITUYE. Esto dice por dónde llegó;
+-- `cupon` dice con qué código, y `alta_por` a qué Embajador se le atribuye.
+-- Alguien puede decir "me lo contó un amigo" sin traer código, y eso es un dato
+-- distinto de no haber dicho nada.
+ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS origen text;
+
+-- Para contar de dónde viene la gente sin recorrer la tabla entera.
+CREATE INDEX IF NOT EXISTS alumnos_origen ON alumnos (origen, alta_en DESC);

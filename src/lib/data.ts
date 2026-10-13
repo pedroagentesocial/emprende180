@@ -86,6 +86,28 @@ export interface Student {
    * que seguir diciendo con qué promesa entró esta persona.
    */
   coupon: string | null;
+
+  /* ─── LO QUE ESCRIBE QUIEN SE DA DE ALTA EN /subscribe ──────────────────
+     Todo opcional y todo `null` en las cuentas que creó un agente desde el
+     panel, que nunca pasaron por ese formulario. Quien pinte una ficha tiene
+     que contar con el `null`: no es un error, es una cuenta anterior. */
+
+  /** El apellido, aparte del nombre. Ver la nota de la columna en el esquema. */
+  lastName: string | null;
+  /** Tal y como lo escribió. No está normalizado. */
+  phone: string | null;
+  /** Si ese número recibe WhatsApp. `null` = no se le preguntó. */
+  whatsapp: boolean | null;
+  city: string | null;
+  state: string | null;
+  /**
+   * Por dónde nos encontró.
+   *
+   * ⚠️ DISTINTO DE `coupon` Y DE `registeredBy`. Esto es el canal; `coupon` es
+   * el código que escribió, y `registeredBy` el Embajador al que se le
+   * atribuye. Alguien puede llegar por un amigo sin traer código.
+   */
+  source: string | null;
 }
 
 /**
@@ -164,6 +186,18 @@ export interface Repo {
     language: "es" | "en";
     /** The agent registering them. `null` when it's Pedro or the bootstrap. */
     registeredBy?: string | null;
+    /**
+     * Lo que escribe quien se da de alta en /subscribe. Todo opcional: el
+     * panel del agente sigue creando cuentas con correo y nombre y nada más.
+     */
+    lastName?: string | null;
+    phone?: string | null;
+    whatsapp?: boolean | null;
+    city?: string | null;
+    state?: string | null;
+    source?: string | null;
+    /** El código que escribió, tal cual, valga o no. */
+    coupon?: string | null;
   }): Promise<Student>;
   setActive(id: string, active: boolean): Promise<void>;
   /**
@@ -341,6 +375,15 @@ function postgresRepo(url: string): Repo {
     hasPassword: Boolean(f.clave_hash),
     registeredBy: (f.alta_por as string) ?? null,
     coupon: (f.cupon as string) ?? null,
+    /* Las cuentas creadas antes del 13-10-2026, y las que sigue creando el
+       panel del agente, no pasaron por /subscribe: estas columnas vienen
+       vacías y eso no es un error. */
+    lastName: (f.apellido as string) ?? null,
+    phone: (f.telefono as string) ?? null,
+    whatsapp: (f.whatsapp as boolean) ?? null,
+    city: (f.ciudad as string) ?? null,
+    state: (f.estado as string) ?? null,
+    source: (f.origen as string) ?? null,
   });
 
   return {
@@ -389,12 +432,30 @@ function postgresRepo(url: string): Repo {
       return rows.map(toStudent);
     },
 
-    async createStudent({ email, name, role, language, registeredBy = null }) {
+    async createStudent({
+      email,
+      name,
+      role,
+      language,
+      registeredBy = null,
+      lastName = null,
+      phone = null,
+      whatsapp = null,
+      city = null,
+      state = null,
+      source = null,
+      coupon = null,
+    }) {
       const [f] = await sql`
-        INSERT INTO alumnos (email, nombre, rol, idioma, alta_por)
+        INSERT INTO alumnos (
+          email, nombre, rol, idioma, alta_por,
+          apellido, telefono, whatsapp, ciudad, estado, origen, cupon
+        )
         VALUES (
           ${normaliseEmail(email)}, ${name}, ${ROLE_IN_DB[role]}, ${language},
-          ${registeredBy}
+          ${registeredBy},
+          ${lastName}, ${phone}, ${whatsapp}, ${city}, ${state}, ${source},
+          ${coupon}
         )
         RETURNING *`;
       return toStudent(f!);
@@ -647,6 +708,14 @@ function memoryRepo(): Repo {
       hasPassword: !!demoPassword,
       registeredBy: null,
       coupon: null,
+      /* El falso en memoria no guarda el alta desde la web: sirve para el
+         desarrollo sin base de datos y ahí nadie se da de alta. */
+      lastName: null,
+      phone: null,
+      whatsapp: null,
+      city: null,
+      state: null,
+      source: null,
     };
     students.set(s.email, s);
   }
@@ -701,6 +770,14 @@ function memoryRepo(): Repo {
         hasPassword: true,
         registeredBy,
         coupon: null,
+        /* El falso en memoria no guarda el alta desde la web: sirve para el
+           desarrollo sin base de datos y ahí nadie se da de alta. */
+        lastName: null,
+        phone: null,
+        whatsapp: null,
+        city: null,
+        state: null,
+        source: null,
       };
       students.set(s.email, s);
       demoEmails.add(s.email);
@@ -777,6 +854,14 @@ function memoryRepo(): Repo {
         hasPassword: false,
         registeredBy,
         coupon: null,
+        /* El falso en memoria no guarda el alta desde la web: sirve para el
+           desarrollo sin base de datos y ahí nadie se da de alta. */
+        lastName: null,
+        phone: null,
+        whatsapp: null,
+        city: null,
+        state: null,
+        source: null,
       };
       students.set(s.email, s);
       return s;
