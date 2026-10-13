@@ -29,7 +29,7 @@ import { IDIOMAS } from "@i18n/idioma";
 export const prerender = false;
 
 /** El dominio configurado, sin barra final. */
-const base = (import.meta.env.SITE ?? "https://emprende180.vercel.app").replace(
+const base = (import.meta.env.SITE ?? "https://www.emprende180.com").replace(
   /\/$/,
   "",
 );

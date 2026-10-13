@@ -172,7 +172,13 @@ export const sitio = {
     es: "Tu giro de 180° empieza aquí",
     en: "Your 180° turn starts here",
   },
-  url: "https://emprende180.vercel.app", // SWAP: dominio definitivo
+  /* ⚠️ EL MISMO VALOR QUE SITE_URL en astro.config.mjs, y tiene que seguir
+     siéndolo. Aquí se lee para dos cosas que NO pasan por Astro.site: la url de
+     la Organization en los datos estructurados (lo que Google usa para la ficha
+     de la marca) y el enlace del logotipo en los correos. Con el valor viejo,
+     la portada declaraba un dominio en el canonical y otro en su propia ficha
+     de organización. */
+  url: "https://www.emprende180.com",
 
   titulo: {
     /* Con punto medio y no con guion largo: la regla del sitio en español,
