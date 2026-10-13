@@ -4,8 +4,29 @@ import react from "@astrojs/react";
 import vercel from "@astrojs/vercel";
 import tailwindcss from "@tailwindcss/vite";
 
-// SWAP: dominio de producción cuando se conecte el dominio propio en Vercel.
-const SITE_URL = "https://emprende180.vercel.app";
+/**
+ * EL DOMINIO DE PRODUCCIÓN. Hecho el 13-10-2026: hasta hoy esto seguía
+ * apuntando a `emprende180.vercel.app` con una nota de "cambiar cuando se
+ * conecte el dominio propio". El dominio llevaba semanas conectado.
+ *
+ * ⚠️ ESTA CONSTANTE NO ES SOLO SEO, y por eso valía la pena arreglarla:
+ *
+ *  1. EL CANONICAL Y EL SITEMAP. Cada página en vivo le estaba diciendo a
+ *     Google que su versión buena era la de `vercel.app`. O sea, el dominio por
+ *     el que entra la gente competía con el que nadie ve.
+ *  2. LOS CORREOS DE ACCESO. `createMagicLink` y el enlace de alta se
+ *     construyen con esto, así que cada enlace enviado llevaba a `vercel.app`.
+ *     Funcionaba, pero el correo decía un dominio que no es la marca.
+ *  3. LA URL DE RETORNO DE GOOGLE. `urlRetorno` en `@lib/oauth` sale de aquí, y
+ *     esa URL hay que registrarla en la consola de Google carácter a carácter.
+ *     Con el valor viejo habría que registrar la de `vercel.app` y volver a
+ *     cambiarla el día que esto se arreglara.
+ *
+ * ⚠️ CON `www` Y NO SIN ÉL. `emprende180.com` redirige a `www.emprende180.com`,
+ * así que el canónico tiene que ser el de destino: apuntar al que redirige deja
+ * un salto en medio de cada enlace que mandamos y de cada URL que indexa Google.
+ */
+const SITE_URL = "https://www.emprende180.com";
 
 // https://astro.build/config
 export default defineConfig({
