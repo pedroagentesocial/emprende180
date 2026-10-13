@@ -48,9 +48,17 @@ const etiqueta = construirTxt((l) =>
 );
 ---
 
+{/* `data-llamar` es el asa desde fuera: /login lo usa para apartar este botón
+    de su franja de color. Ver la nota en esa página.
+
+    ⚠️ ESTE COMENTARIO VA FUERA DE LA EXPRESIÓN. Dentro de `contacto.telefono &&
+    (…)` cuenta como un segundo elemento devuelto y la compilación cae con un
+    "Expected )" que no señala al comentario. */}
+
 {
   contacto.telefono && (
     <a
+      data-llamar
       href={`tel:${contacto.telefono}`}
       data-track="flotante-llamar"
       aria-label={etiqueta[lang]}

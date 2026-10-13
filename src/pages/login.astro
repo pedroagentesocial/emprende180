@@ -230,6 +230,23 @@ const irAlInicio = lang === "en" ? "Go to the home page" : "Ir al inicio";
       <LanguageSwitch client:load lang={lang} tono="claro" />
     </header>
 
+    {/* ─── LA FRANJA ─────────────────────────────────────────────────────
+        La misma de /subscribe pero por el otro lado, que es como la pidió el
+        cliente. Allí la marca va sobre ella; aquí la marca vive arriba a la
+        izquierda, así que esta franja es solo color: cierra la pantalla por la
+        derecha y le da peso al lado que, si no, sería blanco hasta el borde.
+
+        ⚠️ VA FIJA Y DETRÁS DE TODO (`z-index: 0`). El contenido se aparta con un
+        margen, no con un hueco en la rejilla: así el patrón de círculos sigue
+        donde estaba, sobre blanco, que es donde se lee. Esa fue la condición
+        del cliente, "no muevas los demás elementos".
+
+        ⚠️ Y SE LLEVA CONSIGO LO QUE FLOTA EN ESA ESQUINA. El chat, el botón de
+        llamar y el selector de idioma estaban anclados al borde derecho de la
+        ventana, o sea encima de la franja: se apartan más abajo. Sin eso, el
+        chat quedaría flotando sobre el degradado. */}
+    <aside class="franja" aria-hidden="true"><span class="franja-fondo"></span></aside>
+
     <main id="contenido" class="acceso-cuerpo">
       <section class="acceso-panel">
         {/* Los avisos van ENCIMA del formulario: quien vuelve con un enlace
@@ -309,16 +326,21 @@ const irAlInicio = lang === "en" ? "Go to the home page" : "Ir al inicio";
           captchaSiteKey={claveCaptcha}
         >
           <BotonesProveedor next={next} />
-        </LoginForm>
 
-        {/* La pareja de "¿Ya tienes cuenta? Entrar" que vive en /subscribe.
-            Las dos pantallas se señalan la una a la otra. */}
-        <p class="acceso-sin-cuenta">
-          <T v={studentCopy.sinCuenta.linea} />
-          <a href="/subscribe" data-track="acceso-crear-cuenta">
-            <T v={studentCopy.sinCuenta.cta} />
-          </a>
-        </p>
+          {/* La pareja de "¿Ya tienes cuenta? Entrar" que vive en /subscribe.
+
+              ⚠️ VA DENTRO DEL ISLAND, como el botón de Google y por lo mismo:
+              fuera salía también en el paso del código, y ahí sobra. Quien
+              está tecleando un código que acaba de pedir ya decidió que tiene
+              cuenta; ofrecerle crear una es ruido justo donde hace falta
+              concentración. */}
+          <p class="acceso-sin-cuenta">
+            <T v={studentCopy.sinCuenta.linea} />
+            <a href="/subscribe" data-track="acceso-crear-cuenta">
+              <T v={studentCopy.sinCuenta.cta} />
+            </a>
+          </p>
+        </LoginForm>
       </section>
 
       {/* ─── EL PATRÓN ───────────────────────────────────────────────────
@@ -429,7 +451,28 @@ const irAlInicio = lang === "en" ? "Go to the home page" : "Ir al inicio";
     ⚠️ Y SE REPITEN EN CADA PASO. Al cambiar de "correo" a "código", React
     monta elementos nuevos: la animación se dispara otra vez sola, sin que haya
     que orquestar nada. Por eso el paso del código también entra animado. */}
+{/* ⚠️ ESTO TOCA EL CHAT Y EL BOTÓN DE LLAMAR, QUE SON DEL LAYOUT. Van fijos al
+    borde derecho de la ventana, así que con la franja puesta quedarían flotando
+    encima del degradado. Se apartan solo en esta página y solo a partir de
+    64rem, que es cuando existe la franja.
+
+    ⚠️ Y NO SE TOCAN DESDE SUS COMPONENTES. Ahí el cambio afectaría a todo el
+    sitio por una decisión de UNA pantalla. El precio es que estas reglas
+    dependen de dos selectores de fuera (data-chat y data-llamar): si alguien
+    los renombra, el chat vuelve a la franja y no salta ningún aviso. */}
 <style is:global>
+  @media (min-width: 64rem) {
+    /* chat-widget es el elemento que inyecta GoHighLevel, con su propio shadow
+       DOM: por dentro no se le puede tocar nada, pero el anfitrión sí se mueve.
+       data-chat es nuestro sustituto para cuando ese script no carga. Hacen
+       falta los dos. */
+    body:has(.acceso) chat-widget,
+    body:has(.acceso) [data-chat],
+    body:has(.acceso) [data-llamar] {
+      transform: translateX(calc(-1 * clamp(14rem, 24vw, 24rem)));
+    }
+  }
+
   .ap,
   .ap-der,
   .ap-izq,
@@ -552,12 +595,54 @@ const irAlInicio = lang === "en" ? "Go to the home page" : "Ir al inicio";
     border-radius: 0.25rem;
   }
 
+  /* ─── LA FRANJA ─────────────────────────────────────────────────────── */
+  /* En móvil no hay franja: a 390 px el ancho es del formulario. */
+  .franja { display: none; }
+
   /* ─── EL PATRÓN ─────────────────────────────────────────────────────── */
   .patron { display: none; }
 
   @media (min-width: 64rem) {
-    .acceso { padding: 2rem 2.5rem 2.5rem; }
+    /* El ancho de la franja vive en una variable: la usan la propia franja, el
+       margen del contenido y el desplazamiento del chat y del teléfono. Con el
+       número repetido en cuatro sitios, cambiarlo se olvida en alguno. */
+    .acceso {
+      --franja: clamp(14rem, 24vw, 24rem);
+      padding: 2rem 2.5rem 2.5rem;
+      margin-right: var(--franja);
+    }
     .acceso-volver img { height: 2.5rem; }
+
+    .franja {
+      display: block;
+      position: fixed;
+      inset-block: 0;
+      right: 0;
+      width: var(--franja);
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    /* ⚠️ EL DESENFOQUE VA EN ESTE HIJO, NUNCA EN LA FRANJA. Aplicado a la
+       franja, blur() difumina también SUS BORDES y el canto contra el blanco
+       se deshace. Aquí el hijo se desborda un 20 % por cada lado y la franja lo
+       recorta: el degradado queda suave por dentro y el canto, limpio. Es el
+       mismo montaje que en /subscribe. */
+    .franja-fondo {
+      position: absolute;
+      inset: -20%;
+      background:
+        radial-gradient(42% 38% at 30% 16%, oklch(0.62 0.13 255 / 0.95), transparent 70%),
+        radial-gradient(38% 42% at 72% 34%, oklch(0.55 0.1 196 / 0.85), transparent 70%),
+        radial-gradient(46% 40% at 28% 74%, oklch(0.42 0.12 268 / 0.9), transparent 72%),
+        radial-gradient(40% 36% at 76% 90%, oklch(0.5 0.09 210 / 0.8), transparent 70%),
+        oklch(0.287 0.0718 253.9);
+      filter: blur(26px);
+      animation: fluir 28s ease-in-out infinite alternate;
+    }
+    @keyframes fluir {
+      to { transform: scale(1.12) translate3d(-2%, -3%, 0); }
+    }
 
     .acceso-cuerpo {
       display: grid;
