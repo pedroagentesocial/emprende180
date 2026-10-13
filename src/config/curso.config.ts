@@ -4088,6 +4088,46 @@ export const copy = {
   },
 
   /**
+   * ═══════════════════════════════════════════════════════════════════════
+   * /REGISTRO — la página del código QR
+   * ═══════════════════════════════════════════════════════════════════════
+   *
+   * Pedida el 13-10-2026 para imprimirla en un QR. Es provisional en el
+   * diseño, no en el texto: lo que se lea aquí es lo primero que ve alguien
+   * que acaba de escanear un papel sin saber qué hay detrás, así que dice en
+   * una línea qué es esto y qué pasa si deja sus datos.
+   *
+   * ⚠️ NO SE PROMETE NADA QUE NO SE VAYA A CUMPLIR. "Te escribimos" es lo que
+   * hace el equipo; ni "te llamamos en 24 horas" ni "plazas limitadas" ni una
+   * cifra de ingresos. Las reglas del resto del archivo valen aquí igual.
+   */
+  registro: {
+    meta: {
+      titulo: {
+        es: "Registro | Emprende180",
+        en: "Sign up | Entrepreneur180",
+      },
+      descripcion: {
+        es: "Déjanos tus datos y te contamos cómo funciona el programa de 90 días de Emprende180.",
+        en: "Leave us your details and we'll walk you through the Entrepreneur180 90-day program.",
+      },
+    },
+    kicker: { es: "Registro", en: "Sign up" },
+    titulo: { es: "Déjanos tus datos", en: "Leave us your details" },
+    remate: { es: "y te escribimos.", en: "and we'll be in touch." },
+    texto: {
+      es: "Un minuto. Te contamos cómo funciona el programa de 90 días y respondemos lo que quieras preguntar.",
+      en: "One minute. We'll explain how the 90-day program works and answer whatever you want to ask.",
+    },
+    cta: { es: "Quiero información", en: "Send me the details" },
+    exitoTitulo: { es: "Quedó registrado", en: "You're on the list" },
+    exitoTexto: {
+      es: "Te escribimos al correo que nos dejaste.",
+      en: "We'll write to the email you gave us.",
+    },
+  },
+
+  /**
    * ─── EL BLOG EN LA PORTADA ─────────────────────────────────────────────
    *
    * Los títulos que se ven aquí NO se escriben aquí: salen de

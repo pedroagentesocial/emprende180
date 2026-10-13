@@ -51,7 +51,11 @@ type Origen =
   | "footer"
   | "informes"
   | "guias"
-  | "lista";
+  | "lista"
+  /* El de /registro, la página del código QR (13-10-2026). Es lo único que
+     separa a quien escaneó el papel de quien llegó por la web, y viaja hasta
+     el asunto del correo interno. */
+  | "qr";
 type Estado = "inactivo" | "enviando" | "exito";
 
 interface LeadFormProps {

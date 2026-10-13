@@ -1,0 +1,92 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import Header from "@components/layout/Header.astro";
+import Footer from "@components/layout/Footer.astro";
+import T from "@components/i18n/T.astro";
+import Section from "@components/ui/Section.astro";
+import Enfasis from "@components/ui/Enfasis.astro";
+import LeadForm from "@components/ui/LeadForm";
+import { copy } from "@config/curso.config";
+import { resolverIdiomaServidor } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * /registro — la página del código QR
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * La pidió el cliente el 13-10-2026 con una condición: "lo más rápido, es
+ * para un QR". Esto es ESA página, no la definitiva: un titular, el formulario
+ * de siempre y nada más. El diseño viene después.
+ *
+ * ⚠️ LA URL ES EL ENTREGABLE, NO LA PÁGINA. Un QR se imprime, y el papel no se
+ * puede reeditar: cuando llegue el rediseño se cambia lo que hay DENTRO de
+ * `/registro`, nunca la ruta. Si alguien quiere mover esto a otra dirección,
+ * que deje antes una redirección permanente desde aquí.
+ *
+ * ⚠️ NO SE INVENTA UN FORMULARIO NUEVO. Es el mismo `LeadForm` del resto del
+ * sitio, así que entra por `/api/lead`, llega a GoHighLevel y arrastra el
+ * consentimiento con sus enlaces y el bloqueo del botón hasta que se marque.
+ * Un formulario a medida aquí sería un sitio más donde ese texto se queda sin
+ * actualizar el día que cambie.
+ *
+ * ⚠️ `origen: "qr"` ES TODO EL VALOR DE ANALÍTICA DE ESTA PÁGINA. Es lo único
+ * que separa a quien escaneó el código de quien llegó por la web, y va en el
+ * asunto del correo interno. Si alguien lo cambia por "cierre" para no tocar
+ * el tipo, se pierde el único dato que esta página existe para dar.
+ *
+ * ⚠️ `noindex`: es una página sin diseño propio que vive para un papel
+ * impreso. Que no compita en el buscador con la portada.
+ */
+
+const lang = resolverIdiomaServidor(
+  Astro.url,
+  Astro.request.headers.get("accept-language"),
+);
+
+const r = copy.registro;
+---
+
+<BaseLayout titulo={r.meta.titulo} descripcion={r.meta.descripcion} noindex>
+  <Header />
+
+  <main id="contenido">
+    <Section id="registro" tono="surface" ritmo="amplio">
+      <div class="mx-auto max-w-xl text-center">
+        <p
+          class="text-sm font-bold tracking-[0.18em] text-ink-brand uppercase"
+        >
+          <T v={r.kicker} />
+        </p>
+
+        <h1
+          class="mt-4 text-4xl font-semibold leading-[1.1] tracking-[-0.02em] text-balance text-ink sm:text-5xl"
+        >
+          <T v={r.titulo} />
+        </h1>
+
+        <p class="mt-2 text-3xl leading-[1.15] text-balance sm:text-4xl">
+          <Enfasis v={r.remate} />
+        </p>
+
+        <p
+          class="mx-auto mt-6 max-w-prose text-lg font-medium leading-relaxed text-pretty text-ink-muted sm:text-xl"
+        >
+          <T v={r.texto} />
+        </p>
+
+        <div class="mx-auto mt-10 max-w-md text-left">
+          <LeadForm
+            client:load
+            lang={lang}
+            origen="qr"
+            cta={r.cta}
+            exitoTitulo={r.exitoTitulo}
+            exitoTexto={r.exitoTexto}
+          />
+        </div>
+      </div>
+    </Section>
+  </main>
+
+  <Footer />
+</BaseLayout>
