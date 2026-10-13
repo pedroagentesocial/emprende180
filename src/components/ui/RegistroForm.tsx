@@ -109,7 +109,24 @@ export function RegistroForm({
       errores[c as Campo] ? "border-error-500" : "border-line",
     ].join(" ");
 
-  const etiqueta = "mb-1.5 block text-sm font-semibold text-ink";
+  /**
+   * ⚠️ LA ETIQUETA VA SOBRE EL BORDE DEL CAMPO, NO ENCIMA. Lo pidió el
+   * cliente con una referencia delante (13-10-2026).
+   *
+   * El truco es que la etiqueta sale del flujo (`absolute`), así que el campo
+   * pasa a ocupar la parte de arriba de su envoltura y `-translate-y-1/2`
+   * deja la etiqueta justo a caballo del borde. El `bg-surface` es lo que
+   * recorta la línea por detrás: sin ese fondo, el borde cruzaría las letras.
+   *
+   * ⚠️ POR ESO CADA ENVOLTURA LLEVA `relative`. Si alguien la quita, la
+   * etiqueta se va a buscar el primer antepasado posicionado y acaba en la
+   * esquina de la página.
+   *
+   * ⚠️ Y POR ESO EL FONDO ES `surface` Y NO `white`. Esta pantalla es blanca
+   * hoy; el día que el panel cambie de color, la etiqueta lo sigue sola.
+   */
+  const etiqueta =
+    "absolute left-3 top-0 z-10 -translate-y-1/2 bg-surface px-1.5 text-xs font-bold text-ink";
 
   async function enviar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -202,8 +219,8 @@ export function RegistroForm({
         <input id={id("empresa")} name="empresa" type="text" tabIndex={-1} autoComplete="off" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
+      <div className="entra grid gap-4 sm:grid-cols-2" style={{ "--i": 0 } as React.CSSProperties}>
+        <div className="relative">
           <label htmlFor={id("nombre")} className={etiqueta}>
             {esp("Nombre", "First name")}
           </label>
@@ -216,7 +233,7 @@ export function RegistroForm({
             className={claseInput("nombre")}
           />
         </div>
-        <div>
+        <div className="relative">
           <label htmlFor={id("apellido")} className={etiqueta}>
             {esp("Apellido", "Last name")}
           </label>
@@ -231,7 +248,7 @@ export function RegistroForm({
         </div>
       </div>
 
-      <div className="mt-4">
+      <div className="entra relative mt-4" style={{ "--i": 1 } as React.CSSProperties}>
         <label htmlFor={id("email")} className={etiqueta}>
           {esp("Correo electrónico", "Email address")}
         </label>
@@ -252,7 +269,7 @@ export function RegistroForm({
         </p>
       </div>
 
-      <div className="mt-4">
+      <div className="entra relative mt-4" style={{ "--i": 2 } as React.CSSProperties}>
         <label htmlFor={id("telefono")} className={etiqueta}>
           {esp("Teléfono", "Phone")}
         </label>
@@ -279,7 +296,7 @@ export function RegistroForm({
         </label>
       </div>
 
-      <div className="mt-4">
+      <div className="entra relative mt-4" style={{ "--i": 3 } as React.CSSProperties}>
         <label htmlFor={id("origen")} className={etiqueta}>
           {esp("¿Cómo nos encontraste?", "How did you find us?")}
         </label>
@@ -302,7 +319,7 @@ export function RegistroForm({
         {/* El campo del código sólo aparece si hace falta: un campo escondido
             hasta que es pertinente no cuenta como un campo más. */}
         {origen === "referido" && (
-          <div className="mt-3">
+          <div className="relative mt-3">
             <label htmlFor={id("codigo")} className={etiqueta}>
               {esp("Código de quien te recomendó", "Your referrer's code")}{" "}
               <span className="font-normal text-ink-subtle">
@@ -333,7 +350,8 @@ export function RegistroForm({
           desplegar: nada de resumen. Ver la nota en `LeadForm`. */}
       <label
         htmlFor={id("consentimiento")}
-        className="mt-6 flex cursor-pointer items-start gap-3 text-left text-[0.8125rem] leading-snug text-ink-muted"
+        className="entra mt-6 flex cursor-pointer items-start gap-3 text-left text-[0.8125rem] leading-snug text-ink-muted"
+        style={{ "--i": 5 } as React.CSSProperties}
       >
         <input
           id={id("consentimiento")}
@@ -386,13 +404,20 @@ export function RegistroForm({
         </p>
       )}
 
+      {/* ⚠️ LA CASCADA VA EN UNA ENVOLTURA, NO EN EL BOTÓN. La animación
+          `.entra` termina fijando `opacity: 1` con `forwards`, y el relleno de
+          una animación gana a cualquier declaración normal: puesta en el
+          botón, pisaba el `disabled:opacity-45` y el botón bloqueado se veía
+          encendido. Animando la caja, el botón conserva su propio estado. */}
+      <div className="entra mt-6" style={{ "--i": 6 } as React.CSSProperties}>
       <button
         type="submit"
         disabled={estado === "enviando" || !consentido}
-        className="mt-6 min-h-12 w-full rounded-full bg-cta px-6 py-3 text-base font-bold text-ink-inverse transition-colors hover:bg-cta-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:opacity-45"
+        className="min-h-12 w-full rounded-full bg-cta px-6 py-3 text-base font-bold text-ink-inverse transition-colors hover:bg-cta-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:opacity-45"
       >
         {estado === "enviando" ? esp("Creando tu cuenta…", "Creating your account…") : t(r.cta)}
       </button>
+      </div>
 
       {/* ⚠️ AQUÍ ABAJO IBA "¿Ya tienes cuenta? Entra aquí" Y SE MUDÓ ARRIBA.
           Lo pidió el cliente el 13-10-2026 y es mejor sitio: quien ya tiene
