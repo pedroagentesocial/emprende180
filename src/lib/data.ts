@@ -98,8 +98,6 @@ export interface Student {
   phone: string | null;
   /** Si ese número recibe WhatsApp. `null` = no se le preguntó. */
   whatsapp: boolean | null;
-  city: string | null;
-  state: string | null;
   /**
    * Por dónde nos encontró.
    *
@@ -193,8 +191,6 @@ export interface Repo {
     lastName?: string | null;
     phone?: string | null;
     whatsapp?: boolean | null;
-    city?: string | null;
-    state?: string | null;
     source?: string | null;
     /** El código que escribió, tal cual, valga o no. */
     coupon?: string | null;
@@ -381,8 +377,6 @@ function postgresRepo(url: string): Repo {
     lastName: (f.apellido as string) ?? null,
     phone: (f.telefono as string) ?? null,
     whatsapp: (f.whatsapp as boolean) ?? null,
-    city: (f.ciudad as string) ?? null,
-    state: (f.estado as string) ?? null,
     source: (f.origen as string) ?? null,
   });
 
@@ -441,21 +435,18 @@ function postgresRepo(url: string): Repo {
       lastName = null,
       phone = null,
       whatsapp = null,
-      city = null,
-      state = null,
       source = null,
       coupon = null,
     }) {
       const [f] = await sql`
         INSERT INTO alumnos (
           email, nombre, rol, idioma, alta_por,
-          apellido, telefono, whatsapp, ciudad, estado, origen, cupon
+          apellido, telefono, whatsapp, origen, cupon
         )
         VALUES (
           ${normaliseEmail(email)}, ${name}, ${ROLE_IN_DB[role]}, ${language},
           ${registeredBy},
-          ${lastName}, ${phone}, ${whatsapp}, ${city}, ${state}, ${source},
-          ${coupon}
+          ${lastName}, ${phone}, ${whatsapp}, ${source}, ${coupon}
         )
         RETURNING *`;
       return toStudent(f!);
@@ -713,8 +704,6 @@ function memoryRepo(): Repo {
       lastName: null,
       phone: null,
       whatsapp: null,
-      city: null,
-      state: null,
       source: null,
     };
     students.set(s.email, s);
@@ -775,8 +764,6 @@ function memoryRepo(): Repo {
         lastName: null,
         phone: null,
         whatsapp: null,
-        city: null,
-        state: null,
         source: null,
       };
       students.set(s.email, s);
@@ -859,8 +846,6 @@ function memoryRepo(): Repo {
         lastName: null,
         phone: null,
         whatsapp: null,
-        city: null,
-        state: null,
         source: null,
       };
       students.set(s.email, s);

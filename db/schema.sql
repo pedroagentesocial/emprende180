@@ -203,10 +203,10 @@ ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS telefono text;
 -- otra mitad de SMS, y sin esto se adivina en cada contacto.
 ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS whatsapp boolean;
 
--- Dónde vive. Dos campos y no una dirección: es la zona horaria de la llamada
--- de equipo y si le queda cerca algo presencial, no un envío postal.
-ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS ciudad text;
-ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS estado text;
+-- ⚠️ AQUÍ HUBO `ciudad` Y `estado` Y NO LLEGARON A PRODUCCIÓN. Se añadieron el
+-- 13-10-2026 por la zona horaria de la llamada de equipo y el cliente los
+-- quitó el mismo día, antes de correr la migración. No hay nada que revertir;
+-- si vuelven a hacer falta, que vuelvan con un uso concreto detrás.
 
 -- Cómo nos encontró: 'revista' | 'facebook' | 'instagram' | 'tiktok' |
 -- 'youtube' | 'referido' | 'otro'.

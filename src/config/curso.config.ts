@@ -4112,12 +4112,17 @@ export const copy = {
         en: "Leave us your details and we'll walk you through the Entrepreneur180 90-day program.",
       },
     },
-    kicker: { es: "Crear cuenta", en: "Create account" },
-    titulo: { es: "Entra a la plataforma", en: "Get into the platform" },
+    /* ⚠️ YA NO HAY CEJA ("Crear cuenta"). La quitó el cliente el 13-10-2026: con
+       el logotipo dentro del titular, una ceja encima era un tercer renglón
+       diciendo lo mismo que el botón. */
+    /* El titular se parte en dos piezas y la segunda NO es texto: es el
+       logotipo, que sustituye a "la plataforma". Ver el `<h1>` de
+       `subscribe.astro`, donde el `alt` de la imagen cierra la frase. */
+    titulo: { es: "Entra a", en: "Get into" },
     remate: { es: "Empieza el Día 1.", en: "Start Day 1." },
     texto: {
-      es: "Creas tu cuenta y entras. Dentro están los videos, el plan diario y el CRM donde no se te pierde nadie.",
-      en: "Create your account and you're in. Inside are the videos, the daily plan and the CRM where nobody slips through.",
+      es: "Te suscribes y ya estás dentro. Ahí está el método para llegar a donde te propusiste.",
+      en: "Subscribe and you're in. Inside is the method for getting where you set out to go.",
     },
     cta: { es: "Crear mi cuenta", en: "Create my account" },
     /* Esta pantalla sólo la ve quien NO pudo entrar: una cuenta dada de baja

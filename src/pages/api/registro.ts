@@ -60,8 +60,6 @@ const schema = z.object({
   email: z.string().trim().toLowerCase().email().max(254),
   telefono: z.string().trim().min(7).max(40),
   whatsapp: z.boolean().default(false),
-  ciudad: z.string().trim().max(80).optional().default(""),
-  estado: z.string().trim().max(80).optional().default(""),
   origen: z.enum(ORIGENES),
   /* El código sólo tiene sentido con `origen: "referido"`, pero se acepta
      siempre: el QR puede traerlo en la URL y la persona elegir otro canal. */
@@ -130,8 +128,6 @@ export const POST: APIRoute = async ({ request, clientAddress, cookies, url }) =
         lastName: d.apellido,
         phone: d.telefono,
         whatsapp: d.whatsapp,
-        city: d.ciudad || null,
-        state: d.estado || null,
         source: d.origen,
         coupon: codigoEscrito,
       });

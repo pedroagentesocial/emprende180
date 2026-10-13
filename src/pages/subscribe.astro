@@ -1,44 +1,58 @@
 ---
 import BaseLayout from "@layouts/BaseLayout.astro";
-import Header from "@components/layout/Header.astro";
 import Footer from "@components/layout/Footer.astro";
 import T from "@components/i18n/T.astro";
+import LanguageSwitch from "@components/i18n/LanguageSwitch";
 import Section from "@components/ui/Section.astro";
 import Enfasis from "@components/ui/Enfasis.astro";
 import RegistroForm from "@components/ui/RegistroForm";
-import { copy } from "@config/curso.config";
+import { copy, sitio } from "@config/curso.config";
 import { resolverIdiomaServidor } from "@i18n/idioma";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- * /subscribe — la página del código QR
+ * /subscribe — el alta en la plataforma
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * Nació el 13-10-2026 como una página de captación de un día para otro, con
- * el `LeadForm` de la landing. Ese mismo día pasó a ser lo que es ahora: EL
- * ALTA EN LA PLATAFORMA. Quien rellena esto no deja un recado, se crea una
- * cuenta en `alumnos` y entra.
+ * Nació el 13-10-2026 como una página de captación de un día para otro, con el
+ * `LeadForm` de la landing. Ese mismo día pasó a ser lo que es ahora: EL ALTA
+ * EN LA PLATAFORMA. Quien rellena esto no deja un recado, se crea una cuenta
+ * en `alumnos` y entra.
  *
  * ⚠️ POR ESO NO USA `LeadForm`. Un lead va a GoHighLevel para que alguien
  * llame; esto escribe en la base y abre sesión. Si algún día alguien los
  * vuelve a juntar "porque se parecen", un cambio pensado para la landing dará
  * de alta a gente sin querer. Ver la cabecera de `RegistroForm.tsx`.
  *
- * ⚠️ NACIÓ COMO `/registro` Y DURÓ UNAS HORAS. El cliente la pidió en
- * `/subscribe` el mismo día, antes de imprimir nada, y es la ruta buena: las
- * demás del sitio ya son `/about`, `/programs` y `/resources`, así que la
- * castellana era la rara. `/registro` sigue viva como 301 en
- * `astro.config.mjs` por si el enlace corto llegó a salir de aquí.
+ * ─── POR QUÉ NO HAY BARRA DE NAVEGACIÓN ────────────────────────────────────
  *
- * ⚠️ LA URL ES EL ENTREGABLE, NO LA PÁGINA. Un QR se imprime, y el papel no se
- * puede reeditar: cuando llegue el rediseño se cambia lo que hay DENTRO de
- * `/subscribe`, nunca la ruta. Si alguien quiere moverla otra vez, que deje
- * antes una redirección permanente desde aquí, como se hizo con `/registro`.
+ * La quitó el cliente el 13-10-2026 y es lo correcto para esta página: aquí se
+ * llega con una intención única, y cada enlace de la barra es una puerta para
+ * irse antes de terminar. Es el patrón de cualquier alta o pago.
  *
- * ⚠️ EL CONSENTIMIENTO SIGUE SIENDO EL DE `legal.config`, leído y no copiado.
- * Es la regla del cliente para todos los formularios del sitio y aquí vale
- * igual: un texto a medida sería un sitio más donde se queda sin actualizar el
- * día que cambie.
+ * ⚠️ PERO EL SELECTOR DE IDIOMA SE QUEDA, SUELTO ARRIBA. Vivía en la barra, y
+ * sin él una persona que entra en inglés no tiene forma de cambiar: el sitio
+ * es bilingüe y esta es la única pantalla del embudo. No es un resto de la
+ * barra, es lo único de ella que hacía falta aquí.
+ *
+ * ⚠️ EL PIE SE QUEDA TAMBIÉN, y por un motivo que no es de diseño: lleva el
+ * aviso de privacidad y los términos. El consentimiento del formulario los
+ * enlaza, pero quien quiera leerlos antes de escribir su nombre tiene que
+ * poder llegar sin volver atrás.
+ *
+ * ─── LAS DOS ILUSTRACIONES ─────────────────────────────────────────────────
+ *
+ * Las pidió el cliente: una entra por la izquierda (un libro) y otra por la
+ * derecha (una bombilla que se enciende al llegar).
+ *
+ * ⚠️ VAN EN SVG AQUÍ Y NO EN `Icono.astro`, Y NO ES UN DESCUIDO. Ese set es
+ * cerrado y es de iconos de interfaz: piezas de 24×24 que acompañan a un
+ * texto. Esto son ilustraciones decorativas de esta pantalla, con su propia
+ * animación y su propio tamaño. Meterlas ahí obligaría a todo el sitio a
+ * cargar con ellas.
+ *
+ * ⚠️ SON `aria-hidden`. No dicen nada que el texto no diga, y un lector de
+ * pantalla anunciando "libro, bombilla" antes del formulario solo estorba.
  *
  * ⚠️ `?ref=CODIGO` ES LO QUE HACE QUE CADA EMBAJADOR PUEDA IMPRIMIR SU QR.
  * Llega aquí, baja al formulario y marca el canal solo. Si alguien quita este
@@ -56,6 +70,11 @@ const lang = resolverIdiomaServidor(
 
 const r = copy.registro;
 
+/* El logotipo sustituye a las palabras "la plataforma" dentro del titular, así
+   que necesita el archivo del idioma que toque: el horizontal lleva el nombre
+   escrito y en inglés es otro. */
+const logo = lang === "en" ? sitio.logoHorizontalEn : sitio.logoHorizontal;
+
 /* El código del Embajador, si el QR lo trae. Se recorta y se sube a mayúsculas
    aquí para que el campo nazca ya con el valor bueno: los códigos se guardan en
    mayúsculas (ver `cupones` en el esquema). */
@@ -66,34 +85,92 @@ const refInicial = (Astro.url.searchParams.get("ref") ?? "")
 ---
 
 <BaseLayout titulo={r.meta.titulo} descripcion={r.meta.descripcion} noindex>
-  <Header />
+  {/* El selector de idioma, lo único que se rescata de la barra. */}
+  <div class="container-page flex justify-end pt-3">
+    <LanguageSwitch client:load lang={lang} tono="claro" />
+  </div>
 
   <main id="contenido">
-    <Section id="subscribe" tono="surface" ritmo="amplio">
-      <div class="mx-auto max-w-xl text-center">
-        <p
-          class="text-sm font-bold tracking-[0.18em] text-ink-brand uppercase"
-        >
-          <T v={r.kicker} />
-        </p>
+    {/* ⚠️ `pt-0` ENCIMA DEL RITMO: el cliente pidió menos aire arriba
+        (13-10-2026). La sección conserva su respiración por abajo, que es la
+        que separa del pie; arriba la da ya la fila del selector de idioma. */}
+    <Section id="subscribe" tono="surface" ritmo="compacto" class="pt-0!">
+      <div class="relative mx-auto max-w-3xl">
+        {/* ─── LAS DOS ILUSTRACIONES ─────────────────────────────────────
+            Entran desde fuera del contenedor, cada una por su lado. En
+            pantallas estrechas se quedan detrás del titular y más pequeñas:
+            apartarlas del todo dejaría la página sin el gesto que se pidió. */}
+        {/* ⚠️ SIN Z NEGATIVO. Con `-z-10` las dos ilustraciones quedaban DETRÁS
+            del fondo de la sección y no se veían: animaban, existían en el DOM
+            y no aparecían en pantalla. Van en z-0 y el contenido en z-10. */}
+        <div class="pointer-events-none absolute inset-x-0 top-0 z-0 select-none" aria-hidden="true">
+          {/* EL LIBRO — entra por la izquierda */}
+          <svg
+            class="ilustra ilustra-libro"
+            viewBox="0 0 64 64"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M32 18c-5-4-11-5.5-18-5v30c7-.5 13 1 18 5 5-4 11-5.5 18-5V13c-7-.5-13 1-18 5Z" />
+            <path d="M32 18v30" />
+            <path d="M21 24c2.5.2 5 .8 7 1.8M21 32c2.5.2 5 .8 7 1.8" />
+          </svg>
 
-        <h1
-          class="mt-4 text-4xl font-semibold leading-[1.1] tracking-[-0.02em] text-balance text-ink sm:text-5xl"
-        >
-          <T v={r.titulo} />
-        </h1>
+          {/* LA BOMBILLA — entra por la derecha y se enciende al llegar.
+              El encendido son dos cosas a la vez: los rayos aparecen y el
+              cristal se llena de color. Una sola no se lee como "se prende". */}
+          <svg
+            class="ilustra ilustra-bombilla"
+            viewBox="0 0 64 64"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <g class="bombilla-rayos">
+              <path d="M32 6v5M48 12l-3.4 3.4M56 30h-5M16 12l3.4 3.4M8 30h5" />
+            </g>
+            <path class="bombilla-vidrio" d="M32 14a14 14 0 0 0-8 25.5c1.3.9 2 2.4 2 4V45h12v-1.5c0-1.6.7-3.1 2-4A14 14 0 0 0 32 14Z" />
+            <path d="M26 50h12M28 55h8" />
+            <path class="bombilla-filamento" d="M28 34c1.5-2 2.5-3.5 4-3.5s2.5 1.5 4 3.5" />
+          </svg>
+        </div>
 
-        <p class="mt-2 text-3xl leading-[1.15] text-balance sm:text-4xl">
-          <Enfasis v={r.remate} />
-        </p>
+        <div class="relative z-10 mx-auto max-w-xl text-center">
+          {/* ⚠️ EL LOGOTIPO ESTÁ DENTRO DEL TITULAR, NO AL LADO. Lo pidió el
+              cliente: "Entra a" y debajo la marca, que sustituye a las palabras
+              "la plataforma". Por eso el <h1> incluye la imagen y su `alt` es
+              el nombre: para un lector de pantalla la frase se sigue leyendo
+              entera, "Entra a Emprende180". Sin ese alt, el titular se queda
+              en dos palabras sueltas. */}
+          <h1 class="flex flex-col items-center gap-3">
+            <span class="text-4xl font-semibold leading-[1.05] tracking-[-0.02em] text-balance text-ink sm:text-5xl">
+              <T v={r.titulo} />
+            </span>
+            <img
+              src={logo.src}
+              width={logo.w}
+              height={logo.h}
+              alt={lang === "en" ? "Entrepreneur180" : "Emprende180"}
+              class="h-10 w-auto sm:h-12"
+              fetchpriority="high"
+            />
+          </h1>
 
-        <p
-          class="mx-auto mt-6 max-w-prose text-lg font-medium leading-relaxed text-pretty text-ink-muted sm:text-xl"
-        >
-          <T v={r.texto} />
-        </p>
+          <p class="mt-4 text-3xl leading-[1.15] text-balance sm:text-4xl">
+            <Enfasis v={r.remate} />
+          </p>
 
-        <div class="mx-auto mt-10 max-w-md text-left">
+          <p class="mx-auto mt-5 max-w-prose text-lg font-medium leading-relaxed text-pretty text-ink-muted sm:text-xl">
+            <T v={r.texto} />
+          </p>
+        </div>
+
+        <div class="relative z-10 mx-auto mt-9 max-w-md text-left">
           <RegistroForm client:load lang={lang} refInicial={refInicial} />
         </div>
       </div>
@@ -102,3 +179,91 @@ const refInicial = (Astro.url.searchParams.get("ref") ?? "")
 
   <Footer />
 </BaseLayout>
+
+<style>
+  /* ─── LAS DOS ILUSTRACIONES ───────────────────────────────────────────────
+     Cada una entra desde su borde y se queda. `translate` y `opacity` son las
+     dos únicas propiedades que se animan: las dos las resuelve el compositor,
+     así que esto no provoca un recálculo de maquetación en un teléfono. */
+  .ilustra {
+    position: absolute;
+    top: 0;
+    width: clamp(3.5rem, 13vw, 6.5rem);
+    height: auto;
+    color: var(--color-ink-brand);
+    opacity: 0;
+  }
+
+  .ilustra-libro {
+    left: 0;
+    translate: -120% 0;
+    rotate: -8deg;
+    animation: entra-izquierda 900ms cubic-bezier(0.22, 1, 0.36, 1) 150ms forwards;
+  }
+
+  .ilustra-bombilla {
+    right: 0;
+    translate: 120% 0;
+    rotate: 8deg;
+    animation: entra-derecha 900ms cubic-bezier(0.22, 1, 0.36, 1) 300ms forwards;
+  }
+
+  @keyframes entra-izquierda {
+    to {
+      translate: 0 0;
+      opacity: 0.9;
+    }
+  }
+  @keyframes entra-derecha {
+    to {
+      translate: 0 0;
+      opacity: 0.9;
+    }
+  }
+
+  /* El encendido espera a que la bombilla haya llegado: prenderse a mitad de
+     camino se lee como un parpadeo, no como un interruptor. */
+  .bombilla-rayos,
+  .bombilla-filamento {
+    opacity: 0;
+  }
+  .bombilla-rayos {
+    animation: prende 700ms ease-out 1100ms forwards;
+  }
+  .bombilla-filamento {
+    animation: prende 500ms ease-out 1000ms forwards;
+  }
+  .bombilla-vidrio {
+    animation: prende-vidrio 700ms ease-out 1000ms forwards;
+  }
+
+  @keyframes prende {
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes prende-vidrio {
+    to {
+      /* Ámbar cálido: el único color de la página que no es de la paleta, y es
+         a propósito. Una bombilla encendida en teal no se lee como encendida. */
+      fill: oklch(0.86 0.13 88 / 0.5);
+    }
+  }
+
+  /* ⚠️ CON MOVIMIENTO REDUCIDO NO SE QUITA LA ILUSTRACIÓN, SE QUITA EL VIAJE.
+     Aparecen ya colocadas y encendidas: quien pide menos movimiento quiere ver
+     lo mismo sin que se mueva, no ver menos. */
+  @media (prefers-reduced-motion: reduce) {
+    .ilustra,
+    .bombilla-rayos,
+    .bombilla-filamento {
+      animation: none;
+      opacity: 0.9;
+      translate: 0 0;
+    }
+    .bombilla-vidrio {
+      animation: none;
+      fill: oklch(0.86 0.13 88 / 0.5);
+    }
+  }
+</style>

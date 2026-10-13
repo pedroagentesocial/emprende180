@@ -16,11 +16,15 @@ import { useIdioma } from "@i18n/react";
  *
  * ─── LO QUE SE PREGUNTA, Y LO QUE NO ───────────────────────────────────────
  *
- * Nombre, apellido, correo, teléfono, dónde vive y cómo nos encontró. Lo pidió
- * el cliente el 13-10-2026 y cada uno hace un trabajo: el apellido va aparte
- * porque partirlo después falla con los compuestos; la ciudad y el estado son
- * la zona horaria de la llamada de equipo; la casilla de WhatsApp evita
- * adivinar en cada contacto si ese número es de SMS o de WhatsApp.
+ * Nombre, apellido, correo, teléfono y cómo nos encontró. El apellido va
+ * aparte porque partirlo después falla con los apellidos compuestos, y la
+ * casilla de WhatsApp evita adivinar en cada contacto si ese número es de SMS
+ * o de WhatsApp.
+ *
+ * ⚠️ HUBO CIUDAD Y ESTADO Y DURARON UNA TARDE. Se propusieron por la zona
+ * horaria de la llamada de equipo y el cliente los quitó el mismo día: "están
+ * de más". Se fueron del formulario, de la ruta y de la base. Si vuelven a
+ * hacer falta, que vuelvan con un uso concreto detrás, no por si acaso.
  *
  * ⚠️ NO SE PIDE CONTRASEÑA, Y ES UNA DECISIÓN. La plataforma ya entra por
  * enlace mágico (`api/magic-link`), que es lo que lleva meses funcionando. Una
@@ -120,8 +124,6 @@ export function RegistroForm({
       email: v("email").toLowerCase(),
       telefono: v("telefono"),
       whatsapp,
-      ciudad: v("ciudad"),
-      estado: v("estado"),
       origen,
       codigo: origen === "referido" ? codigo.trim() : "",
       consentimiento: consentido,
@@ -275,35 +277,6 @@ export function RegistroForm({
           />
           {esp("Este número recibe WhatsApp", "This number is on WhatsApp")}
         </label>
-      </div>
-
-      <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_8rem]">
-        <div>
-          <label htmlFor={id("ciudad")} className={etiqueta}>
-            {esp("Ciudad", "City")}{" "}
-            <span className="font-normal text-ink-subtle">{esp("(opcional)", "(optional)")}</span>
-          </label>
-          <input
-            id={id("ciudad")}
-            name="ciudad"
-            type="text"
-            autoComplete="address-level2"
-            className={claseInput("nombre").replace("border-error-500", "border-line")}
-          />
-        </div>
-        <div>
-          <label htmlFor={id("estado")} className={etiqueta}>
-            {esp("Estado", "State")}
-          </label>
-          <input
-            id={id("estado")}
-            name="estado"
-            type="text"
-            autoComplete="address-level1"
-            placeholder="UT"
-            className={claseInput("nombre").replace("border-error-500", "border-line")}
-          />
-        </div>
       </div>
 
       <div className="mt-4">
