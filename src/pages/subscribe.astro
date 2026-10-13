@@ -11,17 +11,23 @@ import { resolverIdiomaServidor } from "@i18n/idioma";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- * /registro — la página del código QR
+ * /subscribe — la página del código QR
  * ═══════════════════════════════════════════════════════════════════════════
  *
  * La pidió el cliente el 13-10-2026 con una condición: "lo más rápido, es
  * para un QR". Esto es ESA página, no la definitiva: un titular, el formulario
  * de siempre y nada más. El diseño viene después.
  *
+ * ⚠️ NACIÓ COMO `/registro` Y DURÓ UNAS HORAS. El cliente la pidió en
+ * `/subscribe` el mismo día, antes de imprimir nada, y es la ruta buena: las
+ * demás del sitio ya son `/about`, `/programs` y `/resources`, así que la
+ * castellana era la rara. `/registro` sigue viva como 301 en
+ * `astro.config.mjs` por si el enlace corto llegó a salir de aquí.
+ *
  * ⚠️ LA URL ES EL ENTREGABLE, NO LA PÁGINA. Un QR se imprime, y el papel no se
  * puede reeditar: cuando llegue el rediseño se cambia lo que hay DENTRO de
- * `/registro`, nunca la ruta. Si alguien quiere mover esto a otra dirección,
- * que deje antes una redirección permanente desde aquí.
+ * `/subscribe`, nunca la ruta. Si alguien quiere moverla otra vez, que deje
+ * antes una redirección permanente desde aquí, como se hizo con `/registro`.
  *
  * ⚠️ NO SE INVENTA UN FORMULARIO NUEVO. Es el mismo `LeadForm` del resto del
  * sitio, así que entra por `/api/lead`, llega a GoHighLevel y arrastra el
@@ -50,7 +56,7 @@ const r = copy.registro;
   <Header />
 
   <main id="contenido">
-    <Section id="registro" tono="surface" ritmo="amplio">
+    <Section id="subscribe" tono="surface" ritmo="amplio">
       <div class="mx-auto max-w-xl text-center">
         <p
           class="text-sm font-bold tracking-[0.18em] text-ink-brand uppercase"

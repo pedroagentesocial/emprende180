@@ -91,6 +91,16 @@ export default defineConfig({
     "/programas": "/programs",
 
     /**
+     * ⚠️ MISMO CASO, MISMO DÍA QUE NACIÓ (13-10-2026). `/registro` estuvo
+     * publicada unas horas antes de que el cliente la pidiera en `/subscribe`.
+     * Es la ruta de un código QR: si el enlace corto llegó a salir de aquí en
+     * un mensaje o en una prueba de impresión, el 301 lo salva. Cuesta una
+     * línea y evita el único fallo que no se puede arreglar luego, que es un
+     * papel impreso apuntando a un 404.
+     */
+    "/registro": "/subscribe",
+
+    /**
      * ⚠️ LAS URLs VIEJAS DEL ÁREA DE ALUMNOS (`/acceso`, `/alumno`…) NO ESTÁN
      * AQUÍ, Y ES A PROPÓSITO. Estas redirecciones PIERDEN la query: probado,
      * `/acceso/entrar?t=abc` acaba en `/login/verify` sin el token, que es
