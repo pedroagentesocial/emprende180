@@ -59,29 +59,31 @@ export const CODE_EMAIL = {
 
   subject: (lang: Idioma) =>
     lang === "en"
-      ? `Your ${sitio.nombre[lang]} code`
-      : `Tu código de ${sitio.nombre[lang]}`,
+      ? `Your code: it expires in 10 minutes`
+      : `Tu código: caduca en 10 minutos`,
 
-  body: (lang: Idioma, codigo: string) =>
+  /* La línea que Gmail enseña al lado del asunto. Dice lo que hay que hacer,
+     no "hola": en una bandeja llena, ese renglón decide si se abre. */
+  preheader: (lang: Idioma) =>
+    lang === "en"
+      ? "Six digits to get into the platform. Nobody will ask you for them."
+      : "Seis dígitos para entrar a la plataforma. Nadie te los va a pedir.",
+
+  saludo: (lang: Idioma) => (lang === "en" ? "Here's your code" : "Aquí tienes tu código"),
+
+  parrafos: (lang: Idioma) =>
     lang === "en"
       ? [
-          `Here's your code to sign in:`,
-          ``,
-          codigo.split("").join(" "),
-          ``,
-          `It expires in 10 minutes and can only be used once.`,
-          `If you didn't request it, ignore this email: nothing has changed.`,
-          ``,
-          `— ${sitio.nombre[lang]}`,
-        ].join("\n")
+          "Type it on the screen you left open. It expires in 10 minutes and works once.",
+          "If you didn't ask for it, ignore this email: nothing has changed and nobody got in. And remember: we will never ask you for this code by phone or message.",
+        ]
       : [
-          `Aquí tienes tu código para entrar:`,
-          ``,
-          codigo.split("").join(" "),
-          ``,
-          `Caduca en 10 minutos y solo se puede usar una vez.`,
-          `Si no lo has pedido, ignora este correo: no ha cambiado nada.`,
-          ``,
-          `— ${sitio.nombre[lang]}`,
-        ].join("\n"),
+          "Escríbelo en la pantalla que dejaste abierta. Caduca en 10 minutos y sirve una sola vez.",
+          "Si no lo has pedido, ignora este correo: no ha cambiado nada y nadie ha entrado. Y recuerda: nunca te vamos a pedir este código por teléfono ni por mensaje.",
+        ],
+
+  porQue: (lang: Idioma) =>
+    lang === "en"
+      ? "You're getting this because somebody asked to sign in with this address."
+      : "Recibes esto porque alguien pidió entrar con esta dirección.",
 };

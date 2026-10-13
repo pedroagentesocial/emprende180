@@ -4,6 +4,7 @@ import { hashPassword, verifyPassword, burnTime } from "@lib/passwords";
 import { avisarAGhl } from "@lib/ghl";
 import { limpiarSiToca } from "@lib/mantenimiento";
 import { CODE_EMAIL } from "@lib/loginEmail";
+import { correoMarca } from "@lib/correo";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -442,6 +443,21 @@ async function enviarCorreoCodigo(
     return;
   }
 
+  /* ⚠️ EL CORREO DEL CÓDIGO LLEVA LA MARCA DESDE EL 13-10-2026. Salía en texto
+     plano, sin logotipo y sin color: el primer correo que recibe alguien de
+     Emprende180 era el más pobre de todos los que manda la casa. Ahora usa la
+     misma plantilla que el resto (`correoMarca`), con su cabecera, su pie y el
+     código en un bloque propio. */
+  const correo = correoMarca({
+    lang: language,
+    asunto: CODE_EMAIL.subject(language),
+    preheader: CODE_EMAIL.preheader(language),
+    saludo: CODE_EMAIL.saludo(language),
+    parrafos: CODE_EMAIL.parrafos(language),
+    codigo,
+    porQue: CODE_EMAIL.porQue(language),
+  });
+
   try {
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -454,7 +470,10 @@ async function enviarCorreoCodigo(
         to: [destino],
         reply_to: CODE_EMAIL.replyTo,
         subject: CODE_EMAIL.subject(language),
-        text: CODE_EMAIL.body(language, codigo),
+        html: correo.html,
+        /* Las dos versiones van siempre: hay clientes que no pintan HTML y hay
+           gente que lo desactiva. Sin la de texto, verían el correo vacío. */
+        text: correo.text,
       }),
     });
     if (!response.ok) {

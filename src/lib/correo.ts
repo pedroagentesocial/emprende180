@@ -59,6 +59,15 @@ export interface CorreoMarca {
   parrafos: string[];
   /** El botón, si lo hay. Un solo botón por correo. */
   cta?: { texto: string; url: string };
+  /**
+   * Un código de acceso, si el correo lleva uno. Se pinta grande y suelto.
+   *
+   * ⚠️ VA EN SU PROPIO BLOQUE Y NO DENTRO DE UN PÁRRAFO, y no es estética: un
+   * número de seis cifras metido en una frase se selecciona fatal desde el
+   * móvil, porque el dedo coge la frase entera. Suelto, con los dígitos
+   * separados y en grande, se lee de un vistazo y se teclea sin copiar nada.
+   */
+  codigo?: string;
   /** Quién firma. Por defecto, Pedro con su cargo. */
   firma?: { nombre: string; cargo: string };
   /** La línea pequeña del pie: por qué recibes esto. */
@@ -133,6 +142,23 @@ export function correoMarca(c: CorreoMarca): { html: string; text: string } {
     )
     .join("\n");
 
+  /* El código, en una caja propia. Los dígitos van separados por espacios
+     finos: así se leen de dos en dos sin esfuerzo y no se confunde un 6 con un
+     8 en una pantalla pequeña.
+
+     ⚠️ SIN FUENTE MONOESPACIADA A PROPÓSITO: en un cliente de correo, las
+     monoespaciadas que hay garantizadas son feas y rompen la marca. Lo que
+     hace el trabajo aquí es el tamaño y el espaciado, no la familia. */
+  const codigoHtml = c.codigo
+    ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:2px 0 24px;width:100%;">
+  <tr>
+    <td align="center" bgcolor="${COLOR.fondo}" style="background:${COLOR.fondo};border:1px solid ${COLOR.linea};border-radius:14px;padding:22px 16px;">
+      <p style="margin:0;font-family:${FUENTE};font-size:34px;line-height:42px;font-weight:800;letter-spacing:10px;color:${COLOR.navy};">${escapar(c.codigo.split("").join(" "))}</p>
+    </td>
+  </tr>
+</table>`
+    : "";
+
   const botonHtml = c.cta
     ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 26px;">
   <tr>
@@ -172,6 +198,7 @@ export function correoMarca(c: CorreoMarca): { html: string; text: string } {
         <tr>
           <td bgcolor="${COLOR.blanco}" style="background:${COLOR.blanco};border-radius:16px;border:1px solid ${COLOR.linea};padding:40px 40px 28px;">
             <p style="margin:0 0 22px;font-family:${FUENTE};font-size:22px;line-height:30px;font-weight:800;color:${COLOR.navy};">${escapar(c.saludo)}</p>
+            ${codigoHtml}
             ${parrafosHtml}
             ${botonHtml}
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid ${COLOR.linea};width:100%;">
@@ -238,6 +265,10 @@ export function correoMarca(c: CorreoMarca): { html: string; text: string } {
   const text = [
     c.saludo,
     ``,
+    /* En la versión de texto el código va igual de suelto, y en el mismo sitio:
+       hay quien lee el correo sin HTML, y ahí el espaciado es lo único que
+       queda para que seis cifras seguidas se puedan teclear. */
+    ...(c.codigo ? [c.codigo.split("").join(" "), ``] : []),
     ...c.parrafos.flatMap((p) => [p, ``]),
     ...(c.cta ? [`${c.cta.texto}: ${c.cta.url}`, ``] : []),
     `${firma.nombre}`,
