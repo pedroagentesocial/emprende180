@@ -4,6 +4,7 @@ import Footer from "@components/layout/Footer.astro";
 import T from "@components/i18n/T.astro";
 import Icono from "@components/ui/Icono.astro";
 import PortalNav from "@components/student/PortalNav.astro";
+import { LanguageSwitch } from "@components/i18n/LanguageSwitch";
 import HelpLinks from "@components/student/HelpLinks.astro";
 import { sitio } from "@config/curso.config";
 import { studentCopy } from "@config/studentArea";
@@ -57,7 +58,26 @@ const pageTitle = construirTxt((l) => `${title[l]} · ${sitio.nombre[l]}`);
    through `<T>`, which paints both and lets the CSS hide the one that doesn't
    apply. */
 
-const logo = sitio.logoHorizontal;
+/**
+ * ⚠️ LOS DOS IDIOMAS SE PINTAN SIEMPRE Y EL CSS ESCONDE EL QUE NO TOCA.
+ *
+ * Elegir uno aquí con el idioma del servidor es lo que sacaba el logotipo en
+ * inglés con la página en español: el idioma se cambia en el navegador sin
+ * recargar, y una imagen ya pintada no se entera. La regla que hace el trabajo
+ * es `html[lang="es"] [data-t="en"]`, en `global.css`. Nota larga en
+ * `login.astro`.
+ *
+ * Y no cuesta descarga: el navegador no pide la imagen de un elemento que
+ * hereda `display:none`.
+ */
+const LOGOS = { es: sitio.logoHorizontal, en: sitio.logoHorizontalEn } as const;
+const LOGOS_BLANCO = {
+  es: sitio.logoHorizontalBlanco,
+  en: sitio.logoHorizontalBlancoEn,
+} as const;
+const NOMBRE = { es: "Emprende180", en: "Entrepreneur180" } as const;
+const DOS = ["es", "en"] as const;
+
 const path = Astro.url.pathname;
 
 
@@ -71,6 +91,12 @@ const roleLabel: Record<Role, Txt> = {
    columna en escritorio y en la barra de arriba en móvil. */
 const signOutClass =
   "inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-line-strong px-3.5 text-sm font-semibold text-ink-muted transition-colors hover:border-ink hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+
+/* El mismo botón sobre la columna navy. No es el de arriba con un color
+   cambiado: sobre azul marino, `border-line-strong` y `text-ink-muted` son dos
+   grises que no llegan al contraste mínimo. */
+const signOutOscuro =
+  "inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-white/25 px-3.5 text-sm font-semibold text-primary-100 transition-colors hover:border-white hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse";
 ---
 
 <BaseLayout titulo={pageTitle} descripcion={studentCopy.intro} noindex>
@@ -79,86 +105,105 @@ const signOutClass =
       barra lateral y se veía cortada por la mitad. Un pie es del sitio entero,
       no de una columna. */}
   <div class="flex flex-1 bg-surface-muted">
-    {/* ─── La columna ────────────────────────────────────────────────────────
-        ⚠️ NO LLEGA HASTA ABAJO NI EMPIEZA ARRIBA. Era una losa de alto la
-        ventana pegada al borde: partía la pantalla en dos mitades de las cuales
-        una estaba casi siempre vacía. Ahora es un PANEL que mide lo que mide su
-        contenido y flota sobre el fondo con su borde redondeado.
+    {/* ─── LA COLUMNA ────────────────────────────────────────────────────────
+        ⚠️ VUELVE A SER UNA LOSA DE ALTO LA VENTANA PEGADA AL BORDE, Y ESTA VEZ
+        A PROPÓSITO: lo pidió el cliente el 13-10-2026, completa y pegada.
 
-        LA ENVOLTURA ES LA QUE SE PEGA, y por eso son dos elementos y no uno: el
-        contenedor mide el alto de la ventana, se queda quieto al desplazar
-        (`sticky`) y centra al panel dentro (`items-center`). Intentarlo con un
-        solo elemento —`top-1/2` y un `-translate-y-1/2`— se lleva mal con el
-        `stretch` del flex: el panel se estiraba a lo alto de TODA la página y
-        quedaba una caja blanca vacía.
+        Lo que fallaba en la versión vieja de esto no era el tamaño, y de ahí que
+        volver atrás no sea volver al error: la columna era BLANCA sobre un fondo
+        gris claro, así que media pantalla parecía vacía y se arregló
+        encogiéndola a un panel flotante. En navy no parece media pantalla vacía;
+        parece el marco de la herramienta. Es además el único sitio de la
+        plataforma donde la marca se presenta como en `/login` y `/subscribe`.
 
-        El `max-h-full` del panel es su freno: si algún día el menú crece más
-        que la pantalla, se desplaza él solo en vez de desbordar. */}
-    <div class="sticky top-0 hidden h-svh shrink-0 items-center py-6 pl-6 lg:flex">
+        `h-svh` + `sticky top-0`, NO `fixed`: así sigue siendo hermana de la
+        columna de contenido y le reserva su ancho sola. Con `fixed` habría que
+        compensar a mano con un `padding-left` del mismo tamaño en el contenido,
+        y ese número se queda desparejado el día que la columna cambie de ancho.
+
+        ⚠️ EL `h-svh` ES TAMBIÉN LO QUE LE GANA AL `stretch` DEL FLEX. Un hijo de
+        flex con el alto en `auto` se estira a lo que mida la PÁGINA, no la
+        ventana: en una pantalla larga la columna se iba a varios miles de píxel
+        y la salida quedaba a cuatro scrolls del logotipo. Con el alto declarado,
+        `align-self: stretch` no se aplica. */}
     <aside
-      class="flex max-h-full w-56 flex-col overflow-x-hidden overflow-y-auto rounded-3xl border border-line bg-surface shadow-[var(--shadow-sm)]"
+      class="columna sticky top-0 hidden h-svh w-[16.5rem] shrink-0 flex-col overflow-hidden bg-primary-950 lg:flex"
     >
-      <div class="flex h-16 shrink-0 items-center px-5">
+      <div class="columna-aurora" aria-hidden="true"></div>
+
+      <div class="shrink-0 px-5 pt-6 pb-5">
         <a
           href="/student"
-          class="flex min-h-11 items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          class="inline-flex min-h-11 items-center rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
         >
-          <img
-            src={logo.src}
-            alt={sitio.nombre.es}
-            data-alt-es={sitio.nombre.es}
-            data-alt-en={sitio.nombre.en}
-            width={logo.w}
-            height={logo.h}
-            class="h-7 w-auto"
-            fetchpriority="high"
-            decoding="async"
-          />
+          {DOS.map((l) => (
+            <img
+              data-t={l}
+              lang={l}
+              src={LOGOS_BLANCO[l].src}
+              width={LOGOS_BLANCO[l].w}
+              height={LOGOS_BLANCO[l].h}
+              alt={NOMBRE[l]}
+              class="h-7 w-auto"
+              fetchpriority="high"
+              decoding="async"
+            />
+          ))}
         </a>
       </div>
 
-      <div class="px-3 pb-3">
-        <PortalNav student={student} path={path} variant="sidebar" />
-      </div>
+      {/* Los destinos y la ayuda van en la parte que se desplaza; el logotipo y
+          la cuenta se quedan quietos. Son las dos cosas que tienen que estar
+          siempre a la vista: una dice dónde estás y la otra quién eres.
 
-      {/* La ayuda, debajo de una raya y de los destinos. Está aquí y no en el
-          inicio del alumno porque quien no consigue algo suele estar en OTRA
-          pantalla, y volver a buscar el teléfono es exactamente el momento en
-          que se abandona. Ver `HelpLinks.astro`. */}
-      <HelpLinks />
+          La ayuda está en la columna y no en el inicio del alumno porque quien
+          no consigue algo suele estar en OTRA pantalla, y volver al inicio a
+          buscar el teléfono es exactamente el momento en que se abandona. Ver
+          `HelpLinks.astro`. */}
+      <div class="columna-scroll min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-3 pb-4">
+        <PortalNav student={student} path={path} variant="sidebar" />
+        <HelpLinks />
+      </div>
 
       {/* Quién eres y la salida, al fondo. Es donde se busca en cualquier
           herramienta, y aquí además cumple otra función: el rol se lee en todo
           momento, así que nadie administra creyendo que mira su propia cuenta. */}
-      <div class="mt-auto shrink-0 border-t border-line p-3">
-        <div class="flex items-center gap-3 px-2 py-2">
+      <div class="shrink-0 border-t border-white/12 px-3 pt-3 pb-4">
+        {/* ⚠️ EL IDIOMA NO EXISTÍA EN LA PLATAFORMA. Se entraba con el que
+            resolviera la cabecera del navegador y ahí se quedaba uno: ni un
+            interruptor en ninguna de las cinco pantallas. Es el mismo componente
+            del sitio, en su tono oscuro. */}
+        <div class="flex justify-center pb-3">
+          <LanguageSwitch client:load tono="oscuro" />
+        </div>
+
+        <div class="flex items-center gap-3 rounded-xl bg-white/6 px-3 py-2.5">
           <span
             aria-hidden="true"
-            class="grid size-9 shrink-0 place-items-center rounded-full bg-secondary-100 text-secondary-700"
+            class="grid size-9 shrink-0 place-items-center rounded-full bg-secondary-400/20 text-secondary-200 ring-1 ring-white/15 ring-inset"
           >
             <Icono nombre="usuario" class="size-5" grosor={1.9} />
           </span>
           <span class="min-w-0">
-            <span class="block truncate text-sm font-semibold text-ink">
+            <span class="block truncate text-sm font-semibold text-white">
               {student.name ?? student.email}
             </span>
-            <span class="block text-xs font-bold text-ink-subtle">
+            <span class="block text-xs font-bold text-secondary-200/85">
               <T v={roleLabel[student.role]} />
             </span>
           </span>
         </div>
 
         <form method="POST" action="/api/logout" class="mt-2">
-          <button type="submit" class={signOutClass}>
+          <button type="submit" class={signOutOscuro}>
             <T v={studentCopy.dashboard.signOut} />
           </button>
         </form>
       </div>
     </aside>
-    </div>
 
     {/* ─── El contenido ────────────────────────────────────────────────────── */}
-    <div class="flex min-w-0 flex-1 flex-col">
+    <div class="lienzo flex min-w-0 flex-1 flex-col">
       {/* La barra de arriba. En móvil siempre; en escritorio solo cuando NO hay
           columna, porque ahí el logotipo y la salida ya viven en ella y
           repetirlos sería una franja robándole 64 px a cada pantalla. */}
@@ -170,20 +215,25 @@ const signOutClass =
             href="/student"
             class="flex min-h-11 shrink-0 items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           >
-            <img
-              src={logo.src}
-              alt={sitio.nombre.es}
-            data-alt-es={sitio.nombre.es}
-            data-alt-en={sitio.nombre.en}
-              width={logo.w}
-              height={logo.h}
-              class="h-7 w-auto shrink-0"
-              fetchpriority="high"
-              decoding="async"
-            />
+            {DOS.map((l) => (
+              <img
+                data-t={l}
+                lang={l}
+                src={LOGOS[l].src}
+                width={LOGOS[l].w}
+                height={LOGOS[l].h}
+                alt={NOMBRE[l]}
+                class="h-7 w-auto shrink-0"
+                fetchpriority="high"
+                decoding="async"
+              />
+            ))}
           </a>
 
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 sm:gap-3">
+            {/* En móvil no hay columna, así que el idioma viaja aquí. */}
+            <LanguageSwitch client:load tono="claro" />
+
             <form method="POST" action="/api/logout">
               <button type="submit" class={`${signOutClass} w-auto`}>
                 <T v={studentCopy.dashboard.signOut} />
@@ -253,3 +303,65 @@ const signOutClass =
     });
   </script>
 </BaseLayout>
+
+<style>
+  /* ─── EL FONDO DE LA COLUMNA ───────────────────────────────────────────────
+     Las mismas manchas de color que la franja de `/subscribe`, pero QUIETAS y
+     mucho más tenues. Allí es una portada y se mueve; aquí es el marco de una
+     herramienta que alguien tiene abierta media hora, y un fondo que respira
+     detrás de un menú se convierte en lo único que se mira.
+
+     El `blur` grande es lo que convierte cuatro círculos en una sola mancha sin
+     bordes: sin él se ven los cuatro y parece un degradado mal hecho. */
+  .columna-aurora {
+    position: absolute;
+    inset: -10%;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(38% 30% at 20% 8%, oklch(0.62 0.13 255 / 0.5), transparent 70%),
+      radial-gradient(36% 28% at 85% 24%, oklch(0.55 0.1 196 / 0.36), transparent 70%),
+      radial-gradient(44% 34% at 10% 78%, oklch(0.42 0.12 268 / 0.45), transparent 72%),
+      radial-gradient(40% 30% at 90% 96%, oklch(0.5 0.09 210 / 0.3), transparent 70%);
+    filter: blur(34px);
+  }
+
+  /* Todo lo demás, por encima del fondo. Hace falta decirlo porque el fondo es
+     un elemento posicionado y los hermanos sin posicionar se pintan DEBAJO de
+     él: sin esto, la aurora tapa el menú. */
+  .columna > :not(.columna-aurora) {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* La barra de desplazamiento de la columna, en claro. La del sistema se pinta
+     oscura, y sobre navy no se ve: nadie sabría que el menú sigue hacia abajo. */
+  .columna-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(1 0 0 / 0.22) transparent;
+  }
+  .columna-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+  .columna-scroll::-webkit-scrollbar-thumb {
+    background: oklch(1 0 0 / 0.22);
+    border-radius: 999px;
+  }
+
+  /* ─── EL ÁREA DE TRABAJO ───────────────────────────────────────────────────
+     Un velo de color de marca en lo alto. El gris plano de antes hacía que
+     cualquier pantalla con poco contenido pareciera estar a medio cargar, y era
+     media web sin una gota del color de la casa.
+
+     Va como `background-image` del propio contenedor y no como un elemento
+     aparte: un div absoluto aquí habría que sacarlo del camino de la cabecera y
+     del `main`, que es precisamente el enredo de capas que hay arriba con la
+     aurora. */
+  .lienzo {
+    background-image: radial-gradient(
+      68% 26rem at 50% 0,
+      oklch(0.657 0.1122 187.2 / 0.1),
+      transparent 70%
+    );
+  }
+</style>

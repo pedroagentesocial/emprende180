@@ -102,16 +102,22 @@ const salidas: Salida[] = [
 const enSidebar = variant === "sidebar";
 ---
 
+{/* ⚠️ LA VERSIÓN DE LA COLUMNA NO LLEVA `px-3`, Y ANTES SÍ. El cascarón ya le
+    pone ese margen a todo lo que va dentro de la columna, así que repetirlo aquí
+    dejaba la ayuda con 24 px de sangrado y el menú con 12: dos listas seguidas
+    que no empiezan donde la otra. Las filas conservan el suyo, que es el que las
+    alinea con las entradas del menú. */}
 <section
   class:list={[
-    "border-t border-line",
-    enSidebar ? "px-3 pt-3 pb-1" : "mt-10 pt-6",
+    enSidebar
+      ? "mt-4 border-t border-white/12 pt-4 pb-1"
+      : "mt-10 border-t border-line pt-6",
   ]}
 >
   <h2
     class:list={[
-      "text-xs font-bold tracking-wide text-ink-subtle uppercase",
-      enSidebar ? "px-3 pb-1" : "pb-2",
+      "text-xs font-bold tracking-wide uppercase",
+      enSidebar ? "px-3 pb-1 text-secondary-200/70" : "pb-2 text-ink-subtle",
     ]}
   >
     <T v={h.title} />
@@ -125,21 +131,43 @@ const enSidebar = variant === "sidebar";
             href={s.href}
             data-track={s.track}
             title={s.text[lang]}
-            class="group flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            class:list={[
+              "group flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2",
+              enSidebar
+                ? "hover:bg-white/8 focus-visible:outline-focus-inverse"
+                : "hover:bg-surface-muted focus-visible:outline-focus",
+            ]}
           >
             <span
               aria-hidden="true"
-              class="grid size-8 shrink-0 place-items-center rounded-lg bg-secondary-100 text-secondary-700 transition-colors group-hover:bg-secondary-500 group-hover:text-primary-950"
+              class:list={[
+                "grid size-8 shrink-0 place-items-center rounded-lg transition-colors group-hover:text-primary-950",
+                enSidebar
+                  ? "bg-white/10 text-secondary-200 group-hover:bg-secondary-400"
+                  : "bg-secondary-100 text-secondary-700 group-hover:bg-secondary-500",
+              ]}
             >
               <Icono nombre={s.icon} class="size-4" grosor={1.9} />
             </span>
 
             <span class="min-w-0">
-              <span class="block truncate text-sm font-semibold text-ink-muted transition-colors group-hover:text-ink">
+              <span
+                class:list={[
+                  "block truncate text-sm font-semibold transition-colors",
+                  enSidebar
+                    ? "text-primary-100/80 group-hover:text-white"
+                    : "text-ink-muted group-hover:text-ink",
+                ]}
+              >
                 <T v={s.title} />
               </span>
               {s.detail && (
-                <span class="block truncate text-xs text-ink-subtle">
+                <span
+                  class:list={[
+                    "block truncate text-xs",
+                    enSidebar ? "text-white/55" : "text-ink-subtle",
+                  ]}
+                >
                   {s.detail}
                 </span>
               )}

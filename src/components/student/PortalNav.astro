@@ -136,6 +136,10 @@ const base =
       ))}
     </nav>
   ) : variant === "sidebar" ? (
+    /* ⚠️ ESTA RAMA VIVE SOBRE NAVY Y LAS OTRAS DOS SOBRE BLANCO, así que no
+       pueden compartir colores: `text-ink-muted` sobre la columna oscura es
+       gris sobre azul marino, y no llega ni de lejos al contraste mínimo. Lo
+       único que comparten es `base`, que es forma y no color. */
     <nav aria-label={studentCopy.nav.aria[student.language]} class="grid gap-1">
       {entries.map((entry) => (
         <a
@@ -146,14 +150,26 @@ const base =
           aria-disabled={entry.pending ? "true" : undefined}
           class:list={[
             base,
+            "relative",
             entry.pending
-              ? "pointer-events-none text-ink-subtle"
+              ? "pointer-events-none text-white/35"
               : isCurrent(entry.href)
-                ? "bg-primary-800 text-ink-inverse"
-                : "text-ink-muted hover:bg-surface-muted hover:text-ink",
+                ? /* El filete de color a la izquierda es lo que dice dónde
+                     estás. Sobre navy, un fondo lo bastante fuerte para
+                     marcarlo solo tendría que ser casi blanco, y entonces la
+                     entrada activa pesa más que el contenido de la pantalla. */
+                  "bg-white/12 text-white before:absolute before:top-1/2 before:left-0 before:h-5 before:w-[3px] before:-translate-y-1/2 before:rounded-r-full before:bg-secondary-400"
+                : "text-primary-100/75 hover:bg-white/8 hover:text-white",
           ]}
         >
-          <Icono nombre={entry.icon} class="size-5 shrink-0" grosor={1.9} />
+          <Icono
+            nombre={entry.icon}
+            class={
+              "size-5 shrink-0" +
+              (isCurrent(entry.href) && !entry.pending ? " text-secondary-300" : "")
+            }
+            grosor={1.9}
+          />
           <T v={entry.label} />
 
           {/* Lo que todavía no tiene dirección se atenúa y deja de ser pulsable,
@@ -161,11 +177,11 @@ const base =
               columna de 14rem y sacaba una barra de desplazamiento horizontal.
               El rótulo está donde se lee entero, en su tarjeta. */}
           {entry.pending && (
-            <span aria-hidden="true" class="ml-auto size-1.5 rounded-full bg-line-strong" />
+            <span aria-hidden="true" class="ml-auto size-1.5 rounded-full bg-white/30" />
           )}
 
           {entry.outside && (
-            <span aria-hidden="true" class="ml-auto text-ink-subtle">
+            <span aria-hidden="true" class="ml-auto text-white/55">
               <Icono nombre="flecha" class="size-3.5 -rotate-45" grosor={2.5} />
             </span>
           )}
