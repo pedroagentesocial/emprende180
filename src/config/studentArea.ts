@@ -32,9 +32,13 @@ import type { Txt } from "@i18n/idioma";
 export const studentCopy = {
   title: { es: "Acceso de alumnos", en: "Student access" },
   kicker: { es: "Área de alumnos", en: "Student area" },
+  /* ⚠️ ESTE TEXTO DESCRIBÍA EL ACCESO VIEJO HASTA EL 13-10-2026: hablaba de una
+     contraseña y de un enlace para ponerla, y ya no hay ni lo uno ni lo otro.
+     Es la descripción de la página, así que la lee un buscador y la lee quien
+     comparte el enlace: dejarla era prometer una pantalla que no existe. */
   intro: {
-    es: "Entra con el correo con el que te dimos de alta. Si es tu primera vez o no recuerdas tu contraseña, te mandamos un enlace para ponerla.",
-    en: "Sign in with the email we registered you with. If it's your first time or you don't remember your password, we'll send you a link to set it.",
+    es: "Entra con el correo con el que te dimos de alta: te mandamos un código de seis dígitos y ya está. Sin contraseñas.",
+    en: "Sign in with the email we registered you with: we'll send you a six-digit code and that's it. No passwords.",
   },
 
   /** What's inside. All of it is already promised on the sales page. */
