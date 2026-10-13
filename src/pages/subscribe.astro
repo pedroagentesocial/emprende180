@@ -1,9 +1,7 @@
 ---
 import BaseLayout from "@layouts/BaseLayout.astro";
-import Footer from "@components/layout/Footer.astro";
 import T from "@components/i18n/T.astro";
 import LanguageSwitch from "@components/i18n/LanguageSwitch";
-import Section from "@components/ui/Section.astro";
 import Enfasis from "@components/ui/Enfasis.astro";
 import RegistroForm from "@components/ui/RegistroForm";
 import { copy, sitio } from "@config/curso.config";
@@ -24,40 +22,53 @@ import { resolverIdiomaServidor } from "@i18n/idioma";
  * vuelve a juntar "porque se parecen", un cambio pensado para la landing dará
  * de alta a gente sin querer. Ver la cabecera de `RegistroForm.tsx`.
  *
- * ─── POR QUÉ NO HAY BARRA DE NAVEGACIÓN ────────────────────────────────────
+ * ─── LA COMPOSICIÓN ────────────────────────────────────────────────────────
  *
- * La quitó el cliente el 13-10-2026 y es lo correcto para esta página: aquí se
- * llega con una intención única, y cada enlace de la barra es una puerta para
- * irse antes de terminar. Es el patrón de cualquier alta o pago.
+ * Dos lados: una franja de color a la izquierda y el formulario sobre blanco a
+ * la derecha. Es el patrón de cualquier alta seria, y el cliente lo pidió con
+ * una referencia delante.
  *
- * ⚠️ PERO EL SELECTOR DE IDIOMA SE QUEDA, SUELTO ARRIBA. Vivía en la barra, y
- * sin él una persona que entra en inglés no tiene forma de cambiar: el sitio
- * es bilingüe y esta es la única pantalla del embudo. No es un resto de la
- * barra, es lo único de ella que hacía falta aquí.
+ * ⚠️ LA FRANJA ES CSS, NO UNA IMAGEN. Son cuatro manchas de color
+ * superpuestas con un desenfoque encima. Una foto de 300 KB para pintar un
+ * fondo que nadie mira es lo primero que habría que quitar después, y además
+ * esto se adapta a cualquier alto sin recortes ni pixelado.
  *
- * ⚠️ EL PIE SE QUEDA TAMBIÉN, y por un motivo que no es de diseño: lleva el
- * aviso de privacidad y los términos. El consentimiento del formulario los
- * enlaza, pero quien quiera leerlos antes de escribir su nombre tiene que
- * poder llegar sin volver atrás.
+ * ⚠️ Y VA FIJA EN ESCRITORIO. No se mueve al bajar: lo pidió el cliente y es
+ * lo que permite que el formulario sea largo sin que la página se quede en
+ * blanco por un lado.
+ *
+ * ⚠️ EN MÓVIL LA FRANJA PASA ARRIBA, y no es una renuncia: a 390 px una franja
+ * lateral se come el ancho que necesitan los campos. Arriba hace el mismo
+ * trabajo —poner la marca sobre color— sin robar sitio.
+ *
+ * ─── POR QUÉ NO HAY BARRA NI PIE ───────────────────────────────────────────
+ *
+ * Los quitó el cliente. Es lo correcto: aquí se llega con una intención única
+ * y cada enlace es una puerta para irse antes de terminar.
+ *
+ * ⚠️ PERO EL AVISO DE PRIVACIDAD Y LOS TÉRMINOS TIENEN QUE SEGUIR ALCANZABLES,
+ * y sin pie los enlaza SOLO el consentimiento del formulario. Si algún día
+ * alguien toca ese texto, que sepa que aquí es el único camino a lo legal.
+ *
+ * ⚠️ EL SELECTOR DE IDIOMA SE QUEDA porque el sitio es bilingüe y esta es la
+ * única pantalla del embudo: sin él, quien entra en inglés no puede cambiar.
  *
  * ─── LAS DOS ILUSTRACIONES ─────────────────────────────────────────────────
  *
- * Las pidió el cliente: una entra por la izquierda (un libro) y otra por la
- * derecha (una bombilla que se enciende al llegar).
+ * Un libro entra por la izquierda y una bombilla por la derecha, y la bombilla
+ * se enciende al llegar.
  *
- * ⚠️ VAN EN SVG AQUÍ Y NO EN `Icono.astro`, Y NO ES UN DESCUIDO. Ese set es
- * cerrado y es de iconos de interfaz: piezas de 24×24 que acompañan a un
- * texto. Esto son ilustraciones decorativas de esta pantalla, con su propia
- * animación y su propio tamaño. Meterlas ahí obligaría a todo el sitio a
- * cargar con ellas.
+ * ⚠️ VAN `fixed`, NO `absolute`. El cliente pidió que se vean siempre, también
+ * al bajar por el formulario. Van detrás del contenido y con opacidad baja: a
+ * ese tamaño, por delante, competirían con los campos.
  *
- * ⚠️ SON `aria-hidden`. No dicen nada que el texto no diga, y un lector de
- * pantalla anunciando "libro, bombilla" antes del formulario solo estorba.
+ * ⚠️ VAN EN SVG AQUÍ Y NO EN `Icono.astro`. Ese set es cerrado y es de iconos
+ * de interfaz: piezas de 24×24 que acompañan a un texto. Esto son
+ * ilustraciones de esta pantalla, con su animación y su tamaño.
  *
  * ⚠️ `?ref=CODIGO` ES LO QUE HACE QUE CADA EMBAJADOR PUEDA IMPRIMIR SU QR.
  * Llega aquí, baja al formulario y marca el canal solo. Si alguien quita este
- * parámetro, cada Embajador pierde la atribución de la gente que trae, que es
- * lo que se va a mirar el día que haya comisiones.
+ * parámetro, cada Embajador pierde la atribución de la gente que trae.
  *
  * ⚠️ `noindex`: la puerta de alta no tiene que competir en el buscador con la
  * portada, que es la que cuenta qué es esto.
@@ -74,10 +85,11 @@ const r = copy.registro;
    que necesita el archivo del idioma que toque: el horizontal lleva el nombre
    escrito y en inglés es otro. */
 const logo = lang === "en" ? sitio.logoHorizontalEn : sitio.logoHorizontal;
+const logoBlanco =
+  lang === "en" ? sitio.logoHorizontalBlancoEn : sitio.logoHorizontalBlanco;
+const nombre = lang === "en" ? "Entrepreneur180" : "Emprende180";
+const irAlInicio = lang === "en" ? "Go to the home page" : "Ir al inicio";
 
-/* El código del Embajador, si el QR lo trae. Se recorta y se sube a mayúsculas
-   aquí para que el campo nazca ya con el valor bueno: los códigos se guardan en
-   mayúsculas (ver `cupones` en el esquema). */
 const refInicial = (Astro.url.searchParams.get("ref") ?? "")
   .trim()
   .slice(0, 40)
@@ -85,185 +97,333 @@ const refInicial = (Astro.url.searchParams.get("ref") ?? "")
 ---
 
 <BaseLayout titulo={r.meta.titulo} descripcion={r.meta.descripcion} noindex>
-  {/* El selector de idioma, lo único que se rescata de la barra. */}
-  <div class="container-page flex justify-end pt-3">
-    <LanguageSwitch client:load lang={lang} tono="claro" />
-  </div>
+  <div class="alta">
+    {/* ─── LA FRANJA ────────────────────────────────────────────────────── */}
+    <aside class="franja">
+      <div class="franja-fondo" aria-hidden="true"></div>
+      {/* El logotipo de arriba a la izquierda devuelve al inicio. Es la única
+          salida de la página, y en una pantalla de alta eso es justo lo que
+          tiene que ser: una sola, y que se vea. */}
+      <a href="/" class="franja-logo" aria-label={irAlInicio}>
+        <img
+          src={logoBlanco.src}
+          width={logoBlanco.w}
+          height={logoBlanco.h}
+          alt={nombre}
+          fetchpriority="high"
+        />
+      </a>
+    </aside>
 
-  <main id="contenido">
-    {/* ⚠️ `pt-0` ENCIMA DEL RITMO: el cliente pidió menos aire arriba
-        (13-10-2026). La sección conserva su respiración por abajo, que es la
-        que separa del pie; arriba la da ya la fila del selector de idioma. */}
-    <Section id="subscribe" tono="surface" ritmo="compacto" class="pt-0!">
-      <div class="relative mx-auto max-w-3xl">
-        {/* ─── LAS DOS ILUSTRACIONES ─────────────────────────────────────
-            Entran desde fuera del contenedor, cada una por su lado. En
-            pantallas estrechas se quedan detrás del titular y más pequeñas:
-            apartarlas del todo dejaría la página sin el gesto que se pidió. */}
-        {/* ⚠️ SIN Z NEGATIVO. Con `-z-10` las dos ilustraciones quedaban DETRÁS
-            del fondo de la sección y no se veían: animaban, existían en el DOM
-            y no aparecían en pantalla. Van en z-0 y el contenido en z-10. */}
-        <div class="pointer-events-none absolute inset-x-0 top-0 z-0 select-none" aria-hidden="true">
-          {/* EL LIBRO — entra por la izquierda */}
-          <svg
-            class="ilustra ilustra-libro"
-            viewBox="0 0 64 64"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.4"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M32 18c-5-4-11-5.5-18-5v30c7-.5 13 1 18 5 5-4 11-5.5 18-5V13c-7-.5-13 1-18 5Z" />
-            <path d="M32 18v30" />
-            <path d="M21 24c2.5.2 5 .8 7 1.8M21 32c2.5.2 5 .8 7 1.8" />
-          </svg>
+    {/* ─── EL CONTENIDO ─────────────────────────────────────────────────── */}
+    <main id="contenido" class="panel">
+      <div class="ilustras" aria-hidden="true">
+        {/* EL LIBRO — entra por la izquierda.
+            Dibujado de nuevo el 13-10-2026: el anterior era un garabato. Este
+            tiene lomo, las dos tapas con su grosor y los renglones siguiendo
+            la curva de la página, que es lo que hace que se lea como un libro
+            abierto y no como dos triángulos. */}
+        <svg class="ilustra libro" viewBox="0 0 120 100" fill="none" stroke="currentColor"
+             stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M60 26c-9-7.5-21-11-36-10.5a4 4 0 0 0-4 4v51a4 4 0 0 0 4.2 4c14-.5 25.6 2.8 35.8 10" />
+          <path d="M60 26c9-7.5 21-11 36-10.5a4 4 0 0 1 4 4v51a4 4 0 0 1-4.2 4c-14-.5-25.6 2.8-35.8 10" />
+          <path d="M60 26v58.5" />
+          <path d="M30 34.5c6 .2 11.6 1.3 16.8 3.2M30 48c6 .2 11.6 1.3 16.8 3.2M30 61.5c4.3.2 8.4.9 12.3 2" opacity=".55" />
+          <path d="M90 34.5c-6 .2-11.6 1.3-16.8 3.2M90 48c-6 .2-11.6 1.3-16.8 3.2M90 61.5c-4.3.2-8.4.9-12.3 2" opacity=".55" />
+        </svg>
 
-          {/* LA BOMBILLA — entra por la derecha y se enciende al llegar.
-              El encendido son dos cosas a la vez: los rayos aparecen y el
-              cristal se llena de color. Una sola no se lee como "se prende". */}
-          <svg
-            class="ilustra ilustra-bombilla"
-            viewBox="0 0 64 64"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.4"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <g class="bombilla-rayos">
-              <path d="M32 6v5M48 12l-3.4 3.4M56 30h-5M16 12l3.4 3.4M8 30h5" />
-            </g>
-            <path class="bombilla-vidrio" d="M32 14a14 14 0 0 0-8 25.5c1.3.9 2 2.4 2 4V45h12v-1.5c0-1.6.7-3.1 2-4A14 14 0 0 0 32 14Z" />
-            <path d="M26 50h12M28 55h8" />
-            <path class="bombilla-filamento" d="M28 34c1.5-2 2.5-3.5 4-3.5s2.5 1.5 4 3.5" />
-          </svg>
-        </div>
+        {/* LA BOMBILLA — entra por la derecha y se enciende al llegar.
+            El encendido son tres cosas a la vez: los rayos aparecen, el
+            filamento se dibuja y el cristal se llena de luz. Una sola no se
+            lee como "se prende". */}
+        <svg class="ilustra bombilla" viewBox="0 0 100 120" fill="none" stroke="currentColor"
+             stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <g class="rayos">
+            <path d="M50 8v9M78 20l-6.4 6.4M92 48h-9M22 20l6.4 6.4M8 48h9" />
+          </g>
+          <path class="vidrio" d="M50 24a24 24 0 0 0-14 43.5c2.6 1.9 4 4.9 4 8.1V79h20v-3.4c0-3.2 1.4-6.2 4-8.1A24 24 0 0 0 50 24Z" />
+          <path d="M40 88h20M44 97h12" />
+          <path class="filamento" d="M43 59c2.6-4 4.6-6.5 7-6.5s4.4 2.5 7 6.5" />
+        </svg>
+      </div>
 
-        <div class="relative z-10 mx-auto max-w-xl text-center">
+      <div class="panel-interior">
+        <div class="cabecera">
           {/* ⚠️ EL LOGOTIPO ESTÁ DENTRO DEL TITULAR, NO AL LADO. Lo pidió el
-              cliente: "Entra a" y debajo la marca, que sustituye a las palabras
-              "la plataforma". Por eso el <h1> incluye la imagen y su `alt` es
-              el nombre: para un lector de pantalla la frase se sigue leyendo
-              entera, "Entra a Emprende180". Sin ese alt, el titular se queda
-              en dos palabras sueltas. */}
-          <h1 class="flex flex-col items-center gap-3">
-            <span class="text-4xl font-semibold leading-[1.05] tracking-[-0.02em] text-balance text-ink sm:text-5xl">
-              <T v={r.titulo} />
-            </span>
+              cliente: "Entra a" y debajo la marca, que sustituye a las
+              palabras "la plataforma". Por eso el <h1> incluye la imagen y su
+              `alt` es el nombre: para un lector de pantalla la frase se sigue
+              leyendo entera, "Entra a Emprende180". */}
+          <h1 class="titular">
+            <span class="titular-texto"><T v={r.titulo} /></span>
             <img
+              class="titular-logo"
               src={logo.src}
               width={logo.w}
               height={logo.h}
-              alt={lang === "en" ? "Entrepreneur180" : "Emprende180"}
-              class="h-10 w-auto sm:h-12"
+              alt={nombre}
               fetchpriority="high"
             />
           </h1>
 
-          <p class="mt-4 text-3xl leading-[1.15] text-balance sm:text-4xl">
-            <Enfasis v={r.remate} />
-          </p>
-
-          <p class="mx-auto mt-5 max-w-prose text-lg font-medium leading-relaxed text-pretty text-ink-muted sm:text-xl">
-            <T v={r.texto} />
-          </p>
+          <p class="remate"><Enfasis v={r.remate} /></p>
+          <p class="entradilla"><T v={r.texto} /></p>
         </div>
 
-        <div class="relative z-10 mx-auto mt-9 max-w-md text-left">
+        <div class="formulario">
           <RegistroForm client:load lang={lang} refInicial={refInicial} />
         </div>
-      </div>
-    </Section>
-  </main>
 
-  <Footer />
+        <div class="idioma">
+          <LanguageSwitch client:load lang={lang} tono="claro" />
+        </div>
+      </div>
+    </main>
+  </div>
 </BaseLayout>
 
 <style>
-  /* ─── LAS DOS ILUSTRACIONES ───────────────────────────────────────────────
-     Cada una entra desde su borde y se queda. `translate` y `opacity` son las
-     dos únicas propiedades que se animan: las dos las resuelve el compositor,
-     así que esto no provoca un recálculo de maquetación en un teléfono. */
+  /* ═══════════════════════════════════════════════════════════════════════
+     LA REJILLA
+     ═══════════════════════════════════════════════════════════════════════
+     Móvil primero: la franja arriba y el contenido debajo. A partir de 64rem
+     se parte en dos columnas y la franja se fija al lado izquierdo. */
+  .alta {
+    min-height: 100dvh;
+    background: var(--color-surface);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ─── LA FRANJA ─────────────────────────────────────────────────────── */
+  .franja {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    min-height: 7.5rem;
+    display: flex;
+    align-items: center;
+    padding: 1.25rem 1.25rem;
+  }
+
+  /* El fondo líquido: cuatro manchas de color desenfocadas sobre el navy. Se
+     mueven muy despacio, lo justo para que no parezca una imagen fija. */
+  .franja-fondo {
+    position: absolute;
+    inset: -20%;
+    z-index: -1;
+    background:
+      radial-gradient(42% 38% at 22% 18%, oklch(0.62 0.13 255 / 0.95), transparent 70%),
+      radial-gradient(38% 42% at 78% 32%, oklch(0.55 0.1 196 / 0.85), transparent 70%),
+      radial-gradient(46% 40% at 32% 76%, oklch(0.42 0.12 268 / 0.9), transparent 72%),
+      radial-gradient(40% 36% at 72% 88%, oklch(0.5 0.09 210 / 0.8), transparent 70%),
+      oklch(0.287 0.0718 253.9);
+    filter: blur(28px);
+    animation: fluir 28s ease-in-out infinite alternate;
+  }
+
+  @keyframes fluir {
+    to { transform: scale(1.12) translate3d(2%, -3%, 0); }
+  }
+
+  .franja-logo {
+    display: inline-flex;
+    border-radius: 0.5rem;
+  }
+  .franja-logo img {
+    height: 2.5rem;
+    width: auto;
+  }
+  .franja-logo:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 4px;
+  }
+
+  /* ─── EL PANEL BLANCO ───────────────────────────────────────────────── */
+  .panel {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 2rem 1.25rem 3rem;
+  }
+
+  .panel-interior {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 28rem;
+    margin-inline: auto;
+  }
+
+  .cabecera { text-align: center; }
+
+  .titular {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .titular-texto {
+    font-size: clamp(2rem, 7vw, 2.75rem);
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--color-ink);
+    text-wrap: balance;
+  }
+  /* Más grande, que es lo que se pidió, y sin pasar del ancho del panel. */
+  .titular-logo {
+    height: clamp(2.75rem, 9vw, 4rem);
+    width: auto;
+    max-width: 100%;
+  }
+
+  .remate {
+    margin-top: 0.85rem;
+    font-size: clamp(1.6rem, 5.5vw, 2.1rem);
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+
+  .entradilla {
+    margin-top: 0.9rem;
+    margin-inline: auto;
+    max-width: 30rem;
+    font-size: 1.05rem;
+    font-weight: 500;
+    line-height: 1.6;
+    color: var(--color-ink-muted);
+    text-wrap: pretty;
+  }
+
+  .formulario {
+    margin-top: 2rem;
+    text-align: left;
+  }
+
+  .idioma {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     LAS DOS ILUSTRACIONES
+     ═══════════════════════════════════════════════════════════════════════
+     `fixed` para que no se vayan al bajar, detrás del contenido y con poca
+     opacidad: a este tamaño, por delante, competirían con los campos. */
+  .ilustras {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
   .ilustra {
     position: absolute;
-    top: 0;
-    width: clamp(3.5rem, 13vw, 6.5rem);
     height: auto;
     color: var(--color-ink-brand);
     opacity: 0;
   }
 
-  .ilustra-libro {
-    left: 0;
-    translate: -120% 0;
-    rotate: -8deg;
-    animation: entra-izquierda 900ms cubic-bezier(0.22, 1, 0.36, 1) 150ms forwards;
+  .libro {
+    width: clamp(7rem, 26vw, 15rem);
+    left: -3%;
+    bottom: 6%;
+    translate: -140% 0;
+    rotate: -10deg;
+    animation: entra-izq 1s cubic-bezier(0.22, 1, 0.36, 1) 200ms forwards;
   }
 
-  .ilustra-bombilla {
-    right: 0;
-    translate: 120% 0;
-    rotate: 8deg;
-    animation: entra-derecha 900ms cubic-bezier(0.22, 1, 0.36, 1) 300ms forwards;
+  .bombilla {
+    width: clamp(5.5rem, 20vw, 11rem);
+    right: -2%;
+    top: 10%;
+    translate: 140% 0;
+    rotate: 10deg;
+    animation: entra-der 1s cubic-bezier(0.22, 1, 0.36, 1) 350ms forwards;
   }
 
-  @keyframes entra-izquierda {
-    to {
-      translate: 0 0;
-      opacity: 0.9;
-    }
-  }
-  @keyframes entra-derecha {
-    to {
-      translate: 0 0;
-      opacity: 0.9;
-    }
-  }
+  @keyframes entra-izq { to { translate: 0 0; opacity: 0.16; } }
+  @keyframes entra-der { to { translate: 0 0; opacity: 0.2; } }
 
   /* El encendido espera a que la bombilla haya llegado: prenderse a mitad de
      camino se lee como un parpadeo, no como un interruptor. */
-  .bombilla-rayos,
-  .bombilla-filamento {
-    opacity: 0;
-  }
-  .bombilla-rayos {
-    animation: prende 700ms ease-out 1100ms forwards;
-  }
-  .bombilla-filamento {
-    animation: prende 500ms ease-out 1000ms forwards;
-  }
-  .bombilla-vidrio {
-    animation: prende-vidrio 700ms ease-out 1000ms forwards;
+  .rayos,
+  .filamento { opacity: 0; }
+  .rayos { animation: prende 700ms ease-out 1200ms forwards; }
+  .filamento { animation: prende 500ms ease-out 1100ms forwards; }
+  .vidrio { animation: prende-vidrio 800ms ease-out 1100ms forwards; }
+
+  @keyframes prende { to { opacity: 1; } }
+  @keyframes prende-vidrio {
+    /* Ámbar cálido: el único color de la página fuera de la paleta, y es a
+       propósito. Una bombilla encendida en teal no se lee como encendida. */
+    to { fill: oklch(0.86 0.15 88 / 0.85); }
   }
 
-  @keyframes prende {
-    to {
+  /* ═══════════════════════════════════════════════════════════════════════
+     TABLETA — a partir de 40 rem
+     ═══════════════════════════════════════════════════════════════════════
+     La franja crece y el panel respira, pero siguen apilados: en vertical una
+     tableta tiene el ancho de un móvil grande, y partir en dos columnas
+     dejaría los campos en una tira estrecha. */
+  @media (min-width: 40rem) {
+    .franja { min-height: 9rem; padding-inline: 2rem; }
+    .franja-logo img { height: 3rem; }
+    .panel { padding: 3rem 2rem 4rem; }
+    .panel-interior { max-width: 30rem; }
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     ESCRITORIO — a partir de 64 rem
+     ═══════════════════════════════════════════════════════════════════════ */
+  @media (min-width: 64rem) {
+    .alta { flex-direction: row; }
+
+    /* Fija y a toda la altura: no se mueve al bajar por el formulario. */
+    .franja {
+      position: fixed;
+      inset-block: 0;
+      left: 0;
+      width: clamp(18rem, 30vw, 30rem);
+      min-height: 0;
+      align-items: flex-start;
+      padding: 2.5rem;
+    }
+    .franja-logo img { height: 3.25rem; }
+
+    .panel {
+      margin-left: clamp(18rem, 30vw, 30rem);
+      flex: 1;
+      min-height: 100dvh;
+      padding: 3rem 3rem 4rem;
+    }
+
+    /* Las ilustraciones se quedan dentro del lado blanco, no debajo de la
+       franja: ahí no se verían y además ensuciarían el degradado. */
+    .ilustras { left: clamp(18rem, 30vw, 30rem); }
+    .libro { left: 1%; bottom: 8%; }
+    .bombilla { right: 3%; top: 14%; }
+  }
+
+  /* ⚠️ CON MOVIMIENTO REDUCIDO NO SE QUITA NADA, SE QUITA EL VIAJE. Aparecen
+     ya colocadas y encendidas, y el fondo deja de moverse: quien pide menos
+     movimiento quiere ver lo mismo sin que se mueva, no ver menos. */
+  @media (prefers-reduced-motion: reduce) {
+    .franja-fondo { animation: none; }
+    .ilustra,
+    .rayos,
+    .filamento {
+      animation: none;
+      translate: 0 0;
       opacity: 1;
     }
-  }
-  @keyframes prende-vidrio {
-    to {
-      /* Ámbar cálido: el único color de la página que no es de la paleta, y es
-         a propósito. Una bombilla encendida en teal no se lee como encendida. */
-      fill: oklch(0.86 0.13 88 / 0.5);
-    }
-  }
-
-  /* ⚠️ CON MOVIMIENTO REDUCIDO NO SE QUITA LA ILUSTRACIÓN, SE QUITA EL VIAJE.
-     Aparecen ya colocadas y encendidas: quien pide menos movimiento quiere ver
-     lo mismo sin que se mueva, no ver menos. */
-  @media (prefers-reduced-motion: reduce) {
-    .ilustra,
-    .bombilla-rayos,
-    .bombilla-filamento {
-      animation: none;
-      opacity: 0.9;
-      translate: 0 0;
-    }
-    .bombilla-vidrio {
-      animation: none;
-      fill: oklch(0.86 0.13 88 / 0.5);
-    }
+    .libro { opacity: 0.16; }
+    .bombilla { opacity: 0.2; }
+    .vidrio { animation: none; fill: oklch(0.86 0.15 88 / 0.85); }
   }
 </style>
