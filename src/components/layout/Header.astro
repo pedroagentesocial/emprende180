@@ -307,7 +307,17 @@ const logoAlt = {
 
            En móvil no se aplica: ahí la barra es `flex` y el `shrink-0` de
            arriba es justo lo contrario, porque sin él el logo salía deformado. */
-        "lg:min-w-0",
+        /* ⚠️ LA VÁLVULA EMPIEZA EN `sm`, NO EN `lg`. Hasta el 13-10-2026 solo
+           se abría en `lg` y entre 640 y 1024 px la barra desbordaba: ahí no
+           hay rejilla, es `flex`, y tanto el logotipo como el grupo de la
+           derecha llevaban `shrink-0`. A 768 eran 293 + 472 + márgenes = 816
+           sobre 768, y la página entera se iba 63 px en horizontal. Salió en la
+           revisión de responsive, no se veía mirando el móvil ni el escritorio.
+
+           Por debajo de `sm` sigue sin aplicarse: ahí el presupuesto está
+           medido al píxel (ver la nota de abajo) y lo que hace falta es que el
+           logotipo NO ceda, porque sale deformado. */
+        "sm:min-w-0 sm:shrink",
         /* Centrado en la barra blanca (lo pidió el cliente en su día) y a la
            IZQUIERDA cuando flota sobre el hero, que es lo que pide el
            rediseño. Sin este `order-1`, el logotipo empata en orden con el

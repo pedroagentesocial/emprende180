@@ -116,7 +116,12 @@ const posicion = (i: number) =>
 
     {/* Los puntos se pintan todos y el guion esconde los que sobran según
         cuántas tarjetas caben: con tres a la vista hay N − 2 posiciones. */}
-    <ul role="list" data-puntos class="flex items-center justify-center gap-1 max-sm:order-last max-sm:basis-full">
+    {/* ⚠️ `flex-wrap` NO ES ADORNO: con siete testimonios son siete puntos de
+        44 px (el mínimo táctil) más sus huecos, o sea 332 px. En una pantalla
+        de 320 eso desbordaba la página 6 px en horizontal. Con envoltura, la
+        fila se parte y nadie pierde una zona de toque. Salió en la revisión de
+        responsive del 13-10-2026. */}
+    <ul role="list" data-puntos class="flex flex-wrap items-center justify-center gap-1 max-sm:order-last max-sm:basis-full">
       {
         items.map((_, i) => (
           <li>
