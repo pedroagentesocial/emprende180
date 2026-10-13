@@ -88,7 +88,16 @@ const logo = lang === "en" ? sitio.logoHorizontalEn : sitio.logoHorizontal;
 const logoBlanco =
   lang === "en" ? sitio.logoHorizontalBlancoEn : sitio.logoHorizontalBlanco;
 const nombre = lang === "en" ? "Entrepreneur180" : "Emprende180";
+
+/* ⚠️ EL ENLACE AL INICIO LLEVA "Ir a" DELANTE DEL LOGOTIPO, Y NO ES ADORNO.
+   Con el logotipo solo, el cliente no entendió que aquello fuera un enlace a
+   ninguna parte (13-10-2026): una marca en una esquina se lee como membrete,
+   no como salida. Dos palabras lo convierten en una frase que se entiende sin
+   pensar, "Ir a Emprende180", y de paso es lo que oye un lector de pantalla. */
+const irA = lang === "en" ? "Go to" : "Ir a";
 const irAlInicio = lang === "en" ? "Go to the home page" : "Ir al inicio";
+const entrar = lang === "en" ? "Log in" : "Entrar";
+const yaTienes = lang === "en" ? "Already have an account?" : "¿Ya tienes cuenta?";
 
 const refInicial = (Astro.url.searchParams.get("ref") ?? "")
   .trim()
@@ -105,6 +114,7 @@ const refInicial = (Astro.url.searchParams.get("ref") ?? "")
           salida de la página, y en una pantalla de alta eso es justo lo que
           tiene que ser: una sola, y que se vea. */}
       <a href="/" class="franja-logo" aria-label={irAlInicio}>
+        <span class="franja-logo-texto">{irA}</span>
         <img
           src={logoBlanco.src}
           width={logoBlanco.w}
@@ -117,6 +127,25 @@ const refInicial = (Astro.url.searchParams.get("ref") ?? "")
 
     {/* ─── EL CONTENIDO ─────────────────────────────────────────────────── */}
     <main id="contenido" class="panel">
+      {/* ⚠️ LA BARRA SUPERIOR DEL LADO BLANCO. Lleva las dos únicas cosas que
+          esta pantalla necesita además del formulario: la puerta de quien YA
+          tiene cuenta y el cambio de idioma. Las dos estaban abajo, debajo del
+          botón, y el cliente las subió el 13-10-2026. Tiene razón: quien se
+          equivocó de puerta no debería tener que leerse el formulario entero
+          para descubrirlo, y quien entra en inglés no debería tener que bajar
+          a por el selector.
+
+          Va dentro del panel y no sobre la franja: ahí es donde mira quien
+          llega, y sobre el degradado el contraste del texto dependería de en
+          qué punto del fondo cayera. */}
+      <div class="barra">
+        <a href="/login" class="barra-entrar">
+          <span class="barra-entrar-previo">{yaTienes}</span>
+          <span class="barra-entrar-enlace">{entrar}</span>
+        </a>
+        <LanguageSwitch client:load lang={lang} tono="claro" />
+      </div>
+
       <div class="ilustras" aria-hidden="true">
         {/* EL LIBRO — entra por la izquierda.
             Dibujado de nuevo el 13-10-2026: el anterior era un garabato. Este
@@ -173,10 +202,6 @@ const refInicial = (Astro.url.searchParams.get("ref") ?? "")
         <div class="formulario">
           <RegistroForm client:load lang={lang} refInicial={refInicial} />
         </div>
-
-        <div class="idioma">
-          <LanguageSwitch client:load lang={lang} tono="claro" />
-        </div>
       </div>
     </main>
   </div>
@@ -228,7 +253,16 @@ const refInicial = (Astro.url.searchParams.get("ref") ?? "")
 
   .franja-logo {
     display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
     border-radius: 0.5rem;
+    color: #fff;
+  }
+  .franja-logo-texto {
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    opacity: 0.85;
   }
   .franja-logo img {
     height: 2.5rem;
@@ -246,7 +280,42 @@ const refInicial = (Astro.url.searchParams.get("ref") ?? "")
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 2rem 1.25rem 3rem;
+    padding: 1rem 1.25rem 3rem;
+  }
+
+  /* ─── LA BARRA DE ARRIBA ────────────────────────────────────────────── */
+  .barra {
+    position: relative;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+    margin-bottom: 1.5rem;
+  }
+  .barra-entrar {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.35rem;
+    font-size: 0.9rem;
+    color: var(--color-ink-subtle);
+  }
+  /* "¿Ya tienes cuenta?" desaparece en pantallas estrechas y se queda sólo
+     "Entrar": a 390 px la frase entera empuja al selector de idioma fuera. */
+  .barra-entrar-previo { display: none; }
+  .barra-entrar-enlace {
+    font-weight: 700;
+    color: var(--color-ink-brand);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .barra-entrar:hover .barra-entrar-enlace { color: var(--color-cta); }
+  .barra-entrar:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 3px;
+    border-radius: 0.25rem;
   }
 
   .panel-interior {
@@ -257,12 +326,17 @@ const refInicial = (Astro.url.searchParams.get("ref") ?? "")
     margin-inline: auto;
   }
 
-  .cabecera { text-align: center; }
+  /* ⚠️ TODO VA ALINEADO A LA IZQUIERDA, incluido el titular. Lo pidió el
+     cliente ("carga más a la izquierda el formulario con sus elementos"), y
+     centrar el titular sobre un formulario alineado a la izquierda habría
+     dejado dos ejes distintos en la misma columna. Un formulario se lee por su
+     borde izquierdo: ahí es donde empieza cada etiqueta. */
+  .cabecera { text-align: left; }
 
   .titular {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.75rem;
   }
   .titular-texto {
@@ -289,7 +363,6 @@ const refInicial = (Astro.url.searchParams.get("ref") ?? "")
 
   .entradilla {
     margin-top: 0.9rem;
-    margin-inline: auto;
     max-width: 30rem;
     font-size: 1.05rem;
     font-weight: 500;
@@ -301,12 +374,6 @@ const refInicial = (Astro.url.searchParams.get("ref") ?? "")
   .formulario {
     margin-top: 2rem;
     text-align: left;
-  }
-
-  .idioma {
-    margin-top: 2rem;
-    display: flex;
-    justify-content: center;
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
@@ -374,8 +441,9 @@ const refInicial = (Astro.url.searchParams.get("ref") ?? "")
   @media (min-width: 40rem) {
     .franja { min-height: 9rem; padding-inline: 2rem; }
     .franja-logo img { height: 3rem; }
-    .panel { padding: 3rem 2rem 4rem; }
+    .panel { padding: 1.5rem 2rem 4rem; }
     .panel-interior { max-width: 30rem; }
+    .barra-entrar-previo { display: inline; }
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
@@ -400,8 +468,20 @@ const refInicial = (Astro.url.searchParams.get("ref") ?? "")
       margin-left: clamp(18rem, 30vw, 30rem);
       flex: 1;
       min-height: 100dvh;
-      padding: 3rem 3rem 4rem;
+      padding: 1.75rem 3rem 4rem;
     }
+
+    /* El bloque deja de estar centrado en el lado blanco y se apoya contra la
+       franja, que es lo que pidió el cliente. El tope evita que en un monitor
+       muy ancho se quede pegado al borde del color. */
+    .panel-interior {
+      margin-inline: 0 auto;
+      margin-left: min(6vw, 5rem);
+    }
+    /* La barra arranca en el MISMO borde que el titular. Con la barra pegada
+       al padding del panel y el bloque desplazado, los dos bordes izquierdos
+       quedaban a distinta altura y se leía como un descuadre. */
+    .barra { padding-left: min(6vw, 5rem); }
 
     /* Las ilustraciones se quedan dentro del lado blanco, no debajo de la
        franja: ahí no se verían y además ensuciarían el degradado. */

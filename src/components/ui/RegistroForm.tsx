@@ -394,12 +394,11 @@ export function RegistroForm({
         {estado === "enviando" ? esp("Creando tu cuenta…", "Creating your account…") : t(r.cta)}
       </button>
 
-      <p className="mt-3 text-center text-sm text-ink-subtle">
-        {esp("¿Ya tienes cuenta? ", "Already have an account? ")}
-        <a href="/login" className="font-semibold text-ink-brand underline underline-offset-2">
-          {esp("Entra aquí", "Sign in")}
-        </a>
-      </p>
+      {/* ⚠️ AQUÍ ABAJO IBA "¿Ya tienes cuenta? Entra aquí" Y SE MUDÓ ARRIBA.
+          Lo pidió el cliente el 13-10-2026 y es mejor sitio: quien ya tiene
+          cuenta no debería tener que leerse el formulario entero para
+          descubrir que se ha equivocado de puerta. Vive en la barra superior
+          de `subscribe.astro`. No se duplica aquí. */}
     </form>
   );
 }
