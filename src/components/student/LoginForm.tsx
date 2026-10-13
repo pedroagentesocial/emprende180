@@ -276,14 +276,19 @@ export function LoginForm({
           It changes with the mode, which is why it lives inside the island. The
           rule underneath separates "what this box is" from "what you do in it",
           and it is the only line in the card that isn't a field. */}
-      <h2 className="text-xl font-extrabold text-ink">
+      {/* ⚠️ ES UN <h1> Y NO UN <h2>: desde el rediseño del 13-10-2026 este es
+          EL titular de la pantalla, no el de una tarjeta dentro de ella. El
+          componente sólo se usa en /login, así que no hay otra pantalla a la
+          que esto le cambie la jerarquía. */}
+      <h1 className="text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
         {t(resetting ? studentCopy.forgotTitle : studentCopy.cardTitle)}
-      </h2>
+      </h1>
       <p className="mt-1.5 text-sm text-pretty text-ink-muted">
         {t(resetting ? studentCopy.forgotText : studentCopy.cardText)}
       </p>
 
-      <div className="mt-5 mb-5 h-px bg-line" />
+      {/* El filete separador se fue con la tarjeta: sin caja alrededor,
+          partía el bloque en dos sin separar nada. */}
 
       <label htmlFor="login-email" className={labelClass}>
         {t(studentCopy.emailLabel)}

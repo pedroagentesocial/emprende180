@@ -1,10 +1,8 @@
 ---
 import BaseLayout from "@layouts/BaseLayout.astro";
-import Header from "@components/layout/Header.astro";
-import Footer from "@components/layout/Footer.astro";
 import T from "@components/i18n/T.astro";
+import LanguageSwitch from "@components/i18n/LanguageSwitch";
 import Icono from "@components/ui/Icono.astro";
-import MarcaAgua from "@components/ui/MarcaAgua.astro";
 import LoginForm from "@components/student/LoginForm";
 import { sitio, contacto, copy } from "@config/curso.config";
 import { studentCopy } from "@config/studentArea";
@@ -182,233 +180,167 @@ const hasNotice = !!error || signedOut || !!postError || postSent;
 const claveCaptcha = captchaSiteKey();
 
 /* El logotipo horizontal de la marca, para la columna izquierda. */
-const logo = sitio.logoHorizontal;
+const logo = lang === "en" ? sitio.logoHorizontalEn : sitio.logoHorizontal;
+
+/* El enlace de vuelta al inicio, con las mismas palabras que /subscribe. */
+const irA = lang === "en" ? "Go to" : "Ir a";
+const irAlInicio = lang === "en" ? "Go to the home page" : "Ir al inicio";
 ---
 <BaseLayout titulo={pageTitle} descripcion={studentCopy.intro} noindex>
-  {/* Barra mínima: logotipo e idioma. Ver la nota de `variante` en Header. */}
-  <Header variante="minimo" />
+  {/* ═══════════════════════════════════════════════════════════════════════
+      LA PANTALLA DE ACCESO
+      ═══════════════════════════════════════════════════════════════════════
 
-  {/* ⚠️ `flex-1` ES LO QUE ARREGLA LAS PANTALLAS ALTAS. El cuerpo es una
-      columna de alto mínimo la ventana (ver `global.css`), así que este `main`
-      se queda con todo el hueco que sobra entre la barra y el pie, y centra lo
-      suyo dentro. En un monitor en vertical eso reparte el aire arriba y abajo
-      en vez de dejar el pie a media pantalla con un vacío debajo. */}
-  <main
-    id="contenido"
-    class="relative isolate flex flex-1 items-center overflow-hidden bg-surface-muted py-[clamp(2.5rem,6svh,5rem)]"
-  >
-    {/* La marca de agua se ancla a la izquierda, detrás del texto. Estaba a la
-        derecha, que es justo donde ahora vive la card: un logotipo asomando por
-        detrás de un formulario es ruido exactamente donde alguien teclea su
-        contraseña. */}
-    <MarcaAgua
-      variante="color"
-      posicion="izquierda"
-      tamano="grande"
-      class="opacity-[0.05]"
-    />
+      Rediseñada el 13-10-2026 con una referencia del cliente delante: el
+      formulario a la izquierda y un patrón a la derecha.
 
-    <div class="container-page w-full">
-      {/* ─── LA REJILLA ──────────────────────────────────────────────────────
-          Dos mitades IGUALES desde `lg` (`grid-cols-2`), no una columna ancha y
-          otra estrecha: las dos partes de esta pantalla pesan lo mismo. La
-          izquierda dice qué es esto, la derecha deja entrar.
+      ⚠️ SE FUERON LA BARRA Y EL PIE, y es el mismo motivo que en /subscribe:
+      aquí se llega con una intención única y cada enlace es una puerta para
+      irse antes de terminar. Lo que SÍ se queda es lo que esa barra traía y
+      aquí hace falta: el logotipo que vuelve al inicio y el selector de
+      idioma.
 
-          `lg:min-h` menos el alto del header es lo que hace que todo caiga en
-          una pantalla: header más esta sección llenan el alto exacto de la
-          ventana, y el pie empieza por debajo del pliegue, que es donde va un
-          pie.
+      ⚠️ LA LISTA DE "QUÉ VAS A ENCONTRAR DENTRO" TAMBIÉN SE FUE. La sigue
+      habiendo en `studentCopy.whatsInside` por si vuelve. Quien llega a esta
+      pantalla ya sabe qué hay dentro: viene a entrar, no a que le convenzan.
 
-          Las filas de la izquierda se reparten con `content-center` para que el
-          bloque entero quede a la altura de la card. */}
-      <div
-        class="grid gap-x-10 gap-y-10 sm:gap-y-12 xl:grid-cols-2 xl:grid-rows-[auto_auto] xl:items-center xl:gap-x-14 xl:gap-y-8 2xl:gap-x-20"
-      >
-        {/* ─── Izquierda, fila 1: la marca y qué es esto ────────────────── */}
-        <div class="mx-auto w-full max-w-lg xl:mx-0 xl:col-start-1 xl:row-start-1 xl:self-end">
-          {/* ⚠️ EL LOGOTIPO SOLO EN DOS COLUMNAS. Por debajo de `xl` la barra de
-              arriba ya lleva el suyo a cuatro dedos de aquí, y dos veces la
-              misma marca en la misma pantalla no es marca, es un descuido. */}
-          <img
-            src={logo.src}
-            alt={sitio.nombre[lang]}
-            width={logo.w}
-            height={logo.h}
-            class="mb-8 hidden h-10 w-auto xl:block"
-            fetchpriority="high"
-            decoding="async"
-          />
+      ⚠️ EL PATRÓN NO ES DECORACIÓN SUELTA. Son los iconos del sitio dentro de
+      círculos de la paleta. Ni una cara, ni un avatar: inventar personas en la
+      puerta de un producto que todavía tiene dos alumnos sería mentir con
+      dibujos. Va `aria-hidden` y desaparece por debajo de `lg`, donde el sitio
+      que ocuparía lo necesita el formulario.
 
-          <h1 class="text-4xl font-extrabold tracking-tight text-balance text-ink sm:text-5xl">
-            <T v={studentCopy.portalTitle} />
-          </h1>
+      ⚠️ EL CHAT Y EL BOTÓN DE LLAMAR salen solos: viven en el Layout, no aquí.
+      Son el icono de abajo a la derecha de la referencia. */}
+  <div class="acceso">
+    {/* Arriba: la vuelta al inicio y el idioma. El logotipo lleva "Ir a"
+        delante por lo mismo que en /subscribe: una marca suelta en una esquina
+        se lee como membrete y no como salida. */}
+    <header class="acceso-barra">
+      <a href="/" class="acceso-volver" aria-label={irAlInicio}>
+        <span class="acceso-volver-texto">{irA}</span>
+        <img
+          src={logo.src}
+          width={logo.w}
+          height={logo.h}
+          alt={sitio.nombre[lang]}
+          fetchpriority="high"
+        />
+      </a>
+      <LanguageSwitch client:load lang={lang} tono="claro" />
+    </header>
 
-          <p class="mt-4 max-w-md text-lg text-pretty text-ink-muted">
-            <T v={studentCopy.portalText} />
-          </p>
-        </div>
+    <main id="contenido" class="acceso-cuerpo">
+      <section class="acceso-panel">
+        {/* Los avisos van ENCIMA del formulario: quien vuelve con un enlace
+            caducado necesita saber por qué antes de teclear otra vez su
+            correo, y un mensaje que empuja los campos hacia abajo al aparecer
+            es un formulario que se mueve mientras lo usas. */}
+        {
+          hasNotice && (
+            <div class="mb-5 grid gap-3">
+              {error && (
+                <p
+                  role="alert"
+                  class="rounded-2xl border border-warning-500 bg-warning-50 px-4 py-3 text-sm text-pretty text-ink"
+                >
+                  <T
+                    v={
+                      error === "sin-cuenta"
+                        ? studentCopy.errorSinCuenta
+                        : error === "oauth"
+                          ? studentCopy.errorOauth
+                          : studentCopy.errorExpired
+                    }
+                  />
+                </p>
+              )}
 
-        {/* ─── Derecha: la card ────────────────────────────────────────────
-            Ocupa las dos filas y se centra contra ellas, así que el formulario
-            queda ópticamente a la altura del hueco entre el titular y la lista
-            en vez de clavado arriba de su columna. */}
-        <div
-          class="mx-auto w-full max-w-lg xl:mx-0 xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:max-w-[27rem] xl:justify-self-end xl:self-center"
-        >
-          {/* Los avisos van ENCIMA de la card y no dentro: quien vuelve con un
-              enlace caducado necesita saber por qué antes de teclear otra vez su
-              correo, y un mensaje que empuja los campos hacia abajo al aparecer
-              es un formulario que se mueve mientras lo usas. */}
-          {
-            hasNotice && (
-              <div class="mb-4 grid gap-3">
-                {/* Tres motivos distintos para volver aquí con `?error=`: el
-                    enlace caducado de siempre, un tropiezo entrando con Google o
-                    Facebook, y el caso de identificarse bien pero no tener
-                    cuenta. El tercero es el que más importa que se entienda:
-                    quien lo ve hizo todo bien y aun así no entra. */}
-                {error && (
-                  <p
-                    role="alert"
-                    class="rounded-2xl border border-warning-500 bg-warning-50 px-4 py-3 text-sm text-pretty text-ink"
-                  >
-                    <T
-                      v={
-                        error === "sin-cuenta"
-                          ? studentCopy.errorSinCuenta
-                          : error === "oauth"
-                            ? studentCopy.errorOauth
-                            : studentCopy.errorExpired
-                      }
-                    />
-                  </p>
-                )}
-
-                {signedOut && (
-                  <p
-                    id="aviso-salida"
-                    role="status"
-                    class="flex items-center gap-2.5 rounded-2xl border border-secondary-300 bg-secondary-50 px-4 py-3 text-sm text-ink transition-opacity duration-[var(--duration-slow)] ease-[var(--ease-out-soft)]"
-                  >
-                    <span aria-hidden="true" class="marca-linea text-secondary-600">
-                      <Icono nombre="check" class="size-4" grosor={2.5} />
-                    </span>
-                    <T v={studentCopy.signedOut} />
-                  </p>
-                )}
-
-                {/* Lo que responde el POST sin JavaScript. Con la isla hidratada
-                    estos mensajes los pinta ella sin recargar. */}
-                {postError && (
-                  <p
-                    role="alert"
-                    class="rounded-2xl border border-error-500 bg-error-50 px-4 py-3 text-sm font-medium text-error-700"
-                  >
-                    <T
-                      v={
-                        postError === "limit"
-                          ? studentCopy.errorLimit
-                          : postError === "email"
-                            ? studentCopy.errorEmail
-                            : postError === "captcha"
-                              ? studentCopy.errorCaptcha
-                              : studentCopy.errorCredentials
-                      }
-                    />
-                  </p>
-                )}
-
-                {postSent && (
-                  <p class="rounded-2xl border border-secondary-300 bg-secondary-50 px-4 py-3 text-sm text-pretty text-ink">
-                    <T v={studentCopy.linkSent} />
-                  </p>
-                )}
-              </div>
-            )
-          }
-
-          <div class="rounded-3xl border border-line bg-surface p-6 shadow-[var(--shadow-xl)] sm:p-8">
-            {/* Google y Facebook, si están configurados. Si no, no pinta ni
-                un hueco: la card se queda como estaba. Ver el componente. */}
-            <BotonesProveedor next={next} />
-
-            <LoginForm
-              client:load
-              lang={lang}
-              next={next}
-              initialMode={initialMode}
-              action={formAction}
-              captchaSiteKey={claveCaptcha}
-            />
-          </div>
-        </div>
-
-        {/* ─── Izquierda, fila 2: qué hay al otro lado de la puerta ──────────
-            Filetes en vez de cajas. Tres líneas cortas con una raya entre ellas
-            se leen como un objeto; tres tarjetas con borde se leerían como tres,
-            y competirían con la única card de la pantalla que importa. */}
-        <div class="mx-auto w-full max-w-lg xl:mx-0 xl:col-start-1 xl:row-start-2 xl:self-start">
-          <h2 class="text-sm font-bold text-ink">
-            <T v={studentCopy.whatsInside.title} />
-          </h2>
-
-          <ul class="mt-1 divide-y divide-line border-b border-line">
-            {
-              studentCopy.whatsInside.points.map((p) => (
-                <li class="flex items-start gap-3 py-3 text-base text-pretty text-ink-muted">
-                  <span aria-hidden="true" class="marca-linea shrink-0 text-secondary-600">
+              {signedOut && (
+                <p
+                  id="aviso-salida"
+                  role="status"
+                  class="flex items-center gap-2.5 rounded-2xl border border-secondary-300 bg-secondary-50 px-4 py-3 text-sm text-ink transition-opacity duration-[var(--duration-slow)] ease-[var(--ease-out-soft)]"
+                >
+                  <span aria-hidden="true" class="marca-linea text-secondary-600">
                     <Icono nombre="check" class="size-4" grosor={2.5} />
                   </span>
-                  <T v={p} />
-                </li>
-              ))
-            }
-          </ul>
-        </div>
-      </div>
+                  <T v={studentCopy.signedOut} />
+                </p>
+              )}
 
-      {/* ─── Para quien se equivocó de puerta ─────────────────────────────────
-          FUERA de la rejilla y debajo de las dos columnas, en una línea. Es el
-          visitante menos frecuente de esta pantalla: dentro de la columna
-          izquierda tiraba de la mirada al mismo nivel que lo que hay dentro del
-          portal, y colgando de la card habría parecido parte del formulario.
-          Aquí abajo está disponible sin pedir turno. */}
-      <p
-        class="mt-10 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 border-t border-line pt-6 text-sm text-ink-subtle sm:mt-12"
-      >
-        <T v={studentCopy.notACustomer.line} />
-        <a
-          href="/"
-          data-track="acceso-volver"
-          class="inline-flex min-h-11 items-center font-semibold text-ink-brand underline underline-offset-4 hover:text-secondary-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-        >
-          <T v={studentCopy.notACustomer.cta} />
-        </a>
+              {postError && (
+                <p
+                  role="alert"
+                  class="rounded-2xl border border-error-500 bg-error-50 px-4 py-3 text-sm font-medium text-error-700"
+                >
+                  <T
+                    v={
+                      postError === "limit"
+                        ? studentCopy.errorLimit
+                        : postError === "email"
+                          ? studentCopy.errorEmail
+                          : postError === "captcha"
+                            ? studentCopy.errorCaptcha
+                            : studentCopy.errorCredentials
+                    }
+                  />
+                </p>
+              )}
 
-        {
-          contacto.telefono && (
-            <>
-              <span aria-hidden="true" class="text-line-strong">
-                ·
-              </span>
-              <a
-                href={`tel:${contacto.telefono}`}
-                data-track="acceso-llamada"
-                class="inline-flex min-h-11 items-center gap-1.5 font-semibold text-ink-brand underline underline-offset-4 hover:text-secondary-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-              >
-                <span aria-hidden="true" class="marca-linea">
-                  <Icono nombre="telefono" class="size-4" grosor={2} />
-                </span>
-                <T v={copy.instructor.llamame} />
-              </a>
-            </>
+              {postSent && (
+                <p class="rounded-2xl border border-secondary-300 bg-secondary-50 px-4 py-3 text-sm text-pretty text-ink">
+                  <T v={studentCopy.linkSent} />
+                </p>
+              )}
+            </div>
           )
         }
-      </p>
-    </div>
-  </main>
 
-  <Footer />
+        <LoginForm
+          client:load
+          lang={lang}
+          next={next}
+          initialMode={initialMode}
+          action={formAction}
+          captchaSiteKey={claveCaptcha}
+        />
+
+        {/* ⚠️ GOOGLE Y FACEBOOK VAN DEBAJO DEL CORREO, no encima. Hoy no se
+            pinta ninguno —ninguna de las dos parejas de variables existe en
+            producción, comprobado el 13-10-2026— pero el día que se
+            configuren, el correo tiene que seguir siendo el camino principal:
+            es con el que se dio de alta todo el mundo. */}
+        <BotonesProveedor next={next} />
+
+        {/* La pareja de "¿Ya tienes cuenta? Entrar" que vive en /subscribe.
+            Las dos pantallas se señalan la una a la otra. */}
+        <p class="acceso-sin-cuenta">
+          <T v={studentCopy.sinCuenta.linea} />
+          <a href="/subscribe" data-track="acceso-crear-cuenta">
+            <T v={studentCopy.sinCuenta.cta} />
+          </a>
+        </p>
+      </section>
+
+      {/* ─── EL PATRÓN ───────────────────────────────────────────────────
+          Nueve piezas colocadas a mano. No es una rejilla: una rejilla se lee
+          como una tabla, y lo que esto tiene que parecer es constelación. */}
+      <div class="patron" aria-hidden="true">
+        <span class="p p1"><Icono nombre="diana" class="size-6" /></span>
+        <span class="p p2"><Icono nombre="personas" class="size-7" /></span>
+        <span class="p p3"><Icono nombre="grafica" class="size-6" /></span>
+        <span class="p p4"><Icono nombre="giro" class="size-8" /></span>
+        <span class="p p5"><Icono nombre="agenda" class="size-5" /></span>
+        <span class="p p6"><Icono nombre="academia" class="size-6" /></span>
+        <span class="punto d1"></span>
+        <span class="punto d2"></span>
+        <span class="punto d3"></span>
+        <span class="punto d4"></span>
+      </div>
+    </main>
+  </div>
+
 
   {/* ─── EL AVISO DE SALIDA ES UN MENSAJE, NO UN ESTADO ──────────────────────
       Llega en `?signedout=1`, y ese parámetro se queda en la URL: recargar, o
@@ -459,3 +391,163 @@ const logo = sitio.logoHorizontal;
     )
   }
 </BaseLayout>
+
+<style>
+  /* ═══════════════════════════════════════════════════════════════════════
+     LA PANTALLA DE ACCESO
+     ═══════════════════════════════════════════════════════════════════════
+     Móvil primero: una columna con el formulario y sin patrón. A partir de
+     `lg` se parte en dos y el patrón ocupa el lado derecho. */
+  .acceso {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-surface);
+    padding: 1.25rem 1.25rem 3rem;
+  }
+
+  /* ─── ARRIBA: VOLVER E IDIOMA ───────────────────────────────────────── */
+  .acceso-barra {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .acceso-volver {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    border-radius: 0.5rem;
+    color: var(--color-ink);
+  }
+  .acceso-volver-texto {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--color-ink-muted);
+  }
+  .acceso-volver img {
+    height: 2.25rem;
+    width: auto;
+  }
+  .acceso-volver:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 4px;
+  }
+
+  /* ─── EL CUERPO ─────────────────────────────────────────────────────── */
+  .acceso-cuerpo {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Sin tarjeta: el formulario se apoya en el blanco de la página, como en la
+     referencia. La caja con borde y sombra competía con el patrón. */
+  .acceso-panel {
+    width: 100%;
+    max-width: 23rem;
+  }
+
+  .acceso-sin-cuenta {
+    margin-top: 1.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+    color: var(--color-ink-subtle);
+  }
+  .acceso-sin-cuenta a {
+    font-weight: 700;
+    color: var(--color-ink-brand);
+    text-decoration: none;
+  }
+  .acceso-sin-cuenta a:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  .acceso-sin-cuenta a:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 3px;
+    border-radius: 0.25rem;
+  }
+
+  /* ─── EL PATRÓN ─────────────────────────────────────────────────────── */
+  .patron { display: none; }
+
+  @media (min-width: 64rem) {
+    .acceso { padding: 2rem 2.5rem 2.5rem; }
+    .acceso-volver img { height: 2.5rem; }
+
+    .acceso-cuerpo {
+      display: grid;
+      grid-template-columns: minmax(0, 24rem) minmax(0, 1fr);
+      align-items: center;
+      gap: clamp(3rem, 8vw, 7rem);
+      max-width: 78rem;
+      width: 100%;
+      margin-inline: auto;
+    }
+
+    .acceso-panel { max-width: none; }
+
+    .patron {
+      display: block;
+      position: relative;
+      aspect-ratio: 1 / 0.82;
+      max-height: 32rem;
+    }
+
+    /* Cada pieza en porcentajes, así el conjunto se estira con su caja en vez
+       de descolocarse al cambiar el ancho de la ventana. */
+    .patron .p {
+      position: absolute;
+      display: grid;
+      place-items: center;
+      border-radius: 9999px;
+      color: #fff;
+      box-shadow: 0 10px 24px -12px oklch(0.287 0.0718 253.9 / 0.5);
+      opacity: 0;
+      animation: patron-entra 620ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    .patron .punto {
+      position: absolute;
+      border-radius: 9999px;
+      opacity: 0;
+      animation: patron-entra 520ms ease-out forwards;
+    }
+
+    /* ⚠️ LOS COLORES SALEN DE LA PALETA, no de la referencia. Aquella era
+       morada, naranja y amarilla; aquí son el navy y el teal con sus tintes.
+       Un patrón con los colores de otra marca en la puerta de esta no es una
+       referencia, es la marca de otro. */
+    .p1 { top: 6%; left: 30%; width: 3.25rem; height: 3.25rem; background: var(--color-secondary-600); animation-delay: 80ms; }
+    .p2 { top: 18%; left: 62%; width: 4rem; height: 4rem; background: var(--color-primary-900); animation-delay: 200ms; }
+    .p3 { top: 40%; left: 12%; width: 3.5rem; height: 3.5rem; background: var(--color-secondary-700); animation-delay: 320ms; }
+    .p4 { top: 52%; left: 74%; width: 4.75rem; height: 4.75rem; background: var(--color-primary-900); animation-delay: 150ms; }
+    .p5 { top: 72%; left: 40%; width: 3rem; height: 3rem; background: var(--color-secondary-600); animation-delay: 420ms; }
+    .p6 { top: 30%; left: 44%; width: 3.25rem; height: 3.25rem; background: var(--color-secondary-700); animation-delay: 260ms; }
+
+    .d1 { top: 14%; left: 20%; width: 0.6rem; height: 0.6rem; background: var(--color-secondary-300); animation-delay: 360ms; }
+    .d2 { top: 62%; left: 24%; width: 0.5rem; height: 0.5rem; background: var(--color-primary-900); animation-delay: 480ms; }
+    .d3 { top: 34%; left: 86%; width: 0.7rem; height: 0.7rem; background: var(--color-secondary-300); animation-delay: 540ms; }
+    .d4 { top: 84%; left: 66%; width: 0.55rem; height: 0.55rem; background: var(--color-secondary-600); animation-delay: 600ms; }
+
+    @keyframes patron-entra {
+      from { opacity: 0; transform: scale(0.6); }
+      to { opacity: 1; transform: none; }
+    }
+  }
+
+  /* El patrón aparece, no se mueve sin parar: es el fondo de una pantalla
+     donde alguien teclea una contraseña. Con movimiento reducido, quieto. */
+  @media (prefers-reduced-motion: reduce) {
+    .patron .p,
+    .patron .punto {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>

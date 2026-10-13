@@ -57,7 +57,20 @@ const href = (p: Proveedor) =>
 
 {
   activos.length > 0 && (
-    <div class="mb-6">
+    <div class="mt-6">
+      {/* ⚠️ EL SEPARADOR VA ARRIBA DESDE EL 13-10-2026, porque este bloque pasó
+          a vivir DEBAJO del formulario de correo. Antes iba primero y la raya
+          cerraba por abajo; ahora abre por arriba y separa el correo de los
+          proveedores, que es donde está la costura. Si alguien vuelve a poner
+          este bloque encima del formulario, la raya tiene que bajar con él. */}
+      <div class="mb-6 flex items-center gap-3" aria-hidden="true">
+        <span class="h-px flex-1 bg-line" />
+        <span class="text-xs font-medium tracking-wide text-ink-subtle uppercase">
+          <T v={studentCopy.oBien} />
+        </span>
+        <span class="h-px flex-1 bg-line" />
+      </div>
+
       <div class="grid gap-3">
         {activos.map((p) => (
           <a
@@ -108,15 +121,6 @@ const href = (p: Proveedor) =>
         ))}
       </div>
 
-      {/* El separador. Es una raya con una palabra encima, no un "o" suelto:
-          sin la raya, la palabra parece el título del formulario de abajo. */}
-      <div class="mt-6 flex items-center gap-3" aria-hidden="true">
-        <span class="h-px flex-1 bg-line" />
-        <span class="text-xs font-medium tracking-wide text-ink-subtle uppercase">
-          <T v={studentCopy.oBien} />
-        </span>
-        <span class="h-px flex-1 bg-line" />
-      </div>
     </div>
   )
 }

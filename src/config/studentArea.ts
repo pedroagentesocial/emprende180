@@ -209,7 +209,12 @@ export const studentCopy = {
      Los botones solo se pintan si el proveedor está configurado. Ver
      `@lib/oauth`. */
   entrarCon: { es: "Entrar con {proveedor}", en: "Continue with {proveedor}" },
-  oBien: { es: "o con tu correo", en: "or with your email" },
+  /* ⚠️ ERA "o con tu correo" Y AHORA ES SOLO "o". Decía qué venía DESPUÉS, y
+     desde el rediseño del 13-10-2026 lo que viene después son los proveedores,
+     no el correo: el correo es lo primero, porque es con lo que se dio de alta
+     todo el mundo. Una palabra que no apunta a ningún lado sobrevive a que
+     alguien vuelva a cambiar el orden. */
+  oBien: { es: "o", en: "or" },
 
   /** Cualquier tropiezo del viaje de ida y vuelta al proveedor. */
   errorOauth: {
@@ -672,6 +677,23 @@ export const studentCopy = {
   },
 
   /** For anyone who got here by mistake. */
+  /**
+   * ─── LA LÍNEA DE ABAJO DEL ACCESO ───────────────────────────────────────
+   *
+   * ⚠️ LLEVA A /subscribe, NO A LA PORTADA, Y ESO ES NUEVO (13-10-2026). Hasta
+   * hoy la pantalla de acceso solo sabía decirle a un desconocido "vuelve a la
+   * página y mira qué incluye", porque no había dónde darse de alta. Ahora lo
+   * hay: quien llega aquí sin cuenta puede crearse una en el momento.
+   *
+   * Es la pareja de "¿Ya tienes cuenta? Entrar" que vive en /subscribe. Las
+   * dos pantallas se señalan la una a la otra: quien se equivoca de puerta no
+   * tiene que volver a buscar.
+   */
+  sinCuenta: {
+    linea: { es: "¿No tienes cuenta?", en: "Don't have an account?" },
+    cta: { es: "Crear una", en: "Sign up" },
+  },
+
   notACustomer: {
     /**
      * One line, on the sign-in screen.
