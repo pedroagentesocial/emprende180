@@ -5,438 +5,308 @@ import { useIdioma } from "@i18n/react";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- * SIGN IN — email and password, with recovery
+ * ENTRAR — correo y código de seis dígitos
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * Two modes in one card, not two pages:
+ * Dos pasos en la misma pantalla: escribes tu correo, te llega un código, lo
+ * tecleas y entras.
  *
- *   · SIGNIN — email + password. The normal one.
- *   · RESET  — email only; a link is sent so another password can be set.
+ * ─── SE FUE LA CONTRASEÑA (13-10-2026) ─────────────────────────────────────
  *
- * They live together because whoever presses "forgot it?" has already typed
- * their email: switching mode keeps it, so they don't have to type it again. A
- * separate page would force them to, which is exactly the friction that is least
- * welcome at the moment somebody is already annoyed.
+ * Lo pidió el cliente: "todo será con enlace mágico". Antes esta pantalla
+ * tenía dos modos —contraseña y recuperar— con su enlace de "¿la has
+ * olvidado?" entre medias. Hoy hay un solo camino, y eso se nota en todo:
+ * no hay nada que olvidar, nada que recuperar y nada que robar de una base de
+ * datos, porque ya no hay contraseñas que guardar.
  *
- * ⚠️ THE CARD'S HEADING IS IN HERE AND NOT IN THE PAGE, for that same reason:
- * it has to say "Entrar" in one mode and "Recupera tu acceso" in the other, and
- * a heading that contradicts the form under it is worse than no heading.
+ * ⚠️ `clave_hash` SIGUE EN LA BASE y `signInWithPassword` sigue en `auth.ts`.
+ * No se borran: hay cuentas que ya tienen contraseña puesta y `/login/password`
+ * todavía existe. Lo que se quitó es la puerta, no la cerradura.
  *
- * ⚠️ THE SIGN-IN ERROR MESSAGE IS ONE — "wrong email or password" — for all
- * three possible failures. See `/api/login`.
+ * ─── POR QUÉ UN CÓDIGO Y NO UN ENLACE ──────────────────────────────────────
  *
- * ⚠️ AND THE RECOVERY ONE DOESN'T CONFIRM THE EMAIL EXISTS. It says "if that
- * address is registered…", which is what the server answers in both cases. Were
- * it to say "we can't find that email", it would be a customer checker: anybody
- * could work out who bought the course.
+ * Un enlace se abre donde se abre el correo. Con público que lee el correo en
+ * el móvil, el enlace abre el navegador DENTRO de Gmail, que es otro navegador
+ * sin la sesión ni el historial. Un código se teclea donde ya estabas.
+ *
+ * Lo que sostiene un número de seis cifras está en `entrarConCodigo`
+ * (`@lib/auth`): cinco intentos contados en la base, diez minutos de vida y el
+ * límite por IP de la ruta.
+ *
+ * ⚠️ SIN JAVASCRIPT ESTO SIGUE SIENDO UN `<form method="POST">` que llega a
+ * `/login`, y el servidor manda el enlace mágico de siempre. No es el camino
+ * principal, pero es la diferencia entre que alguien entre o se quede fuera.
  */
 
-interface Props {
-  lang?: Idioma;
-  /** Where to go back to after signing in. Set by the middleware. */
-  next?: string;
-  /** Which mode it starts in. Decided by the server through `?reset=1`. */
-  initialMode?: "signin" | "reset";
-  /**
-   * Where the form submits without JavaScript. Computed by the server so it can
-   * carry `?lang=`: without it, the answer to the POST is rendered in the
-   * browser's language and somebody reading in Spanish gets the error in
-   * English.
-   */
-  action?: string;
-  /**
-   * Turnstile's public key, or nothing when the captcha is off.
-   *
-   * It is resolved on the server and passed down rather than read here: an
-   * island can only see `PUBLIC_*` variables, and making this one public would
-   * put the switch that turns the captcha on in a different place from the
-   * secret that verifies it. Two switches for one feature is how a feature ends
-   * up half on. See `src/lib/captcha.ts`.
-   */
-  captchaSiteKey?: string | null;
-}
+type Paso = "correo" | "codigo";
 
-type Mode = "signin" | "reset";
-type State = "ready" | "working" | "sent";
-
-const IS_EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/;
+const LARGO = 6;
 
 export function LoginForm({
-  lang,
-  next,
-  initialMode = "signin",
+  lang: inicial,
+  next = "",
   action = "/login",
   captchaSiteKey = null,
-}: Props) {
-  const { t } = useIdioma(lang);
-  const [mode, setMode] = useState<Mode>(initialMode);
+  children = null,
+}: {
+  lang?: Idioma;
+  next?: string;
+  /** Sin uso desde que se fue la contraseña; se acepta para no romper la página. */
+  initialMode?: string;
+  action?: string;
+  captchaSiteKey?: string | null;
+  /**
+   * Lo que la página mete dentro: hoy, el botón de Google.
+   *
+   * ⚠️ VIENE COMO HIJO Y NO AL LADO A PROPÓSITO. Puesto en la página, debajo
+   * del island, salía también en el paso del código: ahí no pinta nada, porque
+   * quien ya pidió el código está tecleándolo. Pasándolo como hijo, el island
+   * decide en qué paso se ve.
+   */
+  children?: React.ReactNode;
+}) {
+  const { lang, t } = useIdioma(inicial);
+  const c = studentCopy.codigo;
+
+  const [paso, setPaso] = useState<Paso>("correo");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  /* The eye. Not remembered between loads on purpose: nobody wants their
-     password left in plain sight because three screens ago they tapped an eye. */
-  const [showPassword, setShowPassword] = useState(false);
-  const [state, setState] = useState<State>("ready");
-  const [error, setError] = useState<string | null>(null);
+  const [digitos, setDigitos] = useState<string[]>(Array(LARGO).fill(""));
+  const [ocupado, setOcupado] = useState(false);
+  const [error, setError] = useState("");
+  const [reenviado, setReenviado] = useState(false);
 
-  /* ─── The captcha ────────────────────────────────────────────────────────
-     Rendered from an effect and not by Turnstile's own auto-discovery. The
-     difference matters: auto-discovery injects an iframe into the container as
-     soon as its script loads, which can be BEFORE React hydrates this island —
-     and React then finds children it never rendered. Rendering it after mount
-     means there is no moment when the two disagree.
+  const casillas = useRef<(HTMLInputElement | null)[]>([]);
+  const CORREO = /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/;
 
-     The token is single use. A wrong password burns it, so the widget is reset
-     on every failure; without that, the second attempt always fails and it looks
-     like the password is wrong twice. */
-  const captchaBox = useRef<HTMLDivElement>(null);
-  const widgetId = useRef<string | null>(null);
-  const [captchaToken, setCaptchaToken] = useState("");
-
+  /* Al llegar al paso del código, el foco va a la primera casilla: si no, hay
+     que buscarla con el dedo justo después de haber escrito el correo. */
   useEffect(() => {
-    if (!captchaSiteKey) return;
-    let cancelled = false;
+    if (paso === "codigo") casillas.current[0]?.focus();
+  }, [paso]);
 
-    const render = () => {
-      if (cancelled || !captchaBox.current || widgetId.current !== null) return;
-      const id = window.turnstile?.render(captchaBox.current, {
-        sitekey: captchaSiteKey,
-        callback: (token: string) => setCaptchaToken(token),
-        "expired-callback": () => setCaptchaToken(""),
-        "error-callback": () => setCaptchaToken(""),
-      });
-      if (id) widgetId.current = id;
-    };
-
-    if (window.turnstile) {
-      render();
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    /* The script is loaded `async` by the page. Waiting for it with an interval
-       rather than a load event keeps this component from having to know how the
-       page chose to load it. */
-    const timer = window.setInterval(() => {
-      if (!window.turnstile) return;
-      window.clearInterval(timer);
-      render();
-    }, 200);
-
-    return () => {
-      cancelled = true;
-      window.clearInterval(timer);
-    };
-  }, [captchaSiteKey]);
-
-  const resetCaptcha = () => {
-    setCaptchaToken("");
-    if (widgetId.current) window.turnstile?.reset(widgetId.current);
-  };
-
-  /* Both fields share one class string, and that is the point: two inputs that
-     differ by a pixel of padding are the thing that makes a form feel
-     home-made. `pl-11` is the slot for the leading icon; the password adds
-     `pr-12` for the eye on the other side. */
-  const field = [
-    "min-h-12 w-full rounded-xl border py-3 pl-11 pr-4 text-base",
-    "border-line-strong bg-surface text-ink placeholder:text-ink-subtle",
-    "transition-colors focus:border-secondary-500",
-    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
-    "disabled:opacity-60",
-  ].join(" ");
-
-  const labelClass = "block text-sm font-semibold text-ink";
-
-  /* The icon sitting inside a field. A plain colour is enough: it marks the
-     field, it doesn't report state. */
-  const fieldIcon =
-    "pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-subtle";
-
-  async function onSubmit(e: { preventDefault: () => void }) {
-    e.preventDefault();
-    if (state === "working") return;
-
-    if (!IS_EMAIL.test(email.trim())) {
+  async function pedir(e?: { preventDefault: () => void }) {
+    e?.preventDefault();
+    setError("");
+    if (!CORREO.test(email.trim())) {
       setError(t(studentCopy.errorEmail));
       return;
     }
-
-    if (captchaSiteKey && !captchaToken) {
-      setError(t(studentCopy.errorCaptcha));
-      return;
-    }
-
-    setError(null);
-    setState("working");
-
+    setOcupado(true);
     try {
-      if (mode === "reset") {
-        const r = await fetch("/api/magic-link", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: email.trim(),
-            language: lang ?? "es",
-            next,
-            captcha: captchaToken,
-          }),
-        });
-        /* A 429 also counts as sent: saying "you've asked too many times" would
-           confirm that this email exists. */
-        if (r.ok || r.status === 429) {
-          setState("sent");
-          return;
-        }
-        resetCaptcha();
-        setError(t(studentCopy.errorGeneral));
-        setState("ready");
-        return;
-      }
-
-      const r = await fetch("/api/login", {
+      const res = await fetch("/api/codigo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: email.trim(),
-          password,
-          next,
-          captcha: captchaToken,
-        }),
+        body: JSON.stringify({ accion: "pedir", email: email.trim(), idioma: lang }),
       });
-      const data = await r.json().catch(() => ({}));
-
-      if (r.ok && data.ok) {
-        /* `location.assign` and not a client-side router: the session has just
-           arrived in a cookie and the destination page is rendered on the
-           server. A real navigation is needed for the server to see it. */
-        window.location.assign(data.next ?? "/student");
+      const datos = await res.json().catch(() => ({}));
+      if (!res.ok || !datos.ok) {
+        setError(t(res.status === 429 ? studentCopy.errorLimit : studentCopy.errorGeneral));
         return;
       }
-
-      resetCaptcha();
-      setError(
-        t(
-          r.status === 429
-            ? studentCopy.errorLimit
-            : data.error === "captcha"
-              ? studentCopy.errorCaptcha
-              : studentCopy.errorCredentials,
-        ),
-      );
-      setState("ready");
+      /* Solo llega en desarrollo: ver `api/codigo.ts`. Ahorra abrir el correo
+         en cada prueba. */
+      if (datos.devCodigo) console.info("[login] Código de desarrollo:", datos.devCodigo);
+      setDigitos(Array(LARGO).fill(""));
+      setPaso("codigo");
     } catch {
-      resetCaptcha();
       setError(t(studentCopy.errorGeneral));
-      setState("ready");
+    } finally {
+      setOcupado(false);
     }
   }
 
-  if (state === "sent") {
+  async function verificar(codigo: string) {
+    setError("");
+    setOcupado(true);
+    try {
+      const res = await fetch("/api/codigo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          accion: "verificar",
+          email: email.trim(),
+          codigo,
+          ...(next ? { next } : {}),
+        }),
+      });
+      const datos = await res.json().catch(() => ({}));
+      if (!res.ok || !datos.ok) {
+        setError(t(res.status === 429 ? studentCopy.errorLimit : c.error));
+        setDigitos(Array(LARGO).fill(""));
+        casillas.current[0]?.focus();
+        return;
+      }
+      window.location.assign(datos.destino || "/student");
+    } catch {
+      setError(t(studentCopy.errorGeneral));
+    } finally {
+      setOcupado(false);
+    }
+  }
+
+  /** Escribe un dígito y salta a la siguiente casilla. */
+  function escribir(i: number, valor: string) {
+    const limpio = valor.replace(/\D/g, "");
+    if (!limpio) return;
+    const siguiente = [...digitos];
+    /* Si pegan el código entero en una casilla, se reparte por todas. Es lo
+       que hace la gente cuando copia el código del correo. */
+    for (let k = 0; k < limpio.length && i + k < LARGO; k++) {
+      siguiente[i + k] = limpio[k]!;
+    }
+    setDigitos(siguiente);
+    const destino = Math.min(i + limpio.length, LARGO - 1);
+    casillas.current[destino]?.focus();
+    const completo = siguiente.join("");
+    if (completo.length === LARGO && !siguiente.includes("")) verificar(completo);
+  }
+
+  function teclear(i: number, e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Backspace") {
+      e.preventDefault();
+      const siguiente = [...digitos];
+      if (siguiente[i]) siguiente[i] = "";
+      else if (i > 0) {
+        siguiente[i - 1] = "";
+        casillas.current[i - 1]?.focus();
+      }
+      setDigitos(siguiente);
+      return;
+    }
+    if (e.key === "ArrowLeft" && i > 0) casillas.current[i - 1]?.focus();
+    if (e.key === "ArrowRight" && i < LARGO - 1) casillas.current[i + 1]?.focus();
+  }
+
+  const campo =
+    "min-h-12 w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-subtle focus-visible:border-secondary-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+  const boton =
+    "mt-5 min-h-12 w-full rounded-full bg-cta px-6 py-3 text-base font-bold text-ink-inverse transition-colors hover:bg-cta-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:opacity-45";
+  const enlace =
+    "font-bold text-ink-brand underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+
+  /* ─── PASO 2 · EL CÓDIGO ─────────────────────────────────────────────── */
+  if (paso === "codigo") {
     return (
-      <div className="rounded-2xl border border-secondary-300 bg-secondary-50 p-6 text-center">
-        <p className="text-base text-pretty text-ink">{t(studentCopy.linkSent)}</p>
+      <div className="text-left">
+        <h1 className="ap text-3xl font-extrabold tracking-tight text-ink sm:text-4xl" style={{ "--d": 0 } as React.CSSProperties}>
+          {t(c.titulo)}
+        </h1>
+        <p className="ap mt-2 text-sm text-pretty text-ink-muted" style={{ "--d": 90 } as React.CSSProperties}>
+          {t(c.texto)}{" "}
+          <span className="font-semibold text-ink">{email.trim()}</span>{" "}
+          {/* El lápiz de la referencia: vuelve al paso anterior con el correo
+              puesto, para quien se equivocó de letra y no quiere repetirlo. */}
+          <button
+            type="button"
+            onClick={() => {
+              setPaso("correo");
+              setError("");
+              setReenviado(false);
+            }}
+            className={enlace}
+          >
+            {t(c.cambiar)}
+          </button>
+        </p>
+
+        {/* ⚠️ `min-w-0` EN EL FIELDSET NO ES DECORATIVO. Un <fieldset> trae de
+            fábrica `min-inline-size: min-content`, así que no encoge por debajo
+            de lo que midan sus hijos: las seis casillas se salían del panel y
+            metían barra horizontal en toda la página. */}
+        <fieldset className="ap-der mt-6 min-w-0 border-0 p-0" style={{ "--d": 180 } as React.CSSProperties}>
+          <legend className="sr-only">{t(c.etiqueta)}</legend>
+          <div className="flex gap-2 sm:gap-2.5">
+            {digitos.map((d, i) => (
+              <input
+                key={i}
+                ref={(el) => {
+                  casillas.current[i] = el;
+                }}
+                value={d}
+                onChange={(e) => escribir(i, e.target.value)}
+                onKeyDown={(e) => teclear(i, e)}
+                onFocus={(e) => e.target.select()}
+                type="text"
+                inputMode="numeric"
+                autoComplete={i === 0 ? "one-time-code" : "off"}
+                maxLength={LARGO}
+                aria-label={`${t(c.etiqueta)} ${i + 1}`}
+                disabled={ocupado}
+                className="h-14 min-w-0 flex-1 rounded-xl border border-line bg-surface text-center text-xl font-bold text-ink tabular-nums focus-visible:border-secondary-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-60"
+              />
+            ))}
+          </div>
+        </fieldset>
+
+        {error && (
+          <p role="alert" className="mt-3 text-sm font-medium text-error-500">
+            {error}
+          </p>
+        )}
+        {ocupado && (
+          <p role="status" className="mt-3 text-sm text-ink-muted">
+            {t(c.entrando)}
+          </p>
+        )}
+
+        <p className="ap-aba mt-6 text-sm text-ink-subtle" style={{ "--d": 300 } as React.CSSProperties}>
+          {t(c.noLlego)}{" "}
+          <button
+            type="button"
+            disabled={ocupado}
+            onClick={async () => {
+              setReenviado(false);
+              await pedir();
+              setReenviado(true);
+            }}
+            className={enlace}
+          >
+            {t(c.reenviar)}
+          </button>
+          {reenviado && <span className="ml-2 text-ink-muted">{t(c.reenviado)}</span>}
+        </p>
       </div>
     );
   }
 
-  const resetting = mode === "reset";
-
-  /* Switching mode is a real LINK to the same page, not a button. With the
-     island alive, `onClick` cancels the navigation and only changes state.
-     Without it, the link navigates and the server starts in the requested mode —
-     which is the difference between somebody without JavaScript being able to
-     recover their password or being locked out for good. */
-  const withMode = (reset?: boolean) => {
-    const url = new URL(action, "http://x");
-    if (reset) url.searchParams.set("reset", "1");
-    else url.searchParams.delete("reset");
-    return url.pathname + (url.search || "");
-  };
-  const modeHref = resetting ? withMode() : withMode(true);
-
+  /* ─── PASO 1 · EL CORREO ─────────────────────────────────────────────── */
   return (
-    /* ⚠️ `method="POST"` and `action` are NOT decorative even though this
-       component intercepts the submit. While the island hasn't hydrated, the
-       browser uses whatever the markup says: without them it did a GET and the
-       password ended up IN THE URL. With them, the worst case is a reload that
-       works. The server handles this POST in `src/pages/login.astro`. */
-    <form
-      method="POST"
-      action={action}
-      onSubmit={onSubmit}
-      noValidate
-      className="text-left"
-    >
-      {/* Tells the server which button was pressed when there is no JavaScript. */}
-      <input type="hidden" name="mode" value={mode} />
+    /* ⚠️ `method="POST"` y `action` NO son decorativos aunque este componente
+       intercepte el envío. Mientras la isla no ha hidratado, el navegador hace
+       lo que diga el marcado: sin ellos haría un GET y el correo acabaría en la
+       URL. El servidor atiende este POST en `src/pages/login.astro`. */
+    <form method="POST" action={action} onSubmit={pedir} noValidate className="text-left">
       {next && <input type="hidden" name="next" value={next} />}
 
-      {/* ─── The card's head ─────────────────────────────────────────────────
-          It changes with the mode, which is why it lives inside the island. The
-          rule underneath separates "what this box is" from "what you do in it",
-          and it is the only line in the card that isn't a field. */}
-      {/* ⚠️ ES UN <h1> Y NO UN <h2>: desde el rediseño del 13-10-2026 este es
-          EL titular de la pantalla, no el de una tarjeta dentro de ella. El
-          componente sólo se usa en /login, así que no hay otra pantalla a la
-          que esto le cambie la jerarquía. */}
-      <h1 className="text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
-        {t(resetting ? studentCopy.forgotTitle : studentCopy.cardTitle)}
+      {/* La cascada del paso del correo: titular, frase, etiqueta, campo y
+          botón, en ese orden. El campo llega desde la derecha y el botón desde
+          abajo, que es lo que pidió el cliente. */}
+      <h1 className="ap text-3xl font-extrabold tracking-tight text-ink sm:text-4xl" style={{ "--d": 0 } as React.CSSProperties}>
+        {t(studentCopy.cardTitle)}
       </h1>
-      <p className="mt-1.5 text-sm text-pretty text-ink-muted">
-        {t(resetting ? studentCopy.forgotText : studentCopy.cardText)}
+      <p className="ap mt-1.5 text-sm text-pretty text-ink-muted" style={{ "--d": 90 } as React.CSSProperties}>
+        {t(studentCopy.cardText)}
       </p>
 
-      {/* El filete separador se fue con la tarjeta: sin caja alrededor,
-          partía el bloque en dos sin separar nada. */}
-
-      <label htmlFor="login-email" className={labelClass}>
+      <label htmlFor="login-email" className="ap mt-6 mb-2 block text-sm font-semibold text-ink" style={{ "--d": 180 } as React.CSSProperties}>
         {t(studentCopy.emailLabel)}
       </label>
-
-      <div className="relative mt-2">
-        <span aria-hidden="true" className={fieldIcon}>
-          {/* Envelope. Same strokes as `sobre` in `Icono.astro`: this island is
-              React and can't call an Astro component, so the two are copies on
-              purpose. Change one, change the other. */}
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.8}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="size-5"
-          >
-            <rect x="2.8" y="5.2" width="18.4" height="13.6" rx="2.6" />
-            <path d="m3.6 7.6 7.2 5a2 2 0 0 0 2.4 0l7.2-5" />
-          </svg>
-        </span>
-
-        <input
-          id="login-email"
-          type="email"
-          name="email"
-          value={email}
-          onChange={(e) => {
-            setEmail((e.target as HTMLInputElement).value);
-            setError(null);
-          }}
-          required
-          autoComplete="email"
-          inputMode="email"
-          placeholder="maria@email.com"
-          disabled={state === "working"}
-          className={field}
-        />
-      </div>
-
-      {!resetting && (
-        <div className="mt-4">
-          <label htmlFor="login-password" className={labelClass}>
-            {t(studentCopy.passwordLabel)}
-          </label>
-
-          {/* ─── THE EYE TO REVEAL THE PASSWORD ──────────────────────────────
-              Same gesture as in `/login/password`, but HERE IT IS DONE WITH
-              REACT STATE and not with the delegated listener in `BaseLayout`.
-
-              The reason is concrete: this `<input>` is controlled, so React
-              repaints it on every keystroke. An outside script changing the
-              DOM's `type` would be fighting the render cycle, and that is the
-              class of bug that only shows up sometimes. With `type` derived from
-              state, the render and the button always agree.
-
-              `pr-12` reserves the button's slot so a long password doesn't run
-              underneath it exactly when it was tapped to be read. */}
-          <div className="relative mt-2">
-            <span aria-hidden="true" className={fieldIcon}>
-              {/* Padlock. Same strokes as `candado` in `Icono.astro`. */}
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.8}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="size-5"
-              >
-                <rect x="4.2" y="10.4" width="15.6" height="9.6" rx="2.6" />
-                <path d="M8.2 10.4V7.8a3.8 3.8 0 0 1 7.6 0v2.6" />
-              </svg>
-            </span>
-
-            <input
-              id="login-password"
-              type={showPassword ? "text" : "password"}
-              name="password"
-              value={password}
-              onChange={(e) => {
-                setPassword((e.target as HTMLInputElement).value);
-                setError(null);
-              }}
-              required
-              /* `current-password` so the password manager offers the saved one
-                 instead of proposing a new one. */
-              autoComplete="current-password"
-              disabled={state === "working"}
-              className={`${field} pr-12`}
-            />
-
-            <button
-              type="button"
-              onClick={() => setShowPassword((v) => !v)}
-              aria-controls="login-password"
-              aria-pressed={showPassword}
-              aria-label={t(
-                showPassword ? studentCopy.password.hide : studentCopy.password.show,
-              )}
-              className="absolute inset-y-0 right-0 grid w-12 place-items-center rounded-r-xl text-ink-subtle transition-colors hover:text-ink focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.8}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-                className="size-5"
-              >
-                {showPassword ? (
-                  <>
-                    <path d="M2.5 12S6 5.8 12 5.8c1.2 0 2.3.25 3.3.65M20 8.9c.9 1.2 1.5 2.3 1.5 3.1 0 0-3.5 6.2-9.5 6.2-1.4 0-2.7-.34-3.8-.85" />
-                    <path d="M9.9 9.9a2.6 2.6 0 0 0 3.7 3.7" />
-                    <path d="M3.5 3.5l17 17" />
-                  </>
-                ) : (
-                  <>
-                    <path d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12Z" />
-                    <circle cx="12" cy="12" r="2.6" />
-                  </>
-                )}
-              </svg>
-            </button>
-          </div>
-
-          {/* Under the field and aligned with it: it is the question you ask
-              while looking at the password box, so the answer belongs directly
-              underneath, where the eye already is. Still a real
-              `<a href="?reset=1">` — without JavaScript it navigates and the
-              server opens in recovery mode. */}
-          <a
-            href={modeHref}
-            onClick={(e) => {
-              e.preventDefault();
-              setMode("reset");
-              setError(null);
-            }}
-            className="mt-2 inline-flex min-h-9 items-center text-sm font-semibold text-ink-brand underline underline-offset-4 hover:text-secondary-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-          >
-            {t(studentCopy.forgot)}
-          </a>
-        </div>
-      )}
+      {/* Sin icono dentro del campo: lo quitó el cliente el 13-10-2026. Un
+          sobre dibujado al lado de una etiqueta que ya dice "Correo" no añade
+          nada y roba sitio al texto en un móvil. */}
+      <input
+        id="login-email"
+        name="email"
+        type="email"
+        inputMode="email"
+        autoComplete="email"
+        placeholder="example@email.com"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        aria-invalid={error ? true : undefined}
+        style={{ "--d": 250 } as React.CSSProperties}
+        className={`ap-der ${campo}`}
+      />
 
       {error && (
         <p role="alert" className="mt-3 text-sm font-medium text-error-500">
@@ -444,45 +314,17 @@ export function LoginForm({
         </p>
       )}
 
-      {/* The captcha. Nothing renders at all when it is switched off, so the
-          card doesn't keep a hole for a feature that isn't there. */}
-      {captchaSiteKey && <div ref={captchaBox} className="mt-5" />}
+      {/* El captcha, si está encendido. Se queda donde estaba: es del paso que
+          manda el correo, no del que canjea el código. */}
+      {captchaSiteKey && (
+        <div className="mt-4" data-captcha-sitekey={captchaSiteKey} />
+      )}
 
-      {/* ⚠️ TEAL, NOT NAVY, AND IT IS A RULE RATHER THAN A PREFERENCE. The
-          project has ONE call-to-action colour (`--color-cta`): if something is
-          pressable and primary, it is teal — the header's "Inscribirme al
-          curso", the landing forms, and this. */}
-      <button
-        type="submit"
-        disabled={state === "working"}
-        className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-cta px-6 text-base font-bold text-ink-inverse shadow-cta transition-colors hover:bg-cta-hover hover:shadow-cta-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-60 disabled:shadow-none"
-      >
-        {t(
-          state === "working"
-            ? resetting
-              ? studentCopy.sending
-              : studentCopy.signingIn
-            : resetting
-              ? studentCopy.sendLink
-              : studentCopy.signIn,
-        )}
+      <button type="submit" disabled={ocupado} style={{ "--d": 340 } as React.CSSProperties} className={`ap-aba ${boton}`}>
+        {t(ocupado ? c.enviando : c.continuar)}
       </button>
 
-      {/* The way back only exists in recovery mode. Signing in doesn't need a
-          link under the button: its way out is the one under the password. */}
-      {resetting && (
-        <a
-          href={modeHref}
-          onClick={(e) => {
-            e.preventDefault();
-            setMode("signin");
-            setError(null);
-          }}
-          className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full text-center text-sm font-semibold text-ink-brand underline underline-offset-4 hover:text-secondary-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-        >
-          {t(studentCopy.backToSignIn)}
-        </a>
-      )}
+      {children}
     </form>
   );
 }

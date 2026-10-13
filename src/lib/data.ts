@@ -212,6 +212,25 @@ export interface Repo {
   /** Consumes the token if valid and unused. Returns the student. */
   consumeMagicToken(tokenHash: string): Promise<Student | null>;
 
+  /* ─── EL CÓDIGO DE SEIS DÍGITOS ────────────────────────────────────────
+     Tres operaciones en vez de una, y la razón es el contador de intentos.
+
+     Con el enlace bastaba `consumeMagicToken(hash)`: el hash de un token largo
+     identifica la fila. Con un código no se puede, porque un código
+     EQUIVOCADO da un hash distinto y no encuentra ninguna fila: no habría
+     dónde apuntar el fallo. Así que primero se busca el código vivo de esa
+     persona, luego se compara en la aplicación, y el fallo se apunta en la
+     fila que ya tenemos. */
+
+  /** El código sin usar y sin caducar más reciente de alguien, si lo hay. */
+  findActiveCode(
+    studentId: string,
+  ): Promise<{ id: string; tokenHash: string; intentos: number } | null>;
+  /** Suma uno a los intentos fallidos de ese código. */
+  bumpCodeAttempt(id: string): Promise<void>;
+  /** Lo marca como usado y devuelve a quién pertenece. */
+  consumeCodeById(id: string): Promise<Student | null>;
+
   createSession(
     studentId: string,
     tokenHash: string,
@@ -491,6 +510,38 @@ function postgresRepo(url: string): Repo {
       return f ? toStudent(f) : null;
     },
 
+    async findActiveCode(studentId) {
+      const [t] = await sql`
+        SELECT id, token_hash, intentos FROM tokens_acceso
+        WHERE alumno_id = ${studentId}
+          AND usado_en IS NULL
+          AND expira_en > now()
+        ORDER BY creado_en DESC
+        LIMIT 1`;
+      return t
+        ? { id: t.id as string, tokenHash: t.token_hash as string, intentos: Number(t.intentos) }
+        : null;
+    },
+
+    async bumpCodeAttempt(id) {
+      await sql`UPDATE tokens_acceso SET intentos = intentos + 1 WHERE id = ${id}`;
+    },
+
+    async consumeCodeById(id) {
+      /* Marcar y leer en UNA sentencia, por lo mismo que en
+         `consumeMagicToken`: dos peticiones con el mismo código a la vez no
+         pueden pasar las dos. El `usado_en IS NULL` dentro del UPDATE es lo
+         que hace que gane una sola. */
+      const [t] = await sql`
+        UPDATE tokens_acceso SET usado_en = now()
+        WHERE id = ${id} AND usado_en IS NULL AND expira_en > now()
+        RETURNING alumno_id`;
+      if (!t) return null;
+      const [f] = await sql`
+        SELECT * FROM alumnos WHERE id = ${t.alumno_id} AND activo = true LIMIT 1`;
+      return f ? toStudent(f) : null;
+    },
+
     async createSession(studentId, tokenHash, expiresAt, userAgent) {
       await sql`
         INSERT INTO sesiones (alumno_id, token_hash, expira_en, user_agent)
@@ -629,7 +680,12 @@ function memoryRepo(): Repo {
      column that `studentByEmail` doesn't return: inside the object it would end
      up in `Astro.locals` and from there in any template. */
   const passwords = new Map<string, string>();
-  const tokens = new Map<string, { studentId: string; expires: Date; used: boolean }>();
+  /* `intentos` es opcional porque los enlaces mágicos no lo usan: solo los
+     códigos de seis dígitos cuentan fallos. */
+  const tokens = new Map<
+    string,
+    { studentId: string; expires: Date; used: boolean; intentos?: number }
+  >();
   const sessions = new Map<string, { studentId: string; expires: Date }>();
   const progress = new Map<string, Progress>();
   const requests: { email: string; at: Date }[] = [];
@@ -874,6 +930,30 @@ function memoryRepo(): Repo {
     },
     async consumeMagicToken(tokenHash) {
       const t = tokens.get(tokenHash);
+      if (!t || t.used || t.expires <= new Date()) return null;
+      t.used = true;
+      const s = byId(t.studentId);
+      return s?.active ? s : null;
+    },
+
+    /* El falso guarda los códigos en el mismo mapa que los enlaces, con la
+       clave del hash. Para encontrar "el de esta persona" hay que recorrerlo:
+       con los pocos que caben en una sesión de desarrollo, sobra. */
+    async findActiveCode(studentId) {
+      const ahora = new Date();
+      for (const [hash, t] of tokens) {
+        if (t.studentId === studentId && !t.used && t.expires > ahora) {
+          return { id: hash, tokenHash: hash, intentos: t.intentos ?? 0 };
+        }
+      }
+      return null;
+    },
+    async bumpCodeAttempt(id) {
+      const t = tokens.get(id);
+      if (t) t.intentos = (t.intentos ?? 0) + 1;
+    },
+    async consumeCodeById(id) {
+      const t = tokens.get(id);
       if (!t || t.used || t.expires <= new Date()) return null;
       t.used = true;
       const s = byId(t.studentId);

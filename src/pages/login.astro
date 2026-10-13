@@ -297,21 +297,19 @@ const irAlInicio = lang === "en" ? "Go to the home page" : "Ir al inicio";
           )
         }
 
+        {/* ⚠️ EL BOTÓN DE GOOGLE VA DENTRO DEL ISLAND, no debajo. Fuera salía
+            también en el paso del código, donde no pinta nada: quien ya pidió
+            el código está tecleándolo, no eligiendo cómo entrar. Como hijo, el
+            island lo enseña solo en el paso del correo. */}
         <LoginForm
           client:load
           lang={lang}
           next={next}
-          initialMode={initialMode}
           action={formAction}
           captchaSiteKey={claveCaptcha}
-        />
-
-        {/* ⚠️ GOOGLE Y FACEBOOK VAN DEBAJO DEL CORREO, no encima. Hoy no se
-            pinta ninguno —ninguna de las dos parejas de variables existe en
-            producción, comprobado el 13-10-2026— pero el día que se
-            configuren, el correo tiene que seguir siendo el camino principal:
-            es con el que se dio de alta todo el mundo. */}
-        <BotonesProveedor next={next} />
+        >
+          <BotonesProveedor next={next} />
+        </LoginForm>
 
         {/* La pareja de "¿Ya tienes cuenta? Entrar" que vive en /subscribe.
             Las dos pantallas se señalan la una a la otra. */}
@@ -326,17 +324,49 @@ const irAlInicio = lang === "en" ? "Go to the home page" : "Ir al inicio";
       {/* ─── EL PATRÓN ───────────────────────────────────────────────────
           Nueve piezas colocadas a mano. No es una rejilla: una rejilla se lee
           como una tabla, y lo que esto tiene que parecer es constelación. */}
+      {/* ⚠️ LOS ICONOS CAMBIARON EL 13-10-2026: "son muy feos", y tenía razón.
+          Iban la diana, la gráfica, el giro y la academia, que son piezas de
+          interfaz pensadas para ir a 24 px al lado de un texto; a 28 px dentro
+          de un círculo se veían como pictogramas sueltos de un panel de
+          control.
+
+          Los de ahora son los que tienen una forma que se reconoce sola a
+          cualquier tamaño: el megáfono, el reloj, la brújula, el escudo, el
+          bocadillo, el play, el certificado y la red. Y son nueve piezas más cuatro puntos, que es lo
+          que pidió el cliente: con seis, el lado derecho se veía vacío. */}
+      {/* ⚠️ TRES PIEZAS SON PNG DE LA CARPETA `/public/icons` y el resto son del
+          set de iconos del sitio. Las puso el cliente el 13-10-2026: el libro y
+          el calendario sustituyen a dos de las de antes y la gráfica entra
+          nueva.
+
+          ⚠️ LOS PNG SON NEGROS Y VAN SOBRE CÍRCULOS OSCUROS, así que se pintan
+          en blanco con `brightness(0) invert(1)`. Es el truco de siempre para un
+          dibujo de un solo color: lo lleva a negro puro y lo invierte. Si algún
+          día llegan en color, hay que quitar ese filtro o saldrán en blanco.
+
+          ⚠️ LOS TAMAÑOS SON DELIBERADAMENTE DESIGUALES. Lo pidió el cliente
+          ("uno grande, otro mediano"), y es lo que separa una constelación de
+          una rejilla: con todos iguales, el ojo los lee como una tabla. */}
       <div class="patron" aria-hidden="true">
-        <span class="p p1"><Icono nombre="diana" class="size-6" /></span>
-        <span class="p p2"><Icono nombre="personas" class="size-7" /></span>
-        <span class="p p3"><Icono nombre="grafica" class="size-6" /></span>
-        <span class="p p4"><Icono nombre="giro" class="size-8" /></span>
-        <span class="p p5"><Icono nombre="agenda" class="size-5" /></span>
-        <span class="p p6"><Icono nombre="academia" class="size-6" /></span>
+        <span class="p p1 flota"><img src="/icons/libro.png" alt="" width="512" height="512" /></span>
+        <span class="p p2 de-arr"><Icono nombre="reloj" class="size-7" /></span>
+        <span class="p p3 flota-izq"><img src="/icons/time-and-calendar.png" alt="" width="512" height="512" /></span>
+        <span class="p p4 de-der"><Icono nombre="escudo" class="size-9" /></span>
+        <span class="p p5 brota"><Icono nombre="bocadillos" class="size-5" /></span>
+        <span class="p p6 de-arr"><Icono nombre="play" class="size-6" /></span>
+        <span class="p p7 flota-aba"><Icono nombre="certificado" class="size-6" /></span>
+        <span class="p p8 de-izq"><Icono nombre="red" class="size-5" /></span>
+        <span class="p p9 brota"><Icono nombre="infinito" class="size-8" /></span>
+        <span class="p p10 de-arr"><img src="/icons/grafico-de-barras.png" alt="" width="512" height="512" /></span>
+        <span class="p p11 flota"><Icono nombre="brujula" class="size-6" /></span>
         <span class="punto d1"></span>
         <span class="punto d2"></span>
         <span class="punto d3"></span>
         <span class="punto d4"></span>
+        <span class="punto d5"></span>
+        <span class="punto d6"></span>
+        <span class="punto d7"></span>
+        <span class="punto d8"></span>
       </div>
     </main>
   </div>
@@ -391,6 +421,55 @@ const irAlInicio = lang === "en" ? "Go to the home page" : "Ir al inicio";
     )
   }
 </BaseLayout>
+
+{/* ⚠️ ESTAS CLASES VAN EN `is:global` A LA FUERZA. El formulario lo pinta un
+    island de React, y el CSS con ámbito de Astro marca sólo el HTML que genera
+    Astro: una regla con ámbito no alcanzaría ni un campo.
+
+    ⚠️ Y SE REPITEN EN CADA PASO. Al cambiar de "correo" a "código", React
+    monta elementos nuevos: la animación se dispara otra vez sola, sin que haya
+    que orquestar nada. Por eso el paso del código también entra animado. */}
+<style is:global>
+  .ap,
+  .ap-der,
+  .ap-izq,
+  .ap-aba {
+    opacity: 0;
+    animation-duration: 560ms;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+    animation-fill-mode: forwards;
+    animation-delay: calc(var(--d, 0) * 1ms);
+  }
+  .ap { animation-name: ap-sube; }
+  .ap-der { animation-name: ap-der; }
+  .ap-izq { animation-name: ap-izq; }
+  .ap-aba { animation-name: ap-aba; }
+
+  @keyframes ap-sube {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes ap-der {
+    from { opacity: 0; transform: translateX(40px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes ap-izq {
+    from { opacity: 0; transform: translateX(-28px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes ap-aba {
+    from { opacity: 0; transform: translateY(28px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ap, .ap-der, .ap-izq, .ap-aba {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>
 
 <style>
   /* ═══════════════════════════════════════════════════════════════════════
@@ -509,34 +588,108 @@ const irAlInicio = lang === "en" ? "Go to the home page" : "Ir al inicio";
       color: #fff;
       box-shadow: 0 10px 24px -12px oklch(0.287 0.0718 253.9 / 0.5);
       opacity: 0;
-      animation: patron-entra 620ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation-duration: 760ms;
+      animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+      animation-fill-mode: forwards;
     }
+
+    /* Los PNG, en blanco. Ver la nota del marcado. */
+    .patron .p img {
+      width: 52%;
+      height: auto;
+      filter: brightness(0) invert(1);
+    }
+
     .patron .punto {
       position: absolute;
       border-radius: 9999px;
       opacity: 0;
-      animation: patron-entra 520ms ease-out forwards;
+      animation: patron-brota 520ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* ⚠️ NO TODAS ENTRAN IGUAL, Y ESO ES LO QUE PIDIÓ EL CLIENTE. Unas llegan
+       de un lado, otras simplemente aparecen. Con todas entrando desde el
+       mismo sitio el conjunto se lee como una fila que se desliza; mezclando
+       direcciones se lee como piezas que caen en su sitio. */
+    .patron .de-der { animation-name: llega-der; }
+    .patron .de-izq { animation-name: llega-izq; }
+    .patron .de-arr { animation-name: llega-arr; }
+    .patron .de-aba { animation-name: llega-aba; }
+    .patron .brota { animation-name: patron-brota; }
+
+    /* Y después de entrar, no se quedan clavadas: flotan muy despacio, cada
+       una con su ritmo. El retraso negativo las desincroniza desde el primer
+       fotograma, que es lo que evita que suban y bajen todas a la vez. */
+    .patron .p::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+    }
+    .patron .flota { animation-name: llega-der, flotar; }
+    .patron .flota-izq { animation-name: llega-izq, flotar; }
+    .patron .flota-aba { animation-name: llega-aba, flotar; }
+    .patron .flota,
+    .patron .flota-izq,
+    .patron .flota-aba {
+      animation-duration: 760ms, 7s;
+      animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1), ease-in-out;
+      animation-fill-mode: forwards, none;
+      animation-iteration-count: 1, infinite;
     }
 
     /* ⚠️ LOS COLORES SALEN DE LA PALETA, no de la referencia. Aquella era
        morada, naranja y amarilla; aquí son el navy y el teal con sus tintes.
        Un patrón con los colores de otra marca en la puerta de esta no es una
        referencia, es la marca de otro. */
-    .p1 { top: 6%; left: 30%; width: 3.25rem; height: 3.25rem; background: var(--color-secondary-600); animation-delay: 80ms; }
-    .p2 { top: 18%; left: 62%; width: 4rem; height: 4rem; background: var(--color-primary-900); animation-delay: 200ms; }
-    .p3 { top: 40%; left: 12%; width: 3.5rem; height: 3.5rem; background: var(--color-secondary-700); animation-delay: 320ms; }
-    .p4 { top: 52%; left: 74%; width: 4.75rem; height: 4.75rem; background: var(--color-primary-900); animation-delay: 150ms; }
-    .p5 { top: 72%; left: 40%; width: 3rem; height: 3rem; background: var(--color-secondary-600); animation-delay: 420ms; }
-    .p6 { top: 30%; left: 44%; width: 3.25rem; height: 3.25rem; background: var(--color-secondary-700); animation-delay: 260ms; }
+    /* Dos grandes (el libro y el escudo), tres medianas y el resto pequeñas.
+       Las grandes van separadas a propósito: juntas se leerían como un bloque. */
+    .p1  { top: 10%; left: 26%; width: 5.5rem;  height: 5.5rem;  background: var(--color-primary-900);   animation-delay:  80ms; }
+    .p2  { top: 20%; left: 64%; width: 3.5rem;  height: 3.5rem;  background: var(--color-secondary-600); animation-delay: 220ms; }
+    .p3  { top: 44%; left: 10%; width: 4.25rem; height: 4.25rem; background: var(--color-secondary-700); animation-delay: 320ms; }
+    .p4  { top: 56%; left: 72%; width: 5.75rem; height: 5.75rem; background: var(--color-primary-900);   animation-delay: 150ms; }
+    .p5  { top: 76%; left: 42%; width: 2.75rem; height: 2.75rem; background: var(--color-secondary-600); animation-delay: 430ms; }
+    .p6  { top: 32%; left: 42%; width: 3rem;    height: 3rem;    background: var(--color-secondary-700); animation-delay: 270ms; }
+    .p7  { top: 4%;  left: 72%; width: 2.5rem;  height: 2.5rem;  background: var(--color-secondary-700); animation-delay: 510ms; }
+    .p8  { top: 88%; left: 16%; width: 2.75rem; height: 2.75rem; background: var(--color-primary-900);   animation-delay: 570ms; }
+    .p9  { top: 64%; left: 50%; width: 3.25rem; height: 3.25rem; background: var(--color-secondary-600); animation-delay: 350ms; }
+    .p10 { top: 2%;  left: 44%; width: 4rem;    height: 4rem;    background: var(--color-secondary-600); animation-delay: 190ms; }
+    .p11 { top: 80%; left: 76%; width: 3rem;    height: 3rem;    background: var(--color-secondary-700); animation-delay: 620ms; }
 
-    .d1 { top: 14%; left: 20%; width: 0.6rem; height: 0.6rem; background: var(--color-secondary-300); animation-delay: 360ms; }
-    .d2 { top: 62%; left: 24%; width: 0.5rem; height: 0.5rem; background: var(--color-primary-900); animation-delay: 480ms; }
-    .d3 { top: 34%; left: 86%; width: 0.7rem; height: 0.7rem; background: var(--color-secondary-300); animation-delay: 540ms; }
-    .d4 { top: 84%; left: 66%; width: 0.55rem; height: 0.55rem; background: var(--color-secondary-600); animation-delay: 600ms; }
+    .d1 { top: 16%; left: 16%; width: 0.6rem;  height: 0.6rem;  background: var(--color-secondary-300); animation-delay: 380ms; }
+    .d2 { top: 62%; left: 24%; width: 0.5rem;  height: 0.5rem;  background: var(--color-primary-900);   animation-delay: 500ms; }
+    .d3 { top: 36%; left: 88%; width: 0.7rem;  height: 0.7rem;  background: var(--color-secondary-300); animation-delay: 560ms; }
+    .d4 { top: 90%; left: 60%; width: 0.55rem; height: 0.55rem; background: var(--color-secondary-600); animation-delay: 620ms; }
+    .d5 { top: 50%; left: 34%; width: 0.5rem;  height: 0.5rem;  background: var(--color-primary-900);   animation-delay: 680ms; }
+    .d6 { top: 24%; left: 90%; width: 0.6rem;  height: 0.6rem;  background: var(--color-secondary-600); animation-delay: 720ms; }
+    .d7 { top: 70%; left: 92%; width: 0.5rem;  height: 0.5rem;  background: var(--color-secondary-300); animation-delay: 760ms; }
+    .d8 { top: 6%;  left: 14%; width: 0.65rem; height: 0.65rem; background: var(--color-secondary-600); animation-delay: 800ms; }
 
-    @keyframes patron-entra {
-      from { opacity: 0; transform: scale(0.6); }
+    @keyframes patron-brota {
+      from { opacity: 0; transform: scale(0.4); }
       to { opacity: 1; transform: none; }
+    }
+    @keyframes llega-der {
+      from { opacity: 0; transform: translateX(70px) scale(0.8); }
+      to { opacity: 1; transform: none; }
+    }
+    @keyframes llega-izq {
+      from { opacity: 0; transform: translateX(-70px) scale(0.8); }
+      to { opacity: 1; transform: none; }
+    }
+    @keyframes llega-arr {
+      from { opacity: 0; transform: translateY(-60px) scale(0.8); }
+      to { opacity: 1; transform: none; }
+    }
+    @keyframes llega-aba {
+      from { opacity: 0; transform: translateY(60px) scale(0.8); }
+      to { opacity: 1; transform: none; }
+    }
+    /* El vaivén de después. Seis píxeles: se nota que respira y no distrae a
+       quien está tecleando un código al lado. */
+    @keyframes flotar {
+      0%, 100% { translate: 0 0; }
+      50% { translate: 0 -6px; }
     }
   }
 

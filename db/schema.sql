@@ -105,6 +105,24 @@ CREATE INDEX IF NOT EXISTS tokens_acceso_alumno ON tokens_acceso (alumno_id);
 -- En tabla y no en un JWT firmado, a propósito: con una fila se puede cerrar
 -- la sesión de alguien desde el panel. Un JWT válido no se puede revocar sin
 -- montar, precisamente, una lista en base de datos.
+-- ─── EL CONTADOR DE INTENTOS ────────────────────────────────────────────────
+-- ⚠️ ESTO ES LO QUE HACE QUE UN CÓDIGO DE SEIS DÍGITOS SEA SEGURO, y sin ello
+-- el cambio de enlace a código habría sido un paso atrás.
+--
+-- Un enlace mágico es una cadena larga al azar: adivinarla no es una opción.
+-- Un código de seis dígitos tiene un millón de combinaciones, que para una
+-- máquina no es nada. Lo que lo salva no es el código, es que solo se pueda
+-- fallar unas pocas veces: con cinco intentos, la probabilidad de acertar a
+-- ciegas es de cinco entre un millón.
+--
+-- Va en la fila del código y no en memoria del servidor a propósito: en
+-- serverless hay varias instancias y un contador en memoria se reinicia o se
+-- reparte, que es como no tenerlo. Ver entrarConCodigo en src/lib/auth.ts.
+ALTER TABLE tokens_acceso ADD COLUMN IF NOT EXISTS intentos smallint NOT NULL DEFAULT 0;
+
+-- Buscar el código vivo de alguien es la consulta de cada intento de entrada.
+CREATE INDEX IF NOT EXISTS tokens_alumno ON tokens_acceso (alumno_id, creado_en DESC);
+
 CREATE TABLE IF NOT EXISTS sesiones (
   id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   alumno_id  uuid NOT NULL REFERENCES alumnos(id) ON DELETE CASCADE,

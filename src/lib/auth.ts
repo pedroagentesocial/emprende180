@@ -3,6 +3,7 @@ import { repo, normaliseEmail, type Student, type Role } from "@lib/data";
 import { hashPassword, verifyPassword, burnTime } from "@lib/passwords";
 import { avisarAGhl } from "@lib/ghl";
 import { limpiarSiToca } from "@lib/mantenimiento";
+import { CODE_EMAIL } from "@lib/loginEmail";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -393,5 +394,158 @@ export async function sendMagicLink(
  * nothing but letters, digits, dashes and slashes. Anything else falls back to
  * the dashboard.
  */
+/* ═══════════════════════════════════════════════════════════════════════════
+   EL CÓDIGO DE SEIS DÍGITOS
+   ═══════════════════════════════════════════════════════════════════════════
+
+   Sustituye al enlace mágico EN LA PANTALLA DE ACCESO (13-10-2026). El enlace
+   sigue existiendo para /subscribe, que manda uno al darse de alta: ahí no es
+   un reto de entrada, es la forma de volver más adelante.
+
+   ⚠️ POR QUÉ UN CÓDIGO Y NO UN ENLACE. Un enlace se abre donde se abre el
+   correo. Con público que lee el correo en el móvil, el enlace abre el
+   navegador DENTRO de Gmail, que es otro navegador sin la sesión ni el
+   historial: entras en un sitio donde no querías estar. Un código se teclea
+   donde ya estabas.
+
+   ⚠️ Y POR QUÉ UN CÓDIGO ES SEGURO AQUÍ. Seis dígitos son un millón de
+   combinaciones, que para una máquina no es nada. Lo que lo sostiene son tres
+   cosas juntas, y quitar cualquiera lo rompe:
+
+     1. CINCO INTENTOS por código, contados EN LA BASE y no en memoria. Ver la
+        nota de `intentos` en `db/schema.sql`: en serverless hay varias
+        instancias y un contador en memoria es como no tener ninguno.
+     2. DIEZ MINUTOS de vida. El del enlace eran veinte; un código que se
+        teclea en el momento no necesita tanto, y cada minuto de más es tiempo
+        de ataque.
+     3. EL LÍMITE POR IP de la ruta, que corta a quien prueba en masa.
+
+   ⚠️ EL CÓDIGO NO SE GUARDA, SE GUARDA SU HASH. Igual que el enlace y que las
+   contraseñas: quien lea esa tabla —una copia de seguridad, un volcado— no
+   puede entrar en ninguna cuenta. */
+
+/**
+ * Manda el correo con el código. Mismo camino que el del enlace: si no hay
+ * credenciales de correo, lo escribe en la consola, que es lo que permite
+ * probar el circuito entero sin montar un buzón.
+ */
+async function enviarCorreoCodigo(
+  destino: string,
+  language: "es" | "en",
+  codigo: string,
+): Promise<void> {
+  const apiKey = import.meta.env.RESEND_API_KEY;
+  const from = import.meta.env.NOTIFY_EMAIL_FROM;
+
+  if (!apiKey || !from) {
+    console.warn(`[auth] MODO DEMO — sin RESEND_API_KEY. Código para ${destino}: ${codigo}`);
+    return;
+  }
+
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from,
+        to: [destino],
+        reply_to: CODE_EMAIL.replyTo,
+        subject: CODE_EMAIL.subject(language),
+        text: CODE_EMAIL.body(language, codigo),
+      }),
+    });
+    if (!response.ok) {
+      console.error("[auth] Resend rechazó el envío del código:", await response.text());
+    }
+  } catch (error) {
+    console.error("[auth] Error contactando con Resend:", error);
+  }
+}
+
+const CODIGO_MINUTOS = 10;
+const CODIGO_INTENTOS = 5;
+
+/**
+ * Seis dígitos de verdad al azar.
+ *
+ * ⚠️ `crypto.getRandomValues` Y NO `Math.random()`. El segundo es predecible a
+ * partir de unas pocas salidas, y esto es la llave de una cuenta.
+ *
+ * El rango va de 0 a 999999 y se rellena con ceros a la izquierda, así que
+ * "000042" es un código posible: recortar los ceros dejaría fuera una parte
+ * del espacio y haría el resto más fácil de adivinar.
+ */
+function nuevoCodigo(): string {
+  const n = crypto.getRandomValues(new Uint32Array(1))[0]! % 1_000_000;
+  return String(n).padStart(6, "0");
+}
+
+/**
+ * Crea y manda el código. Devuelve el código SOLO en desarrollo, para poder
+ * probar sin abrir el correo; en producción devuelve `null`.
+ *
+ * ⚠️ NO DICE SI LA CUENTA EXISTE, igual que `sendMagicLink`. Si respondiera
+ * distinto, esta ruta sería un comprobador de clientes: cualquiera podría
+ * probar direcciones para averiguar quién compró el curso.
+ */
+export async function enviarCodigo(
+  email: string,
+  language: "es" | "en",
+): Promise<{ devCodigo: string | null }> {
+  const r = repo();
+  const student = await r.studentByEmail(email.trim().toLowerCase());
+  /* Sin cuenta, o dada de baja: se calla y responde como si nada. */
+  if (!student?.active) return { devCodigo: null };
+
+  const codigo = nuevoCodigo();
+  const expira = new Date(Date.now() + CODIGO_MINUTOS * 60_000);
+  await r.createMagicToken(student.id, await sha256(codigo), expira);
+
+  await enviarCorreoCodigo(student.email, language, codigo);
+
+  return { devCodigo: import.meta.env.DEV ? codigo : null };
+}
+
+/**
+ * Canjea el código por una sesión.
+ *
+ * Devuelve el alumno si entra, o el motivo por el que no. Los motivos NO se
+ * distinguen de cara al visitante —la pantalla dice lo mismo para todos— pero
+ * sí hacen falta aquí: `agotado` tiene que dejar de aceptar intentos aunque el
+ * siguiente sea el bueno.
+ */
+export async function entrarConCodigo(
+  email: string,
+  codigo: string,
+  cookies: AstroCookies,
+  userAgent: string | null,
+): Promise<{ student: Student | null; motivo: "ok" | "malo" | "agotado" | "caducado" }> {
+  const r = repo();
+  const student = await r.studentByEmail(email.trim().toLowerCase());
+  if (!student?.active) return { student: null, motivo: "caducado" };
+
+  const fila = await r.findActiveCode(student.id);
+  if (!fila) return { student: null, motivo: "caducado" };
+
+  /* El tope se mira ANTES de comparar: si ya se gastaron los cinco, da igual
+     que este sea el correcto. Lo contrario dejaría probar indefinidamente
+     mientras se acierte al final. */
+  if (fila.intentos >= CODIGO_INTENTOS) return { student: null, motivo: "agotado" };
+
+  if (fila.tokenHash !== (await sha256(codigo.trim()))) {
+    await r.bumpCodeAttempt(fila.id);
+    return { student: null, motivo: "malo" };
+  }
+
+  const entrado = await r.consumeCodeById(fila.id);
+  if (!entrado) return { student: null, motivo: "caducado" };
+
+  await openSession(entrado, cookies, userAgent);
+  return { student: entrado, motivo: "ok" };
+}
+
 export const internalPath = (requested: string | null): string =>
   requested && /^\/(?!\/)[\w\-/]*$/.test(requested) ? requested : "/student";

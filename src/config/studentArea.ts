@@ -216,6 +216,33 @@ export const studentCopy = {
      alguien vuelva a cambiar el orden. */
   oBien: { es: "o", en: "or" },
 
+  /* ─── LA PANTALLA DEL CÓDIGO ─────────────────────────────────────────────
+     El acceso pasó de enlace a código de seis dígitos el 13-10-2026.
+
+     ⚠️ "TE MANDAMOS UN CÓDIGO" Y NO "REVISA TU CORREO". Lo primero dice qué
+     buscar; lo segundo manda a mirar sin decir qué. En una bandeja con veinte
+     correos sin leer, eso es la diferencia entre encontrarlo y rendirse. */
+  codigo: {
+    titulo: { es: "Te mandamos un código", en: "We emailed you a code" },
+    texto: { es: "Escribe el código que enviamos a", en: "Enter the code we sent to" },
+    etiqueta: { es: "Código de seis dígitos", en: "Six-digit code" },
+    cambiar: { es: "Cambiar el correo", en: "Change email" },
+    noLlego: { es: "¿No te llegó?", en: "Didn't get it?" },
+    reenviar: { es: "Mandar otro", en: "Send a new one" },
+    reenviado: { es: "Mandado. Mira tu correo otra vez.", en: "Sent. Check your email again." },
+    entrando: { es: "Entrando…", en: "Signing in…" },
+    /* ⚠️ UN SOLO MENSAJE PARA TODOS LOS FALLOS: código mal, caducado, intentos
+       agotados o cuenta que no existe. Distinguirlos diría "ese correo sí está
+       registrado, lo que fallaste es el código", que es la mitad del secreto.
+       Ver la cabecera de `api/codigo.ts`. */
+    error: {
+      es: "Ese código no vale o ya caducó. Pide otro.",
+      en: "That code is wrong or expired. Ask for a new one.",
+    },
+    continuar: { es: "Continuar con el correo", en: "Continue with Email" },
+    enviando: { es: "Mandando…", en: "Sending…" },
+  },
+
   /** Cualquier tropiezo del viaje de ida y vuelta al proveedor. */
   errorOauth: {
     es: "No hemos podido completar la entrada. Prueba otra vez, o entra con tu correo y tu contraseña.",

@@ -40,8 +40,14 @@ const { next = "" } = Astro.props;
  * blanco con borde: es el único de la página que no usa la paleta.
  */
 
-/* Los que hoy tienen sus dos variables de entorno. */
-const activos = proveedoresActivos();
+/* ⚠️ SOLO GOOGLE DESDE EL 13-10-2026. Facebook lo quitó el cliente, y aquí se
+   filtra en vez de borrarse de `@lib/oauth`: las rutas, el intercambio y la
+   vuelta siguen funcionando, así que devolverlo es quitar esta línea. Borrarlo
+   del todo habría sido tirar el código de un proveedor que puede volver.
+
+   ⚠️ Y SI ALGÚN DÍA SON DOS OTRA VEZ, ESTO ES UNA LISTA, no un botón suelto:
+   el marcado de abajo ya los pinta en columna. */
+const activos = proveedoresActivos().filter((p) => p === "google");
 
 const NOMBRES: Record<Proveedor, string> = {
   google: "Google",
@@ -55,22 +61,23 @@ const href = (p: Proveedor) =>
   next ? `/api/auth/${p}/start?next=${encodeURIComponent(next)}` : `/api/auth/${p}/start`;
 ---
 
+{/* ⚠️ SIN SEPARADOR. Lo quitó el cliente el 13-10-2026 con la referencia
+    delante: los dos botones van pegados, uno debajo del otro, como dos formas
+    de hacer lo mismo. Una raya con un "o" en medio los presentaba como dos
+    caminos distintos, y lo son solo por dentro.
+
+    El texto `studentCopy.oBien` se queda sin usar aquí a propósito: no se borra
+    porque el día que haya tres proveedores volverá a hacer falta. */}
+
+{/* Llega desde abajo y el último: es la alternativa, no el camino.
+
+    ⚠️ UN COMENTARIO JSX NO PUEDE IR DENTRO DE `activos.length > 0 && (…)`: esa
+    expresión devuelve UN elemento, y un comentario cuenta como un segundo. Cae
+    con un "Expected )" que no señala al comentario. Por eso va aquí fuera. */}
+
 {
   activos.length > 0 && (
-    <div class="mt-6">
-      {/* ⚠️ EL SEPARADOR VA ARRIBA DESDE EL 13-10-2026, porque este bloque pasó
-          a vivir DEBAJO del formulario de correo. Antes iba primero y la raya
-          cerraba por abajo; ahora abre por arriba y separa el correo de los
-          proveedores, que es donde está la costura. Si alguien vuelve a poner
-          este bloque encima del formulario, la raya tiene que bajar con él. */}
-      <div class="mb-6 flex items-center gap-3" aria-hidden="true">
-        <span class="h-px flex-1 bg-line" />
-        <span class="text-xs font-medium tracking-wide text-ink-subtle uppercase">
-          <T v={studentCopy.oBien} />
-        </span>
-        <span class="h-px flex-1 bg-line" />
-      </div>
-
+    <div class="ap-aba mt-3" style="--d:420">
       <div class="grid gap-3">
         {activos.map((p) => (
           <a
