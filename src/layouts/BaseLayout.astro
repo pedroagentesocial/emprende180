@@ -192,7 +192,30 @@ const descripciones = { es: descripcion.es, en: descripcion.en };
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="canonical" href={canonical} />
-    {noindex && <meta name="robots" content="noindex, follow" />}
+
+    {/* ⚠️ UNA SOLA META `robots`, Y AQUÍ ESTÁ TODA.
+        Hasta el 20-10-2026 había DOS en cada página: esta, con `noindex`
+        cuando tocaba, y otra más abajo con `index, follow` puesta siempre.
+        Así que /login y /subscribe salían diciendo las dos cosas a la vez:
+
+          <meta name="robots" content="noindex, follow">
+          <meta name="robots" content="index, follow, max-image-preview:large">
+
+        Google resuelve el empate quedándose con lo más restrictivo, así que el
+        `noindex` seguía mandando y no llegó a indexarse nada. Pero esa regla
+        es de Google: un rastreador que se quede con la última directiva indexa
+        la pantalla de acceso. Y en cualquier auditoría es un fallo, porque la
+        página dice a la vez que sí y que no.
+
+        `max-image-preview` solo va cuando la página se indexa: en una que no
+        se indexa, no hay miniatura de la que hablar.
+
+        `follow` en las dos: `noindex, nofollow` dejaría los enlaces del pie
+        —legales, teléfono— sin descubrir desde aquí. */}
+    <meta
+      name="robots"
+      content={noindex ? "noindex, follow" : "index, follow, max-image-preview:large"}
+    />
 
     <title>{titulo[lang]}</title>
     <meta name="description" content={descripcion[lang]} />
@@ -277,7 +300,6 @@ const descripciones = { es: descripcion.es, en: descripcion.en };
     <meta name="twitter:description" content={descripcion[lang]} />
     <meta name="twitter:image" content={ogImagen} />
 
-    <meta name="robots" content="index, follow, max-image-preview:large" />
     <meta name="theme-color" content={sitio.themeColor} />
 
     <script

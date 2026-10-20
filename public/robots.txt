@@ -9,10 +9,25 @@
 # robots.txt PUEDE aparecer en resultados sin descripción, porque el rastreador
 # no llegó a leer el `noindex`. Por eso están las dos cosas, y por eso el
 # `noindex` es el que manda.
+#
+# ⚠️ POR ESO `/subscribe` NO ESTÁ AQUÍ ABAJO, aunque también sea `noindex`. Si
+# se bloqueara con `Disallow`, el rastreador no llegaría a leer su `noindex` y
+# la página podría salir en resultados como una línea sin descripción. Lo que
+# hay que evitar no es que la visiten: es que compita en el buscador con la
+# portada. Para eso basta el `noindex`, y necesita que le dejen entrar a leerlo.
 
 User-agent: *
 Disallow: /student
 Disallow: /login
 Disallow: /api/
 
-Sitemap: https://emprende180.vercel.app/sitemap.xml
+# ⚠️ ESTO APUNTABA A `emprende180.vercel.app` HASTA EL 20-10-2026, y llevaba así
+# desde antes de que existiera el dominio propio.
+#
+# No era un detalle: un `Sitemap:` de otro dominio se ignora. Google acepta el
+# mapa que le anuncia un robots.txt solo si está en el MISMO sitio, así que el
+# buscador leía este archivo, veía una dirección ajena y se quedaba sin mapa.
+# Todo lo que hace `sitemap.xml` —las dos versiones de idioma de cada página,
+# los `hreflang`, los artículos del blog el día que se publican— no le llegaba
+# por esta vía a nadie.
+Sitemap: https://www.emprende180.com/sitemap.xml
