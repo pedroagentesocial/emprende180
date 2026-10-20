@@ -55,6 +55,52 @@ const LEGACY_PATHS: Record<string, string> = {
   "/admin": "/student",
 };
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * UN SOLO DOMINIO PARA LA WEB PÚBLICA
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * ⚠️ `emprende180.vercel.app` SERVÍA LA WEB ENTERA CON UN 200. Comprobado en
+ * vivo el 20-10-2026: la misma portada, las mismas páginas, el mismo formulario
+ * de alta, en un segundo dominio.
+ *
+ * No era una catástrofe —cada página se declara canónica en
+ * `www.emprende180.com`, y Google casi siempre hace caso de eso—, pero "casi
+ * siempre" no es una forma de llevar un dominio:
+ *
+ *  1. UN CANONICAL ES UNA SUGERENCIA, no una orden. Google puede elegir otra
+ *     URL si le parece mejor, y entonces la marca sale en resultados con un
+ *     dominio que no es suyo.
+ *  2. LOS ENLACES QUE SE COMPARTEN. Quien copie la barra del navegador desde
+ *     ahí reparte `vercel.app`: en un correo, en un mensaje, en un papel.
+ *  3. LAS COOKIES Y EL ACCESO NO SE COMPARTEN entre dominios, así que alguien
+ *     que entrara por ahí tendría una sesión distinta de la de siempre, y la
+ *     vuelta de Google solo está registrada para el dominio bueno.
+ *
+ * ⚠️ SOLO EL ALIAS DE PRODUCCIÓN, NO `*.vercel.app` ENTERO. Las vistas previas
+ * de cada rama viven en direcciones de ese mismo dominio, y mandarlas todas a
+ * producción es quedarse sin poder revisar nada antes de publicarlo.
+ *
+ * ⚠️ SI ALGÚN DÍA EL DOMINIO PROPIO SE CAE (DNS, certificado), esta puerta de
+ * atrás deja de existir: `vercel.app` redirige a un sitio que no contesta.
+ * Para recuperarla, vaciar este conjunto y desplegar.
+ */
+const DOMINIO_BUENO = "www.emprende180.com";
+const DOMINIOS_VIEJOS = new Set(["emprende180.vercel.app"]);
+
+/** La misma dirección en el dominio bueno, o `null` si ya está en él. */
+function aDominioCanonico(url: URL): string | null {
+  /* En local el host es `localhost` y no hay nada que redirigir. */
+  if (!import.meta.env.PROD) return null;
+  if (!DOMINIOS_VIEJOS.has(url.hostname)) return null;
+
+  const destino = new URL(url.href);
+  destino.protocol = "https:";
+  destino.hostname = DOMINIO_BUENO;
+  destino.port = "";
+  return destino.href;
+}
+
 export const onRequest = defineMiddleware(async (context, next) => {
   try {
     return await atender(context, next);
@@ -82,6 +128,18 @@ async function atender(
   next: Parameters<Parameters<typeof defineMiddleware>[0]>[1],
 ): Promise<Response> {
   const { pathname } = context.url;
+
+  /* ─── 0. EL DOMINIO, ANTES QUE NADA ──────────────────────────────────────
+     Va primero para que ninguna otra regla gaste trabajo en una petición que
+     se va a mover de dominio igualmente, y para que la redirección de ruta
+     vieja no encadene dos saltos.
+
+     308 y no 301: conserva el método. Un 301 convierte un POST en GET por el
+     camino, y por aquí pasan los formularios. */
+  const dominio = aDominioCanonico(context.url);
+  if (dominio) {
+    return harden(context.redirect(dominio, 308), pathname);
+  }
 
   const legacy = LEGACY_PATHS[pathname];
   if (legacy) {
