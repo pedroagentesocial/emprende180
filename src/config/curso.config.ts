@@ -3557,7 +3557,7 @@ export const copy = {
        ⚠️ EL SUBTÍTULO HABLA DEL MÉTODO Y DE LO QUE TE LLEVAS, NO DE
        CREDENCIALES. Pasó por dos versiones que no valían: una decía que la
        empresa "acaba de empezar" (restar antes de sumar) y otra enumeraba
-       las tres empresas y los 21 años, que ya están en la barra y en la
+       las tres empresas y los 25 años, que ya están en la barra y en la
        carta dos pantallas más abajo. El hero no tiene que demostrar nada:
        tiene que decir qué gana quien lee. Tres beneficios en el orden en que
        los vive quien entra —aprendes, no cargas con el trámite, cobras— y la
@@ -3577,12 +3577,12 @@ export const copy = {
       ],
       /* ⚠️ SIN AÑO DE ARRANQUE A PROPÓSITO. La empresa lleva menos de un año
          y una fecha aquí sonaría a poco; lo que se cuenta es que lo nuevo es
-         la marca, no la experiencia. Los 21 son los años de oficio de Pedro,
+         la marca, no la experiencia. Los 25 son los años de oficio de Pedro,
          confirmados como cifra exacta el 14 de septiembre de 2026.
 
-         ⚠️ "21 AÑOS DE OFICIO CONVERTIDOS EN UN MÉTODO" Y NO "EL MÉTODO LLEVA
-         21 AÑOS": lo segundo sería mentira. El método es nuevo; lo que tiene
-         21 años es el oficio del que sale. */
+         ⚠️ "25 AÑOS DE OFICIO CONVERTIDOS EN UN MÉTODO" Y NO "EL MÉTODO LLEVA
+         25 AÑOS": lo segundo sería mentira. El método es nuevo; lo que tiene
+         25 años es el oficio del que sale. */
       anos: {
         es: "Un método que te enseña qué decir y cuándo, se encarga del resto y convierte cada recomendación en un ingreso. ¿Empezamos?",
         en: "A method that shows you what to say and when, handles the rest, and turns every recommendation into income. Ready to start?",
@@ -3631,8 +3631,8 @@ export const copy = {
           en: "Some people know half the town; some people know five people well. Both can do this, because what gets recommended isn't you — it's a company that has been doing its job well for years.",
         },
         {
-          es: "Detrás de cada presentación hay tres empresas reales, una formación escrita por quien lleva 21 años en esto, y alguien que contesta. No tienes que fiarte de una promesa; tienes que ver quién hay detrás, y para eso está esta página.",
-          en: "Behind every introduction there are three real companies, a training program written by someone with 21 years in the trade, and a person who answers. You don't have to trust a promise; you get to see who's behind it — and that's what this page is for.",
+          es: "Detrás de cada presentación hay tres empresas reales, una formación escrita por quien lleva 25 años en esto, y alguien que contesta. No tienes que fiarte de una promesa; tienes que ver quién hay detrás, y para eso está esta página.",
+          en: "Behind every introduction there are three real companies, a training program written by someone with 25 years in the trade, and a person who answers. You don't have to trust a promise; you get to see who's behind it — and that's what this page is for.",
         },
       ],
       /* ⚠️ EL ORDEN ES ÉL, ELLA, y la segunda es la que baja. El desnivel lo
@@ -3675,8 +3675,11 @@ export const copy = {
           etiqueta: { es: "Empresas que representamos", en: "Companies we represent" },
         },
         {
-          /* Cifra exacta y no "+20": el cliente la confirmó el 14-09-2026. */
-          valor: "21",
+          /* Cifra exacta y no "+20": el cliente la confirmó el 14-09-2026, y la
+             corrigió a 25 el 20-10-2026. Si vuelve a cambiar, el número vive
+             SOLO aquí y en el texto de la carta: en ningún sitio se calcula
+             restando a un año de inicio, que es como se quedan desfasados. */
+          valor: "25",
           etiqueta: { es: "Años de oficio detrás", en: "Years of experience behind it" },
         },
         {
@@ -3891,8 +3894,8 @@ export const copy = {
       kicker: { es: "Una carta de Pedro", en: "A letter from Pedro" },
       parrafos: [
         {
-          es: "Llevo 21 años en esto, y lo que más me costó entender es lo simple que era.",
-          en: "I've been in this for 21 years, and the hardest thing to understand was how simple it actually is.",
+          es: "Llevo 25 años en esto, y lo que más me costó entender es lo simple que era.",
+          en: "I've been in this for 25 years, and the hardest thing to understand was how simple it actually is.",
         },
         {
           es: "El negocio nunca estuvo en tener el mejor producto. Estuvo en que alguien de confianza dijera tu nombre en el momento correcto. Eso vale más que cualquier campaña que haya pagado.",
@@ -3903,8 +3906,8 @@ export const copy = {
           en: "The problem is that the person saying it almost never gets anything for it. They do it their whole life, for free, and nobody gives them credit for it. Entrepreneur180 exists to change that: a real method, with real companies behind it, so the only thing you have to do is what you were already doing unpaid.",
         },
         {
-          es: "No te voy a prometer cifras que no tengo. Te puedo decir qué hay del otro lado: 21 años de oficio, una formación que escribí yo mismo, y alguien, yo, que contesta cuando escribes.",
-          en: "I won't promise you numbers I don't have. What I can tell you is what's on the other side: 21 years in the trade, a training program I wrote myself, and someone — me — who answers when you write.",
+          es: "No te voy a prometer cifras que no tengo. Te puedo decir qué hay del otro lado: 25 años de oficio, una formación que escribí yo mismo, y alguien, yo, que contesta cuando escribes.",
+          en: "I won't promise you numbers I don't have. What I can tell you is what's on the other side: 25 years in the trade, a training program I wrote myself, and someone — me — who answers when you write.",
         },
         {
           /* ⚠️ "CONOZCAS A MEDIO MUNDO O A CINCO PERSONAS", y no solo lo
@@ -4177,9 +4180,9 @@ export const copy = {
        la portada; el 15-09-2026 pasó a /resources y su sitio en la portada lo
        ocupan las preguntas frecuentes, así que un titular que empezaba por
        "Preguntas" habría chocado con la sección que la sustituye. Este habla
-       de lo que es: 21 años de oficio, contados en corto. */
+       de lo que es: 25 años de oficio, contados en corto. */
     titulo: [
-      { es: "Lo que he aprendido en 21 años,", en: "What 21 years taught me," },
+      { es: "Lo que he aprendido en 25 años,", en: "What 25 years taught me," },
       {
         es: "en artículos cortos.",
         en: "in short articles.",
