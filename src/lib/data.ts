@@ -120,6 +120,8 @@ export interface Student {
   sponsorId: string | null;
   /** Desde cuándo es Embajador. */
   ambassadorSince: Date | null;
+  /** Cuándo quedó dado de alta en clinics (Revivi, Venture, clínicas). */
+  clinicsLinkedAt: Date | null;
 }
 
 /**
@@ -232,6 +234,8 @@ export interface Repo {
   setSponsor(id: string, sponsorId: string | null): Promise<void>;
   /** El Embajador con ese código, activo o no. */
   studentByAmbassadorCode(code: string): Promise<Student | null>;
+  /** Anota que clinics ya lo tiene dado de alta. */
+  markClinicsLinked(id: string): Promise<void>;
   markSignIn(id: string): Promise<void>;
 
   createMagicToken(studentId: string, tokenHash: string, expiresAt: Date): Promise<void>;
@@ -441,6 +445,7 @@ function postgresRepo(url: string): Repo {
     ambassadorCode: (f.codigo_embajador as string) ?? null,
     sponsorId: (f.patrocinador_id as string) ?? null,
     ambassadorSince: (f.embajador_desde as Date) ?? null,
+    clinicsLinkedAt: (f.clinics_vinculado_en as Date) ?? null,
   });
 
   return {
@@ -544,6 +549,10 @@ function postgresRepo(url: string): Repo {
 
     async setSponsor(id, sponsorId) {
       await sql`UPDATE alumnos SET patrocinador_id = ${sponsorId} WHERE id = ${id}`;
+    },
+
+    async markClinicsLinked(id) {
+      await sql`UPDATE alumnos SET clinics_vinculado_en = now() WHERE id = ${id}`;
     },
 
     async studentByAmbassadorCode(code) {
@@ -837,6 +846,7 @@ function memoryRepo(): Repo {
       ambassadorCode: null,
       sponsorId: null,
       ambassadorSince: null,
+      clinicsLinkedAt: null,
     };
     students.set(s.email, s);
   }
@@ -900,6 +910,7 @@ function memoryRepo(): Repo {
         ambassadorCode: null,
         sponsorId: null,
         ambassadorSince: null,
+        clinicsLinkedAt: null,
       };
       students.set(s.email, s);
       demoEmails.add(s.email);
@@ -992,6 +1003,7 @@ function memoryRepo(): Repo {
         ambassadorCode: null,
         sponsorId: null,
         ambassadorSince: null,
+        clinicsLinkedAt: null,
       };
       students.set(s.email, s);
       return s;
@@ -1024,6 +1036,10 @@ function memoryRepo(): Repo {
     async setSponsor(id, sponsorId) {
       const s = byId(id);
       if (s) students.set(s.email, { ...s, sponsorId });
+    },
+    async markClinicsLinked(id) {
+      const s = byId(id);
+      if (s) students.set(s.email, { ...s, clinicsLinkedAt: new Date() });
     },
     async studentByAmbassadorCode(code) {
       const k = normaliseCode(code);

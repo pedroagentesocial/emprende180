@@ -9,6 +9,12 @@ import { ambassadorRepo, type PayoutMethod } from "@lib/ambassadors";
 import { loadBook, type Book } from "@lib/ambassadorBook";
 import { money, shortDate } from "@lib/ambassadorFormat";
 import { canManageAmbassadors, isAmbassador } from "@lib/permissions";
+import {
+  ClinicsError,
+  clinicsConfigured,
+  grantReviviCredit,
+  linkAmbassadorInClinics,
+} from "@lib/clinicsApi";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -52,6 +58,48 @@ function suggestCode(s: Student): string {
   return `${base || "E180"}${n}`;
 }
 
+/**
+ * Da de alta (o actualiza) al Embajador en clinics. `true` o el motivo del
+ * fallo, para el aviso. El id de Emprende180 es la referencia allí.
+ */
+async function linkInClinics(id: string): Promise<true | string> {
+  const s = await r.studentById(id);
+  if (!s || !isAmbassador(s)) return say(c.noticeBadCode);
+  try {
+    await linkAmbassadorInClinics({
+      externalRef: s.id,
+      code: s.ambassadorCode!,
+      name: [s.name, s.lastName].filter(Boolean).join(" ") || s.email,
+      email: s.email,
+    });
+    await r.markClinicsLinked(s.id);
+    return true;
+  } catch (error) {
+    return clinicsMessage(error, c.noticeLinkFailed);
+  }
+}
+
+/** Abona en clinics un pago en crédito Revivi. Repetirlo no abona dos veces. */
+async function creditInClinics(payoutId: string, ambassadorId: string, cents: number): Promise<true | string> {
+  try {
+    const res = await grantReviviCredit({ externalRef: ambassadorId, key: payoutId, amountCents: cents });
+    await ar.setPayoutClinicsRef(payoutId, res.displayId);
+    return true;
+  } catch (error) {
+    return clinicsMessage(error, c.noticeCreditFailed);
+  }
+}
+
+/** El motivo legible de un fallo de clinics. */
+function clinicsMessage(error: unknown, fallback: { es: string; en: string }): string {
+  if (error instanceof ClinicsError) {
+    if (error.code === "email_in_use") return say(c.noticeEmailInUse);
+    if (error.code === "code_in_use") return say(c.noticeCodeInUseClinics);
+    return `${say(fallback)} (${error.status}${error.code ? ` ${error.code}` : ""})`;
+  }
+  return say(fallback);
+}
+
 let notice: { type: "ok" | "error"; text: string } | null = null;
 let back = "/student/ambassadors";
 
@@ -91,6 +139,30 @@ if (Astro.request.method === "POST") {
       notice = ok
         ? { type: "ok", text: say(c.noticeActivated, { nombre: target.name ?? target.email, codigo: code }) }
         : { type: "error", text: say(c.noticeCodeTaken) };
+
+      /* Y su alta en clinics, para Revivi, Venture y las clínicas. Si falla,
+         la activación sigue en pie: el detalle lo dice y se puede reintentar. */
+      if (ok && clinicsConfigured()) {
+        const linked = await linkInClinics(target.id);
+        if (linked !== true) notice = { type: "error", text: `${notice.text} ${linked}` };
+      }
+    }
+  }
+
+  if (action === "link") {
+    const id = String(form.get("ambassadorId") ?? "");
+    back = `/student/ambassadors?ver=${id}`;
+    const linked = await linkInClinics(id);
+    notice = linked === true ? { type: "ok", text: say(c.noticeLinked) } : { type: "error", text: linked };
+  }
+
+  if (action === "credit") {
+    const id = String(form.get("ambassadorId") ?? "");
+    back = `/student/ambassadors?ver=${id}`;
+    const payout = (await ar.listPayouts([id])).find((p) => p.id === String(form.get("payoutId") ?? ""));
+    if (payout) {
+      const credited = await creditInClinics(payout.id, id, payout.amountCents);
+      notice = credited === true ? { type: "ok", text: say(c.noticeCredited) } : { type: "error", text: credited };
     }
   }
 
@@ -102,7 +174,7 @@ if (Astro.request.method === "POST") {
     if (!target || !isAmbassador(target) || !Number.isFinite(cents) || cents <= 0) {
       notice = { type: "error", text: say(c.noticeBadAmount) };
     } else {
-      await ar.addPayout({
+      const payoutId = await ar.addPayout({
         ambassadorId: target.id,
         method,
         amountCents: cents,
@@ -112,6 +184,12 @@ if (Astro.request.method === "POST") {
         recordedBy: me.id,
       });
       notice = { type: "ok", text: say(c.noticePaid) };
+      /* El crédito Revivi se abona en clinics ya. Si no se puede, el pago
+         queda anotado como "pendiente de abonar" y se reintenta desde aquí. */
+      if (method === "revivi_credit" && clinicsConfigured()) {
+        const credited = await creditInClinics(payoutId, target.id, cents);
+        if (credited !== true) notice = { type: "error", text: `${notice.text} ${credited}` };
+      }
     }
   }
 
@@ -149,6 +227,7 @@ const candidates = everyone
   .sort((a, b) => (a.name ?? a.email).localeCompare(b.name ?? b.email));
 const byId = new Map(everyone.map((s) => [s.id, s]));
 
+const clinicsOn = clinicsConfigured();
 const viewing = Astro.url.searchParams.get("ver");
 const target = viewing ? ambassadors.find((a) => a.id === viewing) ?? null : null;
 const detail: Book | null = target ? await loadBook(target, { viewer: me, withNames: true }) : null;
@@ -192,6 +271,25 @@ const cell = "px-4 py-3 text-sm";
             {target.email} · <span class="font-mono font-bold">{target.ambassadorCode}</span>
             {target.sponsorId && <> · <T v={c.sponsor} />: {byId.get(target.sponsorId)?.name ?? byId.get(target.sponsorId)?.email}</>}
           </p>
+
+          {clinicsOn && (
+            <div class="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-line bg-surface px-4 py-3 text-sm">
+              {target.clinicsLinkedAt ? (
+                <span class="text-ink"><T v={c.clinicsLinked} vars={{ fecha: shortDate(target.clinicsLinkedAt) }} /></span>
+              ) : (
+                <>
+                  <span class="font-semibold text-warning-700"><T v={c.clinicsNotLinked} /></span>
+                  <form method="POST">
+                    <input type="hidden" name="action" value="link" />
+                    <input type="hidden" name="ambassadorId" value={target.id} />
+                    <button type="submit" class="inline-flex min-h-11 items-center rounded-full border border-line-strong px-4 font-semibold text-ink hover:border-ink">
+                      <T v={c.clinicsLink} />
+                    </button>
+                  </form>
+                </>
+              )}
+            </div>
+          )}
 
           <section class="mt-6 grid gap-3 sm:grid-cols-3">
             {[
@@ -283,7 +381,18 @@ const cell = "px-4 py-3 text-sm";
                     <T v={shortDate(p.paidAt)} /> · <T v={ac.method[p.method]} />
                     {p.method === "revivi_credit" && !p.clinicsRef && <span class="text-warning-700"> · <T v={ac.payouts.pendingCredit} /></span>}
                     {p.note && <span class="text-ink-muted"> · {p.note}</span>}
+                    {p.clinicsRef && <span class="text-ink-muted"> · {p.clinicsRef}</span>}
                   </span>
+                  {clinicsOn && p.method === "revivi_credit" && !p.clinicsRef && (
+                    <form method="POST">
+                      <input type="hidden" name="action" value="credit" />
+                      <input type="hidden" name="ambassadorId" value={target.id} />
+                      <input type="hidden" name="payoutId" value={p.id} />
+                      <button type="submit" class="inline-flex min-h-11 items-center rounded-full border border-line-strong px-3 text-xs font-semibold text-ink hover:border-ink">
+                        <T v={c.creditRetry} />
+                      </button>
+                    </form>
+                  )}
                   <span class="font-semibold tabular-nums"><T v={money(p.amountCents)} /></span>
                 </li>
               ))}

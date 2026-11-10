@@ -404,3 +404,25 @@ CREATE TABLE IF NOT EXISTS registro_vistas (
   cuando       timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS registro_vistas_cuando ON registro_vistas (cuando DESC);
+
+-- ─── La conexión con clinics (10-11-2026) ───────────────────────────────────
+-- Revivi, Venture y las clínicas viven en clinics. Sus hechos los LEEMOS
+-- nosotros (`src/lib/clinicsSync.ts`), en orden, con un cursor que solo
+-- avanza. Esta tabla guarda hasta dónde se leyó y el último problema, para
+-- que el admin lo vea en Negocios.
+--
+-- ⚠️ EL CURSOR NO PASA DE UN HECHO CUYO NEGOCIO NO EXISTE AQUÍ. Si clinics
+-- manda una venta de una clínica que todavía no se dio de alta en Negocios,
+-- la lectura se detiene ahí y lo dice; al crear el negocio, sigue. Saltarlo
+-- sería perder esa comisión para siempre.
+CREATE TABLE IF NOT EXISTS sincronizacion (
+  fuente         text PRIMARY KEY,
+  cursor         text NOT NULL DEFAULT '0',
+  ultimo_ok_en   timestamptz,
+  ultimo_error   text,
+  actualizado_en timestamptz NOT NULL DEFAULT now()
+);
+
+-- Cuándo quedó dado de alta el Embajador en clinics. Nulo = todavía no (o
+-- falló): el admin lo ve y puede reintentar.
+ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS clinics_vinculado_en timestamptz;

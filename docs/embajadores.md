@@ -85,8 +85,24 @@ Respuestas: `200` guardado (o `"status": "duplicate"`), `400` cuerpo mal formado
 2. En Vercel: `AMBASSADOR_DATA_KEY` = `openssl rand -base64 32`. Sin ella, no se guarda ningún nombre.
 3. Crear los negocios y sus reglas en **Negocios**. Mientras no haya reglas, el portal avisa de que las comisiones no están configuradas.
 
+## Conectar los negocios de clinics (Revivi, Venture, las clínicas)
+
+Estos no mandan webhook: Emprende180 lee sus hechos de clinics (`/partners/v1/emprende180`), firmados con HMAC.
+
+1. En clinics: `EMPRENDE180_SECRET` (un valor largo al azar) y aplicar la migración `20261110120000_emprende180_partner`.
+2. En Emprende180: `CLINICS_API_URL` (la dirección del API de clinics) y `CLINICS_PARTNER_SECRET` (el MISMO valor). Opcional: `CRON_SECRET` y un cron de Vercel a `/api/cron/clinics`.
+3. En **Negocios**, un negocio por clínica con fuente **Clinics** y, como identificador, el **slug de la clínica** en clinics (por ejemplo `revivi`). Cada hecho dice en qué clínica pasó y cae en el negocio con ese identificador.
+4. Al **activar** a un Embajador, Emprende180 lo da de alta en clinics como afiliado de toda la organización, con 0 % de comisión propia allí (la comisión la calcula Emprende180). Si falla, su ficha lo dice y tiene un botón para reintentar.
+5. Un pago en **crédito Revivi** se abona en clinics al anotarlo. Si falla, queda "pendiente de abonar" y se reintenta desde la ficha.
+
+Qué cuenta clinics: `lead` (el referido), `purchase` (cada recibo, antes de impuestos), `refund`, `cancel` (recibo anulado o cita que deja de estar completada) y `attended` (cita completada sin recibo, las de las clínicas PI). Nunca nombres ni correos.
+
+Cuándo se lee: al abrir el portal o el admin (como mucho una vez por minuto), con **Sincronizar ahora** en Negocios, y con el cron si existe. Si llega un hecho de una clínica que no tiene negocio aquí, la lectura se detiene ahí y Negocios lo avisa; al crear el negocio, sigue donde se quedó.
+
 ## Pendiente
 
 - Los porcentajes de comisión (por nivel y por renovación).
-- La conexión con clinics: leer los hechos de Revivi, Venture y las clínicas, y abonar el crédito de Revivi.
+- Qué recibos de clinics son **renovaciones** (hoy cada recibo cuenta como primera compra).
+- Los nombres de los clientes de clinics: hace falta su consentimiento en clinics antes de mandarlos.
+- Referir por paciente en clinics (hoy un referido se reconoce por su correo) y "Referido por" en las clínicas PI.
 - La revisión legal y el texto de la casilla de consentimiento.

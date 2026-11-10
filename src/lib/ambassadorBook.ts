@@ -8,6 +8,7 @@ import {
 } from "@lib/ambassadors";
 import { repo, type Student } from "@lib/data";
 import { unseal } from "@lib/sealed";
+import { maybeSyncFromClinics } from "@lib/clinicsSync";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -104,6 +105,10 @@ export async function loadBook(
 ): Promise<Book> {
   const now = opts.now ?? new Date();
   const ar = ambassadorRepo();
+
+  /* Lo último de clinics (Revivi, Venture, las clínicas) antes de contar.
+     Como mucho una vez por minuto, y nunca rompe: sin clinics, lo de antes. */
+  await maybeSyncFromClinics();
 
   const everyone = await repo().listStudents();
   const sponsorById = new Map(everyone.map((s) => [s.id, s.sponsorId]));

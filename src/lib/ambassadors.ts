@@ -70,6 +70,12 @@ export interface StoredPayout {
   recordedBy: string | null;
 }
 
+export interface SyncState {
+  cursor: string;
+  lastOkAt: Date | null;
+  lastError: string | null;
+}
+
 export interface AmbassadorRepo {
   listBusinesses(): Promise<Business[]>;
   businessBySlug(slug: string): Promise<Business | null>;
@@ -117,7 +123,14 @@ export interface AmbassadorRepo {
 
   /** Sin filtro, los de todos (para el admin). */
   listPayouts(ambassadorIds?: string[]): Promise<StoredPayout[]>;
-  addPayout(data: Omit<StoredPayout, "id">): Promise<void>;
+  /** Devuelve el id del pago anotado. */
+  addPayout(data: Omit<StoredPayout, "id">): Promise<string>;
+  /** El abono en clinics de un pago en crédito Revivi, ya hecho. */
+  setPayoutClinicsRef(id: string, ref: string): Promise<void>;
+
+  /** Hasta dónde se leyó de una fuente (`clinics`). */
+  syncState(source: string): Promise<SyncState>;
+  saveSync(source: string, data: { cursor?: string; ok?: boolean; error?: string | null }): Promise<void>;
 
   /** Deja rastro de que alguien vio nombres de clientes. Nunca lanza. */
   logView(data: { viewerId: string; ambassadorId: string | null; what: string }): Promise<void>;
@@ -345,13 +358,42 @@ function postgresRepo(url: string): AmbassadorRepo {
     },
 
     async addPayout(p) {
-      await sql`
+      const [f] = await sql`
         INSERT INTO pagos_embajador (
           embajador_id, metodo, importe_centavos, pagado_en, nota, ref_clinics, registrado_por
         ) VALUES (
           ${p.ambassadorId}, ${METHOD_DB[p.method]}, ${p.amountCents}, ${p.paidAt},
           ${p.note}, ${p.clinicsRef}, ${p.recordedBy}
-        )`;
+        )
+        RETURNING id`;
+      return f!.id as string;
+    },
+
+    async setPayoutClinicsRef(id, ref) {
+      await sql`UPDATE pagos_embajador SET ref_clinics = ${ref} WHERE id = ${id}`;
+    },
+
+    async syncState(source) {
+      const [f] = await sql`SELECT * FROM sincronizacion WHERE fuente = ${source}`;
+      return {
+        cursor: (f?.cursor as string) ?? "0",
+        lastOkAt: (f?.ultimo_ok_en as Date) ?? null,
+        lastError: (f?.ultimo_error as string) ?? null,
+      };
+    },
+
+    async saveSync(source, { cursor, ok, error }) {
+      /* Una sola sentencia: la fila nace la primera vez. Cada campo solo se
+         toca si viene; el cursor no vuelve atrás porque solo se escribe el
+         que devolvió clinics después del último hecho guardado. */
+      await sql`
+        INSERT INTO sincronizacion (fuente, cursor, ultimo_ok_en, ultimo_error)
+        VALUES (${source}, ${cursor ?? "0"}, ${ok ? new Date() : null}, ${error ?? null})
+        ON CONFLICT (fuente) DO UPDATE SET
+          cursor = COALESCE(${cursor ?? null}, sincronizacion.cursor),
+          ultimo_ok_en = CASE WHEN ${!!ok} THEN now() ELSE sincronizacion.ultimo_ok_en END,
+          ultimo_error = CASE WHEN ${error === undefined} THEN sincronizacion.ultimo_error ELSE ${error ?? null} END,
+          actualizado_en = now()`;
     },
 
     async logView({ viewerId, ambassadorId, what }) {
@@ -374,6 +416,7 @@ function memoryRepo(): AmbassadorRepo {
   const referrals = new Map<string, StoredReferral>();
   const facts = new Map<string, StoredFact>();
   const payouts: StoredPayout[] = [];
+  const syncs = new Map<string, SyncState>();
   let n = 0;
   const newId = () => `amb-${++n}`;
 
@@ -535,7 +578,24 @@ function memoryRepo(): AmbassadorRepo {
         .sort((a, b) => b.paidAt.getTime() - a.paidAt.getTime());
     },
     async addPayout(p) {
-      payouts.push({ ...p, id: newId() });
+      const id = newId();
+      payouts.push({ ...p, id });
+      return id;
+    },
+    async setPayoutClinicsRef(id, ref) {
+      const p = payouts.find((x) => x.id === id);
+      if (p) p.clinicsRef = ref;
+    },
+    async syncState(source) {
+      return syncs.get(source) ?? { cursor: "0", lastOkAt: null, lastError: null };
+    },
+    async saveSync(source, { cursor, ok, error }) {
+      const old = syncs.get(source) ?? { cursor: "0", lastOkAt: null, lastError: null };
+      syncs.set(source, {
+        cursor: cursor ?? old.cursor,
+        lastOkAt: ok ? new Date() : old.lastOkAt,
+        lastError: error === undefined ? old.lastError : error,
+      });
     },
     async logView() {
       /* En memoria no hay rastro que guardar. */

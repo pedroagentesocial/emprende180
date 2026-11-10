@@ -210,6 +210,43 @@ export const ambassadorCopy = {
     noticeSponsor: t("Patrocinador cambiado.", "Sponsor changed."),
     noticeSelfSponsor: t("Nadie puede ser su propio patrocinador.", "Nobody can be their own sponsor."),
 
+    /* La conexión con clinics */
+    clinicsLinked: t("Dado de alta en clinics el {fecha}", "Registered in clinics on {fecha}"),
+    clinicsNotLinked: t("Todavía no está dado de alta en clinics", "Not registered in clinics yet"),
+    clinicsLink: t("Dar de alta en clinics", "Register in clinics"),
+    creditRetry: t("Abonar en Revivi", "Credit at Revivi"),
+    noticeLinked: t("Dado de alta en clinics.", "Registered in clinics."),
+    noticeCredited: t("Crédito abonado en Revivi.", "Credit added at Revivi."),
+    noticeLinkFailed: t(
+      "No se pudo dar de alta en clinics; puedes reintentarlo desde su ficha.",
+      "Could not register them in clinics; you can retry from their page.",
+    ),
+    noticeCreditFailed: t(
+      "No se pudo abonar en Revivi; el pago queda pendiente y puedes reintentarlo.",
+      "Could not credit it at Revivi; the payout stays pending and you can retry.",
+    ),
+    noticeEmailInUse: t(
+      "En clinics ya hay un afiliado con ese correo. Hay que decidir allí qué hacer con él.",
+      "A clinics affiliate already uses that email. Decide there what to do with it.",
+    ),
+    noticeCodeInUseClinics: t(
+      "En clinics ya hay un afiliado con ese código. Cambia el código del Embajador.",
+      "A clinics affiliate already uses that code. Change the Ambassador's code.",
+    ),
+    syncTitle: t("Lectura de clinics", "Reading from clinics"),
+    syncOff: t(
+      "La conexión con clinics no está configurada (CLINICS_API_URL y CLINICS_PARTNER_SECRET).",
+      "The clinics link is not configured (CLINICS_API_URL and CLINICS_PARTNER_SECRET).",
+    ),
+    syncLast: t("Última lectura buena: {fecha}", "Last good read: {fecha}"),
+    syncNever: t("Todavía no se ha leído nada.", "Nothing read yet."),
+    syncNow: t("Sincronizar ahora", "Sync now"),
+    syncDone: t("Leído de clinics: {n} hechos nuevos.", "Read from clinics: {n} new facts."),
+    syncHint: t(
+      "Cada clínica de clinics necesita aquí un negocio con fuente Clinics y su mismo identificador (el slug de la clínica, por ejemplo revivi).",
+      "Each clinics clinic needs a business here with source Clinics and the same identifier (the clinic's slug, e.g. revivi).",
+    ),
+
     /* Negocios */
     bizTitle: t("Negocios", "Businesses"),
     bizIntro: t(
