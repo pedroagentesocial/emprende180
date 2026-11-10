@@ -1,0 +1,153 @@
+---
+import AmbassadorLayout from "@layouts/AmbassadorLayout.astro";
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import { ambassadorCopy } from "@config/ambassadorArea";
+import { loadBook } from "@lib/ambassadorBook";
+import { money, shortDate } from "@lib/ambassadorFormat";
+import { isAmbassador } from "@lib/permissions";
+import type { LineStatus } from "@lib/commissions";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * /student/ambassador/referrals: cada persona que llegó con tu código
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Una tarjeta por cliente, con su negocio, su estado y lo que te ha dado. Al
+ * tocarla se abre el detalle: cada comisión, su estado y cuándo se paga (lo
+ * que pide el ticket: "en cuánto tiempo se le realizará el pago").
+ *
+ * ⚠️ ES LA ÚNICA PANTALLA CON NOMBRES, y solo los de quien dio permiso. Abrirla
+ * deja una fila en `registro_vistas` (ver `loadBook`). Sin permiso, "Cliente
+ * #4": el número es fijo, por orden de llegada, así que el Embajador puede
+ * reconocer a cada uno sin que nadie le diga quién es.
+ *
+ * El filtro por negocio es un enlace (`?b=slug`), no un script: funciona con
+ * la conexión más lenta y se puede guardar.
+ */
+export const prerender = false;
+
+const me = Astro.locals.student!;
+if (!isAmbassador(me)) return new Response(null, { status: 404 });
+
+const c = ambassadorCopy;
+const book = await loadBook(me, { viewer: me, withNames: true });
+
+const filter = Astro.url.searchParams.get("b");
+const shown = filter ? book.referrals.filter((r) => r.business?.slug === filter) : book.referrals;
+const withReferrals = book.businesses.filter((b) => book.referrals.some((r) => r.business?.id === b.id));
+
+const stageClass = {
+  lead: "bg-primary-50 text-primary-700",
+  customer: "bg-secondary-100 text-secondary-800",
+  reversed: "bg-neutral-200 text-ink-muted",
+} as const;
+
+const statusClass: Record<LineStatus, string> = {
+  waiting: "bg-warning-50 text-warning-700",
+  ready: "bg-secondary-100 text-secondary-800",
+  paid: "bg-primary-50 text-primary-700",
+  annulled: "bg-neutral-200 text-ink-muted line-through",
+  deduction: "bg-error-50 text-error-700",
+};
+
+const chip =
+  "inline-flex min-h-10 shrink-0 items-center rounded-full border px-4 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+---
+
+<AmbassadorLayout title={c.referrals.title} student={me} tab="referrals">
+  <h1 class="text-2xl font-extrabold text-ink"><T v={c.referrals.title} /></h1>
+  <p class="mt-2 text-sm text-pretty text-ink-muted"><T v={c.referrals.intro} /></p>
+
+  {
+    withReferrals.length > 1 && (
+      <nav class="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-1" aria-label={c.home.byBusiness[me.language]}>
+        <a
+          href="/student/ambassador/referrals"
+          aria-current={!filter ? "page" : undefined}
+          class:list={[chip, !filter ? "border-primary-900 bg-primary-900 text-white" : "border-line-strong bg-surface text-ink"]}
+        >
+          <T v={c.referrals.all} />
+        </a>
+        {withReferrals.map((b) => (
+          <a
+            href={`/student/ambassador/referrals?b=${encodeURIComponent(b.slug)}`}
+            aria-current={filter === b.slug ? "page" : undefined}
+            class:list={[chip, filter === b.slug ? "border-primary-900 bg-primary-900 text-white" : "border-line-strong bg-surface text-ink"]}
+          >
+            {b.name}
+          </a>
+        ))}
+      </nav>
+    )
+  }
+
+  {
+    shown.length === 0 ? (
+      <p class="mt-6 rounded-3xl border border-line bg-surface p-6 text-center text-sm text-ink-muted">
+        <T v={book.referrals.length ? c.referrals.empty : c.home.empty} />
+      </p>
+    ) : (
+      <ul class="mt-4 flex flex-col gap-3">
+        {shown.map((r) => (
+          <li>
+            <details class="group rounded-3xl border border-line bg-surface">
+              <summary class="flex cursor-pointer list-none items-start justify-between gap-3 rounded-3xl px-5 py-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus [&::-webkit-details-marker]:hidden">
+                <span class="min-w-0">
+                  <span class="block truncate font-bold text-ink">
+                    {r.name ?? <T v={c.referrals.client} vars={{ n: r.number }} />}
+                  </span>
+                  <span class="mt-0.5 block truncate text-xs text-ink-muted">
+                    {r.business?.name ?? ""}
+                    {r.channel && <> · <T v={c.channel[r.channel]} /></>}
+                    {" · "}
+                    <T v={c.referrals.since} vars={{ fecha: shortDate(r.firstContactAt) }} />
+                  </span>
+                  <span class="mt-2 flex flex-wrap items-center gap-2">
+                    <span class:list={["rounded-full px-2.5 py-1 text-xs font-bold", stageClass[r.stage]]}>
+                      <T v={c.stage[r.stage]} />
+                    </span>
+                    {r.sales > 0 && (
+                      <span class="text-xs text-ink-muted"><T v={c.referrals.sales} vars={{ n: r.sales }} /></span>
+                    )}
+                  </span>
+                </span>
+                <span class="flex shrink-0 flex-col items-end gap-1">
+                  <span class="text-xs text-ink-muted"><T v={c.referrals.earned} /></span>
+                  <span class="font-bold tabular-nums text-ink"><T v={money(r.earnedCents)} /></span>
+                  <Icono nombre="chevron" class="size-5 text-ink-subtle transition-transform group-open:rotate-180" grosor={2} />
+                </span>
+              </summary>
+
+              {r.lines.length > 0 && (
+                <ul class="divide-y divide-line border-t border-line px-5">
+                  {r.lines.map((l) => (
+                    <li class="flex items-center justify-between gap-3 py-3 text-sm">
+                      <span class="min-w-0">
+                        <span class="block text-ink">
+                          <T v={shortDate(l.occurredAt)} />
+                          {l.percent != null && <span class="text-ink-muted"> · {l.percent}%</span>}
+                        </span>
+                        {l.status === "waiting" && (
+                          <span class="block text-xs text-ink-muted">
+                            <T v={c.referrals.payableOn} vars={{ fecha: shortDate(l.payableFrom) }} />
+                          </span>
+                        )}
+                      </span>
+                      <span class="flex shrink-0 items-center gap-2">
+                        <span class:list={["rounded-full px-2 py-0.5 text-xs font-bold", statusClass[l.status]]}>
+                          <T v={c.status[l.status]} />
+                        </span>
+                        <span class="font-semibold tabular-nums text-ink"><T v={money(l.amountCents)} /></span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </details>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</AmbassadorLayout>

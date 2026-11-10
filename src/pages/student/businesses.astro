@@ -1,0 +1,348 @@
+---
+import StudentLayout from "@layouts/StudentLayout.astro";
+import T from "@components/i18n/T.astro";
+import { randomBytes, createHash } from "node:crypto";
+import { ambassadorCopy } from "@config/ambassadorArea";
+import { resolverIdiomaServidor, type Txt } from "@i18n/idioma";
+import { interpolar } from "@i18n/formato";
+import { ambassadorRepo, normaliseSlug, type BusinessSource, type StoredRule } from "@lib/ambassadors";
+import { ruleFor, type RuleKind } from "@lib/commissions";
+import { money, shortDate } from "@lib/ambassadorFormat";
+import { canManageAmbassadors } from "@lib/permissions";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * /student/businesses: los negocios que nos mandan hechos, y sus reglas
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Solo el admin. Por cada negocio:
+ *
+ *   · De dónde llegan sus hechos: GHL (webhook) o clinics.
+ *   · La dirección de su webhook y su SECRETO. El secreto se genera aquí, se
+ *     enseña UNA vez (en la respuesta a ese POST, sin pasar por la URL) y solo
+ *     se guarda su hash. Generar uno nuevo invalida el anterior.
+ *   · Sus reglas de comisión. No se editan ni se borran: una regla nueva
+ *     sustituye a la anterior desde su fecha, y lo ya ganado no cambia. Es lo
+ *     que hace que bajar un porcentaje no le quite dinero a nadie.
+ *
+ * ⚠️ EL SECRETO NO VIAJA EN LA REDIRECCIÓN. El resto de acciones redirige con
+ * el aviso en la URL (patrón de `/student/coupons`); esta pinta la página en
+ * la misma respuesta, porque una URL con un secreto acaba en el historial.
+ */
+export const prerender = false;
+
+const me = Astro.locals.student!;
+if (!canManageAmbassadors(me)) return new Response(null, { status: 404 });
+
+const c = ambassadorCopy.admin;
+const ac = ambassadorCopy;
+const ar = ambassadorRepo();
+const lang = resolverIdiomaServidor(Astro.url, Astro.request.headers.get("accept-language"));
+const say = (text: Txt, values?: Record<string, string>) =>
+  values ? interpolar(text[lang], values) : text[lang];
+
+let notice: { type: "ok" | "error"; text: string } | null = null;
+/** El secreto recién creado: solo vive en esta respuesta. */
+let freshSecret: { businessId: string; value: string } | null = null;
+
+const dollars = (v: FormDataEntryValue | null) => {
+  const n = Number(String(v ?? "").replace(/[$,\s]/g, ""));
+  return Number.isFinite(n) ? n : NaN;
+};
+
+if (Astro.request.method === "POST") {
+  const form = await Astro.request.formData();
+  const action = String(form.get("action") ?? "");
+  const id = String(form.get("id") ?? "");
+  const source: BusinessSource = form.get("source") === "clinics" ? "clinics" : "ghl";
+  const linkTemplate = String(form.get("link") ?? "").trim() || null;
+
+  if (action === "create") {
+    const name = String(form.get("name") ?? "").trim();
+    const slug = normaliseSlug(String(form.get("slug") ?? "") || name);
+    if (!name || !slug) {
+      notice = { type: "error", text: say(c.noticeBizBad) };
+    } else {
+      const created = await ar.createBusiness({ slug, name, source, linkTemplate });
+      notice = created
+        ? { type: "ok", text: say(c.noticeBizCreated) }
+        : { type: "error", text: say(c.noticeBizExists) };
+    }
+  }
+
+  if (action === "update") {
+    const name = String(form.get("name") ?? "").trim();
+    if (name) {
+      await ar.updateBusiness(id, { name, source, linkTemplate, active: form.get("active") === "1" });
+      notice = { type: "ok", text: say(c.noticeBizSaved) };
+    }
+  }
+
+  if (action === "secret") {
+    /* 32 bytes al azar: no se adivina. El prefijo dice de quién es si alguna
+       vez aparece pegado donde no debía. */
+    const value = `e180_${randomBytes(32).toString("base64url")}`;
+    await ar.setBusinessSecret(id, createHash("sha256").update(value).digest("hex"));
+    freshSecret = { businessId: id, value };
+  }
+
+  if (action === "rule") {
+    const level = form.get("level") === "2" ? 2 : 1;
+    const kind: RuleKind = form.get("kind") === "visit" ? "visit" : "sale";
+    const fromPayment = Math.max(1, Math.floor(Number(form.get("fromPayment") ?? 1)) || 1);
+    const percent = kind === "sale" ? dollars(form.get("percent")) : NaN;
+    const fixed = kind === "visit" ? dollars(form.get("fixed")) : NaN;
+    const from = String(form.get("from") ?? "").trim();
+    const effectiveFrom = from ? new Date(`${from}T00:00:00`) : new Date();
+
+    const valid =
+      (kind === "sale" ? percent >= 0 && percent <= 100 : fixed >= 0) &&
+      !Number.isNaN(effectiveFrom.getTime());
+    if (!valid) {
+      notice = { type: "error", text: say(c.noticeRuleBad) };
+    } else {
+      await ar.addRule({
+        businessId: id,
+        level,
+        kind,
+        fromPayment,
+        percent: kind === "sale" ? Math.round(percent * 100) / 100 : null,
+        fixedCents: kind === "visit" ? Math.round(fixed * 100) : null,
+        effectiveFrom,
+        createdBy: me.id,
+      });
+      notice = { type: "ok", text: say(c.noticeRuleAdded) };
+    }
+  }
+
+  if (!freshSecret) {
+    const url = new URL("/student/businesses", Astro.url);
+    if (notice) {
+      url.searchParams.set("t", notice.type);
+      url.searchParams.set("m", notice.text);
+    }
+    return Astro.redirect(url.pathname + url.search, 303);
+  }
+}
+
+const typeParam = Astro.url.searchParams.get("t");
+const messageParam = Astro.url.searchParams.get("m");
+if (!notice && messageParam && (typeParam === "ok" || typeParam === "error")) {
+  notice = { type: typeParam, text: messageParam };
+}
+
+const businesses = await ar.listBusinesses();
+const rules = await ar.listRules();
+const now = new Date();
+
+/** ¿Esta regla sigue mandando hoy, o la sustituyó una más nueva? */
+const inForce = (r: StoredRule, all: StoredRule[]) =>
+  ruleFor(all, r.businessId, r.level, r.kind, r.fromPayment, now) === r ||
+  r.effectiveFrom > now;
+
+const webhookUrl = (slug: string) => new URL(`/api/facts/${slug}`, Astro.url).href;
+
+const campo =
+  "mt-2 min-h-12 w-full rounded-xl border border-line-strong bg-surface px-4 py-3 text-base text-ink transition-colors focus:border-secondary-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+const etiqueta = "block text-sm font-semibold text-ink-muted";
+const boton =
+  "inline-flex min-h-12 items-center justify-center rounded-full bg-cta px-6 font-semibold text-ink-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+const botonSuave =
+  "inline-flex min-h-11 items-center justify-center rounded-full border border-line-strong px-4 text-sm font-semibold text-ink hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+---
+
+<StudentLayout title={c.bizTitle} student={me} heading={c.bizTitle}>
+  <div class="max-w-4xl">
+    <p class="max-w-2xl text-base text-pretty text-ink-muted"><T v={c.bizIntro} /></p>
+
+    {
+      notice && (
+        <p
+          role="status"
+          class:list={[
+            "mt-6 rounded-xl border px-4 py-3 text-sm text-pretty",
+            notice.type === "ok" ? "border-secondary-300 bg-secondary-50 text-ink" : "border-error-500 bg-error-50 text-error-700",
+          ]}
+        >
+          {notice.text}
+        </p>
+      )
+    }
+
+    {/* ─── Nuevo negocio ──────────────────────────────────────────────── */}
+    <form method="POST" class="mt-8 rounded-2xl border border-line bg-surface p-6">
+      <input type="hidden" name="action" value="create" />
+      <h2 class="text-lg font-bold text-ink"><T v={c.bizNew} /></h2>
+      <div class="mt-5 grid gap-4 sm:grid-cols-2">
+        <div>
+          <label for="new-name" class={etiqueta}><T v={c.bizName} /></label>
+          <input id="new-name" name="name" required maxlength="80" class={campo} />
+        </div>
+        <div>
+          <label for="new-slug" class={etiqueta}><T v={c.bizSlug} /></label>
+          <input id="new-slug" name="slug" maxlength="40" class={campo} placeholder="lira-medical" />
+          <p class="mt-1 text-xs text-ink-muted"><T v={c.bizSlugHint} /></p>
+        </div>
+        <div>
+          <label for="new-source" class={etiqueta}><T v={c.bizSource} /></label>
+          <select id="new-source" name="source" class={campo}>
+            <option value="ghl">{ac.source.ghl[lang]}</option>
+            <option value="clinics">{ac.source.clinics[lang]}</option>
+          </select>
+        </div>
+        <div>
+          <label for="new-link" class={etiqueta}><T v={c.bizLink} /></label>
+          <input id="new-link" name="link" maxlength="300" class={campo} placeholder="https://liramedical.com/?ref={codigo}" />
+          <p class="mt-1 text-xs text-ink-muted"><T v={c.bizLinkHint} /></p>
+        </div>
+      </div>
+      <button type="submit" class:list={[boton, "mt-5"]}><T v={c.bizCreate} /></button>
+    </form>
+
+    {/* ─── Cada negocio ───────────────────────────────────────────────── */}
+    {
+      businesses.length === 0 ? (
+        <p class="mt-8 text-sm text-ink-muted"><T v={c.bizEmpty} /></p>
+      ) : (
+        businesses.map((b) => {
+          const own = rules.filter((r) => r.businessId === b.id).sort((x, y) => y.effectiveFrom.getTime() - x.effectiveFrom.getTime());
+          return (
+            <section class="mt-8 rounded-2xl border border-line bg-surface p-6">
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <h2 class="text-xl font-bold text-ink">{b.name}</h2>
+                <span class:list={["rounded-full px-3 py-1 text-xs font-bold", b.active ? "bg-secondary-100 text-secondary-800" : "bg-neutral-200 text-ink-muted"]}>
+                  <T v={b.active ? c.bizActive : c.bizInactive} />
+                </span>
+              </div>
+
+              <form method="POST" class="mt-4 grid gap-4 sm:grid-cols-3">
+                <input type="hidden" name="action" value="update" />
+                <input type="hidden" name="id" value={b.id} />
+                <input type="hidden" name="active" value={b.active ? "1" : "0"} />
+                <div>
+                  <label for={`name-${b.id}`} class={etiqueta}><T v={c.bizName} /></label>
+                  <input id={`name-${b.id}`} name="name" value={b.name} required maxlength="80" class={campo} />
+                </div>
+                <div>
+                  <label for={`source-${b.id}`} class={etiqueta}><T v={c.bizSource} /></label>
+                  <select id={`source-${b.id}`} name="source" class={campo}>
+                    <option value="ghl" selected={b.source === "ghl"}>{ac.source.ghl[lang]}</option>
+                    <option value="clinics" selected={b.source === "clinics"}>{ac.source.clinics[lang]}</option>
+                  </select>
+                </div>
+                <div>
+                  <label for={`link-${b.id}`} class={etiqueta}><T v={c.bizLink} /></label>
+                  <input id={`link-${b.id}`} name="link" value={b.linkTemplate ?? ""} maxlength="300" class={campo} />
+                </div>
+                <div class="flex flex-wrap gap-2 sm:col-span-3">
+                  <button type="submit" class={botonSuave}><T v={c.bizSave} /></button>
+                </div>
+              </form>
+              <form method="POST" class="mt-2">
+                <input type="hidden" name="action" value="update" />
+                <input type="hidden" name="id" value={b.id} />
+                <input type="hidden" name="name" value={b.name} />
+                <input type="hidden" name="source" value={b.source} />
+                <input type="hidden" name="link" value={b.linkTemplate ?? ""} />
+                <input type="hidden" name="active" value={b.active ? "0" : "1"} />
+                <button type="submit" class={botonSuave}><T v={b.active ? c.bizToggleOff : c.bizToggleOn} /></button>
+              </form>
+
+              {b.source === "ghl" && (
+                <div class="mt-5 rounded-xl bg-surface-muted p-4">
+                  <p class={etiqueta}><T v={c.bizWebhook} /></p>
+                  <p class="mt-1 font-mono text-sm break-all text-ink select-all">{webhookUrl(b.slug)}</p>
+                  <p class:list={[etiqueta, "mt-3"]}><T v={c.bizSecret} /></p>
+                  {freshSecret?.businessId === b.id ? (
+                    <div class="mt-1">
+                      <p class="font-mono text-sm break-all text-ink select-all">{freshSecret.value}</p>
+                      <p class="mt-1 text-xs font-semibold text-warning-700"><T v={c.bizSecretOnce} /></p>
+                    </div>
+                  ) : (
+                    <p class="mt-1 text-sm text-ink-muted">
+                      {b.hasSecret && b.secretCreatedAt ? <T v={c.bizSecretSet} vars={{ fecha: shortDate(b.secretCreatedAt) }} /> : <T v={c.bizSecretNone} />}
+                    </p>
+                  )}
+                  <form method="POST" class="mt-3">
+                    <input type="hidden" name="action" value="secret" />
+                    <input type="hidden" name="id" value={b.id} />
+                    <button type="submit" class={botonSuave}><T v={c.bizSecretNew} /></button>
+                    {b.hasSecret && <span class="ml-2 text-xs text-ink-muted"><T v={c.bizSecretReplaces} /></span>}
+                  </form>
+                </div>
+              )}
+
+              {/* ─── Reglas ─── */}
+              <h3 class="mt-6 text-base font-bold text-ink"><T v={c.rulesTitle} /></h3>
+              <p class="mt-1 text-sm text-pretty text-ink-muted"><T v={c.rulesHint} /></p>
+              {own.length === 0 ? (
+                <p class="mt-3 text-sm font-semibold text-warning-700"><T v={c.rulesNone} /></p>
+              ) : (
+                <ul class="mt-3 divide-y divide-line rounded-xl border border-line">
+                  {own.map((r) => (
+                    <li class:list={["flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-sm", !inForce(r, own) && "text-ink-subtle line-through"]}>
+                      <span>
+                        <T
+                          v={c.ruleRow}
+                          vars={{
+                            nivel: r.level,
+                            clase: r.kind === "sale" ? c.ruleKindSale : c.ruleKindVisit,
+                            pago: r.fromPayment,
+                            valor: r.kind === "sale" ? `${r.percent}%` : money(r.fixedCents ?? 0),
+                          }}
+                        />
+                      </span>
+                      <span class="text-xs text-ink-muted">
+                        <T v={c.ruleSince} vars={{ fecha: shortDate(r.effectiveFrom) }} />
+                        {!inForce(r, own) && <> · <T v={c.ruleReplaced} /></>}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              <form method="POST" class="mt-4 grid gap-4 rounded-xl border border-dashed border-line-strong p-4 sm:grid-cols-3">
+                <input type="hidden" name="action" value="rule" />
+                <input type="hidden" name="id" value={b.id} />
+                <div>
+                  <label for={`level-${b.id}`} class={etiqueta}><T v={c.ruleLevel} /></label>
+                  <select id={`level-${b.id}`} name="level" class={campo}>
+                    <option value="1">{c.ruleLevel1[lang]}</option>
+                    <option value="2">{c.ruleLevel2[lang]}</option>
+                  </select>
+                </div>
+                <div>
+                  <label for={`kind-${b.id}`} class={etiqueta}><T v={c.ruleKind} /></label>
+                  <select id={`kind-${b.id}`} name="kind" class={campo}>
+                    <option value="sale">{c.ruleKindSale[lang]}</option>
+                    <option value="visit">{c.ruleKindVisit[lang]}</option>
+                  </select>
+                </div>
+                <div>
+                  <label for={`from-pay-${b.id}`} class={etiqueta}><T v={c.ruleFrom} /></label>
+                  <input id={`from-pay-${b.id}`} name="fromPayment" type="number" min="1" value="1" class={campo} />
+                  <p class="mt-1 text-xs text-ink-muted"><T v={c.ruleFromHint} /></p>
+                </div>
+                <div>
+                  <label for={`pct-${b.id}`} class={etiqueta}><T v={c.rulePercent} /></label>
+                  <input id={`pct-${b.id}`} name="percent" inputmode="decimal" class={campo} placeholder="20" />
+                </div>
+                <div>
+                  <label for={`fixed-${b.id}`} class={etiqueta}><T v={c.ruleFixed} /></label>
+                  <input id={`fixed-${b.id}`} name="fixed" inputmode="decimal" class={campo} placeholder="25.00" />
+                </div>
+                <div>
+                  <label for={`date-${b.id}`} class={etiqueta}><T v={c.ruleFromDate} /></label>
+                  <input id={`date-${b.id}`} name="from" type="date" class={campo} />
+                </div>
+                <div class="sm:col-span-3">
+                  <button type="submit" class={boton}><T v={c.ruleAdd} /></button>
+                </div>
+              </form>
+            </section>
+          );
+        })
+      )
+    }
+  </div>
+</StudentLayout>

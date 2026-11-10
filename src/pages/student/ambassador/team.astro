@@ -1,0 +1,63 @@
+---
+import AmbassadorLayout from "@layouts/AmbassadorLayout.astro";
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import { ambassadorCopy } from "@config/ambassadorArea";
+import { loadBook } from "@lib/ambassadorBook";
+import { money } from "@lib/ambassadorFormat";
+import { isAmbassador } from "@lib/permissions";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * /student/ambassador/team: los Embajadores que invitaste (tu nivel 2)
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * ⚠️ SE VE A LAS PERSONAS DEL EQUIPO, NUNCA A SUS CLIENTES. Cuántos referidos y
+ * clientes tiene cada uno y cuánto te ha generado, sin un solo nombre de
+ * cliente: el permiso que dio ese cliente es para su Embajador, no para ti.
+ */
+export const prerender = false;
+
+const me = Astro.locals.student!;
+if (!isAmbassador(me)) return new Response(null, { status: 404 });
+
+const c = ambassadorCopy;
+const book = await loadBook(me, { viewer: me, withNames: false });
+const total = book.team.reduce((s, m) => s + m.earnedCents, 0);
+---
+
+<AmbassadorLayout title={c.team.title} student={me} tab="team">
+  <h1 class="text-2xl font-extrabold text-ink"><T v={c.team.title} /></h1>
+  <p class="mt-2 text-sm text-pretty text-ink-muted"><T v={c.team.intro} /></p>
+
+  {
+    book.team.length === 0 ? (
+      <p class="mt-6 rounded-3xl border border-line bg-surface p-6 text-center text-sm text-pretty text-ink-muted">
+        <T v={c.team.empty} />
+      </p>
+    ) : (
+      <>
+        <section class="mt-5 rounded-3xl bg-primary-900 p-5 text-white">
+          <p class="text-sm font-semibold text-primary-100"><T v={c.team.gave} /></p>
+          <p class="mt-1 text-3xl font-extrabold tabular-nums"><T v={money(total)} /></p>
+        </section>
+        <ul class="mt-4 divide-y divide-line overflow-hidden rounded-3xl border border-line bg-surface">
+          {book.team.map((m) => (
+            <li class="flex items-center gap-3 px-5 py-4">
+              <span aria-hidden="true" class="grid size-10 shrink-0 place-items-center rounded-full bg-secondary-100 text-secondary-800">
+                <Icono nombre="usuario" class="size-5" grosor={2} />
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block truncate font-semibold text-ink">{m.student.name ?? m.student.email}</span>
+                <span class="block text-xs text-ink-muted">
+                  <T v={c.team.member} vars={{ r: m.referrals, c: m.customers }} />
+                </span>
+              </span>
+              <span class="shrink-0 font-bold tabular-nums text-ink"><T v={money(m.earnedCents)} /></span>
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+</AmbassadorLayout>

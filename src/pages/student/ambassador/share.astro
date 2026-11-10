@@ -1,0 +1,122 @@
+---
+import AmbassadorLayout from "@layouts/AmbassadorLayout.astro";
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import { ambassadorCopy } from "@config/ambassadorArea";
+import { ambassadorRepo } from "@lib/ambassadors";
+import { referralLink } from "@lib/ambassadorBook";
+import { isAmbassador } from "@lib/permissions";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * /student/ambassador/share: tu código y un enlace por negocio
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Un solo código para todos los negocios. Los que tienen enlace propio (su
+ * web lee `?ref=` o `/r/<código>`) lo enseñan ya armado; los que no, dicen
+ * que basta con dar el código.
+ *
+ * El único JavaScript del portal está aquí, y es opcional: copiar al
+ * portapapeles y el menú de compartir del teléfono (`navigator.share`). Sin
+ * él, el enlace se ve entero y se puede seleccionar a mano.
+ */
+export const prerender = false;
+
+const me = Astro.locals.student!;
+if (!isAmbassador(me)) return new Response(null, { status: 404 });
+
+const c = ambassadorCopy;
+const code = me.ambassadorCode!;
+const businesses = (await ambassadorRepo().listBusinesses()).filter((b) => b.active);
+
+const button =
+  "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full border border-line-strong bg-surface px-4 text-sm font-semibold text-ink transition-colors hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+---
+
+<AmbassadorLayout title={c.share.title} student={me} tab="share">
+  <h1 class="text-2xl font-extrabold text-ink"><T v={c.share.title} /></h1>
+  <p class="mt-2 text-sm text-pretty text-ink-muted"><T v={c.share.intro} /></p>
+
+  <section class="mt-5 rounded-3xl bg-primary-900 p-5 text-center text-white">
+    <p class="text-sm font-semibold text-primary-100"><T v={c.share.yourCode} /></p>
+    <p class="mt-1 font-mono text-4xl font-extrabold tracking-widest select-all">{code}</p>
+    <button
+      type="button"
+      data-copy={code}
+      class="mt-4 inline-flex min-h-11 items-center gap-1.5 rounded-full bg-white px-5 text-sm font-semibold text-primary-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+    >
+      <Icono nombre="lista" class="size-4" grosor={2} />
+      <span data-label><T v={c.share.copy} /></span>
+    </button>
+  </section>
+
+  <ul class="mt-5 flex flex-col gap-3">
+    {
+      businesses.map((b) => {
+        const link = referralLink(b, code);
+        return (
+          <li class="rounded-3xl border border-line bg-surface p-4">
+            <p class="font-bold text-ink">{b.name}</p>
+            {link ? (
+              <>
+                <p class="mt-1 text-sm break-all text-ink-muted select-all">{link}</p>
+                <div class="mt-3 flex flex-wrap gap-2">
+                  <button type="button" data-copy={link} class={button}>
+                    <Icono nombre="lista" class="size-4" grosor={2} />
+                    <span data-label><T v={c.share.copy} /></span>
+                  </button>
+                  <button type="button" data-share={link} data-title={b.name} class={`${button} hidden`}>
+                    <Icono nombre="compartir" class="size-4" grosor={2} />
+                    <T v={c.share.share} />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <p class="mt-1 text-sm text-ink-muted"><T v={c.share.noLink} /></p>
+            )}
+          </li>
+        );
+      })
+    }
+  </ul>
+
+  <p class="mt-5 flex items-start gap-2 px-1 text-sm text-pretty text-ink-muted">
+    <Icono nombre="casa" class="mt-0.5 size-4 shrink-0" grosor={2} />
+    <T v={c.share.install} />
+  </p>
+
+  <span hidden data-copied-es={c.share.copied.es} data-copied-en={c.share.copied.en} id="copiado"></span>
+</AmbassadorLayout>
+
+<script>
+  const copied = document.getElementById("copiado");
+
+  document.querySelectorAll<HTMLButtonElement>("[data-copy]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const text = btn.dataset.copy ?? "";
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        /* Sin portapapeles (navegador viejo, página no segura): el texto está a
+           la vista y se puede seleccionar con un toque largo. */
+        return;
+      }
+      const label = btn.querySelector<HTMLElement>("[data-label]");
+      if (!label) return;
+      const before = label.innerHTML;
+      const lang = document.documentElement.lang === "en" ? "en" : "es";
+      label.textContent = copied?.dataset[lang === "en" ? "copiedEn" : "copiedEs"] ?? "OK";
+      setTimeout(() => (label.innerHTML = before), 1600);
+    });
+  });
+
+  /* El menú de compartir del teléfono, solo donde existe. */
+  if (typeof navigator.share === "function") {
+    document.querySelectorAll<HTMLButtonElement>("[data-share]").forEach((btn) => {
+      btn.classList.remove("hidden");
+      btn.addEventListener("click", () => {
+        navigator.share({ title: btn.dataset.title, url: btn.dataset.share }).catch(() => {});
+      });
+    });
+  }
+</script>

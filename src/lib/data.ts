@@ -106,6 +106,20 @@ export interface Student {
    * atribuye. Alguien puede llegar por un amigo sin traer código.
    */
   source: string | null;
+
+  /* ─── EMBAJADOR (10-11-2026) ────────────────────────────────────────────
+     Nulos en quien no lo es. Ver la nota de `codigo_embajador` en
+     `db/schema.sql` y `isAmbassador` en `@lib/permissions`. */
+
+  /** Su código en todos los negocios. `null` = no es Embajador. */
+  ambassadorCode: string | null;
+  /**
+   * Quién cobra el nivel 2 de sus ventas. Se fija al activarlo y solo lo
+   * cambia el admin: NO sigue a `registeredBy`.
+   */
+  sponsorId: string | null;
+  /** Desde cuándo es Embajador. */
+  ambassadorSince: Date | null;
 }
 
 /**
@@ -206,6 +220,18 @@ export interface Repo {
    * `role` action in `/admin`.
    */
   setRole(id: string, role: Role): Promise<void>;
+  /**
+   * Lo hace Embajador: rol `agente` (un admin conserva el suyo), su código y
+   * su patrocinador, en una sola sentencia. `false` si el código ya es de otro.
+   */
+  activateAmbassador(
+    id: string,
+    data: { code: string; sponsorId: string | null; approvedBy: string },
+  ): Promise<boolean>;
+  /** Cambia el patrocinador. Solo el admin. */
+  setSponsor(id: string, sponsorId: string | null): Promise<void>;
+  /** El Embajador con ese código, activo o no. */
+  studentByAmbassadorCode(code: string): Promise<Student | null>;
   markSignIn(id: string): Promise<void>;
 
   createMagicToken(studentId: string, tokenHash: string, expiresAt: Date): Promise<void>;
@@ -352,6 +378,26 @@ const roleFromDb = (value: unknown): Role =>
 
 // ─── Postgres implementation ─────────────────────────────────────────────────
 
+let sqlClient: ReturnType<typeof postgres> | null = null;
+
+/**
+ * La conexión, UNA por proceso, compartida con `@lib/ambassadors`.
+ *
+ * ⚠️ NO SE ABRE UNA SEGUNDA. Con `max: 1` cada cliente es una conexión, y en
+ * un Postgres pequeño las conexiones son lo que se acaba primero: el portal
+ * de Embajadores lee alumnos y hechos en la misma petición, y con dos clientes
+ * gastaría dos huecos del pooler para lo que cabe en uno.
+ */
+export function sharedSql(url: string): ReturnType<typeof postgres> {
+  sqlClient ??= postgres(url, {
+    prepare: false,
+    max: 1,
+    connect_timeout: 10,
+    idle_timeout: 20,
+  });
+  return sqlClient;
+}
+
 function postgresRepo(url: string): Repo {
   /* `prepare: false` is not optional in serverless: with a pooler in front
      (pgBouncer in transaction mode, which is what Supabase and Neon hand you)
@@ -370,14 +416,9 @@ function postgresRepo(url: string): Repo {
      `idle_timeout` returns the connection to the pooler quickly instead of
      holding a slot that this invocation is not going to use again. On a small
      free-tier Postgres, slots are the scarce resource, not queries. */
-  const sql = postgres(url, {
-    prepare: false,
-    max: 1,
-    connect_timeout: 10,
-    idle_timeout: 20,
-  });
+  const sql = sharedSql(url);
 
-  const toStudent = (f: Record<string, unknown>): Student => ({
+  const toStudent =(f: Record<string, unknown>): Student => ({
     id: f.id as string,
     email: f.email as string,
     name: (f.nombre as string) ?? null,
@@ -397,6 +438,9 @@ function postgresRepo(url: string): Repo {
     phone: (f.telefono as string) ?? null,
     whatsapp: (f.whatsapp as boolean) ?? null,
     source: (f.origen as string) ?? null,
+    ambassadorCode: (f.codigo_embajador as string) ?? null,
+    sponsorId: (f.patrocinador_id as string) ?? null,
+    ambassadorSince: (f.embajador_desde as Date) ?? null,
   });
 
   return {
@@ -477,6 +521,35 @@ function postgresRepo(url: string): Repo {
 
     async setRole(id, role) {
       await sql`UPDATE alumnos SET rol = ${ROLE_IN_DB[role]} WHERE id = ${id}`;
+    },
+
+    async activateAmbassador(id, { code, sponsorId, approvedBy }) {
+      /* El índice único parcial de `codigo_embajador` decide si el código
+         está libre; aquí solo se traduce su error (23505). */
+      try {
+        await sql`
+          UPDATE alumnos SET
+            rol = CASE WHEN rol = 'admin' THEN rol ELSE 'agente' END,
+            codigo_embajador = ${normaliseCode(code)},
+            patrocinador_id = ${sponsorId},
+            embajador_desde = COALESCE(embajador_desde, now()),
+            embajador_aprobado_por = ${approvedBy}
+          WHERE id = ${id}`;
+        return true;
+      } catch (error) {
+        if ((error as { code?: string }).code === "23505") return false;
+        throw error;
+      }
+    },
+
+    async setSponsor(id, sponsorId) {
+      await sql`UPDATE alumnos SET patrocinador_id = ${sponsorId} WHERE id = ${id}`;
+    },
+
+    async studentByAmbassadorCode(code) {
+      const [f] = await sql`
+        SELECT * FROM alumnos WHERE codigo_embajador = ${normaliseCode(code)} LIMIT 1`;
+      return f ? toStudent(f) : null;
     },
 
     async markSignIn(id) {
@@ -761,6 +834,9 @@ function memoryRepo(): Repo {
       phone: null,
       whatsapp: null,
       source: null,
+      ambassadorCode: null,
+      sponsorId: null,
+      ambassadorSince: null,
     };
     students.set(s.email, s);
   }
@@ -821,6 +897,9 @@ function memoryRepo(): Repo {
         phone: null,
         whatsapp: null,
         source: null,
+        ambassadorCode: null,
+        sponsorId: null,
+        ambassadorSince: null,
       };
       students.set(s.email, s);
       demoEmails.add(s.email);
@@ -828,6 +907,13 @@ function memoryRepo(): Repo {
     };
 
     const agent = seed("agente@emprende180.com", "Laura Ruiz", "agent", null, new Date());
+    /* Laura es además Embajadora, para que el portal de Embajadores se pueda
+       abrir en la demo con números (los siembra `@lib/ambassadors`). */
+    students.set(agent.email, {
+      ...agent,
+      ambassadorCode: "LAURA",
+      ambassadorSince: new Date(Date.now() - 60 * 86_400_000),
+    });
     /* Uno ha entrado y el otro no: es la pareja de estados que el panel tiene
        que saber contar, y la que hace visible el aviso de "pagaron y no han
        entrado" sin tener que fabricarlo a mano. */
@@ -903,6 +989,9 @@ function memoryRepo(): Repo {
         phone: null,
         whatsapp: null,
         source: null,
+        ambassadorCode: null,
+        sponsorId: null,
+        ambassadorSince: null,
       };
       students.set(s.email, s);
       return s;
@@ -914,6 +1003,31 @@ function memoryRepo(): Repo {
     async setRole(id, role) {
       const s = byId(id);
       if (s) students.set(s.email, { ...s, role });
+    },
+    async activateAmbassador(id, { code, sponsorId }) {
+      const k = normaliseCode(code);
+      const taken = [...students.values()].some(
+        (o) => o.ambassadorCode === k && o.id !== id,
+      );
+      if (taken) return false;
+      const s = byId(id);
+      if (s)
+        students.set(s.email, {
+          ...s,
+          role: s.role === "admin" ? "admin" : "agent",
+          ambassadorCode: k,
+          sponsorId,
+          ambassadorSince: s.ambassadorSince ?? new Date(),
+        });
+      return true;
+    },
+    async setSponsor(id, sponsorId) {
+      const s = byId(id);
+      if (s) students.set(s.email, { ...s, sponsorId });
+    },
+    async studentByAmbassadorCode(code) {
+      const k = normaliseCode(code);
+      return [...students.values()].find((s) => s.ambassadorCode === k) ?? null;
     },
     async markSignIn(id) {
       const s = byId(id);

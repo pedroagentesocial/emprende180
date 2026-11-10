@@ -1,0 +1,15 @@
+{
+  "name": "Emprende180 Embajadores",
+  "short_name": "Embajadores",
+  "description": "Tus referidos, tus comisiones y tus pagos.",
+  "start_url": "/student/ambassador",
+  "scope": "/student/",
+  "display": "standalone",
+  "background_color": "#F2F4F7",
+  "theme_color": "#001637",
+  "lang": "es",
+  "icons": [
+    { "src": "/identidad/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/favicon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

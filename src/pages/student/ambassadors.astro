@@ -1,0 +1,376 @@
+---
+import StudentLayout from "@layouts/StudentLayout.astro";
+import T from "@components/i18n/T.astro";
+import { ambassadorCopy } from "@config/ambassadorArea";
+import { resolverIdiomaServidor } from "@i18n/idioma";
+import { interpolar } from "@i18n/formato";
+import { repo, normaliseCode, type Student } from "@lib/data";
+import { ambassadorRepo, type PayoutMethod } from "@lib/ambassadors";
+import { loadBook, type Book } from "@lib/ambassadorBook";
+import { money, shortDate } from "@lib/ambassadorFormat";
+import { canManageAmbassadors, isAmbassador } from "@lib/permissions";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * /student/ambassadors: quién es Embajador, cuánto se le debe, y pagarle
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Solo el admin. Tres cosas:
+ *
+ *   1. ACTIVAR a alguien como Embajador: le da su código y fija su
+ *      patrocinador (por defecto, quien lo invitó). Desde ese momento cobra.
+ *   2. VER a cada uno con el mismo cálculo que ve él en su teléfono
+ *      (`loadBook`): una sola cuenta del mismo dinero.
+ *   3. ANOTAR un pago, en dinero o en crédito de Revivi.
+ *
+ * ⚠️ LOS PERMISOS SE MIRAN EN EL POST, no solo al pintar: un formulario es un
+ * POST y un POST se puede mandar a mano. Mismo patrón que `/student/people`.
+ *
+ * ⚠️ ABRIR A UN EMBAJADOR ENSEÑA LOS NOMBRES DE SUS CLIENTES (los que dieron
+ * permiso), y por eso deja rastro en `registro_vistas` como "admin:referrals".
+ */
+export const prerender = false;
+
+const me = Astro.locals.student!;
+if (!canManageAmbassadors(me)) return new Response(null, { status: 404 });
+
+const c = ambassadorCopy.admin;
+const ac = ambassadorCopy;
+const r = repo();
+const ar = ambassadorRepo();
+const lang = resolverIdiomaServidor(Astro.url, Astro.request.headers.get("accept-language"));
+const say = (text: { es: string; en: string }, values?: Record<string, string>) =>
+  values ? interpolar(text[lang], values) : text[lang];
+
+/** Un código a partir del nombre: LAURA27. Se reintenta si está cogido. */
+function suggestCode(s: Student): string {
+  const base = normaliseCode((s.name ?? s.email.split("@")[0] ?? "E180").split(/\s+/)[0] ?? "E180")
+    .normalize("NFD")
+    .replace(/[^A-Z0-9]/g, "")
+    .slice(0, 10);
+  const n = String(Math.floor(10 + Math.random() * 90));
+  return `${base || "E180"}${n}`;
+}
+
+let notice: { type: "ok" | "error"; text: string } | null = null;
+let back = "/student/ambassadors";
+
+if (Astro.request.method === "POST") {
+  const form = await Astro.request.formData();
+  const action = String(form.get("action") ?? "");
+
+  if (action === "activate") {
+    const target = await r.studentById(String(form.get("studentId") ?? ""));
+    const typed = normaliseCode(String(form.get("code") ?? ""));
+    const sponsorChoice = String(form.get("sponsor") ?? "invited");
+
+    if (!target || !target.active || isAmbassador(target)) {
+      notice = { type: "error", text: say(c.noticeBadCode) };
+    } else if (typed && !/^[A-Z0-9]{3,20}$/.test(typed)) {
+      notice = { type: "error", text: say(c.noticeBadCode) };
+    } else {
+      /* Patrocinador: quien lo invitó (si es Embajador), ninguno, o el elegido. */
+      let sponsorId: string | null = null;
+      if (sponsorChoice === "invited") {
+        const inviter = target.registeredBy ? await r.studentById(target.registeredBy) : null;
+        sponsorId = inviter && isAmbassador(inviter) ? inviter.id : null;
+      } else if (sponsorChoice !== "none") {
+        const chosen = await r.studentById(sponsorChoice);
+        sponsorId = chosen && isAmbassador(chosen) ? chosen.id : null;
+      }
+      if (sponsorId === target.id) sponsorId = null;
+
+      /* Un código escrito a mano se respeta o se rechaza; uno generado se
+         reintenta con otro número si por casualidad ya existe. */
+      let code = typed || suggestCode(target);
+      let ok = await r.activateAmbassador(target.id, { code, sponsorId, approvedBy: me.id });
+      for (let i = 0; !ok && !typed && i < 4; i++) {
+        code = suggestCode(target);
+        ok = await r.activateAmbassador(target.id, { code, sponsorId, approvedBy: me.id });
+      }
+      notice = ok
+        ? { type: "ok", text: say(c.noticeActivated, { nombre: target.name ?? target.email, codigo: code }) }
+        : { type: "error", text: say(c.noticeCodeTaken) };
+    }
+  }
+
+  if (action === "payout") {
+    const target = await r.studentById(String(form.get("ambassadorId") ?? ""));
+    const cents = Math.round(Number(String(form.get("amount") ?? "").replace(/[$,\s]/g, "")) * 100);
+    const method: PayoutMethod = form.get("method") === "revivi_credit" ? "revivi_credit" : "cash";
+    back = `/student/ambassadors?ver=${target?.id ?? ""}`;
+    if (!target || !isAmbassador(target) || !Number.isFinite(cents) || cents <= 0) {
+      notice = { type: "error", text: say(c.noticeBadAmount) };
+    } else {
+      await ar.addPayout({
+        ambassadorId: target.id,
+        method,
+        amountCents: cents,
+        paidAt: new Date(),
+        note: String(form.get("note") ?? "").trim().slice(0, 300) || null,
+        clinicsRef: null,
+        recordedBy: me.id,
+      });
+      notice = { type: "ok", text: say(c.noticePaid) };
+    }
+  }
+
+  if (action === "sponsor") {
+    const target = await r.studentById(String(form.get("ambassadorId") ?? ""));
+    const choice = String(form.get("sponsor") ?? "none");
+    back = `/student/ambassadors?ver=${target?.id ?? ""}`;
+    const chosen = choice === "none" ? null : await r.studentById(choice);
+    if (target && chosen && chosen.id === target.id) {
+      notice = { type: "error", text: say(c.noticeSelfSponsor) };
+    } else if (target && isAmbassador(target) && (!chosen || isAmbassador(chosen))) {
+      await r.setSponsor(target.id, chosen?.id ?? null);
+      notice = { type: "ok", text: say(c.noticeSponsor) };
+    }
+  }
+
+  const url = new URL(back, Astro.url);
+  if (notice) {
+    url.searchParams.set("t", notice.type);
+    url.searchParams.set("m", notice.text);
+  }
+  return Astro.redirect(url.pathname + url.search, 303);
+}
+
+const typeParam = Astro.url.searchParams.get("t");
+const messageParam = Astro.url.searchParams.get("m");
+if (messageParam && (typeParam === "ok" || typeParam === "error")) {
+  notice = { type: typeParam, text: messageParam };
+}
+
+const everyone = await r.listStudents();
+const ambassadors = everyone.filter(isAmbassador).sort((a, b) => (a.name ?? a.email).localeCompare(b.name ?? b.email));
+const candidates = everyone
+  .filter((s) => s.active && !isAmbassador(s))
+  .sort((a, b) => (a.name ?? a.email).localeCompare(b.name ?? b.email));
+const byId = new Map(everyone.map((s) => [s.id, s]));
+
+const viewing = Astro.url.searchParams.get("ver");
+const target = viewing ? ambassadors.find((a) => a.id === viewing) ?? null : null;
+const detail: Book | null = target ? await loadBook(target, { viewer: me, withNames: true }) : null;
+
+const books = target
+  ? []
+  : await Promise.all(ambassadors.map((a) => loadBook(a, { viewer: me, withNames: false })));
+
+const campo =
+  "mt-2 min-h-12 w-full rounded-xl border border-line-strong bg-surface px-4 py-3 text-base text-ink transition-colors focus:border-secondary-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+const etiqueta = "block text-sm font-semibold text-ink-muted";
+const boton =
+  "inline-flex min-h-12 items-center justify-center rounded-full bg-cta px-6 font-semibold text-ink-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+const cell = "px-4 py-3 text-sm";
+---
+
+<StudentLayout title={c.title} student={me} heading={target ? undefined : c.title}>
+  <div class="max-w-4xl">
+    {
+      notice && (
+        <p
+          role="status"
+          class:list={[
+            "mb-6 rounded-xl border px-4 py-3 text-sm text-pretty",
+            notice.type === "ok" ? "border-secondary-300 bg-secondary-50 text-ink" : "border-error-500 bg-error-50 text-error-700",
+          ]}
+        >
+          {notice.text}
+        </p>
+      )
+    }
+
+    {
+      target && detail ? (
+        <>
+          <a href="/student/ambassadors" class="inline-flex min-h-11 items-center text-sm font-semibold text-ink-brand">
+            ← <T v={c.back} />
+          </a>
+          <h1 class="mt-2 text-3xl font-extrabold text-ink">{target.name ?? target.email}</h1>
+          <p class="mt-1 text-sm text-ink-muted">
+            {target.email} · <span class="font-mono font-bold">{target.ambassadorCode}</span>
+            {target.sponsorId && <> · <T v={c.sponsor} />: {byId.get(target.sponsorId)?.name ?? byId.get(target.sponsorId)?.email}</>}
+          </p>
+
+          <section class="mt-6 grid gap-3 sm:grid-cols-3">
+            {[
+              [ac.home.available, detail.summary.availableCents],
+              [ac.home.waiting, detail.summary.waitingCents],
+              [ac.home.paid, detail.summary.paidCents],
+            ].map(([label, cents]) => (
+              <div class="rounded-2xl border border-line bg-surface p-4">
+                <p class="text-sm font-semibold text-ink-muted"><T v={label as typeof ac.home.paid} /></p>
+                <p class="mt-1 text-2xl font-extrabold tabular-nums text-ink"><T v={money(cents as number)} /></p>
+              </div>
+            ))}
+          </section>
+
+          <div class="mt-6 grid gap-6 lg:grid-cols-2">
+            <form method="POST" class="rounded-2xl border border-line bg-surface p-6">
+              <input type="hidden" name="action" value="payout" />
+              <input type="hidden" name="ambassadorId" value={target.id} />
+              <h2 class="text-lg font-bold text-ink"><T v={c.payoutTitle} /></h2>
+              <p class="mt-1 text-sm text-pretty text-ink-muted"><T v={c.payoutHint} /></p>
+              <label for="amount" class:list={[etiqueta, "mt-4"]}><T v={c.amount} /></label>
+              <input id="amount" name="amount" inputmode="decimal" required class={campo} placeholder="0.00" />
+              <label for="method" class:list={[etiqueta, "mt-4"]}><T v={c.method} /></label>
+              <select id="method" name="method" class={campo}>
+                <option value="cash">{ac.method.cash[lang]}</option>
+                <option value="revivi_credit">{ac.method.revivi_credit[lang]}</option>
+              </select>
+              <label for="note" class:list={[etiqueta, "mt-4"]}><T v={c.note} /></label>
+              <input id="note" name="note" maxlength="300" class={campo} />
+              <button type="submit" class:list={[boton, "mt-5"]}><T v={c.record} /></button>
+            </form>
+
+            <form method="POST" class="rounded-2xl border border-line bg-surface p-6">
+              <input type="hidden" name="action" value="sponsor" />
+              <input type="hidden" name="ambassadorId" value={target.id} />
+              <h2 class="text-lg font-bold text-ink"><T v={c.sponsorTitle} /></h2>
+              <p class="mt-1 text-sm text-pretty text-ink-muted"><T v={c.sponsorHint} /></p>
+              <label for="sponsor" class:list={[etiqueta, "mt-4"]}><T v={c.sponsor} /></label>
+              <select id="sponsor" name="sponsor" class={campo}>
+                <option value="none">{c.noSponsor[lang]}</option>
+                {ambassadors
+                  .filter((a) => a.id !== target.id)
+                  .map((a) => (
+                    <option value={a.id} selected={a.id === target.sponsorId}>{a.name ?? a.email}</option>
+                  ))}
+              </select>
+              <button type="submit" class:list={[boton, "mt-5"]}><T v={c.save} /></button>
+            </form>
+          </div>
+
+          <h2 class="mt-8 text-lg font-bold text-ink"><T v={ac.referrals.title} /></h2>
+          {detail.referrals.length === 0 ? (
+            <p class="mt-3 text-sm text-ink-muted"><T v={ac.home.empty} /></p>
+          ) : (
+            <div class="mt-3 overflow-x-auto rounded-2xl border border-line bg-surface">
+              <table class="w-full min-w-[36rem] text-left">
+                <thead class="border-b border-line bg-surface-muted text-xs font-semibold text-ink-muted">
+                  <tr>
+                    <th class={cell}>#</th>
+                    <th class={cell}><T v={c.colName} /></th>
+                    <th class={cell}><T v={c.colBusiness} /></th>
+                    <th class={cell}><T v={c.colSince} /></th>
+                    <th class={cell}><T v={ac.referrals.earned} /></th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-line">
+                  {detail.referrals.map((ref) => (
+                    <tr>
+                      <td class={cell}>{ref.number}</td>
+                      <td class={cell}>{ref.name ?? <span class="text-ink-muted"><T v={ac.referrals.client} vars={{ n: ref.number }} /></span>}</td>
+                      <td class={cell}>{ref.business?.name} · <T v={ac.stage[ref.stage]} /></td>
+                      <td class={cell}><T v={shortDate(ref.firstContactAt)} /></td>
+                      <td class={`${cell} tabular-nums font-semibold`}><T v={money(ref.earnedCents)} /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <h2 class="mt-8 text-lg font-bold text-ink"><T v={ac.payouts.history} /></h2>
+          {detail.payouts.length === 0 ? (
+            <p class="mt-3 text-sm text-ink-muted"><T v={ac.payouts.empty} /></p>
+          ) : (
+            <ul class="mt-3 divide-y divide-line rounded-2xl border border-line bg-surface">
+              {detail.payouts.map((p) => (
+                <li class="flex items-center justify-between gap-3 px-4 py-3 text-sm">
+                  <span>
+                    <T v={shortDate(p.paidAt)} /> · <T v={ac.method[p.method]} />
+                    {p.method === "revivi_credit" && !p.clinicsRef && <span class="text-warning-700"> · <T v={ac.payouts.pendingCredit} /></span>}
+                    {p.note && <span class="text-ink-muted"> · {p.note}</span>}
+                  </span>
+                  <span class="font-semibold tabular-nums"><T v={money(p.amountCents)} /></span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
+      ) : (
+        <>
+          <p class="max-w-2xl text-base text-pretty text-ink-muted"><T v={c.intro} /></p>
+
+          <form method="POST" class="mt-8 rounded-2xl border border-line bg-surface p-6">
+            <input type="hidden" name="action" value="activate" />
+            <h2 class="text-lg font-bold text-ink"><T v={c.activateTitle} /></h2>
+            <p class="mt-1 max-w-2xl text-sm text-pretty text-ink-muted"><T v={c.activateHint} /></p>
+            {candidates.length === 0 ? (
+              <p class="mt-4 text-sm text-ink-muted"><T v={c.noCandidates} /></p>
+            ) : (
+              <>
+                <div class="mt-5 grid gap-4 sm:grid-cols-3">
+                  <div>
+                    <label for="studentId" class={etiqueta}><T v={c.person} /></label>
+                    <select id="studentId" name="studentId" required class={campo}>
+                      {candidates.map((s) => (
+                        <option value={s.id}>{s.name ? `${s.name} · ${s.email}` : s.email}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label for="code" class={etiqueta}><T v={c.code} /></label>
+                    <input id="code" name="code" maxlength="20" class={`${campo} uppercase`} autocomplete="off" />
+                    <p class="mt-1 text-xs text-ink-muted"><T v={c.codeHint} /></p>
+                  </div>
+                  <div>
+                    <label for="sponsorNew" class={etiqueta}><T v={c.sponsor} /></label>
+                    <select id="sponsorNew" name="sponsor" class={campo}>
+                      <option value="invited">{c.sponsorInvited[lang]}</option>
+                      <option value="none">{c.noSponsor[lang]}</option>
+                      {ambassadors.map((a) => (
+                        <option value={a.id}>{a.name ?? a.email}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <button type="submit" class:list={[boton, "mt-5"]}><T v={c.activate} /></button>
+              </>
+            )}
+          </form>
+
+          <h2 class="mt-10 text-lg font-bold text-ink"><T v={c.listTitle} /></h2>
+          {ambassadors.length === 0 ? (
+            <p class="mt-3 text-sm text-ink-muted"><T v={c.empty} /></p>
+          ) : (
+            <div class="mt-3 overflow-x-auto rounded-2xl border border-line bg-surface">
+              <table class="w-full min-w-[40rem] text-left">
+                <thead class="border-b border-line bg-surface-muted text-xs font-semibold text-ink-muted">
+                  <tr>
+                    <th class={cell}><T v={c.colAmbassador} /></th>
+                    <th class={cell}><T v={c.code} /></th>
+                    <th class={cell}><T v={c.colReferrals} /></th>
+                    <th class={cell}><T v={c.colWaiting} /></th>
+                    <th class={cell}><T v={c.colAvailable} /></th>
+                    <th class={cell}><T v={c.colPaid} /></th>
+                    <th class={cell}><span class="sr-only"><T v={c.open} /></span></th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-line">
+                  {books.map((b) => (
+                    <tr>
+                      <td class={`${cell} font-semibold text-ink`}>{b.ambassador.name ?? b.ambassador.email}</td>
+                      <td class={`${cell} font-mono`}>{b.ambassador.ambassadorCode}</td>
+                      <td class={`${cell} tabular-nums`}>{b.referrals.length}</td>
+                      <td class={`${cell} tabular-nums`}><T v={money(b.summary.waitingCents)} /></td>
+                      <td class={`${cell} tabular-nums font-semibold`}><T v={money(b.summary.availableCents)} /></td>
+                      <td class={`${cell} tabular-nums`}><T v={money(b.summary.paidCents)} /></td>
+                      <td class={cell}>
+                        <a href={`/student/ambassadors?ver=${b.ambassador.id}`} class="inline-flex min-h-11 items-center font-semibold text-ink-brand">
+                          <T v={c.open} />
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
+      )
+    }
+  </div>
+</StudentLayout>

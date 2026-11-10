@@ -4,7 +4,8 @@ import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
 import { studentCopy } from "@config/studentArea";
 import { plataformas } from "@config/curso.config";
 import type { Student } from "@lib/data";
-import { canAdminister, canOpenStaffPanel, seesCourseDoors } from "@lib/permissions";
+import { canAdminister, canOpenStaffPanel, isAmbassador, seesCourseDoors } from "@lib/permissions";
+import { ambassadorCopy } from "@config/ambassadorArea";
 import type { Txt } from "@i18n/idioma";
 
 /**
@@ -53,6 +54,14 @@ interface Entry {
 const entries: Entry[] = [
   { href: "/student", label: studentCopy.nav.home, icon: "casa" },
 
+  /* El portal de Embajador, para quien el admin ya activó. Es una app aparte
+     (`AmbassadorLayout`), con sus propias pestañas: esta entrada es la puerta. */
+  ...(isAmbassador(student)
+    ? ([
+        { href: "/student/ambassador", label: ambassadorCopy.title, icon: "billete" },
+      ] satisfies Entry[])
+    : []),
+
   ...(canOpenStaffPanel(student)
     ? ([
         { href: "/student/people", label: studentCopy.nav.people, icon: "personas" },
@@ -65,6 +74,8 @@ const entries: Entry[] = [
   ...(canAdminister(student)
     ? ([
         { href: "/student/agents", label: studentCopy.nav.agents, icon: "megafono" },
+        { href: "/student/ambassadors", label: ambassadorCopy.admin.navAmbassadors, icon: "red" },
+        { href: "/student/businesses", label: ambassadorCopy.admin.navBusinesses, icon: "grafica" },
         { href: "/student/coupons", label: studentCopy.nav.coupons, icon: "certificado" },
         { href: "/student/settings", label: studentCopy.nav.settings, icon: "escudo" },
       ] satisfies Entry[])
@@ -90,9 +101,13 @@ const entries: Entry[] = [
     : []),
 ];
 
-/** `/student/people` also matches `/student/people?ver=…`. */
+/** `/student/people` also matches `/student/people/…`.
+ *
+ * ⚠️ EXACTA O CON BARRA DETRÁS, NO UN PREFIJO SUELTO: con `startsWith` a secas,
+ * `/student/ambassador` (el portal del Embajador) se marcaba como actual
+ * estando en `/student/ambassadors` (su administración). */
 const isCurrent = (href: string) =>
-  href === "/student" ? path === "/student" : path.startsWith(href);
+  href === "/student" ? path === "/student" : path === href || path.startsWith(`${href}/`);
 
 const base =
   "inline-flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";

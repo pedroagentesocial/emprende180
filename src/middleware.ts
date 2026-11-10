@@ -151,7 +151,17 @@ async function atender(
      registering a student, capturing a lead — is answered by our own pages. A
      POST that arrives from somewhere else is either an attack or a mistake, and
      neither deserves to reach the handler. See `isSameOrigin`. */
-  if (changesState(context.request.method) && !isSameOrigin(context.request, context.url)) {
+  /* ⚠️ LA ÚNICA EXCEPCIÓN: `/api/facts/<negocio>`, el webhook por el que los
+     negocios (GoHighLevel) nos cuentan hechos de sus clientes. Lo llama un
+     servidor, no una página nuestra, así que nunca trae nuestro origen; a
+     cambio exige el secreto del negocio, y sin él contesta 401. No lee la
+     cookie de sesión: no hay sesión que un atacante pudiera aprovechar. */
+  const isFactsWebhook = pathname.startsWith("/api/facts/");
+  if (
+    !isFactsWebhook &&
+    changesState(context.request.method) &&
+    !isSameOrigin(context.request, context.url)
+  ) {
     return harden(new Response(null, { status: 403 }), pathname);
   }
 

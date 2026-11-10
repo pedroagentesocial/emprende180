@@ -173,3 +173,23 @@ export function assignableRoles(student: Student | null | undefined): Role[] {
   if (canAddStudents(student)) return ["student"];
   return [];
 }
+
+/**
+ * ¿Tiene portal de Embajador?
+ *
+ * Embajador y agente son lo mismo para el negocio, pero el portal se abre solo
+ * cuando el admin lo ACTIVÓ (`ambassadorSince`): desde ese momento cobra
+ * dinero, y no puede bastar con registrarse en /subscribe, que deja entrar sin
+ * verificar el correo. Un admin activado también tiene el suyo.
+ */
+export function isAmbassador(student: Student | null | undefined): boolean {
+  return !!student?.active && !!student.ambassadorSince && !!student.ambassadorCode;
+}
+
+/**
+ * ¿Puede activar Embajadores, crear negocios, poner reglas y anotar pagos?
+ * Solo el admin: todo eso es dinero de otros.
+ */
+export function canManageAmbassadors(student: Student | null | undefined): boolean {
+  return canAdminister(student);
+}

@@ -33,12 +33,21 @@ interface Props {
    * de dentro dejen de contar.
    */
   noindex?: boolean;
+  /**
+   * Los botones flotantes de chat y de llamar. Fuera en el portal de
+   * Embajadores: tiene su barra de pestañas abajo y los botones la taparían.
+   */
+  floatingButtons?: boolean;
+  /** Manifiesto para "Agregar a pantalla de inicio" (portal de Embajadores). */
+  manifest?: string;
 }
 
 const {
   titulo = sitio.titulo,
   descripcion = sitio.descripcion,
   noindex = false,
+  floatingButtons = true,
+  manifest,
 } = Astro.props;
 
 /**
@@ -301,6 +310,7 @@ const descripciones = { es: descripcion.es, en: descripcion.en };
     <meta name="twitter:image" content={ogImagen} />
 
     <meta name="theme-color" content={sitio.themeColor} />
+    {manifest && <link rel="manifest" href={manifest} />}
 
     <script
       type="application/ld+json"
@@ -382,9 +392,9 @@ const descripciones = { es: descripcion.es, en: descripcion.en };
     <CookieBanner client:idle lang={lang} />
     {/* El botón de chat, abajo a la derecha. Hoy es la maqueta a la espera
         del embebido de GoHighLevel: ver la cabecera del componente. */}
-    <ChatWidget />
+    {floatingButtons && <ChatWidget />}
     {/* El botón de llamar, encima de la burbuja del chat. */}
-    <BotonLlamar />
+    {floatingButtons && <BotonLlamar />}
 
     {/* Mantiene <title> y la meta description en sincronía con el idioma
         cuando se cambia sin recargar. El resto del texto lo resuelve el CSS. */}

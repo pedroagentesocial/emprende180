@@ -240,3 +240,167 @@ ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS origen text;
 
 -- Para contar de dónde viene la gente sin recorrer la tabla entera.
 CREATE INDEX IF NOT EXISTS alumnos_origen ON alumnos (origen, alta_en DESC);
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- PORTAL DE EMBAJADORES (10-11-2026)
+-- ═══════════════════════════════════════════════════════════════════════════
+--
+-- Los Embajadores refieren clientes a varios negocios (Revivi, Venture, las
+-- clínicas, Lira Medical, Señor de las Casas...). Cada negocio solo nos cuenta
+-- HECHOS: llegó un lead, asistió a su cita, compró, renovó, se reembolsó. Aquí
+-- se guardan esos hechos y las reglas, y la comisión se CALCULA al leer
+-- (`src/lib/commissions.ts`). No hay tabla de comisiones a propósito: una
+-- cifra guardada se queda mal con el primer reembolso, y una calculada no.
+--
+-- Por eso las reglas NO se editan: cambiar un porcentaje es añadir una regla
+-- nueva con su fecha de vigencia. Una venta cobra la regla que estaba en vigor
+-- el día que pasó, así que un cambio nunca toca lo ya ganado.
+
+-- ─── El Embajador es un alumno con rol 'agente' ─────────────────────────────
+-- Su código es el mismo en todos los negocios. Lo genera el admin al
+-- activarlo; nulo = todavía no es Embajador.
+ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS codigo_embajador text;
+CREATE UNIQUE INDEX IF NOT EXISTS alumnos_codigo_embajador
+  ON alumnos (codigo_embajador) WHERE codigo_embajador IS NOT NULL;
+
+-- ⚠️ EL PATROCINADOR SE FIJA AL ACTIVAR Y NO SIGUE A `alta_por`. `alta_por` es
+-- quién dio de alta la cuenta; esto es quién cobra el nivel 2 de sus ventas.
+-- Nacen iguales, pero esta columna solo la cambia el admin: de ella depende
+-- dinero, y no puede moverse como efecto de otra cosa.
+ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS patrocinador_id uuid
+  REFERENCES alumnos(id) ON DELETE SET NULL;
+ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS embajador_desde timestamptz;
+ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS embajador_aprobado_por uuid
+  REFERENCES alumnos(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS alumnos_patrocinador ON alumnos (patrocinador_id);
+
+-- ─── Negocios ───────────────────────────────────────────────────────────────
+-- Cada aliado que nos manda hechos. `fuente` dice por dónde llegan: 'ghl'
+-- (webhook de un workflow de GoHighLevel) o 'clinics' (los pedimos nosotros).
+-- Cuando Lira pase de GHL a clinics se cambia esta columna y nada más.
+--
+-- ⚠️ DEL SECRETO SOLO SE GUARDA EL HASH. El secreto se enseña una vez al
+-- crearlo, se pega en el workflow de GHL y aquí no queda nada que robar.
+CREATE TABLE IF NOT EXISTS negocios (
+  id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  -- Minúsculas, números y guiones: va en la dirección del webhook.
+  slug              text NOT NULL UNIQUE,
+  nombre            text NOT NULL,
+  fuente            text NOT NULL DEFAULT 'ghl',
+  -- El enlace que comparte el Embajador, con {codigo} donde va su código.
+  -- Nulo = este negocio no tiene enlace propio (se refiere de palabra).
+  enlace_plantilla  text,
+  secreto_hash      text,
+  secreto_creado_en timestamptz,
+  activo            boolean NOT NULL DEFAULT true,
+  creado_en         timestamptz NOT NULL DEFAULT now()
+);
+
+-- ─── Reglas de comisión ─────────────────────────────────────────────────────
+-- Una fila por (negocio, nivel, clase de hecho, desde qué pago), con su fecha.
+--   · nivel 1 = el Embajador que trajo al cliente; nivel 2 = su patrocinador.
+--   · clase 'venta' (compra y renovación) cobra un porcentaje del importe;
+--     clase 'cita' (cita asistida) cobra un importe fijo.
+--   · `pago_desde`: 1 = primera compra, 2 = desde la primera renovación... La
+--     regla de un pago es la de mayor `pago_desde` que no lo pase, y así el
+--     porcentaje puede ir bajando con cada renovación.
+CREATE TABLE IF NOT EXISTS reglas_comision (
+  id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  negocio_id            uuid NOT NULL REFERENCES negocios(id) ON DELETE CASCADE,
+  nivel                 smallint NOT NULL,
+  clase                 text NOT NULL DEFAULT 'venta',
+  pago_desde            integer NOT NULL DEFAULT 1,
+  porcentaje            numeric(5,2),
+  importe_fijo_centavos integer,
+  vigente_desde         timestamptz NOT NULL DEFAULT now(),
+  creado_por            uuid REFERENCES alumnos(id) ON DELETE SET NULL,
+  creado_en             timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS reglas_comision_negocio
+  ON reglas_comision (negocio_id, nivel, clase, vigente_desde);
+
+-- ─── Referidos ──────────────────────────────────────────────────────────────
+-- Un cliente de un negocio que llegó por un Embajador.
+--
+-- ⚠️ EL UNIQUE (negocio_id, ref_externa) ES LA REGLA "EL PRIMERO GANA". El
+-- primer hecho que llega con ese cliente lo ata a su Embajador y ningún hecho
+-- posterior lo mueve. Es por negocio: el mismo cliente puede ser de Ana en
+-- Lira y de Luis en Revivi.
+--
+-- `ref_externa` es el id del cliente EN SU NEGOCIO (el contacto de GHL, el
+-- referido de clinics), opaco: nunca un correo ni un número de paciente.
+--
+-- ⚠️ EL NOMBRE VA CIFRADO Y SOLO CON CONSENTIMIENTO. En los negocios médicos,
+-- decirle al Embajador que alguien es cliente es información protegida. Llega
+-- solo si el cliente lo autorizó (`consentimiento_en`) y se guarda con
+-- AES-256-GCM (`src/lib/sealed.ts`). Sin consentimiento el portal dice
+-- "Cliente #4" y la comisión se cobra igual.
+CREATE TABLE IF NOT EXISTS referidos (
+  id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  negocio_id         uuid NOT NULL REFERENCES negocios(id) ON DELETE CASCADE,
+  ref_externa        text NOT NULL,
+  embajador_id       uuid NOT NULL REFERENCES alumnos(id) ON DELETE RESTRICT,
+  -- 'enlace' | 'cupon' | 'formulario' | 'mostrador' | 'otro'
+  canal              text,
+  primer_contacto_en timestamptz NOT NULL,
+  nombre_cifrado     text,
+  consentimiento_en  timestamptz,
+  creado_en          timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (negocio_id, ref_externa)
+);
+CREATE INDEX IF NOT EXISTS referidos_embajador
+  ON referidos (embajador_id, primer_contacto_en DESC);
+
+-- ─── Hechos ─────────────────────────────────────────────────────────────────
+-- Lo que nos contó cada negocio: 'lead' | 'attended' | 'purchase' |
+-- 'renewal' | 'refund' | 'cancel'. Los dos últimos restan y apuntan con
+-- `original_id` al hecho que deshacen.
+--
+-- ⚠️ EL UNIQUE (negocio_id, evento_externo) HACE INOFENSIVO REPETIR. GHL
+-- reintenta y clinics se relee desde el último cursor: el mismo hecho dos
+-- veces se guarda una.
+CREATE TABLE IF NOT EXISTS hechos (
+  id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  negocio_id       uuid NOT NULL REFERENCES negocios(id) ON DELETE CASCADE,
+  evento_externo   text NOT NULL,
+  referido_id      uuid NOT NULL REFERENCES referidos(id) ON DELETE CASCADE,
+  tipo             text NOT NULL,
+  importe_centavos integer,
+  numero_pago      integer,
+  ocurrido_en      timestamptz NOT NULL,
+  original_id      uuid REFERENCES hechos(id) ON DELETE SET NULL,
+  recibido_en      timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (negocio_id, evento_externo)
+);
+CREATE INDEX IF NOT EXISTS hechos_referido ON hechos (referido_id, ocurrido_en);
+
+-- ─── Pagos a Embajadores ────────────────────────────────────────────────────
+-- Lo que se le pagó a cada uno: 'dinero' (por fuera, el admin lo anota) o
+-- 'credito_revivi' (crédito para gastar en Revivi; `ref_clinics` es el abono
+-- en clinics una vez hecho, nulo mientras no se haya abonado).
+CREATE TABLE IF NOT EXISTS pagos_embajador (
+  id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  embajador_id     uuid NOT NULL REFERENCES alumnos(id) ON DELETE RESTRICT,
+  metodo           text NOT NULL DEFAULT 'dinero',
+  importe_centavos integer NOT NULL,
+  pagado_en        timestamptz NOT NULL DEFAULT now(),
+  nota             text,
+  ref_clinics      text,
+  registrado_por   uuid REFERENCES alumnos(id) ON DELETE SET NULL,
+  creado_en        timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS pagos_embajador_embajador
+  ON pagos_embajador (embajador_id, pagado_en DESC);
+
+-- ─── Quién vio los nombres ──────────────────────────────────────────────────
+-- Una fila cada vez que alguien abre una lista con nombres de clientes: el
+-- rastro que se pide al enseñar información protegida (quién, de quién,
+-- cuándo).
+CREATE TABLE IF NOT EXISTS registro_vistas (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  quien_id     uuid REFERENCES alumnos(id) ON DELETE SET NULL,
+  embajador_id uuid REFERENCES alumnos(id) ON DELETE SET NULL,
+  que          text NOT NULL,
+  cuando       timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS registro_vistas_cuando ON registro_vistas (cuando DESC);

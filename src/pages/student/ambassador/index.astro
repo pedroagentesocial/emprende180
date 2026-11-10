@@ -1,0 +1,202 @@
+---
+import AmbassadorLayout from "@layouts/AmbassadorLayout.astro";
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import { ambassadorCopy } from "@config/ambassadorArea";
+import { loadBook } from "@lib/ambassadorBook";
+import { money, shortDate, dayMonth } from "@lib/ambassadorFormat";
+import { isAmbassador } from "@lib/permissions";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * /student/ambassador: el inicio del Embajador
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Lo que alguien quiere saber al abrir la app, en ese orden: cuánto puedo
+ * cobrar, cuánto viene en camino y cuándo, cómo voy, y qué ha pasado.
+ *
+ * ⚠️ AQUÍ NO HAY NOMBRES DE CLIENTES. La lista de "lo último" dice el negocio
+ * y el estado; los nombres están en Referidos, que deja rastro al abrirse.
+ *
+ * ⚠️ QUIEN NO ES EMBAJADOR RECIBE UN 404, como en el resto del portal: un 403
+ * confirmaría que la sección existe.
+ */
+export const prerender = false;
+
+const me = Astro.locals.student!;
+if (!isAmbassador(me)) return new Response(null, { status: 404 });
+
+const c = ambassadorCopy;
+const book = await loadBook(me, { viewer: me, withNames: false });
+const { summary } = book;
+
+const owes = summary.availableCents < 0;
+const recent = book.referrals.slice(0, 3);
+
+/* La gráfica: 8 barras a la misma escala. Sin datos, una línea de base y nada
+   más: una gráfica vacía que se inventa una escala engaña. */
+const maxWeek = Math.max(0, ...book.weekly.map((w) => w.earnedCents));
+const W = 320;
+const H = 120;
+const BAR = 26;
+const GAP = (W - BAR * 8) / 7;
+const barHeight = (cents: number) => (maxWeek > 0 ? Math.max(cents > 0 ? 3 : 0, (cents / maxWeek) * (H - 18)) : 0);
+
+const stageClass = {
+  lead: "bg-primary-50 text-primary-700",
+  customer: "bg-secondary-100 text-secondary-800",
+  reversed: "bg-neutral-200 text-ink-muted",
+} as const;
+---
+
+<AmbassadorLayout title={c.nav.home} student={me} tab="home">
+  <h1 class="text-2xl font-extrabold text-balance text-ink">
+    <T v={c.home.hello} vars={{ nombre: me.name ?? me.email }} />
+  </h1>
+
+  {
+    book.noRules && (
+      <p role="status" class="mt-4 rounded-xl border border-warning-500/40 bg-warning-50 px-4 py-3 text-sm text-pretty text-ink">
+        <T v={c.home.noRules} />
+      </p>
+    )
+  }
+
+  {/* ─── El saldo ───────────────────────────────────────────────────────── */}
+  <section class="mt-5 rounded-3xl bg-primary-900 p-5 text-white shadow-lg">
+    <p class="text-sm font-semibold text-primary-100">
+      <T v={owes ? c.home.owed : c.home.available} />
+    </p>
+    <p class="mt-1 text-4xl font-extrabold tabular-nums">
+      <T v={money(Math.abs(summary.availableCents))} />
+    </p>
+    {owes && <p class="mt-2 text-sm text-pretty text-primary-100"><T v={c.home.owedHint} /></p>}
+
+    <div class="mt-5 grid grid-cols-2 gap-3">
+      <div class="rounded-2xl bg-white/8 px-3.5 py-3">
+        <p class="text-xs font-semibold text-primary-100"><T v={c.home.waiting} /></p>
+        <p class="mt-0.5 text-lg font-bold tabular-nums"><T v={money(summary.waitingCents)} /></p>
+      </div>
+      <div class="rounded-2xl bg-white/8 px-3.5 py-3">
+        <p class="text-xs font-semibold text-primary-100"><T v={c.home.paid} /></p>
+        <p class="mt-0.5 text-lg font-bold tabular-nums"><T v={money(summary.paidCents)} /></p>
+      </div>
+    </div>
+
+    <p class="mt-4 flex items-center gap-2 text-sm text-secondary-200">
+      <Icono nombre="calendario" class="size-4 shrink-0" grosor={2} />
+      {
+        summary.next ? (
+          <T v={c.home.next} vars={{ importe: money(summary.next.amountCents), fecha: shortDate(summary.next.date) }} />
+        ) : (
+          <T v={c.home.noNext} />
+        )
+      }
+    </p>
+  </section>
+
+  {
+    book.referrals.length === 0 ? (
+      <section class="mt-6 rounded-3xl border border-line bg-surface p-6 text-center">
+        <p class="text-base text-pretty text-ink-muted"><T v={c.home.empty} /></p>
+        <a
+          href="/student/ambassador/share"
+          class="mt-4 inline-flex min-h-12 items-center gap-2 rounded-full bg-cta px-5 font-semibold text-ink-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        >
+          <Icono nombre="compartir" class="size-5" grosor={2} />
+          <T v={c.home.emptyCta} />
+        </a>
+      </section>
+    ) : (
+      <>
+        {/* ─── Por semana ─────────────────────────────────────────────── */}
+        <section class="mt-6 rounded-3xl border border-line bg-surface p-5">
+          <h2 class="text-base font-bold text-ink"><T v={c.home.weekly} /></h2>
+          <svg
+            viewBox={`0 0 ${W} ${H + 18}`}
+            class="mt-4 h-auto w-full"
+            role="img"
+            aria-label={c.home.weeklyAria[me.language]}
+          >
+            <line x1="0" x2={W} y1={H} y2={H} class="stroke-line" stroke-width="1" />
+            {book.weekly.map((w, i) => {
+              const h = barHeight(w.earnedCents);
+              const x = i * (BAR + GAP);
+              const last = i === book.weekly.length - 1;
+              return (
+                <g>
+                  <title>{`${dayMonth(w.weekStart)[me.language]}: ${money(w.earnedCents)[me.language]}`}</title>
+                  <rect
+                    x={x}
+                    y={H - h}
+                    width={BAR}
+                    height={h}
+                    rx="5"
+                    class={last ? "fill-secondary-500" : "fill-primary-300"}
+                  />
+                  <text
+                    x={x + BAR / 2}
+                    y={H + 14}
+                    text-anchor="middle"
+                    class="fill-ink-subtle text-[9px]"
+                  >
+                    {dayMonth(w.weekStart)[me.language]}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
+        </section>
+
+        {/* ─── Por negocio ────────────────────────────────────────────── */}
+        {book.byBusiness.length > 0 && (
+          <section class="mt-6">
+            <h2 class="px-1 text-base font-bold text-ink"><T v={c.home.byBusiness} /></h2>
+            <ul class="mt-3 divide-y divide-line overflow-hidden rounded-3xl border border-line bg-surface">
+              {book.byBusiness.map((b) => (
+                <li class="flex items-center justify-between gap-3 px-5 py-3.5">
+                  <span class="min-w-0">
+                    <span class="block truncate font-semibold text-ink">{b.business.name}</span>
+                    <span class="block text-xs text-ink-muted">
+                      <T v={c.home.referralsCount} vars={{ n: b.referrals }} />
+                      {" · "}
+                      <T v={c.home.customersCount} vars={{ n: b.customers }} />
+                    </span>
+                  </span>
+                  <span class="shrink-0 font-bold tabular-nums text-ink"><T v={money(b.earnedCents)} /></span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* ─── Lo último ──────────────────────────────────────────────── */}
+        <section class="mt-6">
+          <div class="flex items-center justify-between px-1">
+            <h2 class="text-base font-bold text-ink"><T v={c.home.recent} /></h2>
+            <a href="/student/ambassador/referrals" class="inline-flex min-h-11 items-center text-sm font-semibold text-ink-brand">
+              <T v={c.home.seeAll} />
+            </a>
+          </div>
+          <ul class="mt-1 divide-y divide-line overflow-hidden rounded-3xl border border-line bg-surface">
+            {recent.map((r) => (
+              <li class="flex items-center justify-between gap-3 px-5 py-3.5">
+                <span class="min-w-0">
+                  <span class="block truncate font-semibold text-ink">
+                    <T v={c.referrals.client} vars={{ n: r.number }} />
+                  </span>
+                  <span class="block truncate text-xs text-ink-muted">
+                    {r.business?.name ?? ""} · <T v={shortDate(r.lastActivityAt)} />
+                  </span>
+                </span>
+                <span class:list={["shrink-0 rounded-full px-2.5 py-1 text-xs font-bold", stageClass[r.stage]]}>
+                  <T v={c.stage[r.stage]} />
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </>
+    )
+  }
+</AmbassadorLayout>

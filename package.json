@@ -13,7 +13,8 @@
     "db:setup": "node scripts/db-setup.mjs",
     "marca:assets": "node scripts/generar-assets.mjs",
     "marca:paleta": "node scripts/generar-paleta.mjs",
-    "marca:favicon": "node scripts/generar-favicon.mjs"
+    "marca:favicon": "node scripts/generar-favicon.mjs",
+    "test": "node --test \"tests/*.test.ts\""
   },
   "dependencies": {
     "@astrojs/react": "^4.2.0",
