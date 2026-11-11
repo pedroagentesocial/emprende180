@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { FACT_TYPES, type FactType } from "@lib/commissions";
+import { FACT_TYPES, pausedAt, type FactType } from "@lib/commissions";
 import {
   ambassadorRepo,
   type Business,
@@ -78,6 +78,7 @@ export type IngestResult =
 export type IngestError =
   | "invalid"
   | "unknown_ambassador"
+  | "ambassador_paused"
   | "unknown_referral"
   | "unknown_original"
   | "missing_amount"
@@ -98,6 +99,12 @@ export async function ingestFact(
   business: Business,
   raw: unknown,
   onNewSale?: (ambassador: Student, fact: StoredFact) => Promise<void>,
+  /**
+   * Solo para fuentes FIRMADAS (clinics): el id del Embajador en Emprende180.
+   * Gana sobre el código, así un código cambiado nunca pierde un cliente.
+   * Un webhook de GHL nunca lo trae: allí manda el código.
+   */
+  trusted?: { ambassadorRef?: string | null },
 ): Promise<IngestResult> {
   const parsed = factSchema.safeParse(raw);
   if (!parsed.success) {
@@ -126,11 +133,22 @@ export async function ingestFact(
     if (input.type === "refund" || input.type === "cancel") {
       return fail("unknown_referral", "refund or cancel for a referral we never received");
     }
-    const ambassador = input.ambassador_code
-      ? await repo().studentByAmbassadorCode(input.ambassador_code)
+    const byRef = trusted?.ambassadorRef
+      ? await repo().studentById(trusted.ambassadorRef)
       : null;
+    const ambassador =
+      byRef?.ambassadorCode
+        ? byRef
+        : input.ambassador_code
+          ? await repo().studentByAmbassadorCode(input.ambassador_code)
+          : null;
     if (!ambassador || !ambassador.ambassadorSince || !ambassador.active) {
       return fail("unknown_ambassador", "ambassador_code is missing or is not an active ambassador");
+    }
+    /* Un cliente que llegó mientras su Embajador estaba desactivado no es
+       suyo: no se le asigna. */
+    if (pausedAt(ambassador.ambassadorPauses, occurredAt)) {
+      return fail("ambassador_paused", "the ambassador was deactivated when this client arrived");
     }
     referral = await ar.findOrCreateReferral({
       businessId: business.id,

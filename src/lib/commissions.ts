@@ -25,6 +25,9 @@
  *     del siguiente pago, y si el saldo queda en negativo se arrastra.
  *  5. La regla que vale es la que estaba en vigor el día del hecho: cambiar un
  *     porcentaje solo toca lo que pase después.
+ *  6. Un Embajador DESACTIVADO no gana con lo que pase mientras lo está
+ *     (`Pause`), en ninguno de los dos niveles. Lo que ganó antes se queda y
+ *     se le paga igual; reactivarlo no devuelve lo de la pausa.
  */
 
 /** Días de espera desde el hecho hasta que la comisión se puede cobrar. */
@@ -91,6 +94,23 @@ export interface Payout {
 
 /** Quién cobra el nivel 2 de cada Embajador: su patrocinador, o nadie. */
 export type SponsorOf = (ambassadorId: string) => string | null;
+
+/** Un tramo en que el Embajador estuvo desactivado. `to` nulo = sigue así. */
+export interface Pause {
+  from: Date;
+  to: Date | null;
+}
+
+/** ¿Estaba desactivado en ese momento? El tramo incluye su inicio, no su fin. */
+export function pausedAt(pauses: readonly Pause[] | null | undefined, at: Date): boolean {
+  const t = at.getTime();
+  return (pauses ?? []).some(
+    (p) => t >= p.from.getTime() && (p.to === null || t < p.to.getTime()),
+  );
+}
+
+/** Quién estaba desactivado cuándo. Por defecto, nadie. */
+export type PausedAt = (ambassadorId: string, at: Date) => boolean;
 
 export type LineStatus =
   /** Dentro de los 15 días. */
@@ -192,7 +212,13 @@ interface RawLine extends Omit<Line, "status"> {
  * Las líneas que genera un hecho de venta o de cita, para los dos niveles.
  * Sin regla para un nivel, ese nivel no cobra: no hay comisión inventada.
  */
-function earningLines(fact: Fact, ambassadorId: string, sponsorOf: SponsorOf, rules: readonly Rule[]): RawLine[] {
+function earningLines(
+  fact: Fact,
+  ambassadorId: string,
+  sponsorOf: SponsorOf,
+  rules: readonly Rule[],
+  isPaused: PausedAt,
+): RawLine[] {
   const kind = kindOf(fact.type);
   if (!kind) return [];
 
@@ -206,6 +232,8 @@ function earningLines(fact: Fact, ambassadorId: string, sponsorOf: SponsorOf, ru
     /* Nadie se cobra a sí mismo el nivel 2: un patrocinio circular (A invitó a
        B y alguien puso a B como patrocinador de A) no puede duplicar. */
     if (!earner || (level === 2 && earner === ambassadorId)) continue;
+    /* Desactivado el día del hecho: ese nivel no cobra. */
+    if (isPaused(earner, fact.occurredAt)) continue;
 
     const rule = ruleFor(rules, fact.businessId, level, kind, paymentOf(fact), fact.occurredAt);
     if (!rule) continue;
@@ -247,6 +275,7 @@ export function linesFor(
   sponsorOf: SponsorOf,
   payouts: readonly Payout[],
   now: Date,
+  isPaused: PausedAt = () => false,
 ): { lines: Line[]; summary: Summary } {
   const referralById = new Map(referrals.map((r) => [r.id, r]));
   const factById = new Map(facts.map((f) => [f.id, f]));
@@ -256,7 +285,7 @@ export function linesFor(
   for (const f of facts) {
     const ref = referralById.get(f.referralId);
     if (!ref) continue;
-    const lines = earningLines(f, ref.ambassadorId, sponsorOf, rules);
+    const lines = earningLines(f, ref.ambassadorId, sponsorOf, rules, isPaused);
     if (lines.length) earnings.set(f.id, lines);
   }
 

@@ -100,6 +100,8 @@ export interface ClinicsEvent {
   business: string | null;
   referral_ref: string;
   ambassador_code: string;
+  /** Su id en Emprende180 (el `externalRef` del afiliado): gana sobre el código. */
+  ambassador_ref?: string | null;
   occurred_at: string;
   amount_cents: number | null;
   payment_number: number | null;
@@ -118,6 +120,8 @@ export const linkAmbassadorInClinics = (data: {
   code: string;
   name: string;
   email?: string;
+  /** false = desactivado: clinics lo pausa (no recibe clientes nuevos). */
+  active?: boolean;
 }) =>
   signedFetch<{ affiliateId: string; displayId: string; code: string; created: boolean }>(
     "POST",

@@ -7,6 +7,7 @@ import assert from "node:assert/strict";
 import {
   HOLD_DAYS,
   linesFor,
+  pausedAt,
   ruleFor,
   type Fact,
   type Payout,
@@ -150,4 +151,34 @@ test("los pagos marcan como pagadas las líneas más antiguas", () => {
   assert.equal(byDate[1]!.status, "ready");
   assert.equal(summary.availableCents, 2_000);
   assert.equal(summary.paidCents, 2_000);
+});
+
+test("desactivado: lo que pasa en la pausa no gana; lo de antes se queda", () => {
+  const before = fact({ type: "purchase", referralId: "r-ana", amountCents: 10_000, occurredAt: at(1) });
+  const during = fact({ type: "purchase", referralId: "r-ana", amountCents: 10_000, occurredAt: at(5) });
+  const after = fact({ type: "purchase", referralId: "r-ana", amountCents: 10_000, occurredAt: at(12) });
+  const pauses = [{ from: at(3), to: at(10) }];
+  const paused = (id: string, when: Date) => id === ANA && pausedAt(pauses, when);
+  const { lines } = linesFor(ANA, [before, during, after], referrals, rules, sponsorOf, [], at(40), paused);
+  assert.deepEqual(
+    lines.map((l) => l.sourceFactId).sort(),
+    [before.id, after.id].sort(),
+  );
+});
+
+test("un patrocinador desactivado no cobra el nivel 2 de su equipo", () => {
+  const sale = fact({ type: "purchase", referralId: "r-bea", amountCents: 10_000, occurredAt: at(5) });
+  const paused = (id: string, when: Date) => id === ANA && pausedAt([{ from: at(0), to: null }], when);
+  const ana = linesFor(ANA, [sale], referrals, rules, sponsorOf, [], at(40), paused);
+  const bea = linesFor(BEA, [sale], referrals, rules, sponsorOf, [], at(40), paused);
+  assert.equal(ana.lines.length, 0);
+  assert.equal(bea.lines[0]!.amountCents, 2_000);
+});
+
+test("pausedAt: el tramo incluye su inicio y no su fin", () => {
+  const p = [{ from: at(3), to: at(10) }];
+  assert.equal(pausedAt(p, at(3)), true);
+  assert.equal(pausedAt(p, at(10)), false);
+  assert.equal(pausedAt([{ from: at(3), to: null }], at(400)), true);
+  assert.equal(pausedAt([], at(5)), false);
 });

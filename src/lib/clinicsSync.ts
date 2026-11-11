@@ -105,6 +105,7 @@ async function run(): Promise<SyncResult> {
             channel: e.channel ?? undefined,
           },
           (ambassador, fact) => notifyNewSale(ambassador, fact, business.name),
+          { ambassadorRef: e.ambassador_ref ?? null },
         );
         if (result.ok) {
           if (result.status === "stored") stored++;

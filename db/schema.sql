@@ -426,3 +426,10 @@ CREATE TABLE IF NOT EXISTS sincronizacion (
 -- Cuándo quedó dado de alta el Embajador en clinics. Nulo = todavía no (o
 -- falló): el admin lo ve y puede reintentar.
 ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS clinics_vinculado_en timestamptz;
+
+-- Los tramos en que un Embajador estuvo DESACTIVADO (11-11-2026), como
+-- [{ "from": iso, "to": iso | null }]. El último con "to" nulo = lo está
+-- ahora. Lo que pasa dentro de un tramo no le genera comisión (ni nivel 1
+-- ni nivel 2) y no se le asignan clientes nuevos; lo ganado antes se queda.
+-- Ver `pausedAt` en src/lib/commissions.ts.
+ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS embajador_pausas jsonb NOT NULL DEFAULT '[]'::jsonb;

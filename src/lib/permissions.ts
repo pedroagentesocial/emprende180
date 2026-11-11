@@ -187,6 +187,15 @@ export function isAmbassador(student: Student | null | undefined): boolean {
 }
 
 /**
+ * ¿Está desactivado AHORA (una pausa abierta)? Sigue entrando a su portal y
+ * cobrando lo ganado, pero no recibe clientes nuevos ni gana con lo que pase
+ * mientras lo está.
+ */
+export function isAmbassadorPaused(student: Student | null | undefined): boolean {
+  return !!student?.ambassadorPauses?.some((p) => p.to === null);
+}
+
+/**
  * ¿Puede activar Embajadores, crear negocios, poner reglas y anotar pagos?
  * Solo el admin: todo eso es dinero de otros.
  */

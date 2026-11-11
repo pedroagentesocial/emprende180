@@ -1,4 +1,4 @@
-import { linesFor, type Line, type Summary } from "@lib/commissions";
+import { linesFor, pausedAt, type Line, type Summary } from "@lib/commissions";
 import {
   ambassadorRepo,
   type Business,
@@ -112,6 +112,7 @@ export async function loadBook(
 
   const everyone = await repo().listStudents();
   const sponsorById = new Map(everyone.map((s) => [s.id, s.sponsorId]));
+  const pausesById = new Map(everyone.map((s) => [s.id, s.ambassadorPauses]));
   const team = everyone.filter((s) => s.sponsorId === ambassador.id && s.id !== ambassador.id);
   const teamIds = team.map((s) => s.id);
 
@@ -131,6 +132,7 @@ export async function loadBook(
     (id) => sponsorById.get(id) ?? null,
     payouts,
     now,
+    (id, at) => pausedAt(pausesById.get(id), at),
   );
 
   const businessById = new Map(businesses.map((b) => [b.id, b]));

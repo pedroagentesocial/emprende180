@@ -32,6 +32,10 @@ export const ambassadorCopy = {
 
   home: {
     hello: t("Hola, {nombre}", "Hi, {nombre}"),
+    paused: t(
+      "Tu cuenta de Embajador está desactivada desde el {fecha}: no recibes clientes nuevos. Lo que ya ganaste sigue aquí y se te paga igual.",
+      "Your Ambassador account has been deactivated since {fecha}: you get no new clients. What you already earned is still here and will be paid.",
+    ),
     available: t("Por cobrar", "Ready to collect"),
     owed: t("Saldo a descontar", "Balance to deduct"),
     owedHint: t(
@@ -209,6 +213,25 @@ export const ambassadorCopy = {
     noticePaid: t("Pago anotado.", "Payout recorded."),
     noticeSponsor: t("Patrocinador cambiado.", "Sponsor changed."),
     noticeSelfSponsor: t("Nadie puede ser su propio patrocinador.", "Nobody can be their own sponsor."),
+
+    /* Desactivar (11-11-2026) */
+    statusActive: t("Activo", "Active"),
+    statusPaused: t("Desactivado desde el {fecha}", "Deactivated since {fecha}"),
+    pauseTitle: t("Desactivar Embajador", "Deactivate Ambassador"),
+    pauseHint: t(
+      "Deja de recibir clientes nuevos y no gana con lo que pase mientras esté desactivado. Lo que ya ganó se queda y se le puede pagar. En clinics queda en pausa.",
+      "They stop getting new clients and earn nothing from what happens while deactivated. What they already earned stays and can be paid. In clinics they are paused.",
+    ),
+    pauseConfirm: t("Sí, desactivar", "Yes, deactivate"),
+    resumeTitle: t("Reactivar Embajador", "Reactivate Ambassador"),
+    resumeHint: t(
+      "Vuelve a recibir clientes y a ganar desde ahora. Lo que pasó mientras estuvo desactivado no se le paga.",
+      "They get clients and earn again from now on. What happened while deactivated is not paid.",
+    ),
+    resume: t("Reactivar", "Reactivate"),
+    noticePaused: t("Embajador desactivado.", "Ambassador deactivated."),
+    noticeResumed: t("Embajador reactivado.", "Ambassador reactivated."),
+    colStatus: t("Estado", "Status"),
 
     /* La conexión con clinics */
     clinicsLinked: t("Dado de alta en clinics el {fecha}", "Registered in clinics on {fecha}"),

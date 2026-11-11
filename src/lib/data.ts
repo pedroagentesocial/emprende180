@@ -122,6 +122,11 @@ export interface Student {
   ambassadorSince: Date | null;
   /** Cuándo quedó dado de alta en clinics (Revivi, Venture, clínicas). */
   clinicsLinkedAt: Date | null;
+  /**
+   * Los tramos en que estuvo desactivado (11-11-2026). El último con `to`
+   * nulo = lo está ahora. Ver `pausedAt` en `@lib/commissions`.
+   */
+  ambassadorPauses: { from: Date; to: Date | null }[];
 }
 
 /**
@@ -236,6 +241,11 @@ export interface Repo {
   studentByAmbassadorCode(code: string): Promise<Student | null>;
   /** Anota que clinics ya lo tiene dado de alta. */
   markClinicsLinked(id: string): Promise<void>;
+  /**
+   * Desactiva (abre una pausa) o reactiva (la cierra) a un Embajador. Sin
+   * efecto si ya estaba así. Solo el admin.
+   */
+  setAmbassadorActive(id: string, active: boolean): Promise<void>;
   markSignIn(id: string): Promise<void>;
 
   createMagicToken(studentId: string, tokenHash: string, expiresAt: Date): Promise<void>;
@@ -446,6 +456,7 @@ function postgresRepo(url: string): Repo {
     sponsorId: (f.patrocinador_id as string) ?? null,
     ambassadorSince: (f.embajador_desde as Date) ?? null,
     clinicsLinkedAt: (f.clinics_vinculado_en as Date) ?? null,
+    ambassadorPauses: parsePauses(f.embajador_pausas),
   });
 
   return {
@@ -553,6 +564,21 @@ function postgresRepo(url: string): Repo {
 
     async markClinicsLinked(id) {
       await sql`UPDATE alumnos SET clinics_vinculado_en = now() WHERE id = ${id}`;
+    },
+
+    async setAmbassadorActive(id, active) {
+      /* Leer y escribir en la misma transacción, con la fila bloqueada: dos
+         clics a la vez no abren dos pausas. */
+      await sql.begin(async (tx) => {
+        const [f] = await tx`
+          SELECT embajador_pausas FROM alumnos WHERE id = ${id} FOR UPDATE`;
+        if (!f) return;
+        const next = togglePause(parsePauses(f.embajador_pausas), active, new Date());
+        if (!next) return;
+        await tx`
+          UPDATE alumnos SET embajador_pausas = ${tx.json(serialisePauses(next))}
+          WHERE id = ${id}`;
+      });
     },
 
     async studentByAmbassadorCode(code) {
@@ -847,6 +873,7 @@ function memoryRepo(): Repo {
       sponsorId: null,
       ambassadorSince: null,
       clinicsLinkedAt: null,
+    ambassadorPauses: [],
     };
     students.set(s.email, s);
   }
@@ -911,6 +938,7 @@ function memoryRepo(): Repo {
         sponsorId: null,
         ambassadorSince: null,
         clinicsLinkedAt: null,
+        ambassadorPauses: [],
       };
       students.set(s.email, s);
       demoEmails.add(s.email);
@@ -1004,6 +1032,7 @@ function memoryRepo(): Repo {
         sponsorId: null,
         ambassadorSince: null,
         clinicsLinkedAt: null,
+        ambassadorPauses: [],
       };
       students.set(s.email, s);
       return s;
@@ -1040,6 +1069,11 @@ function memoryRepo(): Repo {
     async markClinicsLinked(id) {
       const s = byId(id);
       if (s) students.set(s.email, { ...s, clinicsLinkedAt: new Date() });
+    },
+    async setAmbassadorActive(id, active) {
+      const s = byId(id);
+      const next = s && togglePause(s.ambassadorPauses, active, new Date());
+      if (s && next) students.set(s.email, { ...s, ambassadorPauses: next });
     },
     async studentByAmbassadorCode(code) {
       const k = normaliseCode(code);
@@ -1251,4 +1285,48 @@ export function repo(): Repo {
     "[data] DATABASE_URL is missing. The student area needs a Postgres " +
       "database; apply db/schema.sql and define the variable in the environment.",
   );
+}
+
+/* ─── Pausas de un Embajador ─────────────────────────────────────────────── */
+
+type PauseRow = { from: Date; to: Date | null };
+
+/** La columna jsonb (fechas como texto ISO) como fechas; basura = ninguna. */
+function parsePauses(raw: unknown): PauseRow[] {
+  const list = typeof raw === "string" ? safeJson(raw) : raw;
+  if (!Array.isArray(list)) return [];
+  const out: PauseRow[] = [];
+  for (const p of list) {
+    const from = new Date((p as { from?: string })?.from ?? NaN);
+    const toRaw = (p as { to?: string | null })?.to;
+    const to = toRaw ? new Date(toRaw) : null;
+    if (Number.isNaN(from.getTime()) || (to && Number.isNaN(to.getTime()))) continue;
+    out.push({ from, to });
+  }
+  return out;
+}
+
+function safeJson(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
+const serialisePauses = (list: PauseRow[]) =>
+  list.map((p) => ({ from: p.from.toISOString(), to: p.to ? p.to.toISOString() : null }));
+
+/**
+ * Abre una pausa (desactivar) o cierra la abierta (reactivar). `null` si ya
+ * estaba así: no hay nada que escribir.
+ */
+function togglePause(list: PauseRow[], active: boolean, now: Date): PauseRow[] | null {
+  const open = list.findIndex((p) => p.to === null);
+  if (active) {
+    if (open < 0) return null;
+    return list.map((p, i) => (i === open ? { ...p, to: now } : p));
+  }
+  if (open >= 0) return null;
+  return [...list, { from: now, to: null }];
 }
