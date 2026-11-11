@@ -1,6 +1,5 @@
 ---
 import BaseLayout from "@layouts/BaseLayout.astro";
-import Footer from "@components/layout/Footer.astro";
 import T from "@components/i18n/T.astro";
 import Icono from "@components/ui/Icono.astro";
 import PortalNav from "@components/student/PortalNav.astro";
@@ -38,9 +37,9 @@ import type { Role, Student } from "@lib/data";
  *
  * ─── WHAT STAYS FROM THE OLD SHELL ─────────────────────────────────────────
  *
- * The landing's footer: the legal links and the phone number have to be within
- * reach in here too. And the `pageshow` guard, which is half of the sign-out
- * fix — see the note at the bottom.
+ * The `pageshow` guard, which is half of the sign-out fix (the landing's
+ * footer was dropped from the portal on 2026-11-11, at the
+ * client's request). See the note at the bottom.
  */
 
 interface Props {
@@ -100,10 +99,8 @@ const signOutOscuro =
 ---
 
 <BaseLayout titulo={pageTitle} descripcion={studentCopy.intro} noindex>
-  {/* ⚠️ EL PIE VA FUERA DE ESTA FILA, ABAJO Y A TODO EL ANCHO. Estaba dentro de
-      la columna de contenido, así que la franja navy empezaba a la derecha de la
-      barra lateral y se veía cortada por la mitad. Un pie es del sitio entero,
-      no de una columna. */}
+  {/* Sin pie de página: se quitó el 11-11-2026 a petición del cliente. La
+      ayuda (teléfono y enlaces) sigue en `HelpLinks`. */}
   <div class="flex flex-1 bg-surface-muted">
     {/* ─── LA COLUMNA ────────────────────────────────────────────────────────
         ⚠️ VUELVE A SER UNA LOSA DE ALTO LA VENTANA PEGADA AL BORDE, Y ESTA VEZ
@@ -131,7 +128,7 @@ const signOutOscuro =
     >
       <div class="columna-aurora" aria-hidden="true"></div>
 
-      <div class="shrink-0 px-5 pt-6 pb-5">
+      <div class="flex shrink-0 items-center justify-between gap-2 px-5 pt-6 pb-5">
         <a
           href="/student"
           class="inline-flex min-h-11 items-center rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
@@ -150,6 +147,8 @@ const signOutOscuro =
             />
           ))}
         </a>
+        {/* El idioma, pequeño, a la altura del logotipo (pedido el 11-11-2026). */}
+        <LanguageSwitch client:load tono="oscuro" tamano="chico" />
       </div>
 
       {/* Los destinos y la ayuda van en la parte que se desplaza; el logotipo y
@@ -169,14 +168,6 @@ const signOutOscuro =
           herramienta, y aquí además cumple otra función: el rol se lee en todo
           momento, así que nadie administra creyendo que mira su propia cuenta. */}
       <div class="shrink-0 border-t border-white/12 px-3 pt-3 pb-4">
-        {/* ⚠️ EL IDIOMA NO EXISTÍA EN LA PLATAFORMA. Se entraba con el que
-            resolviera la cabecera del navegador y ahí se quedaba uno: ni un
-            interruptor en ninguna de las cinco pantallas. Es el mismo componente
-            del sitio, en su tono oscuro. */}
-        <div class="flex justify-center pb-3">
-          <LanguageSwitch client:load tono="oscuro" />
-        </div>
-
         <div class="flex items-center gap-3 rounded-xl bg-white/6 px-3 py-2.5">
           <span
             aria-hidden="true"
@@ -232,7 +223,7 @@ const signOutOscuro =
 
           <div class="flex items-center gap-2 sm:gap-3">
             {/* En móvil no hay columna, así que el idioma viaja aquí. */}
-            <LanguageSwitch client:load tono="claro" />
+            <LanguageSwitch client:load tono="claro" tamano="chico" />
 
             <form method="POST" action="/api/logout">
               <button type="submit" class={`${signOutClass} w-auto`}>
@@ -279,7 +270,6 @@ const signOutOscuro =
     </div>
   </div>
 
-  <Footer />
 
   {/* ─────────────────────────────────────────────────────────────────────────
       THE BACK BUTTON AFTER SIGNING OUT

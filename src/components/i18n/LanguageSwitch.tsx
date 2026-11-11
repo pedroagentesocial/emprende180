@@ -40,10 +40,14 @@ const ETIQUETAS: Record<
 export function LanguageSwitch({
   lang,
   tono = "claro",
+  tamano = "normal",
 }: {
   lang?: Idioma;
   tono?: "claro" | "oscuro";
+  /** "chico": para la fila del logotipo de la columna de la plataforma. */
+  tamano?: "normal" | "chico";
 }) {
+  const chico = tamano === "chico";
   const store = useStore(idioma);
   // Igual que el resto de islas: en el servidor el store no sabe el idioma.
   const actual = typeof document === "undefined" ? (lang ?? store) : store;
@@ -69,7 +73,8 @@ export function LanguageSwitch({
       <span
         aria-hidden="true"
         className={[
-          "pointer-events-none absolute top-1 bottom-1 left-1 w-10 rounded-full sm:w-11",
+          "pointer-events-none absolute top-1 bottom-1 left-1 rounded-full",
+          chico ? "w-8" : "w-10 sm:w-11",
           "transition-transform duration-300 ease-[var(--ease-out-soft)]",
           oscuro ? "bg-white/90" : "bg-surface shadow-xs",
         ].join(" ")}
@@ -92,7 +97,9 @@ export function LanguageSwitch({
               /* `relative` para quedar por encima de la píldora, que va detrás. */
               /* 44 px, el mínimo táctil, y no 48: la barra entera bajó un
                  punto el 16-09-2026 a petición del cliente. */
-              "relative min-h-10 min-w-10 rounded-full px-2 text-[0.8125rem] font-bold transition-colors duration-200 sm:min-h-11 sm:min-w-11 sm:px-2.5",
+              chico
+                ? "relative min-h-8 min-w-8 rounded-full px-1.5 text-[0.7rem] font-bold transition-colors duration-200"
+                : "relative min-h-10 min-w-10 rounded-full px-2 text-[0.8125rem] font-bold transition-colors duration-200 sm:min-h-11 sm:min-w-11 sm:px-2.5",
               "focus-visible:outline-2 focus-visible:outline-offset-2",
               oscuro
                 ? "focus-visible:outline-focus-inverse"

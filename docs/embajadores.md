@@ -95,14 +95,14 @@ Estos no mandan webhook: Emprende180 lee sus hechos de clinics (`/partners/v1/em
 4. Al **activar** a un Embajador, Emprende180 lo da de alta en clinics como afiliado de toda la organización, con 0 % de comisión propia allí (la comisión la calcula Emprende180). Si falla, su ficha lo dice y tiene un botón para reintentar.
 5. Un pago en **crédito Revivi** se abona en clinics al anotarlo. Si falla, queda "pendiente de abonar" y se reintenta desde la ficha.
 
-Qué cuenta clinics: `lead` (el referido), `purchase` (cada recibo, antes de impuestos), `refund`, `cancel` (recibo anulado o cita que deja de estar completada) y `attended` (cita completada sin recibo, las de las clínicas PI). Nunca nombres ni correos.
+Qué cuenta clinics: `lead` (el referido), `purchase` (cada recibo, antes de impuestos), `renewal` (la parte de un recibo que cobra una membresía renovada, con su número de pago: 2 = primera renovación), `refund`, `cancel` (recibo anulado o cita que deja de estar completada) y `attended` (cita completada sin recibo, las de las clínicas PI). Nunca nombres ni correos.
+
+Cómo sabe clinics quién es el referido: el referido queda pegado a la **ficha del paciente**, no a su correo. Así se puede referir a un paciente sin correo (lo normal en las PI), cambiarle el correo no mueve nada y dos pacientes con el mismo correo no se mezclan. Un lead que llegó por el enlace de la web, antes de existir la ficha, va por correo hasta que reserva; entonces queda pegado a su ficha.
+
+En recepción, **Referred by** (en la ficha del paciente y al crearlo) está en **todas** las clínicas, también las PI, y ofrece a los Embajadores.
 
 Cuándo se lee: al abrir el portal o el admin (como mucho una vez por minuto), con **Sincronizar ahora** en Negocios, y con el cron si existe. Si llega un hecho de una clínica que no tiene negocio aquí, la lectura se detiene ahí y Negocios lo avisa; al crear el negocio, sigue donde se quedó.
 
 ## Pendiente
 
 - Los porcentajes de comisión (por nivel y por renovación).
-- Qué recibos de clinics son **renovaciones** (hoy cada recibo cuenta como primera compra).
-- Los nombres de los clientes de clinics: hace falta su consentimiento en clinics antes de mandarlos.
-- Referir por paciente en clinics (hoy un referido se reconoce por su correo) y "Referido por" en las clínicas PI.
-- La revisión legal y el texto de la casilla de consentimiento.
