@@ -34,9 +34,9 @@
    `??`: el build deja la variable que no conoce como texto VACÍO, y `??`
    no salta al respaldo con un texto vacío. */
 const run = (k: string): string | undefined => globalThis.process?.env?.[k];
-const flag = import.meta.env.PREVIEW_DEMO || run("PREVIEW_DEMO");
-const target = import.meta.env.VERCEL_ENV || run("VERCEL_ENV");
-const branch = import.meta.env.VERCEL_GIT_COMMIT_REF || run("VERCEL_GIT_COMMIT_REF");
+const flag = run("PREVIEW_DEMO") || import.meta.env.PREVIEW_DEMO;
+const target = run("VERCEL_ENV") || import.meta.env.VERCEL_ENV;
+const branch = run("VERCEL_GIT_COMMIT_REF") || import.meta.env.VERCEL_GIT_COMMIT_REF;
 
 export const PREVIEW_DEMO: boolean = flag === "1" && target === "preview" && branch !== "main";
 
@@ -55,5 +55,5 @@ export const DEMO_ADMIN_EMAIL = "admin@demo.emprende180.com";
 export const FIXED_CODE: boolean = Boolean(import.meta.env.DEV) || PREVIEW_DEMO;
 
 /** Diagnóstico (solo verdadero / falso, ningún valor) para la cabecera del login fuera de producción. */
-export const DEMO_DIAG = `build:${import.meta.env.PREVIEW_DEMO === "1"} run:${run("PREVIEW_DEMO") === "1"} preview:${target === "preview"} notMain:${branch !== "main"} branchKnown:${!!branch}`;
+export const DEMO_DIAG = `build:${import.meta.env.PREVIEW_DEMO === "1"} run:${run("PREVIEW_DEMO") === "1"} preview:${target === "preview"} notMain:${branch !== "main"} branchKnown:${!!branch} on:${PREVIEW_DEMO} buildType:${typeof import.meta.env.PREVIEW_DEMO}`;
 export const IS_PRODUCTION = target === "production";
