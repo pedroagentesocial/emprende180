@@ -51,3 +51,7 @@ export const DEMO_ADMIN_EMAIL = "admin@demo.emprende180.com";
 
 /** ¿Se usa el código fijo? En `astro dev` y en el modo demo. */
 export const FIXED_CODE: boolean = Boolean(import.meta.env.DEV) || PREVIEW_DEMO;
+
+/** Diagnóstico (solo verdadero / falso, ningún valor) para la cabecera del login fuera de producción. */
+export const DEMO_DIAG = `build:${import.meta.env.PREVIEW_DEMO === "1"} run:${run("PREVIEW_DEMO") === "1"} preview:${target === "preview"} notMain:${branch !== "main"} branchKnown:${!!branch}`;
+export const IS_PRODUCTION = target === "production";
