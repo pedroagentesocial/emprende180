@@ -1,4 +1,5 @@
 import postgres from "postgres";
+import { PREVIEW_DEMO, DEMO_ADMIN_EMAIL } from "@lib/previewDemo";
 /* Only the IN-MEMORY store uses this, to derive the hash of `DEMO_CLAVE`. The
    Postgres store never hashes anything: it receives the finished hash from
    `@lib/auth`. */
@@ -876,6 +877,9 @@ function memoryRepo(): Repo {
     .filter(Boolean);
 
   if (!adminEmails.length) adminEmails.push("support@emprende180.com");
+  /* En el preview en modo demo, el admin es una cuenta de ejemplo: nadie entra
+     con el correo de una persona real (ver @lib/previewDemo). */
+  if (PREVIEW_DEMO) adminEmails.splice(0, adminEmails.length, DEMO_ADMIN_EMAIL);
 
   /**
    * ─── THE DEMO PASSWORD ────────────────────────────────────────────────────
@@ -968,7 +972,7 @@ function memoryRepo(): Repo {
   /* Los correos que abren con `DEMO_CLAVE`. Los admins sembrados y estos. */
   const demoEmails = new Set<string>(adminEmails);
 
-  if (demoPassword) {
+  if (demoPassword || PREVIEW_DEMO) {
     const seed = (
       email: string,
       name: string,
@@ -1390,6 +1394,14 @@ let cached: Repo | null = null;
 
 export function repo(): Repo {
   if (cached) return cached;
+
+  /* El preview en modo demo NO usa la base, aunque exista: es la de
+     producción (ver @lib/previewDemo). */
+  if (PREVIEW_DEMO) {
+    console.warn("[data] PREVIEW_DEMO: datos de ejemplo en memoria, sin base de datos.");
+    cached = memoryRepo();
+    return cached;
+  }
 
   const url = import.meta.env.DATABASE_URL;
 

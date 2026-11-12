@@ -1,4 +1,5 @@
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
+import { PREVIEW_DEMO } from "@lib/previewDemo";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -37,7 +38,7 @@ function key(): Buffer | null {
     console.error("[sealed] AMBASSADOR_DATA_KEY no son 32 bytes en base64: no se cifra nada.");
     return null;
   }
-  if (import.meta.env.DEV) {
+  if (import.meta.env.DEV || PREVIEW_DEMO) {
     if (!warned) {
       console.warn("[sealed] Sin AMBASSADOR_DATA_KEY: se usa una clave de PRUEBA (solo desarrollo).");
       warned = true;

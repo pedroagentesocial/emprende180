@@ -15,6 +15,7 @@ import {
   internalPath,
 } from "@lib/auth";
 import { LOGIN_EMAIL } from "@lib/loginEmail";
+import { PREVIEW_DEMO, DEMO_CODE, DEMO_ADMIN_EMAIL } from "@lib/previewDemo";
 import { consume, clientIp } from "@lib/rateLimit";
 import { captchaSiteKey, verifyCaptcha, CAPTCHA_FIELD } from "@lib/captcha";
 
@@ -336,6 +337,21 @@ const irAlInicio = lang === "en" ? "Go to the home page" : "Ir al inicio";
             </div>
           )
         }
+
+        {/* Solo en el preview en modo demo (@lib/previewDemo): las cuentas de
+            ejemplo y su código, para quien viene a ver la rama. */}
+        {PREVIEW_DEMO && (
+          <div role="note" class="mb-5 rounded-2xl border border-secondary-500/40 bg-secondary-50 px-4 py-3.5 text-sm text-ink">
+            <p class="font-bold">Vista previa con datos de ejemplo</p>
+            <p class="mt-1 text-ink-muted">Escribe uno de estos correos y luego el código <strong class="font-mono text-ink">{DEMO_CODE}</strong>. No se manda ningún correo.</p>
+            <ul class="mt-2 space-y-1">
+              <li><span class="font-semibold">Admin:</span> <span class="font-mono select-all">{DEMO_ADMIN_EMAIL}</span></li>
+              <li><span class="font-semibold">Embajadora con historia:</span> <span class="font-mono select-all">agente@emprende180.com</span></li>
+              <li><span class="font-semibold">Embajadora nueva:</span> <span class="font-mono select-all">alumno@emprende180.com</span></li>
+              <li><span class="font-semibold">Pre-registro:</span> <span class="font-mono select-all">rosa@ejemplo.com</span></li>
+            </ul>
+          </div>
+        )}
 
         {/* ⚠️ EL BOTÓN DE GOOGLE VA DENTRO DEL ISLAND, no debajo. Fuera salía
             también en el paso del código, donde no pinta nada: quien ya pidió

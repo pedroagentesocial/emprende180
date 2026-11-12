@@ -1,4 +1,5 @@
 import type { AstroCookies } from "astro";
+import { DEMO_CODE, FIXED_CODE, PREVIEW_DEMO } from "@lib/previewDemo";
 import { repo, normaliseEmail, type Student, type Role } from "@lib/data";
 import { hashPassword, verifyPassword, burnTime } from "@lib/passwords";
 import { avisarAGhl } from "@lib/ghl";
@@ -350,7 +351,7 @@ export async function sendMagicLink(
      possible to test the whole circuit without setting up an inbox.
      `import.meta.env.DEV` is replaced by `false` at build time, so this branch
      does not exist in production. */
-  if (!apiKey || !from) {
+  if (!apiKey || !from || PREVIEW_DEMO) {
     console.warn(
       `[auth] DEMO MODE — no RESEND_API_KEY. Link for ${email}:\n  ${link}`,
     );
@@ -439,7 +440,7 @@ export async function enviarCorreoCodigo(
   const apiKey = import.meta.env.RESEND_API_KEY;
   const from = import.meta.env.NOTIFY_EMAIL_FROM;
 
-  if (!apiKey || !from) {
+  if (!apiKey || !from || PREVIEW_DEMO) {
     console.warn(`[auth] MODO DEMO — sin RESEND_API_KEY. Código para ${destino}: ${codigo}`);
     return;
   }
@@ -501,7 +502,7 @@ const CODIGO_INTENTOS = 5;
 function nuevoCodigo(): string {
   /* Solo en `astro dev` (localhost): código fijo para probar sin buscarlo.
      Un build de producción nunca tiene DEV, así que allí sigue siendo al azar. */
-  if (import.meta.env.DEV) return "123456";
+  if (FIXED_CODE) return DEMO_CODE;
   const n = crypto.getRandomValues(new Uint32Array(1))[0]! % 1_000_000;
   return String(n).padStart(6, "0");
 }

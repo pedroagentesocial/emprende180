@@ -1,4 +1,5 @@
 import { sharedSql, repo as studentsRepo } from "@lib/data";
+import { PREVIEW_DEMO } from "@lib/previewDemo";
 import type { Fact, FactType, Rule, RuleKind } from "@lib/commissions";
 
 /**
@@ -655,6 +656,7 @@ let cached: AmbassadorRepo | null = null;
  */
 export function ambassadorRepo(): AmbassadorRepo {
   if (cached) return cached;
+  if (PREVIEW_DEMO) return (cached = memoryRepo());
   const url = import.meta.env.DATABASE_URL;
   if (url) return (cached = postgresRepo(url));
   if (import.meta.env.DEV) return (cached = memoryRepo());

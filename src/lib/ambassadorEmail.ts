@@ -1,4 +1,5 @@
 import { correoMarca } from "@lib/correo";
+import { PREVIEW_DEMO } from "@lib/previewDemo";
 import { sitio } from "@config/curso.config";
 import type { Student } from "@lib/data";
 import type { StoredFact } from "@lib/ambassadors";
@@ -58,7 +59,7 @@ export async function notifyNewSale(
 
   const apiKey = import.meta.env.RESEND_API_KEY;
   const from = import.meta.env.NOTIFY_EMAIL_FROM;
-  if (!apiKey || !from) {
+  if (!apiKey || !from || PREVIEW_DEMO) {
     console.warn(`[ambassadorEmail] MODO DEMO, sin RESEND_API_KEY. Para ${ambassador.email}: ${subject}`);
     return;
   }

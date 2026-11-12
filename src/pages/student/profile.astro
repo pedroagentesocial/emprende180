@@ -12,6 +12,7 @@ import { enviarCorreoCodigo, sha256 } from "@lib/auth";
 import { EMAIL_CHANGE_EMAIL } from "@lib/loginEmail";
 import { seal, unseal } from "@lib/sealed";
 import { consume } from "@lib/rateLimit";
+import { DEMO_CODE, FIXED_CODE } from "@lib/previewDemo";
 import { shortDate } from "@lib/ambassadorFormat";
 import { studentCopy } from "@config/studentArea";
 import type { Txt } from "@i18n/idioma";
@@ -181,7 +182,7 @@ if (Astro.request.method === "POST") {
     if (email === me.email) return back("error=same#correo");
     if (await r.studentByEmail(email)) return back("error=taken#correo");
     if (!consume(`perfil-correo:${me.id}`, 3, 60 * 60_000).allowed) return back("error=tooMany#correo");
-    const code = import.meta.env.DEV ? "123456" : String(crypto.getRandomValues(new Uint32Array(1))[0]! % 1_000_000).padStart(6, "0");
+    const code = FIXED_CODE ? DEMO_CODE : String(crypto.getRandomValues(new Uint32Array(1))[0]! % 1_000_000).padStart(6, "0");
     const sealed = seal(JSON.stringify({ id: me.id, email, hash: await sha256(code), exp: Date.now() + CODE_MS }));
     if (!sealed) return back("error=noKey#correo");
     Astro.cookies.set(COOKIE, sealed, {
