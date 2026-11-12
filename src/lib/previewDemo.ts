@@ -27,11 +27,21 @@
  * Los datos viven en la memoria del servidor: si nadie lo usa un rato, Vercel
  * lo apaga y al volver se empieza de cero (hay que entrar otra vez).
  */
-const env = (k: string): string | undefined =>
-  (import.meta.env as Record<string, string | undefined>)[k] ?? globalThis.process?.env?.[k];
+/* ⚠️ CADA VARIABLE SE NOMBRA ENTERA (`import.meta.env.X`). El compilador solo
+   sustituye las que se escriben así; leídas con un índice (`env[k]`) llegaban
+   vacías al build de Vercel y el modo no se encendía. El `process.env` de
+   respaldo es el de la función, en tiempo de ejecución. */
+const run = (k: string): string | undefined => globalThis.process?.env?.[k];
+const flag = import.meta.env.PREVIEW_DEMO ?? run("PREVIEW_DEMO");
+const target = import.meta.env.VERCEL_ENV ?? run("VERCEL_ENV");
+const branch = import.meta.env.VERCEL_GIT_COMMIT_REF ?? run("VERCEL_GIT_COMMIT_REF");
 
-export const PREVIEW_DEMO: boolean =
-  env("PREVIEW_DEMO") === "1" && env("VERCEL_ENV") === "preview" && env("VERCEL_GIT_COMMIT_REF") !== "main";
+export const PREVIEW_DEMO: boolean = flag === "1" && target === "preview" && branch !== "main";
+
+if (flag === "1" && !PREVIEW_DEMO) {
+  /* Solo booleanos: ningún valor de variable va al log. */
+  console.warn(`[previewDemo] PREVIEW_DEMO=1 pero no se enciende: preview=${target === "preview"} rama-no-main=${branch !== "main"}`);
+}
 
 /** El código de seis dígitos de las cuentas de ejemplo. */
 export const DEMO_CODE = "123456";

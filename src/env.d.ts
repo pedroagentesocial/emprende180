@@ -1,6 +1,12 @@
 /// <reference types="astro/client" />
 
 interface ImportMetaEnv {
+  /** Server-only. "1" enciende el modo demo en un PREVIEW (ver @lib/previewDemo). */
+  readonly PREVIEW_DEMO?: string;
+  /** De Vercel: production | preview | development. */
+  readonly VERCEL_ENV?: string;
+  /** De Vercel: la rama del deployment. */
+  readonly VERCEL_GIT_COMMIT_REF?: string;
   /** Server-only. Resend key, used to send email. */
   readonly RESEND_API_KEY: string;
   /** Server-only. Recipient of the new-lead notification. */
