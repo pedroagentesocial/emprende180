@@ -2,28 +2,34 @@
 import AmbassadorLayout from "@layouts/AmbassadorLayout.astro";
 import T from "@components/i18n/T.astro";
 import Icono from "@components/ui/Icono.astro";
+import Avatar from "@components/ambassador/Avatar.astro";
 import { ambassadorCopy } from "@config/ambassadorArea";
-import { loadBook } from "@lib/ambassadorBook";
+import { loadBook, type BookReferral, type ReferralStage } from "@lib/ambassadorBook";
 import { money, shortDate } from "@lib/ambassadorFormat";
 import { isAmbassador } from "@lib/permissions";
 import type { LineStatus } from "@lib/commissions";
+import type { Txt } from "@i18n/idioma";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
  * /student/ambassador/referrals: cada persona que llegó con tu código
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * Una tarjeta por cliente, con su negocio, su estado y lo que te ha dado. Al
- * tocarla se abre el detalle: cada comisión, su estado y cuándo se paga (lo
- * que pide el ticket: "en cuánto tiempo se le realizará el pago").
+ * Rehecha el 12-11-2026. Arriba, cuatro cifras (referidos, clientes, sin
+ * compra, lo que han gastado). Luego filtros por negocio y estado y el orden,
+ * todos enlaces (`?b=&e=&o=`) que funcionan sin JavaScript y se pueden
+ * guardar. Cada persona es una fila con su avatar, su negocio, su estado y lo
+ * que te ha dado.
+ *
+ * ⚠️ SOLO SE DESPLIEGA LO QUE TIENE ALGO DENTRO. Quien todavía no ha comprado
+ * es una fila quieta, sin flecha, que lo dice ("Todavía no ha comprado"): una
+ * flecha que abre una caja vacía es una promesa que no se cumple. El que sí
+ * tiene historia se abre con lo que ha gastado, lo que te tocó, lo que sigue
+ * en espera, su historial y cada comisión.
  *
  * ⚠️ ES LA ÚNICA PANTALLA CON NOMBRES, y solo los de quien dio permiso. Abrirla
  * deja una fila en `registro_vistas` (ver `loadBook`). Sin permiso, "Cliente
- * #4": el número es fijo, por orden de llegada, así que el Embajador puede
- * reconocer a cada uno sin que nadie le diga quién es.
- *
- * El filtro por negocio es un enlace (`?b=slug`), no un script: funciona con
- * la conexión más lenta y se puede guardar.
+ * #4": el número es fijo, por orden de llegada.
  */
 export const prerender = false;
 
@@ -31,18 +37,52 @@ const me = Astro.locals.student!;
 if (!isAmbassador(me)) return new Response(null, { status: 404 });
 
 const c = ambassadorCopy;
+const rc = c.referralsMore;
 const book = await loadBook(me, { viewer: me, withNames: true });
+const all = book.referrals;
 
-const filter = Astro.url.searchParams.get("b");
-const shown = filter ? book.referrals.filter((r) => r.business?.slug === filter) : book.referrals;
-const withReferrals = book.businesses.filter((b) => book.referrals.some((r) => r.business?.id === b.id));
+/* ─── Filtros (enlaces) ───────────────────────────────────────────────── */
+const q = Astro.url.searchParams;
+const fb = q.get("b");
+const fe = q.get("e") as ReferralStage | null;
+const fo = (q.get("o") ?? "recent") as "recent" | "earned" | "oldest";
+const STAGES: ReferralStage[] = ["customer", "lead", "reversed"];
+
+const href = (patch: Record<string, string | null>) => {
+  const p = new URLSearchParams();
+  const next = { b: fb, e: fe, o: fo === "recent" ? null : fo, ...patch };
+  for (const [k, v] of Object.entries(next)) if (v) p.set(k, v);
+  const s = p.toString();
+  return `/student/ambassador/referrals${s ? `?${s}` : ""}`;
+};
+
+let shown = all.filter((r) => (!fb || r.business?.slug === fb) && (!fe || r.stage === fe));
+if (fo === "earned") shown = [...shown].sort((a, b) => b.earnedCents - a.earnedCents);
+if (fo === "oldest") shown = [...shown].sort((a, b) => a.number - b.number);
+if (fo === "recent") shown = [...shown].sort((a, b) => b.lastActivityAt.getTime() - a.lastActivityAt.getTime());
+
+const withReferrals = book.businesses.filter((b) => all.some((r) => r.business?.id === b.id));
+const countStage = (s: ReferralStage) => all.filter((r) => (!fb || r.business?.slug === fb) && r.stage === s).length;
+
+const totals = {
+  referrals: all.length,
+  customers: all.filter((r) => r.stage === "customer").length,
+  leads: all.filter((r) => r.stage === "lead").length,
+  spent: all.reduce((s, r) => s + r.spentCents, 0),
+};
+
+const expandable = (r: BookReferral) => r.lines.length > 0 || r.events.some((e) => e.type !== "lead");
 
 const stageClass = {
   lead: "bg-primary-50 text-primary-700",
   customer: "bg-secondary-100 text-secondary-800",
   reversed: "bg-neutral-200 text-ink-muted",
 } as const;
-
+const stageFilterLabel: Record<ReferralStage, Txt> = {
+  customer: c.referralsMore.statsCustomers,
+  lead: c.referralsMore.statsLeads,
+  reversed: c.stage.reversed,
+};
 const statusClass: Record<LineStatus, string> = {
   waiting: "bg-warning-50 text-warning-700",
   ready: "bg-secondary-100 text-secondary-800",
@@ -50,104 +90,224 @@ const statusClass: Record<LineStatus, string> = {
   annulled: "bg-neutral-200 text-ink-muted line-through",
   deduction: "bg-error-50 text-error-700",
 };
+const eventDot: Record<string, string> = {
+  lead: "bg-primary-300",
+  purchase: "bg-primary-900",
+  renewal: "bg-secondary-500",
+  attended: "bg-primary-500",
+  refund: "bg-error-600",
+  cancel: "bg-error-600",
+};
 
 const chip =
-  "inline-flex min-h-10 shrink-0 items-center rounded-full border px-4 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+  "inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+const on = "border-primary-900 bg-primary-900 text-white";
+const off = "border-line-strong bg-surface text-ink hover:border-ink";
 ---
 
 <AmbassadorLayout title={c.referrals.title} student={me} tab="referrals">
-  <h1 class="text-2xl font-extrabold text-ink"><T v={c.referrals.title} /></h1>
-  <p class="mt-2 text-sm text-pretty text-ink-muted"><T v={c.referrals.intro} /></p>
+  <h1 class="text-3xl text-balance text-ink sm:text-4xl"><T v={c.referrals.title} /></h1>
+  <p class="mt-2 max-w-2xl text-base text-pretty text-ink-muted"><T v={c.referrals.intro} /></p>
 
   {
-    withReferrals.length > 1 && (
-      <nav class="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-1" aria-label={c.home.byBusiness[me.language]}>
-        <a
-          href="/student/ambassador/referrals"
-          aria-current={!filter ? "page" : undefined}
-          class:list={[chip, !filter ? "border-primary-900 bg-primary-900 text-white" : "border-line-strong bg-surface text-ink"]}
-        >
-          <T v={c.referrals.all} />
-        </a>
-        {withReferrals.map((b) => (
-          <a
-            href={`/student/ambassador/referrals?b=${encodeURIComponent(b.slug)}`}
-            aria-current={filter === b.slug ? "page" : undefined}
-            class:list={[chip, filter === b.slug ? "border-primary-900 bg-primary-900 text-white" : "border-line-strong bg-surface text-ink"]}
-          >
-            {b.name}
-          </a>
-        ))}
-      </nav>
-    )
-  }
-
-  {
-    shown.length === 0 ? (
+    all.length === 0 ? (
       <p class="mt-6 rounded-3xl border border-line bg-surface p-6 text-center text-sm text-ink-muted">
-        <T v={book.referrals.length ? c.referrals.empty : c.home.empty} />
+        <T v={c.home.empty} />
       </p>
     ) : (
-      <ul class="mt-4 flex flex-col gap-3">
-        {shown.map((r) => (
-          <li>
-            <details class="group rounded-3xl border border-line bg-surface">
-              <summary class="flex cursor-pointer list-none items-start justify-between gap-3 rounded-3xl px-5 py-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus [&::-webkit-details-marker]:hidden">
-                <span class="min-w-0">
-                  <span class="block truncate font-bold text-ink">
-                    {r.name ?? <T v={c.referrals.client} vars={{ n: r.number }} />}
-                  </span>
-                  <span class="mt-0.5 block truncate text-xs text-ink-muted">
-                    {r.business?.name ?? ""}
-                    {r.channel && <> · <T v={c.channel[r.channel]} /></>}
-                    {" · "}
-                    <T v={c.referrals.since} vars={{ fecha: shortDate(r.firstContactAt) }} />
-                  </span>
-                  <span class="mt-2 flex flex-wrap items-center gap-2">
-                    <span class:list={["rounded-full px-2.5 py-1 text-xs font-bold", stageClass[r.stage]]}>
-                      <T v={c.stage[r.stage]} />
+      <>
+        {/* ─── Las cuatro cifras ─────────────────────────────────────── */}
+        <dl class="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
+          {[
+            [rc.statsReferrals, String(totals.referrals)],
+            [rc.statsCustomers, String(totals.customers)],
+            [rc.statsLeads, String(totals.leads)],
+          ].map(([label, value]) => (
+            <div class="rounded-2xl border border-line bg-surface px-4 py-3">
+              <dt class="text-xs font-semibold text-ink-muted"><T v={label as Txt} /></dt>
+              <dd class="mt-0.5 text-xl font-extrabold tabular-nums text-ink">{value}</dd>
+            </div>
+          ))}
+          <div class="rounded-2xl bg-primary-900 px-4 py-3 text-white">
+            <dt class="text-xs font-semibold text-primary-100"><T v={rc.statsSpent} /></dt>
+            <dd class="mt-0.5 text-xl font-extrabold tabular-nums"><T v={money(totals.spent)} /></dd>
+          </div>
+        </dl>
+
+        {/* ─── Filtros ───────────────────────────────────────────────── */}
+        {withReferrals.length > 1 && (
+          <nav class="-mx-4 mt-5 flex gap-2 overflow-x-auto px-4 pb-1" aria-label={c.home.byBusiness[me.language]}>
+            <a href={href({ b: null })} aria-current={!fb ? "page" : undefined} class:list={[chip, !fb ? on : off]}>
+              <T v={c.referrals.all} />
+            </a>
+            {withReferrals.map((b) => (
+              <a href={href({ b: b.slug })} aria-current={fb === b.slug ? "page" : undefined} class:list={[chip, fb === b.slug ? on : off]}>
+                {b.name}
+              </a>
+            ))}
+          </nav>
+        )}
+
+        <div class="mt-3 flex flex-wrap items-center justify-between gap-2">
+          <nav class="flex flex-wrap gap-1.5" aria-label={rc.filterStage[me.language]}>
+            <a href={href({ e: null })} aria-current={!fe ? "page" : undefined} class:list={["rounded-full px-3 py-1.5 text-xs font-bold transition-colors", !fe ? "bg-secondary-100 text-secondary-800" : "text-ink-muted hover:bg-surface"]}>
+              <T v={rc.allStages} />
+            </a>
+            {STAGES.map((s) => (
+              <a href={href({ e: s })} aria-current={fe === s ? "page" : undefined} class:list={["rounded-full px-3 py-1.5 text-xs font-bold transition-colors", fe === s ? "bg-secondary-100 text-secondary-800" : "text-ink-muted hover:bg-surface"]}>
+                <T v={stageFilterLabel[s]} /> <span class="tabular-nums opacity-70">{countStage(s)}</span>
+              </a>
+            ))}
+          </nav>
+          <nav class="flex rounded-full bg-neutral-100 p-0.5" aria-label={rc.sortAria[me.language]}>
+            {([["recent", rc.sortRecent], ["earned", rc.sortEarned], ["oldest", rc.sortOldest]] as const).map(([k, label]) => (
+              <a href={href({ o: k === "recent" ? null : k })} aria-current={fo === k ? "page" : undefined} class:list={["rounded-full px-3 py-1.5 text-xs font-bold transition-colors", fo === k ? "bg-surface text-ink ring-1 ring-line" : "text-ink-muted hover:text-ink"]}>
+                <T v={label} />
+              </a>
+            ))}
+          </nav>
+        </div>
+
+        {/* ─── Las personas ──────────────────────────────────────────── */}
+        {shown.length === 0 ? (
+          <p class="mt-4 rounded-3xl border border-line bg-surface p-6 text-center text-sm text-ink-muted">
+            <T v={c.referrals.empty} />
+          </p>
+        ) : (
+          <ul class="mt-4 grid gap-2.5 lg:grid-cols-2 lg:items-start">
+            {shown.map((r) => {
+              const head = (
+                <span class="flex w-full items-center gap-3">
+                  <Avatar name={r.name} number={r.number} muted={r.stage === "reversed"} />
+                  <span class="min-w-0 flex-1">
+                    <span class="flex items-center gap-2">
+                      <span class="truncate font-bold text-ink">
+                        {r.name ?? <T v={c.referrals.client} vars={{ n: r.number }} />}
+                      </span>
+                      <span class:list={["shrink-0 rounded-full px-2 py-0.5 text-[0.7rem] font-bold", stageClass[r.stage]]}>
+                        <T v={c.stage[r.stage]} />
+                      </span>
                     </span>
-                    {r.sales > 0 && (
-                      <span class="text-xs text-ink-muted"><T v={c.referrals.sales} vars={{ n: r.sales }} /></span>
+                    <span class="mt-0.5 block truncate text-xs text-ink-muted">
+                      {r.business?.name ?? ""}
+                      {r.channel && <> · <T v={c.channel[r.channel]} /></>}
+                      {" · "}
+                      <T v={c.referrals.since} vars={{ fecha: shortDate(r.firstContactAt) }} />
+                    </span>
+                  </span>
+                  <span class="flex shrink-0 flex-col items-end">
+                    {expandable(r) ? (
+                      <>
+                        <span class="font-bold tabular-nums text-ink"><T v={money(r.earnedCents)} /></span>
+                        {r.sales > 0 && <span class="text-xs text-ink-muted"><T v={c.referrals.sales} vars={{ n: r.sales }} /></span>}
+                      </>
+                    ) : (
+                      <span class="text-xs text-ink-subtle">·</span>
                     )}
                   </span>
                 </span>
-                <span class="flex shrink-0 flex-col items-end gap-1">
-                  <span class="text-xs text-ink-muted"><T v={c.referrals.earned} /></span>
-                  <span class="font-bold tabular-nums text-ink"><T v={money(r.earnedCents)} /></span>
-                  <Icono nombre="chevron" class="size-5 text-ink-subtle transition-transform group-open:rotate-180" grosor={2} />
-                </span>
-              </summary>
+              );
 
-              {r.lines.length > 0 && (
-                <ul class="divide-y divide-line border-t border-line px-5">
-                  {r.lines.map((l) => (
-                    <li class="flex items-center justify-between gap-3 py-3 text-sm">
-                      <span class="min-w-0">
-                        <span class="block text-ink">
-                          <T v={shortDate(l.occurredAt)} />
-                          {l.percent != null && <span class="text-ink-muted"> · {l.percent}%</span>}
-                        </span>
-                        {l.status === "waiting" && (
-                          <span class="block text-xs text-ink-muted">
-                            <T v={c.referrals.payableOn} vars={{ fecha: shortDate(l.payableFrom) }} />
-                          </span>
+              return (
+                <li>
+                  {expandable(r) ? (
+                    <details class="group rounded-3xl border border-line bg-surface">
+                      <summary class="flex cursor-pointer list-none items-center gap-2 rounded-3xl px-4 py-3.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:px-5 [&::-webkit-details-marker]:hidden">
+                        {head}
+                        <Icono nombre="chevron" class="size-5 shrink-0 text-ink-subtle transition-transform group-open:rotate-180" grosor={2} />
+                      </summary>
+
+                      <div class="border-t border-line px-4 pt-4 pb-5 sm:px-5">
+                        <dl class="grid grid-cols-3 gap-2">
+                          <div class="rounded-2xl bg-surface-muted px-3 py-2.5">
+                            <dt class="text-[0.7rem] font-semibold text-ink-muted"><T v={rc.spent} /></dt>
+                            <dd class="text-sm font-extrabold tabular-nums text-ink"><T v={money(r.spentCents)} /></dd>
+                          </div>
+                          <div class="rounded-2xl bg-surface-muted px-3 py-2.5">
+                            <dt class="text-[0.7rem] font-semibold text-ink-muted"><T v={rc.yours} /></dt>
+                            <dd class="text-sm font-extrabold tabular-nums text-ink"><T v={money(r.earnedCents)} /></dd>
+                          </div>
+                          <div class="rounded-2xl bg-surface-muted px-3 py-2.5">
+                            <dt class="text-[0.7rem] font-semibold text-ink-muted"><T v={rc.waiting} /></dt>
+                            <dd class="text-sm font-extrabold tabular-nums text-ink"><T v={money(r.waitingCents)} /></dd>
+                            {r.nextPayableAt && (
+                              <dd class="text-[0.7rem] text-ink-muted"><T v={rc.nextOn} vars={{ fecha: shortDate(r.nextPayableAt) }} /></dd>
+                            )}
+                          </div>
+                        </dl>
+
+                        <h3 class="mt-5 text-sm font-bold text-ink"><T v={rc.history} /></h3>
+                        <ol class="relative mt-2 space-y-3 border-l-2 border-line pl-5">
+                          {r.events.map((e) => (
+                            <li class="relative text-sm">
+                              <span aria-hidden="true" class:list={["absolute top-1.5 -left-[1.6rem] size-2.5 rounded-full ring-4 ring-surface", eventDot[e.type] ?? "bg-neutral-400"]}></span>
+                              <span class="flex items-baseline justify-between gap-3">
+                                <span class="font-semibold text-ink">
+                                  <T v={rc.event[e.type]} />
+                                  {e.type === "renewal" && e.paymentNumber && (
+                                    <span class="font-normal text-ink-muted"> · <T v={rc.chargeN} vars={{ n: e.paymentNumber }} /></span>
+                                  )}
+                                </span>
+                                {e.amountCents != null && (
+                                  <span class:list={["shrink-0 tabular-nums", e.type === "refund" || e.type === "cancel" ? "text-error-700" : "text-ink"]}>
+                                    {e.type === "refund" ? "-" : ""}<T v={money(e.amountCents)} />
+                                  </span>
+                                )}
+                              </span>
+                              <span class="block text-xs text-ink-muted"><T v={shortDate(e.at)} /></span>
+                            </li>
+                          ))}
+                        </ol>
+
+                        {r.lines.length > 0 && (
+                          <>
+                            <h3 class="mt-5 text-sm font-bold text-ink"><T v={rc.commissions} /></h3>
+                            <ul class="mt-2 divide-y divide-line rounded-2xl border border-line">
+                              {r.lines.map((l) => (
+                                <li class="flex items-center justify-between gap-3 px-3.5 py-2.5 text-sm">
+                                  <span class="min-w-0">
+                                    <span class="block text-ink">
+                                      <T v={shortDate(l.occurredAt)} />
+                                      {l.percent != null && <span class="text-ink-muted"> · {l.percent}%</span>}
+                                    </span>
+                                    {l.status === "waiting" && (
+                                      <span class="block text-xs text-ink-muted">
+                                        <T v={c.referrals.payableOn} vars={{ fecha: shortDate(l.payableFrom) }} />
+                                      </span>
+                                    )}
+                                  </span>
+                                  <span class="flex shrink-0 items-center gap-2">
+                                    <span class:list={["rounded-full px-2 py-0.5 text-[0.7rem] font-bold", statusClass[l.status]]}>
+                                      <T v={c.status[l.status]} />
+                                    </span>
+                                    <span class="font-semibold tabular-nums text-ink"><T v={money(l.amountCents)} /></span>
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          </>
                         )}
-                      </span>
-                      <span class="flex shrink-0 items-center gap-2">
-                        <span class:list={["rounded-full px-2 py-0.5 text-xs font-bold", statusClass[l.status]]}>
-                          <T v={c.status[l.status]} />
-                        </span>
-                        <span class="font-semibold tabular-nums text-ink"><T v={money(l.amountCents)} /></span>
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </details>
-          </li>
-        ))}
-      </ul>
+                      </div>
+                    </details>
+                  ) : (
+                    <div class="rounded-3xl border border-line bg-surface px-4 py-3.5 sm:px-5">
+                      {head}
+                      <p class="mt-2 pl-14 text-xs text-pretty text-ink-muted"><T v={rc.noActivity} /></p>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        {all.some((r) => !r.name) && (
+          <p class="mt-5 flex items-start gap-2 px-1 text-xs text-pretty text-ink-muted">
+            <Icono nombre="candado" class="mt-0.5 size-3.5 shrink-0" grosor={2} />
+            <T v={rc.noName} />
+          </p>
+        )}
+      </>
     )
   }
 </AmbassadorLayout>

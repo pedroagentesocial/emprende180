@@ -3,7 +3,7 @@ import { repo, normaliseEmail, type Student, type Role } from "@lib/data";
 import { hashPassword, verifyPassword, burnTime } from "@lib/passwords";
 import { avisarAGhl } from "@lib/ghl";
 import { limpiarSiToca } from "@lib/mantenimiento";
-import { CODE_EMAIL } from "@lib/loginEmail";
+import { CODE_EMAIL, type CodeEmailCopy } from "@lib/loginEmail";
 import { correoMarca } from "@lib/correo";
 
 /**
@@ -430,10 +430,11 @@ export async function sendMagicLink(
  * credenciales de correo, lo escribe en la consola, que es lo que permite
  * probar el circuito entero sin montar un buzón.
  */
-async function enviarCorreoCodigo(
+export async function enviarCorreoCodigo(
   destino: string,
   language: "es" | "en",
   codigo: string,
+  copy: CodeEmailCopy = CODE_EMAIL,
 ): Promise<void> {
   const apiKey = import.meta.env.RESEND_API_KEY;
   const from = import.meta.env.NOTIFY_EMAIL_FROM;
@@ -450,12 +451,12 @@ async function enviarCorreoCodigo(
      código en un bloque propio. */
   const correo = correoMarca({
     lang: language,
-    asunto: CODE_EMAIL.subject(language),
-    preheader: CODE_EMAIL.preheader(language),
-    saludo: CODE_EMAIL.saludo(language),
-    parrafos: CODE_EMAIL.parrafos(language),
+    asunto: copy.subject(language),
+    preheader: copy.preheader(language),
+    saludo: copy.saludo(language),
+    parrafos: copy.parrafos(language),
     codigo,
-    porQue: CODE_EMAIL.porQue(language),
+    porQue: copy.porQue(language),
   });
 
   try {
@@ -468,8 +469,8 @@ async function enviarCorreoCodigo(
       body: JSON.stringify({
         from,
         to: [destino],
-        reply_to: CODE_EMAIL.replyTo,
-        subject: CODE_EMAIL.subject(language),
+        reply_to: copy.replyTo,
+        subject: copy.subject(language),
         html: correo.html,
         /* Las dos versiones van siempre: hay clientes que no pintan HTML y hay
            gente que lo desactiva. Sin la de texto, verían el correo vacío. */
@@ -498,6 +499,9 @@ const CODIGO_INTENTOS = 5;
  * del espacio y haría el resto más fácil de adivinar.
  */
 function nuevoCodigo(): string {
+  /* Solo en `astro dev` (localhost): código fijo para probar sin buscarlo.
+     Un build de producción nunca tiene DEV, así que allí sigue siendo al azar. */
+  if (import.meta.env.DEV) return "123456";
   const n = crypto.getRandomValues(new Uint32Array(1))[0]! % 1_000_000;
   return String(n).padStart(6, "0");
 }

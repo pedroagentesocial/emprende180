@@ -7,6 +7,7 @@ import type { Student } from "@lib/data";
 import { canAdminister, canOpenStaffPanel, isAmbassador, seesCourseDoors } from "@lib/permissions";
 import { ambassadorCopy } from "@config/ambassadorArea";
 import type { Txt } from "@i18n/idioma";
+import { navGroups } from "@config/adminGuide";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -49,22 +50,28 @@ interface Entry {
   outside?: boolean;
   /** Not pressable yet: the config has no address for it. */
   pending?: boolean;
+  /** El grupo del menú lateral en el que empieza (11-11-2026). */
+  group?: Txt;
 }
 
 const entries: Entry[] = [
   { href: "/student", label: studentCopy.nav.home, icon: "casa" },
 
-  /* El portal de Embajador, para quien el admin ya activó. Es una app aparte
-     (`AmbassadorLayout`), con sus propias pestañas: esta entrada es la puerta. */
+  /* Las secciones del Embajador (12-11-2026). Antes eran una app aparte con
+     su propio marco; ahora viven en la misma columna que todo lo demás, y su
+     inicio es el de la plataforma (`/student`). */
   ...(isAmbassador(student)
     ? ([
-        { href: "/student/ambassador", label: ambassadorCopy.title, icon: "billete" },
+        { href: "/student/ambassador/referrals", label: ambassadorCopy.nav.referrals, icon: "personas", group: navGroups.mine },
+        { href: "/student/ambassador/payouts", label: ambassadorCopy.nav.payouts, icon: "billete" },
+        { href: "/student/ambassador/team", label: ambassadorCopy.nav.team, icon: "red" },
+        { href: "/student/ambassador/share", label: ambassadorCopy.nav.share, icon: "compartir" },
       ] satisfies Entry[])
     : []),
 
   ...(canOpenStaffPanel(student)
     ? ([
-        { href: "/student/people", label: studentCopy.nav.people, icon: "personas" },
+        { href: "/student/people", label: studentCopy.nav.people, icon: "personas", group: navGroups.people },
       ] satisfies Entry[])
     : []),
 
@@ -73,17 +80,17 @@ const entries: Entry[] = [
      contestan 404 aunque escriba la dirección. */
   ...(canAdminister(student)
     ? ([
-        { href: "/student/agents", label: studentCopy.nav.agents, icon: "megafono" },
-        { href: "/student/ambassadors", label: ambassadorCopy.admin.navAmbassadors, icon: "red" },
+        { href: "/student/ambassadors", label: ambassadorCopy.admin.navAmbassadors, icon: "red", group: navGroups.ambassadors },
         { href: "/student/businesses", label: ambassadorCopy.admin.navBusinesses, icon: "grafica" },
-        { href: "/student/coupons", label: studentCopy.nav.coupons, icon: "certificado" },
-        { href: "/student/settings", label: studentCopy.nav.settings, icon: "escudo" },
+        { href: "/student/coupons", label: studentCopy.nav.coupons, icon: "certificado", group: navGroups.sales },
+        { href: "/student/settings", label: studentCopy.nav.settings, icon: "escudo", group: navGroups.system },
       ] satisfies Entry[])
     : []),
 
   ...(seesCourseDoors(student)
     ? ([
         {
+          group: navGroups.tools,
           href: plataformas.crm.url || "#",
           label: plataformas.crm.titulo,
           icon: "lista",
@@ -157,15 +164,22 @@ const base =
        único que comparten es `base`, que es forma y no color. */
     <nav aria-label={studentCopy.nav.aria[student.language]} class="grid gap-1">
       {entries.map((entry) => (
+        <>
+        {entry.group && (
+          <p aria-hidden="true" class="mt-4 px-3 pb-1 text-[0.68rem] font-bold tracking-[0.12em] text-primary-100/45 uppercase md:max-lg:mx-auto md:max-lg:mt-3 md:max-lg:mb-1 md:max-lg:h-px md:max-lg:w-8 md:max-lg:overflow-hidden md:max-lg:bg-white/15 md:max-lg:p-0 md:max-lg:text-transparent">
+            <T v={entry.group} />
+          </p>
+        )}
         <a
           href={entry.pending ? undefined : entry.href}
           target={entry.outside ? "_blank" : undefined}
           rel={entry.outside ? "noopener noreferrer" : undefined}
           aria-current={isCurrent(entry.href) ? "page" : undefined}
           aria-disabled={entry.pending ? "true" : undefined}
+          title={entry.label[student.language]}
           class:list={[
             base,
-            "relative",
+            "relative md:max-lg:justify-center md:max-lg:px-0",
             entry.pending
               ? "pointer-events-none text-white/35"
               : isCurrent(entry.href)
@@ -192,15 +206,16 @@ const base =
               columna de 14rem y sacaba una barra de desplazamiento horizontal.
               El rótulo está donde se lee entero, en su tarjeta. */}
           {entry.pending && (
-            <span aria-hidden="true" class="ml-auto size-1.5 rounded-full bg-white/30" />
+            <span aria-hidden="true" class="ml-auto size-1.5 rounded-full bg-white/30 md:max-lg:hidden" />
           )}
 
           {entry.outside && (
-            <span aria-hidden="true" class="ml-auto text-white/55">
+            <span aria-hidden="true" class="ml-auto text-white/55 md:max-lg:hidden">
               <Icono nombre="flecha" class="size-3.5 -rotate-45" grosor={2.5} />
             </span>
           )}
         </a>
+        </>
       ))}
     </nav>
   ) : (

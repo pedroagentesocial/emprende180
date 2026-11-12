@@ -1,5 +1,7 @@
 ---
+import { displayName } from "@lib/profile";
 import StudentLayout from "@layouts/StudentLayout.astro";
+import { adminGuide } from "@config/adminGuide";
 import T from "@components/i18n/T.astro";
 import StaffRoster from "@components/student/StaffRoster.astro";
 import { contacto, sitio, entregaAcceso } from "@config/curso.config";
@@ -9,6 +11,8 @@ import { interpolar } from "@i18n/formato";
 import { repo, normaliseEmail, type Role, type Student } from "@lib/data";
 import { createMagicLink, isAdminByConfig } from "@lib/auth";
 import { avisarAGhl } from "@lib/ghl";
+import { ensureAllAmbassadors, makeAmbassador } from "@lib/makeAmbassador";
+import { isAmbassador as isAmb, isPreRegistered } from "@lib/permissions";
 import {
   canAdminister,
   canAddStudents,
@@ -71,8 +75,10 @@ const say = (text: { es: string; en: string }, values?: Record<string, string>) 
 /** What this person may do. Asked once, used everywhere below. */
 const isStaff = canOpenStaffPanel(me);
 const isAdmin = canAdminister(me);
-const canAdd = canAddStudents(me);
-const roleOptions = assignableRoles(me);
+/* Solo el admin da de alta (11-11-2026): un Embajador no da de alta a
+   nadie. Y ya no hay agentes: se reparte alumno o admin. */
+const canAdd = isAdmin && canAddStudents(me);
+const roleOptions: Role[] = assignableRoles(me).filter((role) => role !== "agent");
 
 const roleLabel: Record<Role, { es: string; en: string }> = {
   student: studentCopy.admin.roleStudent,
@@ -186,11 +192,45 @@ if (Astro.request.method === "POST") {
          sigue siendo válida. Ver `src/lib/ghl.ts`. */
       avisarAGhl("alta", created, isAdmin ? null : me).catch(() => {});
 
+      /* Todo alumno es Embajador: su código y su alta en clinics, ya. El
+         patrocinador (quien lo trajo) lo elige el admin en el formulario. */
+      let made = "";
+      if (role === "student") {
+        const sponsor = await r.studentById(String(form.get("sponsor") ?? ""));
+        const res = await makeAmbassador(created, {
+          sponsorId: sponsor && isAmb(sponsor) ? sponsor.id : null,
+          approvedBy: me.id,
+        });
+        made = res.ok
+          ? ` ${say(studentCopy.admin.noticeAmbassadorMade, { codigo: res.code ?? "" })}${res.clinicsError ? ` ${say(studentCopy.admin.noticeClinicsLater)}` : ""}`
+          : "";
+      }
+
       const extra = send ? ` ${await deliverLink(created)}` : "";
       notice = {
         type: "ok",
-        text: `${say(studentCopy.admin.noticeAdded, { email })}${extra}`,
+        text: `${say(studentCopy.admin.noticeAdded, { email })}${made}${extra}`,
       };
+    }
+  }
+
+  /* "Dar acceso" a un pre-registro (11-11-2026): un clic y es alumno y
+     Embajador, con su código, su alta en clinics y el enlace para entrar. */
+  if (action === "ambassador" && isAdmin) {
+    const target = await r.studentById(String(form.get("id") ?? ""));
+    if (target && target.active && !isAmb(target)) {
+      const inviter = target.registeredBy ? await r.studentById(target.registeredBy) : null;
+      const res = await makeAmbassador(target, {
+        sponsorId: inviter && isAmb(inviter) ? inviter.id : null,
+        approvedBy: me.id,
+      });
+      const sent = res.ok ? ` ${await deliverLink(target)}` : "";
+      notice = res.ok
+        ? {
+            type: "ok",
+            text: `${say(studentCopy.admin.noticeAccessGiven, { nombre: displayName(target), codigo: res.code ?? "" })}${res.clinicsError ? ` ${say(studentCopy.admin.noticeClinicsLater)}` : ""}${sent}`,
+          }
+        : { type: "error", text: say(studentCopy.admin.noticeNotAllowed) };
     }
   }
 
@@ -323,6 +363,9 @@ if (recentLink) Astro.cookies.delete(LINK_COOKIE, { path: "/student" });
 
 // ─── The data ────────────────────────────────────────────────────────────────
 
+/* Pone al día a los alumnos que todavía no eran Embajadores. */
+if (isAdmin) await ensureAllAmbassadors(me.id);
+
 const search = (Astro.url.searchParams.get("q") ?? "").trim();
 const view = Astro.url.searchParams.get("ver") ?? "todos";
 
@@ -331,15 +374,32 @@ const everyone = await r.listStudents({
   ...(search ? { search } : {}),
 });
 
+/* Los pre-registros van APARTE (11-11-2026): todavía no son alumnos, así
+   que no cuentan en ninguna de las otras pestañas. */
 const views: Record<string, (s: Student) => boolean> = {
-  todos: () => true,
-  dentro: (s) => !!s.lastSignIn && s.active,
-  "sin-entrar": (s) => !s.lastSignIn && s.active,
+  todos: (s) => !isPreRegistered(s),
+  dentro: (s) => !isPreRegistered(s) && !!s.lastSignIn && s.active,
+  "sin-entrar": (s) => !isPreRegistered(s) && !s.lastSignIn && s.active,
   agentes: (s) => s.role === "agent",
+  pre: (s) => isPreRegistered(s) && s.active,
   baja: (s) => !s.active,
 };
 
 const students = everyone.filter(views[view] ?? views.todos!);
+
+/* Las pestañas encima de la lista, cada una con cuántos tiene. */
+const tabs = [
+  { key: "todos", label: studentCopy.admin.summaryAll },
+  { key: "dentro", label: studentCopy.admin.summaryIn },
+  { key: "sin-entrar", label: studentCopy.admin.summaryNeverIn },
+  { key: "baja", label: studentCopy.admin.summaryInactive },
+  ...(isAdmin ? [{ key: "pre", label: studentCopy.admin.summaryPre }] : []),
+].map((tab) => ({ ...tab, n: everyone.filter(views[tab.key]!).length }));
+
+/* El formulario de alta va plegado; se abre con el botón de arriba
+   (?nuevo=1) o solo, cuando todavía no hay nadie. */
+const openAdd =
+  Astro.url.searchParams.get("nuevo") === "1" || (everyone.length === 0 && !search);
 
 ---
 
@@ -347,6 +407,8 @@ const students = everyone.filter(views[view] ?? views.todos!);
   title={studentCopy.admin.title}
   student={me}
   heading={studentCopy.admin.title}
+  guide={adminGuide.people}
+  action={{ href: "/student/people?nuevo=1#add-form", label: studentCopy.admin.newTitle }}
 >
   <StaffRoster
     me={me}
@@ -355,6 +417,9 @@ const students = everyone.filter(views[view] ?? views.todos!);
     roleOptions={roleOptions}
     isAdmin={isAdmin}
     view={view}
+    tabs={tabs}
+    openAdd={openAdd}
+    ambassadors={isAdmin ? (await r.listStudents()).filter(isAmb) : []}
     search={search}
     lang={lang}
     recentLink={recentLink}

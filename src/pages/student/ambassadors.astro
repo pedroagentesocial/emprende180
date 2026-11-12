@@ -1,5 +1,8 @@
 ---
+import { displayName } from "@lib/profile";
 import StudentLayout from "@layouts/StudentLayout.astro";
+import { adminGuide } from "@config/adminGuide";
+import { ensureAllAmbassadors, linkInClinics as linkShared } from "@lib/makeAmbassador";
 import T from "@components/i18n/T.astro";
 import { ambassadorCopy } from "@config/ambassadorArea";
 import { resolverIdiomaServidor } from "@i18n/idioma";
@@ -8,12 +11,15 @@ import { repo, normaliseCode, type Student } from "@lib/data";
 import { ambassadorRepo, type PayoutMethod } from "@lib/ambassadors";
 import { loadBook, type Book } from "@lib/ambassadorBook";
 import { money, shortDate } from "@lib/ambassadorFormat";
+import LifetimeStats from "@components/ambassador/LifetimeStats.astro";
+import MonthlyChart from "@components/ambassador/MonthlyChart.astro";
+import RecurringList from "@components/ambassador/RecurringList.astro";
+import Statement from "@components/ambassador/Statement.astro";
 import { canManageAmbassadors, isAmbassador, isAmbassadorPaused } from "@lib/permissions";
 import {
   ClinicsError,
   clinicsConfigured,
   grantReviviCredit,
-  linkAmbassadorInClinics,
 } from "@lib/clinicsApi";
 
 /**
@@ -50,7 +56,7 @@ const say = (text: { es: string; en: string }, values?: Record<string, string>) 
 
 /** Un código a partir del nombre: LAURA27. Se reintenta si está cogido. */
 function suggestCode(s: Student): string {
-  const base = normaliseCode((s.name ?? s.email.split("@")[0] ?? "E180").split(/\s+/)[0] ?? "E180")
+  const base = normaliseCode((displayName(s).split("@")[0] ?? "E180").split(/\s+/)[0] ?? "E180")
     .normalize("NFD")
     .replace(/[^A-Z0-9]/g, "")
     .slice(0, 10);
@@ -65,20 +71,9 @@ function suggestCode(s: Student): string {
 async function linkInClinics(id: string): Promise<true | string> {
   const s = await r.studentById(id);
   if (!s || !isAmbassador(s)) return say(c.noticeBadCode);
-  try {
-    await linkAmbassadorInClinics({
-      externalRef: s.id,
-      code: s.ambassadorCode!,
-      name: [s.name, s.lastName].filter(Boolean).join(" ") || s.email,
-      email: s.email,
-      /* Desactivado aquí = en pausa allí (no recibe clientes nuevos). */
-      active: !isAmbassadorPaused(s),
-    });
-    await r.markClinicsLinked(s.id);
-    return true;
-  } catch (error) {
-    return clinicsMessage(error, c.noticeLinkFailed);
-  }
+  /* El mismo alta que hace Alumnos (y adopta el código que clinics ya tenía). */
+  const error = await linkShared(s, me.id);
+  return error ? clinicsMessage(error, c.noticeLinkFailed) : true;
 }
 
 /** Abona en clinics un pago en crédito Revivi. Repetirlo no abona dos veces. */
@@ -139,7 +134,7 @@ if (Astro.request.method === "POST") {
         ok = await r.activateAmbassador(target.id, { code, sponsorId, approvedBy: me.id });
       }
       notice = ok
-        ? { type: "ok", text: say(c.noticeActivated, { nombre: target.name ?? target.email, codigo: code }) }
+        ? { type: "ok", text: say(c.noticeActivated, { nombre: displayName(target), codigo: code }) }
         : { type: "error", text: say(c.noticeCodeTaken) };
 
       /* Y su alta en clinics, para Revivi, Venture y las clínicas. Si falla,
@@ -237,11 +232,13 @@ if (messageParam && (typeParam === "ok" || typeParam === "error")) {
   notice = { type: typeParam, text: messageParam };
 }
 
+/* Todo alumno es Embajador: pone al día a los que faltaban. */
+await ensureAllAmbassadors(me.id);
 const everyone = await r.listStudents();
-const ambassadors = everyone.filter(isAmbassador).sort((a, b) => (a.name ?? a.email).localeCompare(b.name ?? b.email));
+const ambassadors = everyone.filter(isAmbassador).sort((a, b) => (displayName(a)).localeCompare(displayName(b)));
 const candidates = everyone
-  .filter((s) => s.active && !isAmbassador(s))
-  .sort((a, b) => (a.name ?? a.email).localeCompare(b.name ?? b.email));
+  .filter((s) => s.active && s.role === "student" && !isAmbassador(s))
+  .sort((a, b) => (displayName(a)).localeCompare(displayName(b)));
 const byId = new Map(everyone.map((s) => [s.id, s]));
 
 const clinicsOn = clinicsConfigured();
@@ -261,8 +258,14 @@ const boton =
 const cell = "px-4 py-3 text-sm";
 ---
 
-<StudentLayout title={c.title} student={me} heading={target ? undefined : c.title}>
-  <div class="max-w-4xl">
+<StudentLayout
+  title={c.title}
+  student={me}
+  heading={target ? undefined : c.title}
+  guide={adminGuide.ambassadors}
+  action={candidates.length ? { href: "#activar", label: c.activateTitle } : undefined}
+>
+  <div>
     {
       notice && (
         <p
@@ -283,10 +286,10 @@ const cell = "px-4 py-3 text-sm";
           <a href="/student/ambassadors" class="inline-flex min-h-11 items-center text-sm font-semibold text-ink-brand">
             ← <T v={c.back} />
           </a>
-          <h1 class="mt-2 text-2xl font-extrabold text-balance break-words text-ink sm:text-3xl">{target.name ?? target.email}</h1>
+          <h1 class="mt-2 text-2xl font-extrabold text-balance break-words text-ink sm:text-3xl">{displayName(target)}</h1>
           <p class="mt-1 text-sm break-words text-ink-muted">
             {target.email} · <span class="font-mono font-bold">{target.ambassadorCode}</span>
-            {target.sponsorId && <> · <T v={c.sponsor} />: {byId.get(target.sponsorId)?.name ?? byId.get(target.sponsorId)?.email}</>}
+            {target.sponsorId && <> · <T v={c.sponsor} />: {(byId.get(target.sponsorId) ? displayName(byId.get(target.sponsorId)!) : "")}</>}
           </p>
 
           {clinicsOn && (
@@ -362,6 +365,23 @@ const cell = "px-4 py-3 text-sm";
             ))}
           </section>
 
+          {/* Lo mismo que ve el Embajador en su portal (12-11-2026). */}
+          <LifetimeStats lifetime={detail.stats.lifetime} />
+          <div class="mt-6 grid gap-6 lg:grid-cols-[3fr_2fr]">
+            <section class="rounded-3xl border border-line bg-surface p-5">
+              <h2 class="text-base font-bold text-ink"><T v={ac.stats.monthlyTitle} /></h2>
+              <div class="mt-3"><MonthlyChart months={detail.stats.monthly} aria={ac.stats.monthlyAria} /></div>
+            </section>
+            <div class="-mt-6">
+              <RecurringList
+                items={detail.stats.recurring}
+                monthlyCents={detail.stats.lifetime.recurringMonthlyCents}
+                active={detail.stats.lifetime.recurringActive}
+                limit={4}
+              />
+            </div>
+          </div>
+
           <div class="mt-6 grid gap-6 lg:grid-cols-2">
             <form method="POST" class="rounded-2xl border border-line bg-surface p-6">
               <input type="hidden" name="action" value="payout" />
@@ -391,7 +411,7 @@ const cell = "px-4 py-3 text-sm";
                 {ambassadors
                   .filter((a) => a.id !== target.id)
                   .map((a) => (
-                    <option value={a.id} selected={a.id === target.sponsorId}>{a.name ?? a.email}</option>
+                    <option value={a.id} selected={a.id === target.sponsorId}>{displayName(a)}</option>
                   ))}
               </select>
               <button type="submit" class:list={[boton, "mt-5"]}><T v={c.save} /></button>
@@ -473,12 +493,15 @@ const cell = "px-4 py-3 text-sm";
               ))}
             </ul>
           )}
+
+          <Statement months={detail.stats.monthly} />
         </>
       ) : (
         <>
-          <p class="max-w-2xl text-base text-pretty text-ink-muted"><T v={c.intro} /></p>
-
-          <form method="POST" class="mt-8 rounded-2xl border border-line bg-surface p-6">
+          {/* Solo queda para quien se registró en la web: los demás alumnos ya
+              son Embajadores solos (11-11-2026). */}
+          {candidates.length > 0 && (
+          <form id="activar" method="POST" class="mb-10 scroll-mt-8 rounded-2xl border border-line bg-surface p-6">
             <input type="hidden" name="action" value="activate" />
             <h2 class="text-lg font-bold text-ink"><T v={c.activateTitle} /></h2>
             <p class="mt-1 max-w-2xl text-sm text-pretty text-ink-muted"><T v={c.activateHint} /></p>
@@ -506,7 +529,7 @@ const cell = "px-4 py-3 text-sm";
                       <option value="invited">{c.sponsorInvited[lang]}</option>
                       <option value="none">{c.noSponsor[lang]}</option>
                       {ambassadors.map((a) => (
-                        <option value={a.id}>{a.name ?? a.email}</option>
+                        <option value={a.id}>{displayName(a)}</option>
                       ))}
                     </select>
                   </div>
@@ -515,8 +538,9 @@ const cell = "px-4 py-3 text-sm";
               </>
             )}
           </form>
+          )}
 
-          <h2 class="mt-10 text-lg font-bold text-ink"><T v={c.listTitle} /></h2>
+          <h2 class="text-lg font-bold text-ink"><T v={c.listTitle} /></h2>
           {ambassadors.length === 0 ? (
             <p class="mt-3 text-sm text-ink-muted"><T v={c.empty} /></p>
           ) : (
@@ -526,7 +550,7 @@ const cell = "px-4 py-3 text-sm";
                 <li>
                   <a href={`/student/ambassadors?ver=${b.ambassador.id}`} class="block px-4 py-3 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus">
                     <div class="flex items-baseline justify-between gap-3">
-                      <span class="min-w-0 truncate font-semibold text-ink">{b.ambassador.name ?? b.ambassador.email}</span>
+                      <span class="min-w-0 truncate font-semibold text-ink">{displayName(b.ambassador)}</span>
                       <span class="shrink-0 font-bold tabular-nums text-ink"><T v={money(b.summary.availableCents)} /></span>
                     </div>
                     <p class="mt-0.5 text-xs text-ink-muted">
@@ -554,7 +578,7 @@ const cell = "px-4 py-3 text-sm";
                 <tbody class="divide-y divide-line">
                   {books.map((b) => (
                     <tr>
-                      <td class={`${cell} font-semibold text-ink`}>{b.ambassador.name ?? b.ambassador.email}</td>
+                      <td class={`${cell} font-semibold text-ink`}>{displayName(b.ambassador)}</td>
                       <td class={`${cell} font-mono`}>{b.ambassador.ambassadorCode}</td>
                       <td class={`${cell} tabular-nums`}>{b.referrals.length}</td>
                       <td class={`${cell} tabular-nums`}><T v={money(b.summary.waitingCents)} /></td>

@@ -1,0 +1,67 @@
+---
+import T from "@components/i18n/T.astro";
+import type { MonthRow } from "@lib/ambassadorStats";
+import { money, monthShort } from "@lib/ambassadorFormat";
+import { ambassadorCopy } from "@config/ambassadorArea";
+
+/**
+ * El estado de cuenta: una fila por mes desde el alta, el más reciente
+ * arriba, y la fila de totales. En el teléfono se desliza de lado; las cifras
+ * van alineadas a la derecha para poder compararlas.
+ */
+interface Props {
+  months: MonthRow[];
+}
+
+const { months } = Astro.props;
+const c = ambassadorCopy.stats;
+const rows = [...months].reverse();
+const sum = (k: keyof Pick<MonthRow, "salesCents" | "earnedCents" | "deductedCents" | "paidCents" | "newReferrals">) =>
+  months.reduce((s, m) => s + m[k], 0);
+const year = (d: Date) => String(d.getUTCFullYear()).slice(2);
+---
+
+<section class="mt-8" id="estado">
+  <h2 class="px-1 text-base font-bold text-ink"><T v={c.statementTitle} /></h2>
+  <p class="mt-1 px-1 text-sm text-pretty text-ink-muted"><T v={c.statementIntro} /></p>
+  <div class="mt-3 overflow-x-auto rounded-3xl border border-line bg-surface">
+    <table class="w-full min-w-[34rem] text-sm">
+      <thead>
+        <tr class="border-b border-line text-left text-xs font-semibold text-ink-muted">
+          <th class="px-4 py-3 font-semibold"><T v={c.colMonth} /></th>
+          <th class="px-3 py-3 text-right font-semibold"><T v={c.colNew} /></th>
+          <th class="px-3 py-3 text-right font-semibold"><T v={c.colSales} /></th>
+          <th class="px-3 py-3 text-right font-semibold"><T v={c.colEarned} /></th>
+          <th class="px-3 py-3 text-right font-semibold"><T v={c.colDeducted} /></th>
+          <th class="px-4 py-3 text-right font-semibold"><T v={c.colPaid} /></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-line">
+        {rows.map((m) => (
+          <tr class="tabular-nums">
+            <td class="px-4 py-2.5 font-semibold whitespace-nowrap text-ink"><T v={monthShort(m.monthStart)} /> {year(m.monthStart)}</td>
+            <td class="px-3 py-2.5 text-right text-ink-muted">{m.newReferrals || "·"}</td>
+            <td class="px-3 py-2.5 text-right text-ink"><T v={money(m.salesCents)} /></td>
+            <td class="px-3 py-2.5 text-right font-semibold text-ink"><T v={money(m.earnedCents)} /></td>
+            <td class:list={["px-3 py-2.5 text-right", m.deductedCents < 0 ? "text-error-700" : "text-ink-subtle"]}>
+              {m.deductedCents < 0 ? <T v={money(m.deductedCents)} /> : "·"}
+            </td>
+            <td class:list={["px-4 py-2.5 text-right", m.paidCents > 0 ? "font-semibold text-secondary-700" : "text-ink-subtle"]}>
+              {m.paidCents > 0 ? <T v={money(m.paidCents)} /> : "·"}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+      <tfoot>
+        <tr class="border-t-2 border-line-strong font-bold tabular-nums text-ink">
+          <td class="px-4 py-3"><T v={c.totals} /></td>
+          <td class="px-3 py-3 text-right">{sum("newReferrals")}</td>
+          <td class="px-3 py-3 text-right"><T v={money(sum("salesCents"))} /></td>
+          <td class="px-3 py-3 text-right"><T v={money(sum("earnedCents"))} /></td>
+          <td class="px-3 py-3 text-right text-error-700">{sum("deductedCents") < 0 ? <T v={money(sum("deductedCents"))} /> : "·"}</td>
+          <td class="px-4 py-3 text-right text-secondary-700"><T v={money(sum("paidCents"))} /></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</section>

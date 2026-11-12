@@ -1,0 +1,50 @@
+---
+/**
+ * Un avatar sin foto: las iniciales de la persona o, si no sabemos su nombre,
+ * su número de cliente ("#4"). El color sale del propio texto, así cada
+ * persona conserva el suyo de una pantalla a otra.
+ */
+interface Props {
+  name?: string | null;
+  number?: number | null;
+  size?: "sm" | "md" | "lg" | "xl";
+  muted?: boolean;
+  /** La foto de perfil (`photoUrl` de @lib/profile). Sin ella, iniciales. */
+  photo?: string | null;
+}
+
+const { name, number, size = "md", muted = false, photo = null } = Astro.props;
+
+const initials = name
+  ? name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((p) => p[0]!.toUpperCase())
+      .join("")
+  : number != null
+    ? `#${number}`
+    : "?";
+
+const TONES = [
+  "bg-primary-900 text-white",
+  "bg-secondary-500 text-primary-950",
+  "bg-primary-100 text-primary-800",
+  "bg-secondary-100 text-secondary-800",
+  "bg-primary-600 text-white",
+  "bg-secondary-700 text-white",
+];
+const seed = [...(name ?? String(number ?? ""))].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7);
+const tone = muted ? "bg-neutral-200 text-ink-muted" : TONES[seed % TONES.length];
+const box = { sm: "size-9 text-xs", md: "size-11 text-sm", lg: "size-14 text-base", xl: "size-24 text-2xl" }[size];
+---
+
+{
+  photo ? (
+    <img src={photo} alt="" aria-hidden="true" loading="lazy" decoding="async" class:list={["shrink-0 rounded-full object-cover", box]} />
+  ) : (
+    <span aria-hidden="true" class:list={["grid shrink-0 place-items-center rounded-full font-extrabold tracking-tight tabular-nums", box, tone]}>
+      {initials}
+    </span>
+  )
+}

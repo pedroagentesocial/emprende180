@@ -1,0 +1,126 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   EL PORTAL: títulos, tarjetas, entrada y cambio de página (11-11-2026)
+   ═══════════════════════════════════════════════════════════════════════════
+
+   Solo lo importan StudentLayout y AmbassadorLayout, así que nada de esto
+   llega a la web pública. Todo cuelga de `.portal-ui`, la hoja de contenido
+   de los dos layouts.
+
+   · TÍTULOS en Plus Jakarta Sans (--font-portal), con cuerpo firme.
+   · TARJETAS sin sombra. El borde es un degradado: arriba toma un poco del
+     verde de la marca y a los pocos centímetros ya es la línea gris de
+     siempre. Se lee como luz que cae sobre la tarjeta, no como un marco de
+     color. Al pasar el ratón ese verde sube, despacio.
+   · ENTRADA: el contenido aparece subiendo 8 px, y las tarjetas de una misma
+     fila llegan una tras otra, con muy poca diferencia.
+   · CAMBIO DE PÁGINA con View Transitions entre documentos (CSS puro, sin
+     JavaScript ni router): la columna, la barra y las pestañas se quedan
+     quietas y solo el contenido se funde. Un navegador sin soporte navega
+     como siempre.
+   · Con "reducir movimiento" no se mueve nada.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@view-transition {
+  navigation: auto;
+}
+
+/* ─── Títulos ──────────────────────────────────────────────────────────── */
+.portal-ui h1 {
+  font-family: var(--font-portal);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+.portal-ui h2 {
+  font-family: var(--font-portal);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+/* ─── Tarjetas ─────────────────────────────────────────────────────────── */
+@property --portal-edge {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: oklch(0.657 0.1122 187.2 / 0.3);
+}
+
+.portal-ui :is(.rounded-2xl, .rounded-3xl, .rounded-xl).border-line.bg-surface {
+  border-color: transparent;
+  background:
+    linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
+    linear-gradient(
+        180deg,
+        var(--portal-edge),
+        var(--color-line) 3.5rem
+      )
+      border-box;
+  transition: --portal-edge 0.45s ease;
+}
+.portal-ui :is(.rounded-2xl, .rounded-3xl, .rounded-xl).border-line.bg-surface:hover {
+  --portal-edge: oklch(0.657 0.1122 187.2 / 0.75);
+}
+
+/* ─── Entrada ──────────────────────────────────────────────────────────── */
+@keyframes portal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.portal-ui > * {
+  animation: portal-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.portal-ui :is(.rounded-2xl, .rounded-3xl).border-line {
+  animation: portal-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 60ms;
+}
+.portal-ui :is(.rounded-2xl, .rounded-3xl).border-line:nth-child(2) { animation-delay: 110ms; }
+.portal-ui :is(.rounded-2xl, .rounded-3xl).border-line:nth-child(3) { animation-delay: 160ms; }
+.portal-ui :is(.rounded-2xl, .rounded-3xl).border-line:nth-child(4) { animation-delay: 210ms; }
+.portal-ui :is(.rounded-2xl, .rounded-3xl).border-line:nth-child(n + 5) { animation-delay: 250ms; }
+
+/* ─── Cambio de página ─────────────────────────────────────────────────── */
+.portal-columna {
+  view-transition-name: portal-columna;
+}
+.portal-barra {
+  view-transition-name: portal-barra;
+}
+.portal-pestanas {
+  view-transition-name: portal-pestanas;
+}
+::view-transition-group(portal-columna),
+::view-transition-group(portal-barra),
+::view-transition-group(portal-pestanas) {
+  animation: none;
+}
+::view-transition-old(root) {
+  animation: portal-out 0.18s ease both;
+}
+::view-transition-new(root) {
+  animation: portal-in 0.32s ease both;
+}
+@keyframes portal-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes portal-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+  .portal-ui > *,
+  .portal-ui :is(.rounded-2xl, .rounded-3xl).border-line {
+    animation: none;
+  }
+  .portal-ui :is(.rounded-2xl, .rounded-3xl, .rounded-xl).border-line.bg-surface {
+    transition: none;
+  }
+}

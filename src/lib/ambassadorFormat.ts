@@ -24,3 +24,23 @@ export const dayMonth = (d: Date): Txt =>
   construirTxt((l) =>
     new Intl.DateTimeFormat(LOCALES[l], { day: "numeric", month: "short", timeZone: "UTC" }).format(d),
   );
+
+/** "nov" / "Nov", para el eje de la gráfica mensual. */
+export const monthShort = (d: Date): Txt =>
+  construirTxt((l) =>
+    new Intl.DateTimeFormat(LOCALES[l], { month: "short", timeZone: "UTC" }).format(d).replace(".", ""),
+  );
+
+/** "Noviembre de 2026" / "November 2026", para el título de cada mes. */
+export const monthLong = (d: Date): Txt =>
+  construirTxt((l) => {
+    const s = new Intl.DateTimeFormat(LOCALES[l], { month: "long", year: "numeric", timeZone: "UTC" }).format(d);
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  });
+
+/** Una cifra corta para el eje de una gráfica: "$1.2k", "$350". */
+export const moneyAxis = (cents: number): string => {
+  const usd = cents / 100;
+  if (Math.abs(usd) >= 1000) return `$${(usd / 1000).toFixed(usd >= 10_000 ? 0 : 1)}k`;
+  return `$${Math.round(usd)}`;
+};

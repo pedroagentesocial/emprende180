@@ -2,19 +2,29 @@
 import AmbassadorLayout from "@layouts/AmbassadorLayout.astro";
 import T from "@components/i18n/T.astro";
 import Icono from "@components/ui/Icono.astro";
+import Avatar from "@components/ambassador/Avatar.astro";
+import { photoUrl } from "@lib/profile";
 import { ambassadorCopy } from "@config/ambassadorArea";
-import { loadBook } from "@lib/ambassadorBook";
-import { money } from "@lib/ambassadorFormat";
-import { isAmbassador } from "@lib/permissions";
+import { cachedBook } from "@lib/requestBook";
+import { money, shortDate } from "@lib/ambassadorFormat";
+import { isAmbassador, isAmbassadorPaused } from "@lib/permissions";
+import type { LineStatus } from "@lib/commissions";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- * /student/ambassador/team: los Embajadores que invitaste (tu nivel 2)
+ * /student/ambassador/team: los Embajadores que trajiste (tu nivel 2)
  * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Rehecha el 12-11-2026: lo que te ha dejado y una fila por persona. Tocar una fila
+ * abre una ventana con su detalle: desde cuándo es Embajador, sus números,
+ * por negocio y cada comisión que te dejó.
  *
  * ⚠️ SE VE A LAS PERSONAS DEL EQUIPO, NUNCA A SUS CLIENTES. Cuántos referidos y
  * clientes tiene cada uno y cuánto te ha generado, sin un solo nombre de
  * cliente: el permiso que dio ese cliente es para su Embajador, no para ti.
+ *
+ * La ventana es un `<dialog>` nativo: se cierra con Escape, con el botón o
+ * tocando fuera, y devuelve el foco a la fila que la abrió.
  */
 export const prerender = false;
 
@@ -22,42 +32,226 @@ const me = Astro.locals.student!;
 if (!isAmbassador(me)) return new Response(null, { status: 404 });
 
 const c = ambassadorCopy;
-const book = await loadBook(me, { viewer: me, withNames: false });
+const tc = c.team;
+const book = await cachedBook(Astro.locals, me);
 const total = book.team.reduce((s, m) => s + m.earnedCents, 0);
+const selling = book.team.filter((m) => m.customers > 0).length;
+const businessName = new Map(book.businesses.map((b) => [b.id, b.name]));
+const fullName = (m: (typeof book.team)[number]) =>
+  [m.student.name, m.student.lastName].filter(Boolean).join(" ") || m.student.email;
+
+const statusClass: Record<LineStatus, string> = {
+  waiting: "bg-warning-50 text-warning-700",
+  ready: "bg-secondary-100 text-secondary-800",
+  paid: "bg-primary-50 text-primary-700",
+  annulled: "bg-neutral-200 text-ink-muted",
+  deduction: "bg-error-50 text-error-700",
+};
 ---
 
-<AmbassadorLayout title={c.team.title} student={me} tab="team">
-  <h1 class="text-2xl font-extrabold text-ink"><T v={c.team.title} /></h1>
-  <p class="mt-2 text-sm text-pretty text-ink-muted"><T v={c.team.intro} /></p>
+<AmbassadorLayout title={tc.title} student={me} tab="team">
+  <h1 class="text-3xl text-balance text-ink sm:text-4xl"><T v={tc.title} /></h1>
+  <p class="mt-2 max-w-2xl text-base text-pretty text-ink-muted"><T v={tc.intro} /></p>
 
   {
     book.team.length === 0 ? (
-      <p class="mt-6 rounded-3xl border border-line bg-surface p-6 text-center text-sm text-pretty text-ink-muted">
-        <T v={c.team.empty} />
+      <p class="mt-5 rounded-3xl border border-line bg-surface p-6 text-center text-sm text-pretty text-ink-muted">
+        <T v={tc.empty} />
       </p>
     ) : (
       <>
-        <section class="mt-5 rounded-3xl bg-primary-900 p-5 text-white">
-          <p class="text-sm font-semibold text-primary-100"><T v={c.team.gave} /></p>
-          <p class="mt-1 text-3xl font-extrabold tabular-nums"><T v={money(total)} /></p>
+        <section class="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
+          <div class="col-span-2 rounded-2xl bg-primary-900 px-5 py-4 text-white sm:col-span-1">
+            <p class="text-xs font-semibold text-primary-100"><T v={tc.gave} /></p>
+            <p class="mt-0.5 text-2xl font-extrabold tabular-nums"><T v={money(total)} /></p>
+          </div>
+          <div class="rounded-2xl border border-line bg-surface px-4 py-4">
+            <p class="text-xs font-semibold text-ink-muted"><T v={c.referralsMore.statsReferrals} /></p>
+            <p class="mt-0.5 text-xl font-extrabold tabular-nums text-ink">{book.team.reduce((s, m) => s + m.referrals, 0)}</p>
+          </div>
+          <div class="rounded-2xl border border-line bg-surface px-4 py-4">
+            <p class="text-xs font-semibold text-ink-muted">
+              <T v={book.team.length === 1 ? tc.membersOne : tc.members} vars={{ n: book.team.length }} />
+            </p>
+            <p class="mt-0.5 text-xl font-extrabold tabular-nums text-ink"><T v={tc.active} vars={{ n: selling }} /></p>
+          </div>
         </section>
-        <ul class="mt-4 divide-y divide-line overflow-hidden rounded-3xl border border-line bg-surface">
-          {book.team.map((m) => (
-            <li class="flex items-center gap-3 px-5 py-4">
-              <span aria-hidden="true" class="grid size-10 shrink-0 place-items-center rounded-full bg-secondary-100 text-secondary-800">
-                <Icono nombre="usuario" class="size-5" grosor={2} />
-              </span>
-              <span class="min-w-0 flex-1">
-                <span class="block truncate font-semibold text-ink">{m.student.name ?? m.student.email}</span>
-                <span class="block text-xs text-ink-muted">
-                  <T v={c.team.member} vars={{ r: m.referrals, c: m.customers }} />
+
+        <ul class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {book.team.map((m, i) => (
+            <li>
+              <button
+                type="button"
+                data-open={`miembro-${i}`}
+                class="flex h-full w-full items-center gap-3 rounded-3xl border border-line bg-surface px-5 py-4 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              >
+                <Avatar name={fullName(m)} photo={photoUrl(m.student)} muted={isAmbassadorPaused(m.student)} />
+                <span class="min-w-0 flex-1">
+                  <span class="flex items-center gap-2">
+                    <span class="truncate font-semibold text-ink">{fullName(m)}</span>
+                    {isAmbassadorPaused(m.student) && (
+                      <span class="rounded-full bg-neutral-200 px-2 py-0.5 text-[0.7rem] font-bold text-ink-muted"><T v={tc.paused} /></span>
+                    )}
+                  </span>
+                  <span class="block text-xs text-ink-muted">
+                    <T v={tc.member} vars={{ r: m.referrals, c: m.customers }} />
+                  </span>
                 </span>
-              </span>
-              <span class="shrink-0 font-bold tabular-nums text-ink"><T v={money(m.earnedCents)} /></span>
+                <span class="flex shrink-0 items-center gap-2">
+                  <span class="font-bold tabular-nums text-ink"><T v={money(m.earnedCents)} /></span>
+                  <Icono nombre="chevron" class="size-5 -rotate-90 text-ink-subtle" grosor={2} />
+                </span>
+              </button>
             </li>
           ))}
         </ul>
+
+        {book.team.map((m, i) => {
+          const conv = m.referrals ? Math.round((m.customers / m.referrals) * 100) : null;
+          return (
+            <dialog
+              id={`miembro-${i}`}
+              aria-labelledby={`miembro-${i}-t`}
+              class="modal m-auto w-[min(34rem,calc(100vw-2rem))] max-h-[min(44rem,calc(100svh-2rem))] rounded-3xl border border-line bg-surface p-0 text-ink backdrop:bg-primary-950/50 backdrop:backdrop-blur-sm"
+            >
+              <div class="portal-ui flex max-h-[inherit] flex-col">
+                <header class="flex items-start gap-4 border-b border-line p-5">
+                  <Avatar name={fullName(m)} photo={photoUrl(m.student)} size="lg" muted={isAmbassadorPaused(m.student)} />
+                  <div class="min-w-0 flex-1">
+                    <h2 id={`miembro-${i}-t`} class="truncate text-xl text-ink">{fullName(m)}</h2>
+                    {m.student.ambassadorSince && (
+                      <p class="text-sm text-ink-muted"><T v={tc.since} vars={{ fecha: shortDate(m.student.ambassadorSince) }} /></p>
+                    )}
+                    {m.student.ambassadorCode && (
+                      <p class="mt-1 inline-flex items-center gap-1.5 rounded-full bg-surface-muted px-2.5 py-0.5 text-xs">
+                        <span class="text-ink-muted"><T v={tc.code} /></span>
+                        <span class="font-mono font-bold text-ink">{m.student.ambassadorCode}</span>
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    data-close
+                    class="grid size-10 shrink-0 place-items-center rounded-full text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-focus"
+                  >
+                    <Icono nombre="cruz" class="size-5" grosor={2.2} />
+                    <span class="sr-only"><T v={tc.close} /></span>
+                  </button>
+                </header>
+
+                <div class="overflow-y-auto p-5">
+                  <dl class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    <div class="rounded-2xl bg-primary-900 px-3 py-2.5 text-white">
+                      <dt class="text-[0.7rem] font-semibold text-primary-100"><T v={tc.gave} /></dt>
+                      <dd class="text-base font-extrabold tabular-nums"><T v={money(m.earnedCents)} /></dd>
+                    </div>
+                    <div class="rounded-2xl bg-surface-muted px-3 py-2.5">
+                      <dt class="text-[0.7rem] font-semibold text-ink-muted"><T v={c.referralsMore.statsReferrals} /></dt>
+                      <dd class="text-base font-extrabold tabular-nums">{m.referrals}</dd>
+                    </div>
+                    <div class="rounded-2xl bg-surface-muted px-3 py-2.5">
+                      <dt class="text-[0.7rem] font-semibold text-ink-muted"><T v={c.referralsMore.statsCustomers} /></dt>
+                      <dd class="text-base font-extrabold tabular-nums">{m.customers}</dd>
+                    </div>
+                    <div class="rounded-2xl bg-surface-muted px-3 py-2.5">
+                      <dt class="text-[0.7rem] font-semibold text-ink-muted"><T v={tc.conversion} /></dt>
+                      <dd class="text-base font-extrabold tabular-nums">{conv == null ? "·" : `${conv}%`}</dd>
+                    </div>
+                  </dl>
+
+                  <p class="mt-3 flex items-center gap-1.5 text-xs text-ink-muted">
+                    <Icono nombre="reloj" class="size-3.5" grosor={2.2} />
+                    <span><T v={tc.lastActivity} />:</span>
+                    {m.lastActivityAt ? <T v={shortDate(m.lastActivityAt)} /> : <T v={tc.noActivity} />}
+                  </p>
+
+                  {m.byBusiness.length > 0 && (
+                    <section class="mt-5">
+                      <h3 class="text-sm font-bold text-ink"><T v={tc.byBusiness} /></h3>
+                      <ul class="mt-2 divide-y divide-line rounded-2xl border border-line">
+                        {m.byBusiness.map((b) => (
+                          <li class="flex items-center justify-between gap-3 px-4 py-2.5 text-sm">
+                            <span class="min-w-0 truncate font-semibold">{b.name}</span>
+                            <span class="shrink-0 text-xs text-ink-muted"><T v={b.customers === 1 ? c.home.customersCountOne : c.home.customersCount} vars={{ n: b.customers }} /></span>
+                            <span class="w-20 shrink-0 text-right font-bold tabular-nums"><T v={money(b.earnedCents)} /></span>
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  )}
+
+                  <section class="mt-5">
+                    <h3 class="text-sm font-bold text-ink"><T v={tc.linesTitle} /></h3>
+                    {m.lines.length === 0 ? (
+                      <p class="mt-2 rounded-2xl bg-surface-muted px-4 py-3 text-sm text-pretty text-ink-muted"><T v={tc.noLines} /></p>
+                    ) : (
+                      <ul class="mt-2 divide-y divide-line rounded-2xl border border-line">
+                        {m.lines.map((l) => (
+                          <li class="flex items-center justify-between gap-3 px-4 py-2.5 text-sm">
+                            <span class="min-w-0">
+                              <span class="block truncate font-semibold">{businessName.get(l.businessId) ?? ""}</span>
+                              <span class="block text-xs text-ink-muted">
+                                <T v={shortDate(l.occurredAt)} />
+                                {l.percent != null && <> · {l.percent}%</>}
+                              </span>
+                            </span>
+                            <span class="flex shrink-0 items-center gap-2">
+                              <span class:list={["rounded-full px-2 py-0.5 text-[0.7rem] font-bold", statusClass[l.status]]}>
+                                <T v={c.status[l.status]} />
+                              </span>
+                              <span class="font-bold tabular-nums"><T v={money(l.amountCents)} /></span>
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </section>
+                </div>
+              </div>
+            </dialog>
+          );
+        })}
       </>
     )
   }
 </AmbassadorLayout>
+
+<style>
+  .modal[open] {
+    animation: modal-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .modal[open]::backdrop {
+    animation: fondo-in 0.28s ease both;
+  }
+  @keyframes modal-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px) scale(0.98);
+    }
+  }
+  @keyframes fondo-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .modal[open],
+    .modal[open]::backdrop {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>("[data-open]").forEach((btn) => {
+    const dialog = document.getElementById(btn.dataset.open ?? "") as HTMLDialogElement | null;
+    if (!dialog) return;
+    btn.addEventListener("click", () => dialog.showModal());
+    dialog.querySelector("[data-close]")?.addEventListener("click", () => dialog.close());
+    /* Tocar fuera de la ventana (en el fondo) la cierra. */
+    dialog.addEventListener("click", (e) => {
+      if (e.target === dialog) dialog.close();
+    });
+    dialog.addEventListener("close", () => btn.focus());
+  });
+</script>

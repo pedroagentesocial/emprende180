@@ -1,169 +1,38 @@
 ---
-import BaseLayout from "@layouts/BaseLayout.astro";
-import T from "@components/i18n/T.astro";
-import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
-import { LanguageSwitch } from "@components/i18n/LanguageSwitch";
-import { sitio } from "@config/curso.config";
-import { ambassadorCopy } from "@config/ambassadorArea";
-import { construirTxt, type Txt } from "@i18n/idioma";
+import StudentLayout from "@layouts/StudentLayout.astro";
+import type { Txt } from "@i18n/idioma";
 import type { Student } from "@lib/data";
-import { shortDate } from "@lib/ambassadorFormat";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- * EL PORTAL DE EMBAJADORES: una app pequeña, hecha para el teléfono
+ * LAS PÁGINAS DEL EMBAJADOR, DENTRO DEL MARCO ÚNICO (12-11-2026)
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * No es otra pantalla de `/student` con su columna lateral: es lo que un
- * Embajador abre en el teléfono varias veces al día para ver si entró algo.
- * Por eso tiene su propio marco:
+ * Esto era un marco aparte, pensado para el teléfono: barra arriba, una
+ * columna estrecha y cinco pestañas abajo, también en escritorio. En una
+ * pantalla grande parecía un móvil en medio de la nada, y al pasar a Cursos se
+ * cambiaba de producto. Ahora todo alumno es Embajador, así que es una sola
+ * plataforma con un solo marco: `StudentLayout`, que en escritorio pinta la
+ * columna lateral (con las secciones del Embajador) y en teléfono y tablet las
+ * pestañas de abajo (`PortalTabs`).
  *
- *   · Una barra arriba, fina: la marca, el idioma y la vuelta a Cursos.
- *   · Una columna estrecha de contenido, la misma en el teléfono y en el
- *     escritorio. En pantalla grande no se estira: los números se leen igual.
- *   · Cinco pestañas ABAJO, al alcance del pulgar, que es donde las busca
- *     cualquiera que use una app.
+ * Se conserva como envoltura para que las páginas no cambien de import, y
+ * `tab` se sigue aceptando aunque la sección actual ya se lee de la URL.
  *
- * ⚠️ VIVE BAJO `/student/ambassador`, Y ESO ES SEGURIDAD, NO COMODIDAD. El
- * middleware protege todo `/student` con la sesión: el portal nace protegido
- * con el mismo inicio de sesión y sin una segunda puerta que vigilar.
- *
- * ⚠️ SIN BOTONES FLOTANTES de chat y llamada (`floatingButtons={false}`): se
- * pintan abajo a la derecha y taparían la última pestaña.
- *
- * Se puede "agregar a la pantalla de inicio" (`/embajador.webmanifest`): se
- * abre a pantalla completa, como una app, sin instalar nada.
+ * ⚠️ VIVE BAJO `/student/ambassador`, Y ESO ES SEGURIDAD: el middleware protege
+ * todo `/student` con la sesión.
  */
-
 export type AmbassadorTab = "home" | "referrals" | "team" | "payouts" | "share";
 
 interface Props {
   title: Txt;
   student: Student;
-  tab: AmbassadorTab;
+  tab?: AmbassadorTab;
 }
 
-const { title, student, tab } = Astro.props;
-const c = ambassadorCopy;
-
-/* Desactivado: lo dice arriba en cada pestaña, sin esconder nada. */
-const openPause = student.ambassadorPauses.find((p) => p.to === null) ?? null;
-
-const pageTitle = construirTxt((l) => `${title[l]} · ${sitio.nombre[l]}`);
-
-const TABS: { key: AmbassadorTab; href: string; label: Txt; icon: NombreIcono }[] = [
-  { key: "home", href: "/student/ambassador", label: c.nav.home, icon: "casa" },
-  { key: "referrals", href: "/student/ambassador/referrals", label: c.nav.referrals, icon: "personas" },
-  { key: "team", href: "/student/ambassador/team", label: c.nav.team, icon: "red" },
-  { key: "payouts", href: "/student/ambassador/payouts", label: c.nav.payouts, icon: "billete" },
-  { key: "share", href: "/student/ambassador/share", label: c.nav.share, icon: "compartir" },
-];
-
-const LOGOS = { es: sitio.logoHorizontalBlanco, en: sitio.logoHorizontalBlancoEn } as const;
-const NOMBRE = { es: "Emprende180", en: "Entrepreneur180" } as const;
+const { title, student } = Astro.props;
 ---
 
-<BaseLayout
-  titulo={pageTitle}
-  descripcion={c.title}
-  noindex
-  floatingButtons={false}
-  manifest="/embajador.webmanifest"
->
-  <div class="flex min-h-svh flex-col bg-surface-muted">
-    <header class="barra sticky top-0 z-40 bg-primary-950 text-white">
-      <div class="mx-auto flex h-14 w-full max-w-xl items-center justify-between gap-3 px-4">
-        <a
-          href="/student/ambassador"
-          class="flex min-h-11 items-center rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
-        >
-          {(["es", "en"] as const).map((l) => (
-            <img
-              data-t={l}
-              lang={l}
-              src={LOGOS[l].src}
-              width={LOGOS[l].w}
-              height={LOGOS[l].h}
-              alt={NOMBRE[l]}
-              class="h-6 w-auto"
-              decoding="async"
-            />
-          ))}
-        </a>
-        <div class="flex items-center gap-2">
-          <LanguageSwitch client:load tono="oscuro" tamano="chico" />
-          <a
-            href="/student"
-            class="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/25 px-3 text-sm font-semibold text-primary-100 transition-colors hover:border-white hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
-          >
-            <Icono nombre="academia" class="size-4" grosor={2} />
-            <T v={c.nav.courses} />
-          </a>
-        </div>
-      </div>
-    </header>
-
-    <main id="contenido" class="mx-auto w-full max-w-xl flex-1 px-4 pt-5 pb-28">
-      {
-        openPause && (
-          <p role="status" class="mb-5 rounded-2xl border border-warning-500 bg-warning-50 px-4 py-3 text-sm text-pretty text-ink">
-            <T v={c.home.paused} vars={{ fecha: shortDate(openPause.from) }} />
-          </p>
-        )
-      }
-      <slot />
-    </main>
-
-    {/* ─── Las pestañas ────────────────────────────────────────────────────
-        Fijas abajo, cada una de 56 px de alto como mínimo, con icono y texto:
-        un icono solo no dice nada a quien no sabe ya qué es. El relleno de
-        abajo es la zona del gesto de inicio del iPhone. */}
-    <nav
-      aria-label={c.nav.aria[student.language]}
-      class="pestanas fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 backdrop-blur"
-    >
-      <ul class="mx-auto grid max-w-xl grid-cols-5">
-        {TABS.map((item) => (
-          <li>
-            <a
-              href={item.href}
-              aria-current={item.key === tab ? "page" : undefined}
-              class:list={[
-                "flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 text-[0.7rem] font-semibold transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus",
-                item.key === tab ? "text-secondary-700" : "text-ink-subtle hover:text-ink",
-              ]}
-            >
-              <span
-                aria-hidden="true"
-                class:list={[
-                  "grid h-7 w-12 place-items-center rounded-full transition-colors",
-                  item.key === tab && "bg-secondary-100",
-                ]}
-              >
-                <Icono nombre={item.icon} class="size-5" grosor={item.key === tab ? 2.2 : 1.9} />
-              </span>
-              <T v={item.label} />
-            </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  </div>
-
-  {/* Mismo arreglo que `StudentLayout`: una página privada que vuelve de la
-      caché de atrás/adelante se recarga, y sin sesión acaba en /login. */}
-  <script is:inline>
-    window.addEventListener("pageshow", function (event) {
-      if (event.persisted) window.location.reload();
-    });
-  </script>
-</BaseLayout>
-
-<style>
-  .barra {
-    padding-top: env(safe-area-inset-top, 0px);
-  }
-  .pestanas {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
-</style>
+<StudentLayout title={title} student={student}>
+  <slot />
+</StudentLayout>

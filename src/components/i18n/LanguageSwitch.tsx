@@ -76,7 +76,7 @@ export function LanguageSwitch({
           "pointer-events-none absolute top-1 bottom-1 left-1 rounded-full",
           chico ? "w-8" : "w-10 sm:w-11",
           "transition-transform duration-300 ease-[var(--ease-out-soft)]",
-          oscuro ? "bg-white/90" : "bg-surface shadow-xs",
+          oscuro ? "bg-white/90" : "bg-surface ring-1 ring-line",
         ].join(" ")}
         style={{ transform: `translateX(${indice * 100}%)` }}
       />

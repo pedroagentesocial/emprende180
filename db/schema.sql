@@ -433,3 +433,17 @@ ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS clinics_vinculado_en timestamptz;
 -- ni nivel 2) y no se le asignan clientes nuevos; lo ganado antes se queda.
 -- Ver `pausedAt` en src/lib/commissions.ts.
 ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS embajador_pausas jsonb NOT NULL DEFAULT '[]'::jsonb;
+
+-- ─── El perfil del alumno (12-11-2026) ──────────────────────────────────────
+-- La foto de perfil, ya recortada y reducida en el navegador (cuadrada, 320
+-- px, JPEG), como data URL. Se sirve por /student/foto/<id>, nunca incrustada
+-- en cada página. La aplicación rechaza más de 200 KB; el CHECK es la red.
+-- `foto_en` dice cuándo cambió, para que la dirección de la imagen cambie con
+-- ella y ninguna caché enseñe la vieja.
+ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS foto text;
+ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS foto_en timestamptz;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'alumnos_foto_tamano') THEN
+    ALTER TABLE alumnos ADD CONSTRAINT alumnos_foto_tamano CHECK (foto IS NULL OR length(foto) <= 280000);
+  END IF;
+END $$;

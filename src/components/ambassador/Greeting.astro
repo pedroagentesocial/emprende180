@@ -1,0 +1,69 @@
+---
+import T from "@components/i18n/T.astro";
+import Avatar from "@components/ambassador/Avatar.astro";
+import { construirTxt, LOCALES, type Txt } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * La bienvenida del portal (12-11-2026)
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Era "Hola, Laura Ruiz": el nombre completo, como en un formulario, y nada
+ * más. Ahora saluda como una persona:
+ *
+ *   · La fecha de hoy, pequeña, arriba ("Jueves, 12 de noviembre").
+ *   · "Buenos días / Buenas tardes / Buenas noches" y SOLO el nombre de pila.
+ *   · Debajo, una frase que dice cómo va (la pasa quien la usa).
+ *
+ * ⚠️ LA HORA ES LA DEL TELÉFONO DE QUIEN LEE. El servidor pinta la de Utah
+ * (donde está el negocio) y un script de tres líneas la corrige con la hora
+ * local; sin JavaScript se queda la de Utah, que casi siempre coincide.
+ */
+interface Props {
+  name: string | null;
+  fallback: string;
+  line?: Txt | null;
+  lineVars?: Record<string, string | number | Txt>;
+  avatar?: boolean;
+  photo?: string | null;
+}
+
+const { name, fallback, line, lineVars, avatar = true, photo = null } = Astro.props;
+const TZ = "America/Denver";
+const first = (name ?? "").trim().split(/\s+/)[0] || fallback;
+
+const hours: Record<"m" | "t" | "n", Txt> = {
+  m: { es: "Buenos días,", en: "Good morning," },
+  t: { es: "Buenas tardes,", en: "Good afternoon," },
+  n: { es: "Buenas noches,", en: "Good evening," },
+};
+const hour = Number(new Intl.DateTimeFormat("en-US", { hour: "numeric", hourCycle: "h23", timeZone: TZ }).format(new Date()));
+const part = hour >= 5 && hour < 12 ? "m" : hour >= 12 && hour < 19 ? "t" : "n";
+
+const today = construirTxt((l) => {
+  const s = new Intl.DateTimeFormat(LOCALES[l], { weekday: "long", day: "numeric", month: "long", timeZone: TZ }).format(new Date());
+  return s.charAt(0).toUpperCase() + s.slice(1);
+});
+---
+
+<header class="flex items-center gap-4">
+  {avatar && <Avatar name={name ?? fallback} size="lg" photo={photo} />}
+  <div class="min-w-0">
+    <p class="text-xs font-semibold tracking-wide text-ink-muted uppercase" data-today><T v={today} /></p>
+    <h1 class="mt-0.5 text-2xl text-balance text-ink sm:text-3xl">
+      {(["m", "t", "n"] as const).map((k) => (
+        <span data-saludo={k} hidden={k !== part}>
+          <T v={hours[k]} />
+        </span>
+      ))}
+      <span class="text-ink-brand">{first}</span>
+    </h1>
+    {line && <p class="mt-1 text-sm text-pretty text-ink-muted sm:text-base"><T v={line} vars={lineVars} /></p>}
+  </div>
+</header>
+
+<script>
+  const h = new Date().getHours();
+  const part = h >= 5 && h < 12 ? "m" : h >= 12 && h < 19 ? "t" : "n";
+  document.querySelectorAll<HTMLElement>("[data-saludo]").forEach((el) => (el.hidden = el.dataset.saludo !== part));
+</script>

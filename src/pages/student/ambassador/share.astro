@@ -3,18 +3,22 @@ import AmbassadorLayout from "@layouts/AmbassadorLayout.astro";
 import T from "@components/i18n/T.astro";
 import Icono from "@components/ui/Icono.astro";
 import { ambassadorCopy } from "@config/ambassadorArea";
-import { ambassadorRepo } from "@lib/ambassadors";
 import { referralLink } from "@lib/ambassadorBook";
+import { cachedBook } from "@lib/requestBook";
+import { brandOf } from "@lib/businessBrand";
+import { money } from "@lib/ambassadorFormat";
 import { isAmbassador } from "@lib/permissions";
+import { construirTxt } from "@i18n/idioma";
+import { interpolar } from "@i18n/formato";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- * /student/ambassador/share: tu código y un enlace por negocio
+ * /student/ambassador/share: tu código y una tarjeta por negocio
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * Un solo código para todos los negocios. Los que tienen enlace propio (su
- * web lee `?ref=` o `/r/<código>`) lo enseñan ya armado; los que no, dicen
- * que basta con dar el código.
+ * Un solo código para todos los negocios. Rehecha el 12-11-2026: cada negocio
+ * es una tarjeta con su LOGO, qué hace, su web para visitarla antes de
+ * recomendarla, el enlace ya armado con tu código y lo que te ha dejado.
  *
  * El único JavaScript del portal está aquí, y es opcional: copiar al
  * portapapeles y el menú de compartir del teléfono (`navigator.share`). Sin
@@ -27,58 +31,139 @@ if (!isAmbassador(me)) return new Response(null, { status: 404 });
 
 const c = ambassadorCopy;
 const code = me.ambassadorCode!;
-const businesses = (await ambassadorRepo().listBusinesses()).filter((b) => b.active);
+const book = await cachedBook(Astro.locals, me);
+const businesses = book.businesses.filter((b) => b.active);
+const statsOf = new Map(book.byBusiness.map((b) => [b.business.id, b]));
 
 const button =
   "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full border border-line-strong bg-surface px-4 text-sm font-semibold text-ink transition-colors hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+const primary =
+  "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-primary-900 px-4 text-sm font-semibold text-white transition-colors hover:bg-primary-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
 ---
 
 <AmbassadorLayout title={c.share.title} student={me} tab="share">
-  <h1 class="text-2xl font-extrabold text-ink"><T v={c.share.title} /></h1>
-  <p class="mt-2 text-sm text-pretty text-ink-muted"><T v={c.share.intro} /></p>
+  <h1 class="text-3xl text-balance text-ink sm:text-4xl"><T v={c.share.title} /></h1>
+  <p class="mt-2 max-w-2xl text-base text-pretty text-ink-muted"><T v={c.share.intro} /></p>
 
-  <section class="mt-5 rounded-3xl bg-primary-900 p-5 text-center text-white">
+  {/* El código y "Cómo funciona": uno debajo del otro en el teléfono, lado a
+      lado en escritorio. */}
+  <div class="mt-6 grid gap-4 lg:grid-cols-[3fr_2fr]">
+  {/* ─── El código ─────────────────────────────────────────────────────── */}
+  <section class="relative isolate grid place-content-center overflow-hidden rounded-3xl bg-primary-950 p-6 text-center text-white">
+    <div aria-hidden="true" class="halo pointer-events-none absolute -top-20 left-1/2 -z-10 size-64 -translate-x-1/2 rounded-full"></div>
     <p class="text-sm font-semibold text-primary-100"><T v={c.share.yourCode} /></p>
-    <p class="mt-1 font-mono text-4xl font-extrabold tracking-widest select-all">{code}</p>
-    <button
-      type="button"
-      data-copy={code}
-      class="mt-4 inline-flex min-h-11 items-center gap-1.5 rounded-full bg-white px-5 text-sm font-semibold text-primary-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
-    >
-      <Icono nombre="lista" class="size-4" grosor={2} />
-      <span data-label><T v={c.share.copy} /></span>
-    </button>
+    <p class="mt-1 font-mono text-4xl font-extrabold tracking-[0.2em] select-all sm:text-5xl">{code}</p>
+    <div class="mt-5 flex flex-wrap justify-center gap-2">
+      <button
+        type="button"
+        data-copy={code}
+        class="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-white px-5 text-sm font-semibold text-primary-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+      >
+        <Icono nombre="lista" class="size-4" grosor={2} />
+        <span data-label><T v={c.share.copy} /></span>
+      </button>
+      <button
+        type="button"
+        data-share-text={code}
+        data-title="Emprende180"
+        class="hidden min-h-11 items-center gap-1.5 rounded-full px-5 text-sm font-semibold text-white ring-1 ring-white/30 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+      >
+        <Icono nombre="compartir" class="size-4" grosor={2} />
+        <T v={c.share.shareCode} />
+      </button>
+    </div>
   </section>
 
-  <ul class="mt-5 flex flex-col gap-3">
+  {/* ─── Cómo funciona ─────────────────────────────────────────────────── */}
+  <section class="rounded-3xl border border-line bg-surface p-5">
+    <h2 class="text-base font-bold text-ink"><T v={c.share.howTitle} /></h2>
+    <ol class="mt-3 space-y-2.5">
+      {c.share.how.map((step, i) => (
+        <li class="flex gap-3 text-sm text-pretty text-ink-muted">
+          <span class="grid size-6 shrink-0 place-items-center rounded-full bg-secondary-100 text-xs font-bold text-secondary-800">{i + 1}</span>
+          <T v={step} />
+        </li>
+      ))}
+    </ol>
+  </section>
+  </div>
+
+  {/* ─── Un negocio por tarjeta ────────────────────────────────────────── */}
+  <ul class:list={["mt-6 grid gap-4 md:grid-cols-2", businesses.length >= 3 && "xl:grid-cols-3"]}>
     {
       businesses.map((b) => {
         const link = referralLink(b, code);
+        const brand = brandOf(b);
+        const st = statsOf.get(b.id);
+        const message = construirTxt((l) => interpolar(c.share.shareText[l], { codigo: code, negocio: b.name }));
         return (
-          <li class="rounded-3xl border border-line bg-surface p-4">
-            <p class="font-bold text-ink">{b.name}</p>
-            {link ? (
-              <>
-                <p class="mt-1 text-sm break-all text-ink-muted select-all">{link}</p>
-                <div class="mt-3 flex flex-wrap gap-2">
-                  <button type="button" data-copy={link} class={button}>
+          <li class="flex flex-col overflow-hidden rounded-3xl border border-line bg-surface">
+            <div class="grid h-28 place-items-center border-b border-line bg-surface-muted px-6">
+              {brand.logo ? (
+                <img src={brand.logo} width={brand.w ?? undefined} height={brand.h ?? undefined} alt={b.name} class="max-h-14 w-auto max-w-[80%] object-contain" loading="lazy" decoding="async" />
+              ) : (
+                <span class="text-2xl font-extrabold tracking-tight text-primary-900">{b.name}</span>
+              )}
+            </div>
+            <div class="flex flex-1 flex-col p-5">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="font-bold text-ink">{b.name}</p>
+                  {brand.tagline && <p class="text-sm text-ink-muted"><T v={brand.tagline} /></p>}
+                </div>
+                {brand.website && (
+                  <a
+                    href={brand.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex min-h-10 shrink-0 items-center gap-1 rounded-full px-3 text-sm font-semibold text-ink-brand transition-colors hover:bg-secondary-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                  >
+                    <T v={c.share.visit} />
+                    <Icono nombre="flecha" class="size-4 -rotate-45" grosor={2.4} />
+                  </a>
+                )}
+              </div>
+
+              <p class="mt-3 flex items-center gap-1.5 text-xs text-ink-muted">
+                <Icono nombre="personas" class="size-3.5 text-secondary-600" grosor={2.2} />
+                {st && st.customers + st.referrals > 0 ? (
+                  <T v={c.share.stats} vars={{ c: st.customers, monto: money(st.earnedCents) }} />
+                ) : (
+                  <T v={c.share.statsNone} />
+                )}
+              </p>
+
+              {link ? (
+                <div class="mt-auto pt-4">
+                  <p class="text-xs font-semibold text-ink-muted"><T v={c.share.yourLink} /></p>
+                  <p class="mt-1 truncate rounded-xl bg-surface-muted px-3 py-2 font-mono text-xs text-ink select-all" title={link}>{link}</p>
+                  <div class="mt-3 flex flex-wrap gap-2">
+                    <button type="button" data-copy={link} class={primary}>
+                      <Icono nombre="lista" class="size-4" grosor={2} />
+                      <span data-label><T v={c.share.copy} /></span>
+                    </button>
+                    <button type="button" data-share={link} data-title={b.name} class={`${button} hidden`}>
+                      <Icono nombre="compartir" class="size-4" grosor={2} />
+                      <T v={c.share.share} />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div class="mt-auto pt-4">
+                  <p class="rounded-xl bg-surface-muted px-3 py-2 text-sm text-ink-muted"><T v={c.share.noLink} /></p>
+                  <button type="button" data-copy-es={message.es} data-copy-en={message.en} class:list={[button, "mt-3"]}>
                     <Icono nombre="lista" class="size-4" grosor={2} />
                     <span data-label><T v={c.share.copy} /></span>
                   </button>
-                  <button type="button" data-share={link} data-title={b.name} class={`${button} hidden`}>
-                    <Icono nombre="compartir" class="size-4" grosor={2} />
-                    <T v={c.share.share} />
-                  </button>
                 </div>
-              </>
-            ) : (
-              <p class="mt-1 text-sm text-ink-muted"><T v={c.share.noLink} /></p>
-            )}
+              )}
+            </div>
           </li>
         );
       })
     }
   </ul>
+
 
   <p class="mt-5 flex items-start gap-2 px-1 text-sm text-pretty text-ink-muted">
     <Icono nombre="casa" class="mt-0.5 size-4 shrink-0" grosor={2} />
@@ -88,12 +173,19 @@ const button =
   <span hidden data-copied-es={c.share.copied.es} data-copied-en={c.share.copied.en} id="copiado"></span>
 </AmbassadorLayout>
 
+<style>
+  .halo {
+    background: radial-gradient(closest-side, oklch(0.657 0.1122 187.2 / 0.4), transparent);
+  }
+</style>
+
 <script>
   const copied = document.getElementById("copiado");
+  const lang = () => (document.documentElement.lang === "en" ? "en" : "es");
 
-  document.querySelectorAll<HTMLButtonElement>("[data-copy]").forEach((btn) => {
+  document.querySelectorAll<HTMLButtonElement>("[data-copy], [data-copy-es]").forEach((btn) => {
     btn.addEventListener("click", async () => {
-      const text = btn.dataset.copy ?? "";
+      const text = btn.dataset.copy ?? (lang() === "en" ? btn.dataset.copyEn : btn.dataset.copyEs) ?? "";
       try {
         await navigator.clipboard.writeText(text);
       } catch {
@@ -104,18 +196,21 @@ const button =
       const label = btn.querySelector<HTMLElement>("[data-label]");
       if (!label) return;
       const before = label.innerHTML;
-      const lang = document.documentElement.lang === "en" ? "en" : "es";
-      label.textContent = copied?.dataset[lang === "en" ? "copiedEn" : "copiedEs"] ?? "OK";
+      label.textContent = copied?.dataset[lang() === "en" ? "copiedEn" : "copiedEs"] ?? "OK";
       setTimeout(() => (label.innerHTML = before), 1600);
     });
   });
 
   /* El menú de compartir del teléfono, solo donde existe. */
   if (typeof navigator.share === "function") {
-    document.querySelectorAll<HTMLButtonElement>("[data-share]").forEach((btn) => {
+    document.querySelectorAll<HTMLButtonElement>("[data-share], [data-share-text]").forEach((btn) => {
       btn.classList.remove("hidden");
+      btn.classList.add("inline-flex");
       btn.addEventListener("click", () => {
-        navigator.share({ title: btn.dataset.title, url: btn.dataset.share }).catch(() => {});
+        const data = btn.dataset.share
+          ? { title: btn.dataset.title, url: btn.dataset.share }
+          : { title: btn.dataset.title, text: btn.dataset.shareText };
+        navigator.share(data).catch(() => {});
       });
     });
   }

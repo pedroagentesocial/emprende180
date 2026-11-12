@@ -127,6 +127,21 @@ export interface Student {
    * nulo = lo está ahora. Ver `pausedAt` en `@lib/commissions`.
    */
   ambassadorPauses: { from: Date; to: Date | null }[];
+  /**
+   * Cuándo subió su foto de perfil (12-11-2026). `null` = no tiene. La foto
+   * en sí NO va en el alumno: se lee con `photoOf` y se sirve aparte, para
+   * que no viaje en `Astro.locals` ni en cada página.
+   */
+  photoAt: Date | null;
+}
+
+/** Lo que el propio alumno puede cambiar de sí mismo, desde su perfil. */
+export interface ProfileUpdate {
+  name: string | null;
+  lastName: string | null;
+  phone: string | null;
+  whatsapp: boolean | null;
+  language: "es" | "en";
 }
 
 /**
@@ -241,6 +256,17 @@ export interface Repo {
   studentByAmbassadorCode(code: string): Promise<Student | null>;
   /** Anota que clinics ya lo tiene dado de alta. */
   markClinicsLinked(id: string): Promise<void>;
+  /* ─── El perfil (12-11-2026) ──────────────────────────────────────────── */
+  /** Nombre, apellido, teléfono, WhatsApp e idioma, de una vez. */
+  updateProfile(id: string, data: ProfileUpdate): Promise<void>;
+  /** Guarda (o, con `null`, quita) la foto: un data URL ya validado. */
+  setPhoto(id: string, dataUrl: string | null): Promise<void>;
+  photoOf(id: string): Promise<string | null>;
+  /**
+   * Cambia el correo, que es con el que entra. `false` si ya es de otra
+   * cuenta. Quien llama ya comprobó, con un código, que el buzón es suyo.
+   */
+  changeEmail(id: string, email: string): Promise<boolean>;
   /**
    * Desactiva (abre una pausa) o reactiva (la cierra) a un Embajador. Sin
    * efecto si ya estaba así. Solo el admin.
@@ -457,6 +483,7 @@ function postgresRepo(url: string): Repo {
     ambassadorSince: (f.embajador_desde as Date) ?? null,
     clinicsLinkedAt: (f.clinics_vinculado_en as Date) ?? null,
     ambassadorPauses: parsePauses(f.embajador_pausas),
+    photoAt: (f.foto_en as Date) ?? null,
   });
 
   return {
@@ -545,7 +572,8 @@ function postgresRepo(url: string): Repo {
       try {
         await sql`
           UPDATE alumnos SET
-            rol = CASE WHEN rol = 'admin' THEN rol ELSE 'agente' END,
+            /* El rol NO cambia (11-11-2026): ser Embajador ya no es ser
+               agente. Un agente ve y da de alta alumnos; un Embajador no. */
             codigo_embajador = ${normaliseCode(code)},
             patrocinador_id = ${sponsorId},
             embajador_desde = COALESCE(embajador_desde, now()),
@@ -564,6 +592,33 @@ function postgresRepo(url: string): Repo {
 
     async markClinicsLinked(id) {
       await sql`UPDATE alumnos SET clinics_vinculado_en = now() WHERE id = ${id}`;
+    },
+
+    async updateProfile(id, d) {
+      await sql`
+        UPDATE alumnos SET
+          nombre = ${d.name}, apellido = ${d.lastName}, telefono = ${d.phone},
+          whatsapp = ${d.whatsapp}, idioma = ${d.language}
+        WHERE id = ${id}`;
+    },
+    async setPhoto(id, dataUrl) {
+      await sql`
+        UPDATE alumnos SET foto = ${dataUrl}, foto_en = ${dataUrl ? new Date() : null}
+        WHERE id = ${id}`;
+    },
+    async photoOf(id) {
+      const [f] = await sql`SELECT foto FROM alumnos WHERE id = ${id}`;
+      return (f?.foto as string) ?? null;
+    },
+    async changeEmail(id, email) {
+      /* El UNIQUE de `email` decide si está libre (23505). */
+      try {
+        await sql`UPDATE alumnos SET email = ${normaliseEmail(email)} WHERE id = ${id}`;
+        return true;
+      } catch (error) {
+        if ((error as { code?: string }).code === "23505") return false;
+        throw error;
+      }
     },
 
     async setAmbassadorActive(id, active) {
@@ -788,6 +843,8 @@ function memoryRepo(): Repo {
      column that `studentByEmail` doesn't return: inside the object it would end
      up in `Astro.locals` and from there in any template. */
   const passwords = new Map<string, string>();
+  /* Las fotos de perfil, aparte del alumno como en Postgres. */
+  const photos = new Map<string, string>();
   /* `intentos` es opcional porque los enlaces mágicos no lo usan: solo los
      códigos de seis dígitos cuentan fallos. */
   const tokens = new Map<
@@ -802,7 +859,12 @@ function memoryRepo(): Repo {
 
   const progressKey = (a: string, n: number) => `${a}:${n}`;
   let n = 0;
-  const newId = () => `dev-${++n}`;
+  /* Los sembrados llevan siempre el mismo id (dev-1, dev-2...): clinics los
+     conoce por ese id, así que tras un reinicio se ponen al día en vez de
+     chocar. Lo creado después lleva uno al azar, para que un reinicio no le
+     dé a otra persona el id de alguien que ya está en clinics. */
+  let seeding = true;
+  const newId = () => (seeding ? `dev-${++n}` : `dev-${crypto.randomUUID()}`);
 
   /* ─── SEEDED ADMINS ────────────────────────────────────────────────────────
      So the panel can be opened in development without anywhere to sign up.
@@ -874,6 +936,7 @@ function memoryRepo(): Repo {
       ambassadorSince: null,
       clinicsLinkedAt: null,
     ambassadorPauses: [],
+    photoAt: null,
     };
     students.set(s.email, s);
   }
@@ -913,10 +976,13 @@ function memoryRepo(): Repo {
       registeredBy: string | null,
       lastSignIn: Date | null,
     ) => {
+      /* Nombre y apellido por separado (12-11-2026), como los guarda el
+         perfil: "Laura Ruiz" es Laura + Ruiz. */
+      const [first, ...rest] = name.split(" ");
       const s: Student = {
         id: newId(),
         email,
-        name,
+        name: first ?? name,
         role,
         language: "es",
         active: true,
@@ -930,7 +996,7 @@ function memoryRepo(): Repo {
         coupon: null,
         /* El falso en memoria no guarda el alta desde la web: sirve para el
            desarrollo sin base de datos y ahí nadie se da de alta. */
-        lastName: null,
+        lastName: rest.join(" ") || null,
         phone: null,
         whatsapp: null,
         source: null,
@@ -939,27 +1005,55 @@ function memoryRepo(): Repo {
         ambassadorSince: null,
         clinicsLinkedAt: null,
         ambassadorPauses: [],
+        photoAt: null,
       };
       students.set(s.email, s);
       demoEmails.add(s.email);
       return s;
     };
 
-    const agent = seed("agente@emprende180.com", "Laura Ruiz", "agent", null, new Date());
+    /* Laura era agente; desde el 11-11-2026 todo alumno es Embajador y no hay
+       agentes: es una alumna más, con equipo propio (Carmen y Javier). */
+    const agent = seed("agente@emprende180.com", "Laura Ruiz", "student", null, new Date());
     /* Laura es además Embajadora, para que el portal de Embajadores se pueda
        abrir en la demo con números (los siembra `@lib/ambassadors`). */
     students.set(agent.email, {
       ...agent,
       ambassadorCode: "LAURA",
-      ambassadorSince: new Date(Date.now() - 60 * 86_400_000),
+      ambassadorSince: new Date(Date.now() - 175 * 86_400_000),
     });
     /* Uno ha entrado y el otro no: es la pareja de estados que el panel tiene
        que saber contar, y la que hace visible el aviso de "pagaron y no han
        entrado" sin tener que fabricarlo a mano. */
-    seed("carmen@ejemplo.com", "Carmen Vidal", "student", agent.id, new Date());
-    seed("javier@ejemplo.com", "Javier Peña", "student", agent.id, null);
+    const carmen = seed("carmen@ejemplo.com", "Carmen Vidal", "student", agent.id, new Date());
+    const javier = seed("javier@ejemplo.com", "Javier Peña", "student", agent.id, null);
+    /* Embajadores del equipo de Laura (su nivel 2), con los códigos que ya
+       tienen en clinics. */
+    students.set(carmen.email, {
+      ...carmen,
+      ambassadorCode: "CARMEN17",
+      sponsorId: agent.id,
+      ambassadorSince: new Date(Date.now() - 80 * 86_400_000),
+    });
+    students.set(javier.email, {
+      ...javier,
+      ambassadorCode: "JAVIER85",
+      sponsorId: agent.id,
+      ambassadorSince: new Date(Date.now() - 45 * 86_400_000),
+    });
     seed("alumno@emprende180.com", "Marta Gil", "student", null, new Date());
+    /* Un pre-registro: se apuntó en la web y espera a que le den acceso. */
+    const rosa = seed("rosa@ejemplo.com", "Rosa", "student", null, null);
+    students.set(rosa.email, {
+      ...rosa,
+      lastName: "Méndez",
+      phone: "+1 801 555 0142",
+      whatsapp: true,
+      source: "instagram",
+      hasPassword: false,
+    });
   }
+  seeding = false;
 
   const byId = (id: string) => [...students.values()].find((s) => s.id === id) ?? null;
 
@@ -1008,7 +1102,18 @@ function memoryRepo(): Repo {
             (s.name ?? "").toLowerCase().includes(needle),
         );
     },
-    async createStudent({ email, name, role, language, registeredBy = null }) {
+    async createStudent({
+      email,
+      name,
+      role,
+      language,
+      registeredBy = null,
+      lastName = null,
+      phone = null,
+      whatsapp = null,
+      source = null,
+      coupon = null,
+    }) {
       const s: Student = {
         id: newId(),
         email: normaliseEmail(email),
@@ -1021,18 +1126,19 @@ function memoryRepo(): Repo {
         previousSignIn: null,
         hasPassword: false,
         registeredBy,
-        coupon: null,
-        /* El falso en memoria no guarda el alta desde la web: sirve para el
-           desarrollo sin base de datos y ahí nadie se da de alta. */
-        lastName: null,
-        phone: null,
-        whatsapp: null,
-        source: null,
+        coupon,
+        /* Lo que trae el registro web (11-11-2026: también en memoria, para
+           poder probar los pre-registros sin base de datos). */
+        lastName,
+        phone,
+        whatsapp,
+        source,
         ambassadorCode: null,
         sponsorId: null,
         ambassadorSince: null,
         clinicsLinkedAt: null,
         ambassadorPauses: [],
+        photoAt: null,
       };
       students.set(s.email, s);
       return s;
@@ -1055,7 +1161,6 @@ function memoryRepo(): Repo {
       if (s)
         students.set(s.email, {
           ...s,
-          role: s.role === "admin" ? "admin" : "agent",
           ambassadorCode: k,
           sponsorId,
           ambassadorSince: s.ambassadorSince ?? new Date(),
@@ -1069,6 +1174,36 @@ function memoryRepo(): Repo {
     async markClinicsLinked(id) {
       const s = byId(id);
       if (s) students.set(s.email, { ...s, clinicsLinkedAt: new Date() });
+    },
+    async updateProfile(id, d) {
+      const s = byId(id);
+      if (s) students.set(s.email, { ...s, ...d });
+    },
+    async setPhoto(id, dataUrl) {
+      const s = byId(id);
+      if (!s) return;
+      if (dataUrl) photos.set(id, dataUrl);
+      else photos.delete(id);
+      students.set(s.email, { ...s, photoAt: dataUrl ? new Date() : null });
+    },
+    async photoOf(id) {
+      return photos.get(id) ?? null;
+    },
+    async changeEmail(id, email) {
+      const next = normaliseEmail(email);
+      const s = byId(id);
+      if (!s) return false;
+      if (next === s.email) return true;
+      if (students.has(next)) return false;
+      /* En memoria el mapa va por correo: se mueve la fila y su contraseña. */
+      students.delete(s.email);
+      students.set(next, { ...s, email: next });
+      const hash = passwords.get(s.email);
+      if (hash) {
+        passwords.delete(s.email);
+        passwords.set(next, hash);
+      }
+      return true;
     },
     async setAmbassadorActive(id, active) {
       const s = byId(id);

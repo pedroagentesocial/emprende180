@@ -70,6 +70,8 @@ declare global {
     interface Locals {
       /** Set by `src/middleware.ts` on the `/student` and `/admin` routes. */
       student?: import("@lib/data").Student;
+      /** El libro de cada Embajador ya leído en esta petición (`@lib/requestBook`). */
+      bookCache?: Map<string, Promise<import("@lib/ambassadorBook").Book>>;
     }
   }
 

@@ -1,0 +1,91 @@
+---
+/**
+ * /student/espera: lo único que ve un PRE-REGISTRO (11-11-2026).
+ *
+ * Quien se apuntó en /subscribe todavía no tiene acceso: el middleware lo
+ * trae aquí desde cualquier página de /student. En cuanto el admin le da
+ * acceso (Alumnos → Pre-registros → "Dar acceso"), deja de ser pre-registro
+ * y esta página lo manda a su inicio.
+ */
+import BaseLayout from "@layouts/BaseLayout.astro";
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import { LanguageSwitch } from "@components/i18n/LanguageSwitch";
+import { sitio, contacto } from "@config/curso.config";
+import { isPreRegistered } from "@lib/permissions";
+import type { Txt } from "@i18n/idioma";
+import "../../styles/portal.css";
+
+export const prerender = false;
+
+const me = Astro.locals.student!;
+if (!isPreRegistered(me)) return Astro.redirect("/student", 302);
+
+const t = (es: string, en: string): Txt => ({ es, en });
+const copy = {
+  title: t("Ya tenemos tus datos", "We have your details"),
+  hello: t("Gracias, {nombre}.", "Thank you, {nombre}."),
+  text: t(
+    "Tu pre-registro quedó guardado. En cuanto se confirme tu inscripción te daremos acceso a la plataforma y te avisaremos por correo.",
+    "Your pre-registration is saved. As soon as your enrolment is confirmed we'll give you access to the platform and let you know by email.",
+  ),
+  next: t("Mientras tanto, si tienes dudas, escríbenos.", "Meanwhile, if you have questions, write to us."),
+  signOut: t("Salir", "Sign out"),
+};
+const LOGOS = { es: sitio.logoHorizontal, en: sitio.logoHorizontalEn } as const;
+---
+
+<BaseLayout titulo={copy.title} descripcion={copy.text} noindex floatingButtons={false}>
+  <main class="portal-ui grid min-h-svh place-items-center bg-surface-muted px-4 py-12">
+    <div class="w-full max-w-lg">
+      <div class="mb-8 flex items-center justify-between gap-3">
+        {(["es", "en"] as const).map((l) => (
+          <img
+            data-t={l}
+            lang={l}
+            src={LOGOS[l].src}
+            width={LOGOS[l].w}
+            height={LOGOS[l].h}
+            alt={sitio.nombre[l]}
+            class="h-7 w-auto"
+          />
+        ))}
+        <LanguageSwitch client:load tono="claro" tamano="chico" />
+      </div>
+
+      <section class="rounded-3xl border border-line bg-surface p-7 sm:p-9">
+        <span
+          aria-hidden="true"
+          class="grid size-12 place-items-center rounded-2xl bg-secondary-100 text-secondary-700"
+        >
+          <Icono nombre="reloj" class="size-6" grosor={1.9} />
+        </span>
+        <h1 class="mt-5 text-3xl text-balance text-ink">
+          <T v={copy.title} />
+        </h1>
+        <p class="mt-3 text-base font-semibold text-ink">
+          <T v={copy.hello} vars={{ nombre: me.name ?? me.email }} />
+        </p>
+        <p class="mt-2 text-base text-pretty text-ink-muted">
+          <T v={copy.text} />
+        </p>
+        <p class="mt-5 text-sm text-pretty text-ink-muted">
+          <T v={copy.next} />
+          {" "}
+          <a href={`mailto:${contacto.email}`} class="font-semibold text-ink-brand underline underline-offset-4">
+            {contacto.email}
+          </a>
+        </p>
+
+        <form method="POST" action="/api/logout" class="mt-7">
+          <button
+            type="submit"
+            class="inline-flex min-h-11 items-center justify-center rounded-full border border-line-strong px-5 text-sm font-semibold text-ink-muted transition-colors hover:border-ink hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          >
+            <T v={copy.signOut} />
+          </button>
+        </form>
+      </section>
+    </div>
+  </main>
+</BaseLayout>

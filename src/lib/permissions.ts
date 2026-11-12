@@ -182,6 +182,21 @@ export function assignableRoles(student: Student | null | undefined): Role[] {
  * dinero, y no puede bastar con registrarse en /subscribe, que deja entrar sin
  * verificar el correo. Un admin activado también tiene el suyo.
  */
+/**
+ * ¿Es un PRE-REGISTRO? (decisión del 11-11-2026)
+ *
+ * Quien se apunta solo en /subscribe todavía no compró: deja sus datos y
+ * espera. No tiene acceso a nada hasta que el admin le da acceso desde
+ * Alumnos (un clic), y en ese momento se vuelve alumno y Embajador.
+ *
+ * Se reconoce por `source` (solo el registro web lo rellena) sin
+ * `ambassadorSince`. No hace falta una columna nueva: dar acceso es
+ * hacerlo Embajador, y eso ya queda guardado.
+ */
+export function isPreRegistered(student: Student | null | undefined): boolean {
+  return !!student && student.role === "student" && !!student.source && !student.ambassadorSince;
+}
+
 export function isAmbassador(student: Student | null | undefined): boolean {
   return !!student?.active && !!student.ambassadorSince && !!student.ambassadorCode;
 }

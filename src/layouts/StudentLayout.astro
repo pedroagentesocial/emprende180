@@ -1,7 +1,9 @@
 ---
 import BaseLayout from "@layouts/BaseLayout.astro";
+import "../styles/portal.css";
 import T from "@components/i18n/T.astro";
-import Icono from "@components/ui/Icono.astro";
+import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
+import { guideLabel, type PageGuide } from "@config/adminGuide";
 import PortalNav from "@components/student/PortalNav.astro";
 import { LanguageSwitch } from "@components/i18n/LanguageSwitch";
 import HelpLinks from "@components/student/HelpLinks.astro";
@@ -9,6 +11,15 @@ import { sitio } from "@config/curso.config";
 import { studentCopy } from "@config/studentArea";
 import { construirTxt, type Txt } from "@i18n/idioma";
 import type { Role, Student } from "@lib/data";
+import PortalTabs from "@components/student/PortalTabs.astro";
+import { ambassadorCopy } from "@config/ambassadorArea";
+import { isAmbassador } from "@lib/permissions";
+import { shortDate } from "@lib/ambassadorFormat";
+import NoticeBell from "@components/student/NoticeBell.astro";
+import Avatar from "@components/ambassador/Avatar.astro";
+import { noticesFor } from "@lib/notices";
+import { cachedBook } from "@lib/requestBook";
+import { displayName, photoUrl } from "@lib/profile";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -47,9 +58,13 @@ interface Props {
   student: Student;
   /** Shown at the top of the content column. The page's own name. */
   heading?: Txt;
+  /** Para qué sirve la página y sus tres pasos (ver @config/adminGuide). */
+  guide?: PageGuide;
+  /** El botón de lo que se viene a hacer aquí, a la derecha del título. */
+  action?: { href: string; label: Txt; icon?: NombreIcono };
 }
 
-const { title, student, heading } = Astro.props;
+const { title, student, heading, guide, action } = Astro.props;
 
 const pageTitle = construirTxt((l) => `${title[l]} · ${sitio.nombre[l]}`);
 
@@ -79,6 +94,19 @@ const DOS = ["es", "en"] as const;
 
 const path = Astro.url.pathname;
 
+/* Una sola plataforma (12-11-2026): el alumno, que es Embajador, navega en el
+   teléfono y la tablet con las pestañas de abajo en vez de la fila que se
+   desliza; en escritorio, con la misma columna que todos. Sin botones
+   flotantes de chat y llamada, que taparían la última pestaña. */
+const tabs = student.role === "student" && isAmbassador(student);
+/* Los avisos de la campana (12-11-2026). El libro del Embajador sale de la
+   caché de la petición: la página ya lo leyó o lo va a leer. */
+const notices = await noticesFor(student, isAmbassador(student) ? await cachedBook(Astro.locals, student) : null);
+const photo = photoUrl(student);
+const fullName = displayName(student);
+const profileCopy = { es: "Mi perfil", en: "My profile" };
+const openPause = tabs ? (student.ambassadorPauses.find((p) => p.to === null) ?? null) : null;
+
 
 const roleLabel: Record<Role, Txt> = {
   student: studentCopy.admin.roleStudent,
@@ -98,7 +126,13 @@ const signOutOscuro =
   "inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-white/25 px-3.5 text-sm font-semibold text-primary-100 transition-colors hover:border-white hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse";
 ---
 
-<BaseLayout titulo={pageTitle} descripcion={studentCopy.intro} noindex>
+<BaseLayout
+  titulo={pageTitle}
+  descripcion={studentCopy.intro}
+  noindex
+  floatingButtons={false}
+  manifest={tabs ? "/embajador.webmanifest" : undefined}
+>
   {/* Sin pie de página: se quitó el 11-11-2026 a petición del cliente. La
       ayuda (teléfono y enlaces) sigue en `HelpLinks`. */}
   <div class="flex flex-1 bg-surface-muted">
@@ -124,11 +158,15 @@ const signOutOscuro =
         y la salida quedaba a cuatro scrolls del logotipo. Con el alto declarado,
         `align-self: stretch` no se aplica. */}
     <aside
-      class="columna sticky top-0 hidden h-svh w-[16.5rem] shrink-0 flex-col overflow-hidden bg-primary-950 lg:flex"
+      class="columna portal-columna sticky top-0 hidden h-svh w-20 shrink-0 flex-col overflow-hidden bg-primary-950 md:flex lg:w-[16.5rem]"
     >
       <div class="columna-aurora" aria-hidden="true"></div>
 
-      <div class="flex shrink-0 items-center justify-between gap-2 px-5 pt-6 pb-5">
+      {/* TABLET (md, 768-1023 px): la misma columna, estrecha y solo con
+          iconos (12-11-2026). Cabe junto al contenido sin robarle media
+          pantalla, y la navegación sigue siempre a la vista. Desde lg se
+          despliega entera, con textos. */}
+      <div class="flex shrink-0 items-center justify-center gap-2 px-3 pt-6 pb-5 lg:justify-between lg:px-5">
         <a
           href="/student"
           class="inline-flex min-h-11 items-center rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
@@ -141,14 +179,25 @@ const signOutOscuro =
               width={LOGOS_BLANCO[l].w}
               height={LOGOS_BLANCO[l].h}
               alt={NOMBRE[l]}
-              class="h-7 w-auto"
+              class="hidden h-7 w-auto lg:block"
               fetchpriority="high"
               decoding="async"
             />
           ))}
+          <img
+            src={sitio.isotipoBlanco.src}
+            width={sitio.isotipoBlanco.w}
+            height={sitio.isotipoBlanco.h}
+            alt={NOMBRE.es}
+            class="h-9 w-auto lg:hidden"
+            decoding="async"
+          />
         </a>
-        {/* El idioma, pequeño, a la altura del logotipo (pedido el 11-11-2026). */}
-        <LanguageSwitch client:load tono="oscuro" tamano="chico" />
+        {/* El idioma, pequeño, a la altura del logotipo (pedido el 11-11-2026).
+            En tablet va en la esquina del contenido, junto a la campana. */}
+        <div class="hidden lg:block">
+          <LanguageSwitch client:load tono="oscuro" tamano="chico" />
+        </div>
       </div>
 
       {/* Los destinos y la ayuda van en la parte que se desplaza; el logotipo y
@@ -159,34 +208,39 @@ const signOutOscuro =
           no consigue algo suele estar en OTRA pantalla, y volver al inicio a
           buscar el teléfono es exactamente el momento en que se abandona. Ver
           `HelpLinks.astro`. */}
-      <div class="columna-scroll min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-3 pb-4">
+      <div class="columna-scroll min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-2.5 pb-4 lg:px-3">
         <PortalNav student={student} path={path} variant="sidebar" />
-        <HelpLinks />
+        <div class="hidden lg:block">
+          <HelpLinks />
+        </div>
       </div>
 
       {/* Quién eres y la salida, al fondo. Es donde se busca en cualquier
           herramienta, y aquí además cumple otra función: el rol se lee en todo
           momento, así que nadie administra creyendo que mira su propia cuenta. */}
-      <div class="shrink-0 border-t border-white/12 px-3 pt-3 pb-4">
-        <div class="flex items-center gap-3 rounded-xl bg-white/6 px-3 py-2.5">
-          <span
-            aria-hidden="true"
-            class="grid size-9 shrink-0 place-items-center rounded-full bg-secondary-400/20 text-secondary-200 ring-1 ring-white/15 ring-inset"
-          >
-            <Icono nombre="usuario" class="size-5" grosor={1.9} />
-          </span>
-          <span class="min-w-0">
-            <span class="block truncate text-sm font-semibold text-white">
-              {student.name ?? student.email}
-            </span>
+      <div class="shrink-0 border-t border-white/12 px-2.5 pt-3 pb-4 lg:px-3">
+        {/* Quién eres, y desde el 12-11-2026 también la puerta a tu perfil. */}
+        <a
+          href="/student/profile"
+          aria-current={path === "/student/profile" ? "page" : undefined}
+          class:list={[
+            "group flex items-center justify-center gap-3 rounded-xl px-2 py-2.5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse lg:justify-start lg:px-3",
+            path === "/student/profile" ? "bg-white/14" : "bg-white/6 hover:bg-white/10",
+          ]}
+        >
+          <Avatar name={fullName} photo={photo} size="sm" />
+          <span class="sr-only lg:hidden"><T v={profileCopy} /></span>
+          <span class="hidden min-w-0 flex-1 lg:block">
+            <span class="block truncate text-sm font-semibold text-white">{fullName}</span>
             <span class="block text-xs font-bold text-secondary-200/85">
-              <T v={roleLabel[student.role]} />
+              <T v={profileCopy} /> · <T v={roleLabel[student.role]} />
             </span>
           </span>
-        </div>
+          <Icono nombre="chevron" class="hidden size-4 shrink-0 -rotate-90 text-white/50 transition-transform group-hover:translate-x-0.5 lg:block" grosor={2.2} />
+        </a>
 
         <form method="POST" action="/api/logout" class="mt-2">
-          <button type="submit" class={signOutOscuro}>
+          <button type="submit" class={`${signOutOscuro} max-lg:px-0 max-lg:text-xs`}>
             <T v={studentCopy.dashboard.signOut} />
           </button>
         </form>
@@ -198,7 +252,7 @@ const signOutOscuro =
       {/* La barra de arriba. En móvil siempre; en escritorio solo cuando NO hay
           columna, porque ahí el logotipo y la salida ya viven en ella y
           repetirlos sería una franja robándole 64 px a cada pantalla. */}
-      <header class="border-b border-line bg-surface lg:hidden">
+      <header class="portal-barra border-b border-line bg-surface md:hidden">
         <div
           class="container-page flex h-[var(--header-h)] items-center justify-between gap-3 lg:h-[var(--header-h-lg)]"
         >
@@ -224,37 +278,103 @@ const signOutOscuro =
           <div class="flex items-center gap-2 sm:gap-3">
             {/* En móvil no hay columna, así que el idioma viaja aquí. */}
             <LanguageSwitch client:load tono="claro" tamano="chico" />
-
-            <form method="POST" action="/api/logout">
-              <button type="submit" class={`${signOutClass} w-auto`}>
-                <T v={studentCopy.dashboard.signOut} />
-              </button>
-            </form>
+            {/* La campana y tu perfil (12-11-2026). Salir está en el perfil. */}
+            <NoticeBell student={student} notices={notices} />
+            <a
+              href="/student/profile"
+              aria-label={profileCopy[student.language]}
+              class="rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            >
+              <Avatar name={fullName} photo={photo} size="sm" />
+            </a>
           </div>
         </div>
       </header>
 
-      <div class="container-page lg:hidden">
-        <PortalNav student={student} path={path} variant="bar" />
-      </div>
+      {/* En teléfono, para todos, las pestañas de abajo (`PortalTabs`). */}
 
       <main
         id="contenido"
-        class="relative isolate flex-1 py-[clamp(2rem,5svh,3.5rem)] lg:py-8"
+        class:list={["relative isolate flex-1 py-[clamp(1.5rem,4svh,3rem)] lg:py-8", "pb-28 md:pb-8"]}
       >
         {/* ⚠️ AQUÍ HABÍA UN `lg:px-8` Y SE HA QUITADO. Pisaba el margen de
             `container-page` a partir de 1024 px y lo dejaba clavado en 32,
             justo donde la regla del ancho dice que tiene que empezar a crecer:
             el portal se habría quedado con un margen distinto al del resto de
             la web sin que nadie lo notara. Ver global.css. */}
-        <div class="container-page">
+        {/* Centrado y con un ancho máximo (11-11-2026): en pantallas grandes
+            todo quedaba pegado a la izquierda con media pantalla vacía. */}
+        {/* La campana en escritorio: la esquina de arriba a la derecha del
+            contenido, a la altura del título de cada página. */}
+        <div class="pointer-events-none absolute inset-x-0 top-6 z-30 hidden md:block">
+          <div class="container-page portal-hoja flex justify-end">
+            <div class="pointer-events-auto flex items-center gap-2">
+              <div class="lg:hidden">
+                <LanguageSwitch client:load tono="claro" tamano="chico" />
+              </div>
+              <NoticeBell student={student} notices={notices} />
+            </div>
+          </div>
+        </div>
+        <div class="container-page portal-hoja portal-ui">
+          {/* La cabecera de cada sección (11-11-2026): nombre, para qué
+              sirve, el botón de lo que se viene a hacer y "Cómo funciona",
+              plegable. Es lo que hace que cada pantalla se explique sola. */}
           {
             heading && (
-              <h1 class="mb-8 text-3xl font-extrabold text-balance text-ink sm:text-4xl">
-                <T v={heading} />
-              </h1>
+              <header class="mb-8 md:pr-36 lg:pr-16">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div class="min-w-0">
+                    <h1 class="text-3xl text-balance text-ink sm:text-4xl">
+                      <T v={heading} />
+                    </h1>
+                    {guide && (
+                      <p class="mt-2 max-w-2xl text-base text-pretty text-ink-muted">
+                        <T v={guide.purpose} />
+                      </p>
+                    )}
+                  </div>
+                  {action && (
+                    <a
+                      href={action.href}
+                      class="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 self-start rounded-full bg-cta px-6 text-sm font-bold text-ink-inverse transition-colors hover:bg-cta-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                    >
+                      <Icono nombre={action.icon ?? "mas"} class="size-4 shrink-0" grosor={2.4} />
+                      <T v={action.label} />
+                    </a>
+                  )}
+                </div>
+                {guide && (
+                  <details class="guia group mt-5" open>
+                    <summary class="inline-flex min-h-9 cursor-pointer list-none items-center gap-1.5 rounded-full text-sm [&::-webkit-details-marker]:hidden font-bold text-ink-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+                      <Icono nombre="chevron" class="size-4 shrink-0 -rotate-90 transition-transform duration-300 group-open:rotate-0" grosor={2.4} />
+                      <T v={guideLabel} />
+                    </summary>
+                    <ol class="mt-3 grid gap-3 sm:grid-cols-3">
+                      {guide.steps.map((step, i) => (
+                        <li class="flex gap-3 rounded-2xl bg-surface/70 px-4 py-3.5 ring-1 ring-line ring-inset">
+                          <span
+                            aria-hidden="true"
+                            class="grid size-7 shrink-0 place-items-center rounded-full bg-secondary-100 text-xs font-extrabold text-secondary-800"
+                          >
+                            {i + 1}
+                          </span>
+                          <span class="text-sm text-pretty text-ink-muted">
+                            <T v={step} />
+                          </span>
+                        </li>
+                      ))}
+                    </ol>
+                  </details>
+                )}
+              </header>
             )
           }
+          {openPause && (
+            <p role="status" class="mb-6 rounded-2xl border border-warning-500 bg-warning-50 px-4 py-3 text-sm text-pretty text-ink">
+              <T v={ambassadorCopy.home.paused} vars={{ fecha: shortDate(openPause.from) }} />
+            </p>
+          )}
           <slot />
 
           {/* En móvil no hay columna, así que la ayuda va al final del
@@ -269,6 +389,7 @@ const signOutOscuro =
 
     </div>
   </div>
+  <PortalTabs student={student} path={path} />
 
 
   {/* ─────────────────────────────────────────────────────────────────────────
@@ -347,6 +468,12 @@ const signOutOscuro =
      aparte: un div absoluto aquí habría que sacarlo del camino de la cabecera y
      del `main`, que es precisamente el enredo de capas que hay arriba con la
      aurora. */
+  .portal-hoja {
+    max-width: calc(74rem + 2 * var(--gutter-page));
+    margin-inline: auto;
+  }
+
+
   .lienzo {
     background-image: radial-gradient(
       68% 26rem at 50% 0,

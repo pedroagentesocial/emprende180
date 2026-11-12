@@ -3,7 +3,15 @@ import StudentLayout from "@layouts/StudentLayout.astro";
 import T from "@components/i18n/T.astro";
 import Icono from "@components/ui/Icono.astro";
 import StaffSummary from "@components/student/StaffSummary.astro";
+import AdminHome from "@components/student/AdminHome.astro";
+import { ensureAllAmbassadors } from "@lib/makeAmbassador";
 import CourseDoors from "@components/student/CourseDoors.astro";
+import AmbassadorHome from "@components/ambassador/AmbassadorHome.astro";
+import Greeting from "@components/ambassador/Greeting.astro";
+import { greetingLine } from "@lib/ambassadorGreeting";
+import { cachedBook } from "@lib/requestBook";
+import ProfileGuide from "@components/student/ProfileGuide.astro";
+import { photoUrl } from "@lib/profile";
 import { studentCopy } from "@config/studentArea";
 import { construirTxt, resolverIdiomaServidor, LOCALES } from "@i18n/idioma";
 import { interpolar } from "@i18n/formato";
@@ -11,6 +19,7 @@ import { repo } from "@lib/data";
 import {
   canAdminister,
   canOpenStaffPanel,
+  isAmbassador,
   seesCourseDoors,
   visibleStudentsFilter,
 } from "@lib/permissions";
@@ -53,7 +62,15 @@ const isStaff = canOpenStaffPanel(me);
 const isAdmin = canAdminister(me);
 const showDoors = seesCourseDoors(me);
 
+/* Todo alumno es Embajador: su inicio abre con su cuenta (sin nombres de
+   clientes). Al admin no se le pinta: tiene su propio inicio. */
+const book = showDoors && isAmbassador(me) ? await cachedBook(Astro.locals, me) : null;
+const greet = book ? greetingLine(book) : null;
+
 /* Los números del resumen, solo para quien tiene a quién contar. */
+/* Todo alumno es Embajador: el inicio del admin cuenta a todos al día. */
+if (isAdmin) await ensureAllAmbassadors(me.id);
+
 const everyone = isStaff
   ? await repo().listStudents(visibleStudentsFilter(me) ?? {})
   : [];
@@ -102,10 +119,7 @@ const visita = me.previousSignIn
     )
   : t.firstVisit;
 
-/* El saludo con el nombre si lo hay. Un "Hola, null" es peor que no saludar. */
-const greeting = me.name
-  ? construirTxt((l) => interpolar(t.greeting[l], { name: me.name! }))
-  : t.greetingNoName;
+/* El saludo vive en `Greeting` (12-11-2026): hora del día y nombre de pila. */
 
 ---
 
@@ -137,7 +151,7 @@ const greeting = me.name
 
         <a
           href="/login/password"
-          class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-cta px-5 text-sm font-bold text-ink-inverse shadow-cta transition-colors hover:bg-cta-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-cta px-5 text-sm font-bold text-ink-inverse transition-colors hover:bg-cta-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
         >
           <T v={studentCopy.password.pendingCta} />
         </a>
@@ -153,14 +167,16 @@ const greeting = me.name
       El del alumno va centrado porque su pantalla es simétrica —dos puertas y
       tres tarjetas de ayuda—; el de quien trabaja va a la izquierda, alineado
       con la lista que viene debajo. */}
-  <div class:list={["max-w-2xl", showDoors && "mx-auto text-center"]}>
-    <h1 class="text-3xl font-extrabold text-balance text-ink sm:text-4xl">
-      <T v={greeting} />
-    </h1>
-
-    <p class="mt-3 text-base text-pretty text-ink-muted sm:text-lg">
-      <T v={showDoors ? t.welcomeText : t.welcomeTextAgent} />
-    </p>
+  <div class="max-w-2xl">
+    {/* La bienvenida con la hora del día y solo el nombre de pila
+        (12-11-2026). La frase de abajo dice cómo va su cuenta. */}
+    <Greeting
+      name={me.name}
+      fallback={me.email.split("@")[0]!}
+      line={greet ? greet.line : showDoors ? t.welcomeText : isAdmin ? t.welcomeTextAdmin : t.welcomeTextAgent}
+      lineVars={greet?.vars}
+      photo={photoUrl(me)}
+    />
 
     <p class="mt-4 inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-sm text-ink-muted">
       <span aria-hidden="true" class="marca-linea text-secondary-600">
@@ -174,11 +190,19 @@ const greeting = me.name
   {
     showDoors && (
       <>
+        {/* Primero las herramientas (12-11-2026, pedido del cliente): es a lo
+            que se entra cada día. Luego, si falta algo en el perfil, la guía;
+            y debajo, cómo va su cuenta de Embajador. */}
         <CourseDoors />
+        <ProfileGuide student={me} variant="compact" />
+        {book && <AmbassadorHome book={book} code={me.ambassadorCode!} />}
       </>
     )
   }
 
   {/* ─── Y, para quien vende, sus números ─────────────────────────────────── */}
-  {isStaff && <StaffSummary counts={counts} latest={latest} isAdmin={isAdmin} lang={lang} />}
+  {/* El admin tiene su inicio propio (11-11-2026): pendiente, cuatro números,
+      quién gana y lo último. El agente sigue con su resumen. */}
+  {isAdmin && <AdminHome me={me} everyone={everyone} />}
+  {isStaff && !isAdmin && <StaffSummary counts={counts} latest={latest} isAdmin={isAdmin} lang={lang} />}
 </StudentLayout>

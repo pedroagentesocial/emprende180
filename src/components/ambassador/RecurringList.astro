@@ -1,0 +1,107 @@
+---
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import type { Recurring, RecurringState } from "@lib/ambassadorStats";
+import { money, shortDate } from "@lib/ambassadorFormat";
+import { ambassadorCopy } from "@config/ambassadorArea";
+
+/**
+ * Las mensualidades: un cliente por fila, con su estado, cuántos cobros lleva,
+ * lo que te deja cada mes y cuándo se espera el siguiente. Encima, la cifra
+ * que importa: cuánto te dejan al mes las que están al día.
+ *
+ * Con `limit` se enseñan las primeras y un enlace a todas (el inicio).
+ */
+interface Props {
+  items: Recurring[];
+  monthlyCents: number;
+  active: number;
+  limit?: number;
+  seeAllHref?: string;
+  id?: string;
+}
+
+const { items, monthlyCents, active, limit, seeAllHref, id } = Astro.props;
+const c = ambassadorCopy.stats;
+const shown = limit ? items.slice(0, limit) : items;
+
+const stateClass: Record<RecurringState, string> = {
+  active: "bg-secondary-100 text-secondary-800",
+  late: "bg-warning-50 text-warning-700",
+  stopped: "bg-neutral-200 text-ink-muted",
+  cancelled: "bg-neutral-200 text-ink-muted",
+};
+const dotClass: Record<RecurringState, string> = {
+  active: "bg-secondary-500",
+  late: "bg-warning-500",
+  stopped: "bg-neutral-400",
+  cancelled: "bg-neutral-400",
+};
+---
+
+<section class="mt-6" id={id}>
+  <div class="flex items-center justify-between gap-3 px-1">
+    <h2 class="text-base font-bold text-ink"><T v={c.recurringTitle} /></h2>
+    {
+      seeAllHref && items.length > shown.length && (
+        <a href={seeAllHref} class="inline-flex min-h-11 items-center text-sm font-semibold text-ink-brand"><T v={c.recurringSeeAll} /></a>
+      )
+    }
+  </div>
+
+  {
+    items.length === 0 ? (
+      <p class="mt-3 rounded-3xl border border-line bg-surface p-6 text-center text-sm text-ink-muted"><T v={c.recurringNone} /></p>
+    ) : (
+      <div class="mt-3 overflow-hidden rounded-3xl border border-line bg-surface">
+        <div class="flex items-center gap-3 border-b border-line bg-secondary-50/60 px-5 py-3.5">
+          <span aria-hidden="true" class="grid size-9 shrink-0 place-items-center rounded-xl bg-secondary-500 text-white">
+            <Icono nombre="actualizar" class="size-5" grosor={2} />
+          </span>
+          <p class="text-sm font-semibold text-pretty text-ink">
+            <T v={active === 1 ? c.recurringSummaryOne : c.recurringSummary} vars={{ n: active, monto: money(monthlyCents) }} />
+          </p>
+        </div>
+        <ul class="divide-y divide-line">
+          {shown.map((r) => (
+            <li class="flex items-start justify-between gap-3 px-5 py-3.5">
+              <span class="min-w-0">
+                <span class="flex items-center gap-2">
+                  <span class:list={["size-2 shrink-0 rounded-full", dotClass[r.state]]}></span>
+                  <span class="truncate font-semibold text-ink">
+                    <T v={ambassadorCopy.referrals.client} vars={{ n: r.clientNumber }} />
+                  </span>
+                  <span class="truncate text-xs text-ink-muted">· {r.businessName ?? ""}</span>
+                </span>
+                <span class="mt-0.5 block text-xs text-ink-muted">
+                  <T v={c.recurringPayments} vars={{ n: r.payments, monto: money(r.lastAmountCents) }} />
+                </span>
+                <span class="block text-xs text-ink-muted">
+                  {r.state === "late" && r.nextAt ? (
+                    <T v={c.recurringDue} vars={{ fecha: shortDate(r.nextAt) }} />
+                  ) : r.nextAt ? (
+                    <T v={c.recurringNext} vars={{ fecha: shortDate(r.nextAt) }} />
+                  ) : (
+                    <T v={c.recurringLast} vars={{ fecha: shortDate(r.lastAt) }} />
+                  )}
+                </span>
+              </span>
+              <span class="flex shrink-0 flex-col items-end gap-1">
+                <span class:list={["rounded-full px-2.5 py-0.5 text-xs font-bold", stateClass[r.state]]}>
+                  <T v={c.recurringState[r.state]} />
+                </span>
+                <span class="text-sm font-bold tabular-nums text-ink">
+                  <T v={c.recurringYours} vars={{ monto: money(r.lastCommissionCents) }} />
+                </span>
+                <span class="text-xs tabular-nums text-ink-muted">
+                  <T v={c.recurringTotal} vars={{ monto: money(r.totalCommissionCents) }} />
+                </span>
+              </span>
+            </li>
+          ))}
+        </ul>
+        {!limit && <p class="border-t border-line px-5 py-3 text-xs text-pretty text-ink-muted"><T v={c.recurringEstimate} /></p>}
+      </div>
+    )
+  }
+</section>

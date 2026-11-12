@@ -1,5 +1,6 @@
 ---
 import StudentLayout from "@layouts/StudentLayout.astro";
+import { adminGuide } from "@config/adminGuide";
 import T from "@components/i18n/T.astro";
 import { randomBytes, createHash } from "node:crypto";
 import { ambassadorCopy } from "@config/ambassadorArea";
@@ -162,9 +163,14 @@ const botonSuave =
   "inline-flex min-h-11 items-center justify-center rounded-full border border-line-strong px-4 text-sm font-semibold text-ink hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
 ---
 
-<StudentLayout title={c.bizTitle} student={me} heading={c.bizTitle}>
-  <div class="max-w-4xl">
-    <p class="max-w-2xl text-base text-pretty text-ink-muted"><T v={c.bizIntro} /></p>
+<StudentLayout
+  title={c.bizTitle}
+  student={me}
+  heading={c.bizTitle}
+  guide={adminGuide.businesses}
+  action={{ href: "#nuevo-negocio", label: c.bizNew }}
+>
+  <div>
 
     {
       notice && (
@@ -181,7 +187,7 @@ const botonSuave =
     }
 
     {/* ─── Lectura de clinics ─────────────────────────────────────────── */}
-    <section class="mt-8 rounded-2xl border border-line bg-surface p-6">
+    <section class="rounded-2xl border border-line bg-surface p-6">
       <h2 class="text-lg font-bold text-ink"><T v={c.syncTitle} /></h2>
       <p class="mt-1 max-w-2xl text-sm text-pretty text-ink-muted"><T v={c.syncHint} /></p>
       {
@@ -203,7 +209,7 @@ const botonSuave =
     </section>
 
     {/* ─── Nuevo negocio ──────────────────────────────────────────────── */}
-    <form method="POST" class="mt-8 rounded-2xl border border-line bg-surface p-6">
+    <form id="nuevo-negocio" method="POST" class="mt-8 scroll-mt-8 rounded-2xl border border-line bg-surface p-6">
       <input type="hidden" name="action" value="create" />
       <h2 class="text-lg font-bold text-ink"><T v={c.bizNew} /></h2>
       <div class="mt-5 grid gap-4 sm:grid-cols-2">

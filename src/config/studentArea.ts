@@ -456,11 +456,28 @@ export const studentCopy = {
       es: "Aquí llevas a la gente que te compra el curso: das de alta, ves quién ha entrado ya y a quién hay que reenviarle su enlace.",
       en: "This is where you keep the people who buy the course from you: register them, see who is already in, and resend the link to whoever needs it.",
     },
+    /* La del admin (12-11-2026): debajo tiene "Pendiente" y los números. */
+    welcomeTextAdmin: {
+      es: "Esto es lo que pide tu atención hoy y cómo van los Embajadores.",
+      en: "Here is what needs your attention today and how the Ambassadors are doing.",
+    },
     /* Label on each card's button. Short on purpose: the whole card already says
        where it leads, so the button only has to push. */
     go: { es: "Ir", en: "Go" },
     /* When the card has no address yet. See `plataformas` in the course config. */
     comingSoon: { es: "Próximamente", en: "Coming soon" },
+    /* El inicio del alumno (12-11-2026): su cuenta de Embajador arriba y sus
+       dos herramientas debajo. */
+    toolsTitle: { es: "Tus herramientas", en: "Your tools" },
+    welcomeAmbassador: {
+      es: "Aquí ves cómo va tu cuenta de Embajador y tienes a mano tus herramientas del curso.",
+      en: "Here you see how your Ambassador account is doing, with your course tools at hand.",
+    },
+    ambassador: {
+      title: { es: "Tu cuenta de Embajador", en: "Your Ambassador account" },
+      open: { es: "Abrir mi portal", en: "Open my portal" },
+      activity: { es: "Ver movimientos", en: "See activity" },
+    },
     /* Warning that the link opens outside the site. It goes to the screen
        reader: a link that takes you to another tab without warning disorients. */
     opensOutside: {
@@ -609,6 +626,38 @@ export const studentCopy = {
        cualquier número. */
     summaryAgentOne: { es: "Agente", en: "Agent" },
     summaryInactive: { es: "De baja", en: "Deactivated" },
+    /* Todo alumno es Embajador (11-11-2026). */
+    summaryPre: { es: "Pre-registros", en: "Pre-registrations" },
+    preIntro: {
+      es: "Se apuntaron en la web y todavía no tienen acceso. Cuando se confirme su inscripción, pulsa «Dar acceso»: en un clic son alumnos y Embajadores (código, alta en clinics) y les llega el correo para entrar.",
+      en: "They signed up on the website and don't have access yet. Once their enrolment is confirmed, press “Give access”: in one click they become students and Ambassadors (code, clinics account) and get the email to sign in.",
+    },
+    preEmpty: { es: "No hay pre-registros pendientes.", en: "No pending pre-registrations." },
+    columnContact: { es: "Contacto", en: "Contact" },
+    columnSource: { es: "Llegó por", en: "Came from" },
+    columnRegistered: { es: "Se apuntó", en: "Signed up" },
+    giveAccess: { es: "Dar acceso", en: "Give access" },
+    discard: { es: "Descartar", en: "Discard" },
+    noticeAccessGiven: {
+      es: "{nombre} ya tiene acceso: es alumno y Embajador, con el código {codigo}.",
+      en: "{nombre} now has access: student and Ambassador, code {codigo}.",
+    },
+    noticeAmbassadorMade: { es: "Ya es Embajador, con el código {codigo}.", en: "They are now an Ambassador, code {codigo}." },
+    noticeClinicsLater: {
+      es: "No se pudo dar de alta en clinics todavía: reinténtalo desde su ficha de Embajador.",
+      en: "Couldn't add them to clinics yet: retry from their Ambassador page.",
+    },
+    fieldSponsor: { es: "¿Quién lo trajo? (opcional)", en: "Who brought them? (optional)" },
+    sponsorNone: { es: "Nadie, llegó solo", en: "Nobody, came on their own" },
+    sponsorHint: {
+      es: "Quien lo trajo gana una parte de lo que este alumno genere como Embajador (su equipo).",
+      en: "Whoever brought them earns a share of what this student makes as an Ambassador (their team).",
+    },
+    columnCode: { es: "Código", en: "Code" },
+    columnSponsor: { es: "Lo trajo", en: "Brought by" },
+    seeCommissions: { es: "Comisiones", en: "Commissions" },
+    webSignup: { es: "Se registró en la web", en: "Signed up on the website" },
+    makeAmbassador: { es: "Confirmar como Embajador", en: "Confirm as Ambassador" },
 
     /* ─── Lo que pide atención ────────────────────────────────────────────
        Solo aparece cuando de verdad hay algo. Un panel que siempre enseña un

@@ -1,0 +1,183 @@
+---
+import T from "@components/i18n/T.astro";
+import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
+import type { Transaction, TxKind } from "@lib/ambassadorStats";
+import type { LineStatus } from "@lib/commissions";
+import type { Txt } from "@i18n/idioma";
+import { money, monthLong, shortDate } from "@lib/ambassadorFormat";
+import { ambassadorCopy } from "@config/ambassadorArea";
+
+/**
+ * Los movimientos agrupados por mes, el más reciente arriba (simplificado el
+ * 12-11-2026).
+ *
+ * Cada fila dice solo tres cosas: QUÉ pasó (compra, renovación, reembolso,
+ * pago), DE QUIÉN y CUÁNTO te toca, con un punto de color para su estado. El
+ * resto (negocio, venta, porcentaje, nivel, cuándo se cobra, por qué una
+ * comisión se anuló) está dentro: se toca la fila y se abre. Una fila sin
+ * nada más que contar no se abre.
+ */
+interface Props {
+  items: Transaction[];
+  /** Sin la cabecera de cada mes, para listas cortas. */
+  flat?: boolean;
+}
+
+const { items, flat = false } = Astro.props;
+const c = ambassadorCopy.stats;
+
+const icon: Record<TxKind, NombreIcono> = {
+  purchase: "billete",
+  renewal: "actualizar",
+  attended: "calendario",
+  refund: "giro",
+  cancel: "cruz",
+  payout: "check",
+};
+const iconClass: Record<TxKind, string> = {
+  purchase: "bg-primary-50 text-primary-700",
+  renewal: "bg-secondary-100 text-secondary-700",
+  attended: "bg-primary-50 text-primary-700",
+  refund: "bg-error-50 text-error-700",
+  cancel: "bg-error-50 text-error-700",
+  payout: "bg-secondary-500 text-white",
+};
+const dot: Record<LineStatus, string> = {
+  waiting: "bg-warning-500",
+  ready: "bg-secondary-500",
+  paid: "bg-primary-700",
+  annulled: "bg-neutral-400",
+  deduction: "bg-error-600",
+};
+
+const groups: { key: string; month: Date; rows: Transaction[] }[] = [];
+for (const tx of items) {
+  const month = new Date(Date.UTC(tx.at.getUTCFullYear(), tx.at.getUTCMonth(), 1));
+  const key = month.toISOString().slice(0, 7);
+  let g = groups.find((x) => x.key === key);
+  if (!g) groups.push((g = { key, month, rows: [] }));
+  g.rows.push(tx);
+}
+const earnedIn = (rows: Transaction[]) =>
+  rows.filter((r) => r.kind !== "payout" && r.status !== "annulled" && r.status !== "deduction").reduce((s, r) => s + r.commissionCents, 0);
+
+/** Lo que se ve al abrir una fila, en pares etiqueta / valor. */
+function details(r: Transaction): { label: Txt; value: Txt | string }[] {
+  const out: { label: Txt; value: Txt | string }[] = [];
+  if (r.kind === "payout") {
+    if (r.method) out.push({ label: c.dMethod, value: ambassadorCopy.method[r.method] });
+    if (r.pendingCredit) out.push({ label: c.dStatus, value: ambassadorCopy.payouts.pendingCredit });
+    if (r.note) out.push({ label: c.dNote, value: r.note });
+    return out;
+  }
+  if (r.businessName) out.push({ label: c.dBusiness, value: r.businessName });
+  if (r.saleCents != null) out.push({ label: r.kind === "refund" ? c.dRefunded : c.dSale, value: money(r.saleCents) });
+  if (r.kind === "renewal" && r.paymentNumber) out.push({ label: c.dCharge, value: `#${r.paymentNumber}` });
+  if (r.percent != null) out.push({ label: c.dRate, value: `${r.percent}%` });
+  if (r.level) out.push({ label: c.dLevel, value: r.level === 1 ? c.dLevel1 : c.dLevel2 });
+  if (r.status) out.push({ label: c.dStatus, value: ambassadorCopy.status[r.status] });
+  if (r.payableFrom) out.push({ label: c.dPayable, value: shortDate(r.payableFrom) });
+  return out;
+}
+---
+
+{
+  items.length === 0 ? (
+    <p class="mt-3 rounded-3xl border border-line bg-surface p-6 text-center text-sm text-ink-muted"><T v={c.empty} /></p>
+  ) : (
+    <div class="mt-3 flex flex-col gap-5">
+      {groups.map((g) => (
+        <section>
+          {!flat && (
+            <div class="flex items-baseline justify-between gap-3 px-1">
+              <h3 class="text-sm font-bold text-ink"><T v={monthLong(g.month)} /></h3>
+              <span class="text-xs tabular-nums text-ink-muted">
+                <T v={c.monthTotal} vars={{ ganado: money(earnedIn(g.rows)), n: g.rows.length }} />
+              </span>
+            </div>
+          )}
+          <ul class:list={["divide-y divide-line overflow-hidden rounded-3xl border border-line bg-surface", !flat && "mt-2"]}>
+            {g.rows.map((r) => {
+              const info = details(r);
+              const why = r.status === "annulled" ? c.annulledWhy : r.status === "deduction" ? c.deductionWhy : null;
+              const row = (
+                <>
+                  <span aria-hidden="true" class:list={["grid size-9 shrink-0 place-items-center rounded-xl", iconClass[r.kind]]}>
+                    <Icono nombre={icon[r.kind]} class="size-4.5" grosor={2.1} />
+                  </span>
+                  <span class="min-w-0 flex-1">
+                    <span class="block truncate text-sm font-semibold text-ink">
+                      <T v={c.kind[r.kind]} />
+                      {r.kind !== "payout" && (
+                        <span class="font-normal text-ink-muted">
+                          {" · "}
+                          {r.teamMember ? (
+                            <T v={c.teamOf} vars={{ nombre: r.teamMember }} />
+                          ) : r.clientNumber ? (
+                            <T v={ambassadorCopy.referrals.client} vars={{ n: r.clientNumber }} />
+                          ) : null}
+                        </span>
+                      )}
+                    </span>
+                    <span class="block truncate text-xs text-ink-muted">
+                      <T v={shortDate(r.at)} />
+                      {r.businessName && <> · {r.businessName}</>}
+                    </span>
+                  </span>
+                  <span class="flex shrink-0 items-center gap-2">
+                    {r.status && <span aria-hidden="true" class:list={["size-2 rounded-full", dot[r.status]]}></span>}
+                    <span
+                      class:list={[
+                        "text-sm font-bold tabular-nums",
+                        r.kind === "payout"
+                          ? "text-secondary-700"
+                          : r.commissionCents < 0
+                            ? "text-error-700"
+                            : r.status === "annulled"
+                              ? "text-ink-subtle line-through"
+                              : r.commissionCents === 0
+                                ? "text-ink-subtle"
+                                : "text-ink",
+                      ]}
+                    >
+                      {r.kind !== "payout" && r.commissionCents > 0 ? "+" : ""}
+                      <T v={money(r.commissionCents)} />
+                    </span>
+                  </span>
+                </>
+              );
+              return (
+                <li>
+                  {info.length > 0 ? (
+                    <details class="group">
+                      <summary class="flex cursor-pointer list-none items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus sm:px-5 [&::-webkit-details-marker]:hidden">
+                        {row}
+                        <Icono nombre="chevron" class="size-4 shrink-0 text-ink-subtle transition-transform group-open:rotate-180" grosor={2} />
+                      </summary>
+                      <div class="bg-surface-muted/60 px-4 pt-1 pb-4 sm:px-5">
+                        <dl class="grid grid-cols-2 gap-x-4 gap-y-2.5 pl-12 sm:grid-cols-3">
+                          {info.map((d) => (
+                            <div class="min-w-0">
+                              <dt class="text-[0.7rem] font-semibold text-ink-muted"><T v={d.label} /></dt>
+                              <dd class="truncate text-sm font-semibold text-ink">{typeof d.value === "string" ? d.value : <T v={d.value} />}</dd>
+                            </div>
+                          ))}
+                        </dl>
+                        {why && <p class="mt-3 pl-12 text-xs text-pretty text-ink-muted"><T v={why} /></p>}
+                      </div>
+                    </details>
+                  ) : (
+                    <div class="flex items-center gap-3 px-4 py-3 sm:px-5">
+                      {row}
+                      <span class="size-4 shrink-0"></span>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ))}
+    </div>
+  )
+}

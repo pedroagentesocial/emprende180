@@ -54,7 +54,17 @@ export const LOGIN_EMAIL = {
  * ⚠️ Y DICE QUE CADUCA. Quien abra el correo media hora después tiene que saber
  * por qué no le funciona, en vez de pensar que el código está mal escrito.
  */
-export const CODE_EMAIL = {
+/** La forma de un correo con código (entrar o cambiar de correo). */
+export interface CodeEmailCopy {
+  replyTo: string;
+  subject: (lang: Idioma) => string;
+  preheader: (lang: Idioma) => string;
+  saludo: (lang: Idioma) => string;
+  parrafos: (lang: Idioma) => string[];
+  porQue: (lang: Idioma) => string;
+}
+
+export const CODE_EMAIL: CodeEmailCopy = {
   replyTo: contacto.email,
 
   subject: (lang: Idioma) =>
@@ -86,4 +96,34 @@ export const CODE_EMAIL = {
     lang === "en"
       ? "You're getting this because somebody asked to sign in with this address."
       : "Recibes esto porque alguien pidió entrar con esta dirección.",
+};
+
+/**
+ * El código para CAMBIAR el correo de la cuenta (12-11-2026). Va a la
+ * dirección NUEVA: es la prueba de que ese buzón es de quien lo pide. Misma
+ * forma que `CODE_EMAIL`, otro texto: no es para entrar.
+ */
+export const EMAIL_CHANGE_EMAIL: CodeEmailCopy = {
+  replyTo: contacto.email,
+  subject: (lang: Idioma) =>
+    lang === "en" ? "Confirm your new email: your code" : "Confirma tu correo nuevo: tu código",
+  preheader: (lang: Idioma) =>
+    lang === "en"
+      ? "Six digits to confirm this is now your email at Entrepreneur180."
+      : "Seis dígitos para confirmar que este es ahora tu correo en Emprende180.",
+  saludo: (lang: Idioma) => (lang === "en" ? "Confirm your new email" : "Confirma tu correo nuevo"),
+  parrafos: (lang: Idioma) =>
+    lang === "en"
+      ? [
+          "Type this code in your profile to finish the change. It expires in 10 minutes and works once.",
+          "From then on you will sign in with this address, and it is where your codes and notices will arrive.",
+        ]
+      : [
+          "Escribe este código en tu perfil para terminar el cambio. Caduca en 10 minutos y sirve una sola vez.",
+          "Desde entonces entrarás con esta dirección, y es aquí donde te llegarán tus códigos y avisos.",
+        ],
+  porQue: (lang: Idioma) =>
+    lang === "en"
+      ? "You are getting this because somebody asked to use this address in their account. If it was not you, ignore it: nothing changes."
+      : "Recibes esto porque alguien pidió usar esta dirección en su cuenta. Si no fuiste tú, ignóralo: no cambia nada.",
 };

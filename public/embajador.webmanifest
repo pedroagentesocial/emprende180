@@ -2,7 +2,7 @@
   "name": "Emprende180 Embajadores",
   "short_name": "Embajadores",
   "description": "Tus referidos, tus comisiones y tus pagos.",
-  "start_url": "/student/ambassador",
+  "start_url": "/student",
   "scope": "/student/",
   "display": "standalone",
   "background_color": "#F2F4F7",

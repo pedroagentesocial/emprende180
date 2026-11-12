@@ -9,6 +9,7 @@ import {
 import { repo, type Student } from "@lib/data";
 import { unseal } from "@lib/sealed";
 import { maybeSyncFromClinics } from "@lib/clinicsSync";
+import { reversedSales, statsFor, type Stats } from "@lib/ambassadorStats";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -48,6 +49,13 @@ export interface BookReferral {
   earnedCents: number;
   /** Sus líneas, la más reciente primero. */
   lines: Line[];
+  /** Lo que pasó con este cliente, del más reciente al más antiguo. */
+  events: { id: string; at: Date; type: StoredFact["type"]; amountCents: number | null; paymentNumber: number | null }[];
+  /** Lo que ha pagado en total (ventas en pie, menos reembolsos parciales). */
+  spentCents: number;
+  /** Lo que sigue en espera y cuándo sale la primera parte. */
+  waitingCents: number;
+  nextPayableAt: Date | null;
 }
 
 export interface TeamMember {
@@ -56,6 +64,12 @@ export interface TeamMember {
   customers: number;
   /** Lo que te ha dado su trabajo (tu nivel 2), sin anulados. */
   earnedCents: number;
+  /** Tus líneas de nivel 2 por sus ventas, la más reciente primero. */
+  lines: Line[];
+  /** Su última venta o contacto. */
+  lastActivityAt: Date | null;
+  /** Por negocio: sus clientes y lo que te dieron. */
+  byBusiness: { name: string; customers: number; earnedCents: number }[];
 }
 
 export interface Book {
@@ -71,6 +85,8 @@ export interface Book {
   weekly: { weekStart: Date; earnedCents: number }[];
   /** `true` si no hay ni una regla: el portal avisa de que faltan los números. */
   noRules: boolean;
+  /** Movimientos, mensualidades, mes a mes y totales desde el alta. */
+  stats: Stats;
 }
 
 const SALE_TYPES = new Set(["purchase", "renewal", "attended"]);
@@ -91,6 +107,17 @@ function stageOf(facts: StoredFact[]): { stage: ReferralStage; sales: number } {
   const standing = sales.filter((f) => !reversed.has(f.id)).length;
   if (standing > 0) return { stage: "customer", sales: standing };
   return { stage: sales.length ? "reversed" : "lead", sales: 0 };
+}
+
+/** Lo pagado por un cliente: ventas en pie menos reembolsos parciales. */
+function spentOf(facts: StoredFact[]): number {
+  const gone = reversedSales(facts);
+  let cents = 0;
+  for (const f of facts) {
+    if ((f.type === "purchase" || f.type === "renewal") && !gone.has(f.id)) cents += f.amountCents ?? 0;
+    if (f.type === "refund" && f.originalId && !gone.has(f.originalId)) cents -= f.amountCents ?? 0;
+  }
+  return cents;
 }
 
 function startOfWeek(d: Date): Date {
@@ -173,6 +200,16 @@ export async function loadBook(
         lastActivityAt: last,
         earnedCents: earned(linesByReferral.get(r.id)),
         lines: linesByReferral.get(r.id) ?? [],
+        events: [...fs]
+          .sort((x, y) => y.occurredAt.getTime() - x.occurredAt.getTime())
+          .map((f) => ({ id: f.id, at: f.occurredAt, type: f.type, amountCents: f.amountCents, paymentNumber: f.paymentNumber })),
+        spentCents: spentOf(fs),
+        waitingCents: (linesByReferral.get(r.id) ?? []).filter((l) => l.status === "waiting").reduce((s, l) => s + l.amountCents, 0),
+        nextPayableAt:
+          (linesByReferral.get(r.id) ?? [])
+            .filter((l) => l.status === "waiting")
+            .map((l) => l.payableFrom)
+            .sort((x, y) => x.getTime() - y.getTime())[0] ?? null,
       };
     })
     .reverse();
@@ -191,11 +228,32 @@ export async function loadBook(
     const customers = theirs.filter(
       (r) => stageOf(factsByReferral.get(r.id) ?? []).stage === "customer",
     ).length;
+    const theirLines = theirs
+      .flatMap((r) => linesByReferral.get(r.id) ?? [])
+      .sort((a, b) => b.occurredAt.getTime() - a.occurredAt.getTime());
+    const theirFacts = theirs.flatMap((r) => factsByReferral.get(r.id) ?? []);
+    const lastActivityAt = [...theirs.map((r) => r.firstContactAt), ...theirFacts.map((f) => f.occurredAt)].reduce<Date | null>(
+      (m, d) => (!m || d > m ? d : m),
+      null,
+    );
+    const byBiz = businesses
+      .map((b) => {
+        const refs = theirs.filter((r) => r.businessId === b.id);
+        return {
+          name: b.name,
+          customers: refs.filter((r) => stageOf(factsByReferral.get(r.id) ?? []).stage === "customer").length,
+          earnedCents: refs.reduce((s, r) => s + earned(linesByReferral.get(r.id)), 0),
+        };
+      })
+      .filter((b) => b.customers > 0 || b.earnedCents !== 0);
     return {
       student: member,
       referrals: theirs.length,
       customers,
       earnedCents: theirs.reduce((s, r) => s + earned(linesByReferral.get(r.id)), 0),
+      lines: theirLines,
+      lastActivityAt,
+      byBusiness: byBiz,
     };
   });
   teamRows.sort((a, b) => b.earnedCents - a.earnedCents);
@@ -231,6 +289,24 @@ export async function loadBook(
     };
   });
 
+  const ownerById = new Map(everyone.map((s) => [s.id, s]));
+  const referralOwner = new Map(referrals.map((r) => [r.id, r.ambassadorId]));
+  const stats = statsFor({
+    ambassador,
+    now,
+    businesses,
+    own: bookReferrals.map((r) => ({
+      id: r.id,
+      number: r.number,
+      businessId: r.business?.id ?? "",
+      firstContactAt: r.firstContactAt,
+    })),
+    facts,
+    lines,
+    payouts,
+    ownerOf: (id) => ownerById.get(referralOwner.get(id) ?? "") ?? null,
+  });
+
   return {
     ambassador,
     businesses,
@@ -242,6 +318,7 @@ export async function loadBook(
     byBusiness,
     weekly,
     noRules: rules.length === 0,
+    stats,
   };
 }
 

@@ -1,0 +1,98 @@
+---
+import T from "@components/i18n/T.astro";
+import type { Txt } from "@i18n/idioma";
+import { money } from "@lib/ambassadorFormat";
+
+/**
+ * De dónde viene el dinero: una dona con un trozo por negocio (y uno para el
+ * equipo), y al lado la leyenda con el importe y el porcentaje. Los colores
+ * son los de la marca, del más oscuro al más claro, en el orden de la lista.
+ */
+interface Props {
+  slices: { label: string | Txt; cents: number }[];
+  total: Txt;
+  totalLabel: Txt;
+  aria: Txt;
+  /** En una columna estrecha (1/3 en escritorio), la leyenda va debajo. */
+  stacked?: boolean;
+}
+
+const { slices, total, totalLabel, aria, stacked = false } = Astro.props;
+const shown = slices.filter((s) => s.cents > 0).sort((a, b) => b.cents - a.cents);
+const sum = shown.reduce((s, x) => s + x.cents, 0);
+const COLORS = ["var(--color-primary-900)", "var(--color-secondary-500)", "var(--color-primary-400)", "var(--color-secondary-300)", "var(--color-primary-200)"];
+
+const R = 42;
+const C = 2 * Math.PI * R;
+let offset = 0;
+const arcs = shown.map((s, i) => {
+  const len = sum > 0 ? (s.cents / sum) * C : 0;
+  const arc = { ...s, color: COLORS[i % COLORS.length]!, len, offset, pct: sum ? Math.round((s.cents / sum) * 100) : 0, i };
+  offset += len;
+  return arc;
+});
+---
+
+{
+  shown.length > 0 && (
+    <div class:list={["flex flex-col items-center gap-5 sm:flex-row sm:gap-7", stacked && "lg:flex-col lg:gap-5"]}>
+      <div class="relative size-36 shrink-0">
+        <svg viewBox="0 0 100 100" class="size-full -rotate-90" role="img">
+          <title data-t="es">{aria.es}</title>
+          <title data-t="en">{aria.en}</title>
+          <circle cx="50" cy="50" r={R} fill="none" class="stroke-neutral-100" stroke-width="12" />
+          {arcs.map((a) => (
+            <circle
+              cx="50"
+              cy="50"
+              r={R}
+              fill="none"
+              stroke={a.color}
+              stroke-width="12"
+              stroke-dasharray={`${Math.max(0, a.len - (arcs.length > 1 ? 1.2 : 0))} ${C}`}
+              stroke-dashoffset={-a.offset}
+              class="trozo"
+              style={`--i:${a.i}`}
+            />
+          ))}
+        </svg>
+        <div class="absolute inset-0 grid place-items-center text-center">
+          <span>
+            <span class="block text-[0.65rem] font-semibold tracking-wide text-ink-muted uppercase"><T v={totalLabel} /></span>
+            <span class="block text-base font-extrabold tabular-nums text-ink"><T v={total} /></span>
+          </span>
+        </div>
+      </div>
+
+      <ul class="w-full flex-1 space-y-2.5">
+        {arcs.map((a) => (
+          <li class="flex items-center gap-3 text-sm">
+            <span class="size-3 shrink-0 rounded-full" style={`background:${a.color}`}></span>
+            <span class="min-w-0 flex-1 truncate font-semibold text-ink">
+              {typeof a.label === "string" ? a.label : <T v={a.label} />}
+            </span>
+            <span class="shrink-0 text-xs text-ink-muted tabular-nums">{a.pct}%</span>
+            <span class="w-20 shrink-0 text-right font-bold tabular-nums text-ink"><T v={money(a.cents)} /></span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+<style>
+  .trozo {
+    animation: aparece 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--i) * 90ms + 150ms);
+  }
+  @keyframes aparece {
+    from {
+      opacity: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .trozo {
+      animation: none;
+    }
+  }
+</style>

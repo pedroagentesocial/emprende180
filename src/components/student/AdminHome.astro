@@ -1,0 +1,389 @@
+---
+import { displayName } from "@lib/profile";
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * El inicio del admin (11-11-2026)
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Contesta tres preguntas, en este orden:
+ *
+ *   1. ¿Tengo algo pendiente?  Solo aparece lo que pide hacer algo, y cada
+ *      fila lleva a donde se resuelve. Sin nada: "Todo al día".
+ *   2. ¿Cómo va?               Cuatro números con su nombre encima y una
+ *      línea de contexto debajo. Cada uno lleva a su página.
+ *   3. ¿Qué pasó?              Quién está ganando y lo último que se movió.
+ *
+ * ⚠️ NO CALCULA NADA NUEVO. Los Embajadores salen de `loadBook`, el mismo
+ * cálculo que ve cada uno en su teléfono, así que el "Por pagar" de aquí y el
+ * de su ficha no pueden discrepar. Se carga SIN nombres de clientes
+ * (`withNames: false`): esta pantalla no los enseña y no deja rastro de vista.
+ *
+ * Solo el admin. Un agente sigue viendo `StaffSummary`.
+ */
+import T from "@components/i18n/T.astro";
+import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
+import { adminHome as h } from "@config/adminGuide";
+import type { Txt } from "@i18n/idioma";
+import type { Student } from "@lib/data";
+import { ambassadorRepo } from "@lib/ambassadors";
+import { loadBook } from "@lib/ambassadorBook";
+import { money, shortDate } from "@lib/ambassadorFormat";
+import { clinicsConfigured } from "@lib/clinicsApi";
+import { clinicsSyncState } from "@lib/clinicsSync";
+import { isAmbassador, isAmbassadorPaused, isPreRegistered } from "@lib/permissions";
+
+interface Props {
+  me: Student;
+  everyone: Student[];
+}
+
+const { me, everyone } = Astro.props;
+const ar = ambassadorRepo();
+
+/* Los pre-registros no son alumnos todavía: van aparte. */
+const students = everyone.filter((s) => s.role === "student" && !isPreRegistered(s));
+const signedIn = students.filter((s) => s.lastSignIn && s.active).length;
+const neverIn = students.filter((s) => !s.lastSignIn && s.active).length;
+
+const ambassadors = everyone.filter(isAmbassador);
+/* Se registraron solos en la web y aún no son Embajadores. */
+const toConfirm = everyone.filter((s) => s.active && isPreRegistered(s)).length;
+const books = await Promise.all(
+  ambassadors.map((a) => loadBook(a, { viewer: me, withNames: false })),
+);
+const nameOf = (s: Student) => displayName(s);
+
+const ready = books.filter((b) => b.summary.availableCents > 0);
+const toPayCents = ready.reduce((n, b) => n + b.summary.availableCents, 0);
+const waitingCents = books.reduce((n, b) => n + Math.max(0, b.summary.waitingCents), 0);
+const paused = ambassadors.filter(isAmbassadorPaused).length;
+const clients = books.reduce((n, b) => n + b.referrals.length, 0);
+const customers = books.reduce(
+  (n, b) => n + b.referrals.filter((r) => r.stage === "customer").length,
+  0,
+);
+
+const [businesses, rules] = await Promise.all([ar.listBusinesses(), ar.listRules()]);
+const withRules = new Set(rules.map((r) => r.businessId));
+const noRules = businesses.filter((b) => b.active && !withRules.has(b.id));
+const sync = clinicsConfigured() ? await clinicsSyncState() : null;
+
+/* ─── 1. Pendiente ─────────────────────────────────────────────────────── */
+interface Pending {
+  text: Txt;
+  vars?: Record<string, string | Txt>;
+  href: string;
+  cta: Txt;
+  tone: "warning" | "error" | "brand";
+}
+const pending: Pending[] = [];
+if (ready.length === 1) {
+  pending.push({
+    text: h.pendingPayOne,
+    vars: { nombre: nameOf(ready[0]!.ambassador), monto: money(toPayCents) },
+    href: `/student/ambassadors?ver=${ready[0]!.ambassador.id}`,
+    cta: h.pendingPayCta,
+    tone: "brand",
+  });
+} else if (ready.length > 1) {
+  pending.push({
+    text: h.pendingPay,
+    vars: { n: String(ready.length), monto: money(toPayCents) },
+    href: "/student/ambassadors",
+    cta: h.pendingPayCta,
+    tone: "brand",
+  });
+}
+if (sync?.lastError) {
+  pending.push({
+    text: h.pendingSync,
+    vars: { error: sync.lastError },
+    href: "/student/businesses",
+    cta: h.pendingSyncCta,
+    tone: "error",
+  });
+}
+if (businesses.length === 0) {
+  pending.push({
+    text: h.pendingNoBusiness,
+    href: "/student/businesses#nuevo-negocio",
+    cta: h.pendingNoBusinessCta,
+    tone: "warning",
+  });
+}
+for (const b of noRules) {
+  pending.push({
+    text: h.pendingNoRules,
+    vars: { nombre: b.name },
+    href: "/student/businesses",
+    cta: h.pendingNoRulesCta,
+    tone: "warning",
+  });
+}
+if (toConfirm > 0) {
+  pending.push({
+    text: toConfirm === 1 ? h.pendingWebOne : h.pendingWeb,
+    vars: { n: String(toConfirm) },
+    href: "/student/people?ver=pre",
+    cta: h.pendingWebCta,
+    tone: "warning",
+  });
+}
+if (neverIn > 0) {
+  pending.push({
+    text: neverIn === 1 ? h.pendingNeverInOne : h.pendingNeverIn,
+    vars: { n: String(neverIn) },
+    href: "/student/people?ver=sin-entrar",
+    cta: h.pendingNeverInCta,
+    tone: "warning",
+  });
+}
+
+/* ─── 2. Los cuatro números ────────────────────────────────────────────── */
+const stats: { label: Txt; value: string | Txt; sub: Txt; vars?: Record<string, string | Txt>; href: string; icon: NombreIcono }[] = [
+  {
+    label: h.statStudents,
+    value: String(students.length),
+    sub: h.statStudentsSub,
+    vars: { n: String(signedIn) },
+    href: "/student/people",
+    icon: "personas",
+  },
+  {
+    label: h.statAmbassadors,
+    value: String(ambassadors.length),
+    sub: paused ? h.statAmbassadorsSub : h.statAmbassadorsSubNone,
+    vars: { n: String(paused) },
+    href: "/student/ambassadors",
+    icon: "red",
+  },
+  {
+    label: h.statClients,
+    value: String(clients),
+    sub: h.statClientsSub,
+    vars: { n: String(customers) },
+    href: "/student/ambassadors",
+    icon: "usuario",
+  },
+  {
+    label: h.statToPay,
+    value: money(toPayCents),
+    sub: h.statToPaySub,
+    vars: { monto: money(waitingCents) },
+    href: "/student/ambassadors",
+    icon: "billete",
+  },
+];
+
+/* ─── 3. Quién gana y lo último ────────────────────────────────────────── */
+const top = [...books]
+  .sort((a, b) => b.summary.earnedCents - a.summary.earnedCents)
+  .slice(0, 5);
+
+interface Activity {
+  at: Date;
+  text: Txt;
+  vars: Record<string, string | Txt>;
+  icon: NombreIcono;
+}
+const activity: Activity[] = [
+  ...students.map((s) => ({
+    at: s.createdAt,
+    text: h.actSignup,
+    vars: { nombre: nameOf(s) },
+    icon: "mas" as NombreIcono,
+  })),
+  ...books.flatMap((b) => [
+    ...b.referrals.map((r) => ({
+      at: r.firstContactAt,
+      text: h.actClient,
+      vars: { nombre: nameOf(b.ambassador) },
+      icon: "usuario" as NombreIcono,
+    })),
+    ...b.payouts.map((p) => ({
+      at: p.paidAt,
+      text: h.actPayout,
+      vars: { nombre: nameOf(b.ambassador), monto: money(p.amountCents) },
+      icon: "billete" as NombreIcono,
+    })),
+    ...b.lines
+      .filter((l) => l.level === 1 && l.amountCents > 0)
+      .map((l) => ({
+        at: l.occurredAt,
+        text: h.actSale,
+        vars: { nombre: nameOf(b.ambassador), monto: money(l.amountCents) },
+        icon: "grafica" as NombreIcono,
+      })),
+  ]),
+]
+  .sort((a, b) => +b.at - +a.at)
+  .slice(0, 7);
+
+const toneDot = {
+  brand: "bg-secondary-500",
+  warning: "bg-warning-500",
+  error: "bg-error-500",
+} as const;
+
+const quick: { href: string; label: Txt; icon: NombreIcono; main?: boolean }[] = [
+  { href: "/student/people?nuevo=1#add-form", label: h.quickAdd, icon: "mas", main: true },
+  { href: "/student/ambassadors", label: h.quickAmbassador, icon: "billete" },
+  { href: "/student/businesses", label: h.quickBusinesses, icon: "grafica" },
+];
+---
+
+<div class="mt-10 grid gap-10">
+  {/* ─── 1. Pendiente ─── */}
+  <section aria-labelledby="pendiente">
+    <h2 id="pendiente" class="text-xs font-bold tracking-[0.14em] text-ink-subtle uppercase">
+      <T v={h.pendingTitle} />
+    </h2>
+    {
+      pending.length === 0 ? (
+        <p class="mt-3 flex items-center gap-3 rounded-2xl border border-line bg-surface px-5 py-4 text-base text-ink">
+          <span aria-hidden="true" class="grid size-8 place-items-center rounded-full bg-secondary-100 text-secondary-700">
+            <Icono nombre="check" class="size-4" grosor={2.6} />
+          </span>
+          <T v={h.allClear} />
+        </p>
+      ) : (
+        <ul class="mt-3 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
+          {pending.map((p) => (
+            <li>
+              <a
+                href={p.href}
+                class="group flex min-h-14 items-center gap-4 px-5 py-3.5 transition-colors hover:bg-surface-muted/60 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
+              >
+                <span aria-hidden="true" class={`size-2 shrink-0 rounded-full ${toneDot[p.tone]}`} />
+                <span class="min-w-0 flex-1 text-sm font-semibold text-pretty text-ink sm:text-base">
+                  <T v={p.text} vars={p.vars} />
+                </span>
+                <span class="inline-flex shrink-0 items-center gap-1 text-sm font-bold text-ink-brand">
+                  <T v={p.cta} />
+                  <Icono nombre="flecha" class="size-4 transition-transform group-hover:translate-x-0.5" grosor={2.2} />
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </section>
+
+  {/* ─── 2. Los cuatro números ─── */}
+  <section>
+    <ul class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      {stats.map((s) => (
+        <li>
+          <a
+            href={s.href}
+            class="group flex h-full flex-col rounded-2xl border border-line bg-surface p-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          >
+            <span class="flex items-center justify-between gap-2 text-sm font-semibold text-ink-muted">
+              <T v={s.label} />
+              <span aria-hidden="true" class="text-ink-subtle transition-colors group-hover:text-secondary-600">
+                <Icono nombre={s.icon} class="size-5" grosor={1.9} />
+              </span>
+            </span>
+            <span class="mt-3 font-[family-name:var(--font-portal)] text-3xl font-extrabold tracking-tight text-ink tabular-nums sm:text-4xl">
+              {typeof s.value === "string" ? s.value : <T v={s.value} />}
+            </span>
+            <span class="mt-1 text-sm text-ink-subtle">
+              <T v={s.sub} vars={s.vars} />
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  {/* ─── 3. Quién gana y lo último ─── */}
+  <div class="grid gap-6 lg:grid-cols-2">
+    <section class="rounded-2xl border border-line bg-surface p-6">
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="text-lg text-ink"><T v={h.topTitle} /></h2>
+        {top.length > 0 && (
+          <a href="/student/ambassadors" class="text-sm font-bold text-ink-brand hover:underline">
+            <T v={h.topAll} />
+          </a>
+        )}
+      </div>
+      {
+        top.length === 0 ? (
+          <p class="mt-4 text-sm text-ink-muted"><T v={h.topEmpty} /></p>
+        ) : (
+          <ol class="mt-4 grid gap-1">
+            {top.map((b, i) => {
+              const n = b.referrals.filter((r) => r.stage === "customer").length;
+              return (
+                <li>
+                  <a
+                    href={`/student/ambassadors?ver=${b.ambassador.id}`}
+                    class="flex min-h-12 items-center gap-3 rounded-xl px-2 transition-colors hover:bg-surface-muted"
+                  >
+                    <span class="w-5 text-center text-sm font-bold text-ink-subtle tabular-nums">{i + 1}</span>
+                    <span class="min-w-0 flex-1">
+                      <span class="block truncate text-sm font-semibold text-ink">{nameOf(b.ambassador)}</span>
+                      <span class="block text-xs text-ink-subtle">
+                        <T v={n === 1 ? h.topClientsOne : h.topClients} vars={{ n: String(n) }} />
+                        {isAmbassadorPaused(b.ambassador) && " · ⏸"}
+                      </span>
+                    </span>
+                    <span class="text-sm font-bold text-ink tabular-nums">
+                      <T v={money(b.summary.earnedCents)} />
+                    </span>
+                  </a>
+                </li>
+              );
+            })}
+          </ol>
+        )
+      }
+    </section>
+
+    <section class="rounded-2xl border border-line bg-surface p-6">
+      <h2 class="text-lg text-ink"><T v={h.activityTitle} /></h2>
+      {
+        activity.length === 0 ? (
+          <p class="mt-4 text-sm text-ink-muted"><T v={h.activityEmpty} /></p>
+        ) : (
+          <ul class="mt-4 grid gap-3">
+            {activity.map((a) => (
+              <li class="flex items-start gap-3">
+                <span aria-hidden="true" class="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full bg-surface-muted text-ink-muted">
+                  <Icono nombre={a.icon} class="size-4" grosor={2} />
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm text-pretty text-ink"><T v={a.text} vars={a.vars} /></span>
+                  <span class="block text-xs text-ink-subtle"><T v={shortDate(a.at)} /></span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </section>
+  </div>
+
+  {/* ─── Acciones rápidas ─── */}
+  <section aria-label={h.quickTitle[me.language]}>
+    <ul class="flex flex-wrap gap-3">
+      {quick.map((q) => (
+        <li>
+          <a
+            href={q.href}
+            class:list={[
+              "inline-flex min-h-12 items-center gap-2 rounded-full px-6 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
+              q.main
+                ? "bg-cta text-ink-inverse hover:bg-cta-hover"
+                : "border border-line-strong bg-surface text-ink-muted hover:border-secondary-400 hover:text-ink",
+            ]}
+          >
+            <Icono nombre={q.icon} class="size-4 shrink-0" grosor={2.2} />
+            <T v={q.label} />
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+</div>

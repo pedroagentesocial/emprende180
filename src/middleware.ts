@@ -1,6 +1,7 @@
 import { defineMiddleware } from "astro:middleware";
 import { currentStudent } from "@lib/auth";
 import { harden, isSameOrigin, changesState } from "@lib/security";
+import { isPreRegistered } from "@lib/permissions";
 import { esFalloDeBase, respuestaSinBase } from "@lib/downtime";
 
 /**
@@ -32,6 +33,8 @@ import { esFalloDeBase, respuestaSinBase } from "@lib/downtime";
  */
 
 const STUDENT_ZONE = "/student";
+/** Donde espera un pre-registro hasta que el admin le da acceso. */
+const WAITING_PAGE = "/student/espera";
 
 /**
  * The Spanish URLs this area used to live at.
@@ -187,6 +190,12 @@ async function atender(
      Ahora la única puerta es el portal y todo el mundo puede entrar en él: lo
      que cambia es CUÁNTO ve, y eso lo decide `@lib/permissions` dentro de la
      página. Una comprobación menos en el sitio donde equivocarse era más caro. */
+
+  /* Un pre-registro (se apuntó en la web y aún no tiene acceso) solo ve la
+     página que le dice que está en espera. Ver `isPreRegistered`. */
+  if (isPreRegistered(student) && pathname !== WAITING_PAGE) {
+    return harden(context.redirect(WAITING_PAGE, 302), pathname);
+  }
 
   /* The resolved student travels in `locals` so pages don't have to look them
      up again: one request, one session read. */

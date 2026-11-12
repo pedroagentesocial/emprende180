@@ -1,5 +1,6 @@
 ---
 import StudentLayout from "@layouts/StudentLayout.astro";
+import { adminGuide } from "@config/adminGuide";
 import T from "@components/i18n/T.astro";
 import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
 import { studentCopy } from "@config/studentArea";
@@ -90,13 +91,9 @@ const conexiones: Conexion[] = [
 const pendientes = conexiones.filter((c) => !c.ok).length;
 ---
 
-<StudentLayout title={s.title} student={me} heading={s.title}>
-  <div class="max-w-3xl">
-    <p class="text-base text-pretty text-ink-muted">
-      <T v={s.intro} />
-    </p>
-
-    <ul class="mt-8 grid gap-4">
+<StudentLayout title={s.title} student={me} heading={s.title} guide={adminGuide.settings}>
+  <div>
+    <ul class="grid gap-4 lg:grid-cols-2">
       {
         conexiones.map((c) => (
           <li

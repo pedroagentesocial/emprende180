@@ -1,4 +1,5 @@
 ---
+import { displayName } from "@lib/profile";
 import T from "@components/i18n/T.astro";
 import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
 import { studentCopy } from "@config/studentArea";
@@ -7,6 +8,7 @@ import {
   canDeactivate,
   canManageStudent,
   canChangeRole,
+  isAmbassador,
 } from "@lib/permissions";
 import { isAdminByConfig } from "@lib/auth";
 import { LOCALES, type Idioma, type Txt } from "@i18n/idioma";
@@ -53,6 +55,12 @@ interface Props {
   notice: { type: "ok" | "error"; text: string } | null;
   /** `true` when the store is the in-memory one: development without a database. */
   persistent: boolean;
+  /** Las pestañas de arriba de la lista, con su cuenta. */
+  tabs: { key: string; label: { es: string; en: string }; n: number }[];
+  /** El formulario de alta, abierto al llegar. */
+  openAdd: boolean;
+  /** Los Embajadores, para elegir quién trajo al nuevo (solo el admin). */
+  ambassadors: Student[];
 }
 
 const {
@@ -67,7 +75,18 @@ const {
   recentLink,
   notice,
   persistent,
+  tabs,
+  openAdd,
+  ambassadors,
 } = Astro.props;
+
+const tabHref = (key: string) => {
+  const p = new URLSearchParams();
+  if (key !== "todos") p.set("ver", key);
+  if (search) p.set("q", search);
+  const q = p.toString();
+  return q ? `/student/people?${q}` : "/student/people";
+};
 
 const say = (text: { es: string; en: string }, values?: Record<string, string>) =>
   values ? interpolar(text[lang], values) : text[lang];
@@ -86,7 +105,7 @@ const roleHint: Record<Role, { es: string; en: string }> = {
 
 /* Who registered each one, for the admin's column. One lookup for the whole
    table instead of one per row: the agents are already in the list. */
-const nameById = new Map(everyone.map((s) => [s.id, s.name ?? s.email]));
+const nameById = new Map([...everyone, ...ambassadors].map((s) => [s.id, displayName(s)]));
 
 /** A URL for the portal with one filter changed. The filters are plain links. */
 const withParams = (params: Record<string, string | null>) => {
@@ -114,9 +133,6 @@ const cell = "px-4 py-3 text-sm";
 ---
 
 <div>
-  <p class="max-w-xl text-base text-pretty text-ink-muted">
-    <T v={isAdmin ? studentCopy.admin.intro : studentCopy.admin.introAgent} />
-  </p>
 
   {/* El aviso de "esto no persiste" solo aparece cuando de verdad no persiste.
       Sin él, alguien daría de alta a diez alumnos en desarrollo y no entendería
@@ -182,21 +198,28 @@ const cell = "px-4 py-3 text-sm";
   }
 
   {/* ─── Dar de alta ──────────────────────────────────────────────────────── */}
-  <form
+  {/* Dar de alta, plegado (11-11-2026): el botón de la cabecera lo abre
+      (?nuevo=1). Así la página abre con la lista, que es lo que se viene a
+      mirar casi siempre. */}
+  <details
     id="add-form"
-    method="POST"
-    class="mt-8 rounded-2xl border border-line bg-surface p-6"
+    open={openAdd}
+    class="group/alta mt-6 scroll-mt-8 rounded-2xl border border-line bg-surface"
   >
+    <summary class="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 [&::-webkit-details-marker]:hidden focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus">
+      <h3 class="flex items-center gap-2.5 text-lg font-bold text-ink">
+        <span aria-hidden="true" class="marca-linea text-secondary-600">
+          <Icono nombre="mas" class="size-5" grosor={2.2} />
+        </span>
+        <T v={studentCopy.admin.newTitle} />
+      </h3>
+      <Icono nombre="chevron" class="size-5 shrink-0 text-ink-subtle transition-transform duration-300 group-open/alta:rotate-180" grosor={2.2} />
+    </summary>
+  <form method="POST" class="border-t border-line px-6 pt-5 pb-6">
     <input type="hidden" name="action" value="add" />
 
-    <h3 class="flex items-center gap-2.5 text-lg font-bold text-ink">
-      <span aria-hidden="true" class="marca-linea text-secondary-600">
-        <Icono nombre="mas" class="size-5" grosor={2.2} />
-      </span>
-      <T v={studentCopy.admin.newTitle} />
-    </h3>
 
-    <div class="mt-5 grid gap-4 sm:grid-cols-2">
+    <div class="grid gap-4 sm:grid-cols-2">
       <div>
         <label for="admin-email" class="block text-sm font-semibold text-ink-muted">
           <T v={studentCopy.admin.fieldEmail} />
@@ -235,6 +258,31 @@ const cell = "px-4 py-3 text-sm";
         La nota de debajo no es adorno: "agente" y "admin" son dos cantidades de
         confianza muy distintas, y la diferencia tiene que leerse en el momento
         de elegir, no en un manual que nadie abre. */}
+    {/* Quién lo trajo: su patrocinador, que gana el nivel 2 de lo que este
+        alumno genere como Embajador. */}
+    {
+      isAdmin && (
+        <div class="mt-4">
+          <label for="admin-sponsor" class="block text-sm font-semibold text-ink-muted">
+            <T v={studentCopy.admin.fieldSponsor} />
+          </label>
+          <select
+            id="admin-sponsor"
+            name="sponsor"
+            class="mt-2 min-h-12 w-full rounded-xl border border-line-strong bg-surface px-4 py-3 text-base text-ink transition-colors focus:border-secondary-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:max-w-sm"
+          >
+            <option value="">{studentCopy.admin.sponsorNone[lang]}</option>
+            {ambassadors.map((a) => (
+              <option value={a.id}>{displayName(a)}{a.ambassadorCode ? ` · ${a.ambassadorCode}` : ""}</option>
+            ))}
+          </select>
+          <p class="mt-2 text-xs text-pretty text-ink-subtle">
+            <T v={studentCopy.admin.sponsorHint} />
+          </p>
+        </div>
+      )
+    }
+
     {
       roleOptions.length > 1 && (
         <div class="mt-4">
@@ -273,7 +321,7 @@ const cell = "px-4 py-3 text-sm";
         type="submit"
         name="send"
         value="1"
-        class="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-cta px-6 text-sm font-bold text-ink-inverse shadow-cta transition-colors hover:bg-cta-hover hover:shadow-cta-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        class="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-cta px-6 text-sm font-bold text-ink-inverse transition-colors hover:bg-cta-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
       >
         <Icono nombre="conversacion" class="size-4 shrink-0" grosor={2} />
         <T v={studentCopy.admin.addAndSend} />
@@ -289,11 +337,41 @@ const cell = "px-4 py-3 text-sm";
       </button>
     </div>
   </form>
+  </details>
 
   {/* ─── Buscar ─────────────────────────────────────────────────────────────
       Un GET con un campo, sin JavaScript. El filtro activo viaja en un campo
       oculto para que buscar dentro de "sin entrar" siga siendo "sin entrar". */}
-  <form method="GET" action="/student/people" class="mt-10 flex flex-wrap items-end gap-3">
+  {/* Las pestañas: quién ya entró, quién falta, de baja... con su número. */}
+  <nav aria-label={say({ es: "Filtrar la lista", en: "Filter the list" })} class="mt-8 -mx-1 overflow-x-auto px-1">
+    <ul class="flex min-w-max gap-1 border-b border-line">
+      {tabs.map((tab) => (
+        <li>
+          <a
+            href={tabHref(tab.key)}
+            aria-current={view === tab.key ? "page" : undefined}
+            class:list={[
+              "relative inline-flex min-h-11 items-center gap-2 px-3.5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus",
+              "after:absolute after:inset-x-2 after:-bottom-px after:h-0.5 after:rounded-full after:transition-colors",
+              view === tab.key ? "text-ink after:bg-secondary-600" : "text-ink-subtle hover:text-ink after:bg-transparent",
+            ]}
+          >
+            <T v={tab.label} />
+            <span
+              class:list={[
+                "rounded-full px-2 py-0.5 text-xs font-bold tabular-nums",
+                view === tab.key ? "bg-secondary-100 text-secondary-800" : "bg-surface-muted text-ink-subtle",
+              ]}
+            >
+              {tab.n}
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+
+  <form method="GET" action="/student/people" class="mt-5 flex flex-wrap items-end gap-3">
     {view !== "todos" && <input type="hidden" name="ver" value={view} />}
 
     <div class="min-w-0 flex-1">
@@ -340,7 +418,77 @@ const cell = "px-4 py-3 text-sm";
   {/* ─── La lista ───────────────────────────────────────────────────────── */}
   <div class="mt-5">
     {
-      students.length === 0 ? (
+      /* ─── Pre-registros (11-11-2026): se apuntaron en la web y esperan.
+         Su propia tabla, con lo que dejaron, y "Dar acceso" de un clic. */
+      view === "pre" ? (
+        <div>
+          <p class="mb-4 max-w-3xl text-sm text-pretty text-ink-muted">
+            <T v={studentCopy.admin.preIntro} />
+          </p>
+          {students.length === 0 ? (
+            <p class="rounded-2xl border border-dashed border-line-strong px-4 py-8 text-center text-base text-ink-muted">
+              <T v={studentCopy.admin.preEmpty} />
+            </p>
+          ) : (
+            <ul class="grid gap-3">
+              {students.map((s) => (
+                <li class="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-5 lg:flex-row lg:items-center">
+                  <div class="min-w-0 flex-1">
+                    <p class="font-semibold text-ink">
+                      {[s.name, s.lastName].filter(Boolean).join(" ") || "-"}
+                    </p>
+                    <p class="text-sm break-words text-ink-subtle">{s.email}</p>
+                  </div>
+                  <dl class="grid flex-[2] grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-4">
+                    <div>
+                      <dt class="text-xs font-bold text-ink-subtle uppercase"><T v={studentCopy.admin.columnContact} /></dt>
+                      <dd class="text-ink">{s.phone ?? "-"}{s.whatsapp ? " · WhatsApp" : ""}</dd>
+                    </div>
+                    <div>
+                      <dt class="text-xs font-bold text-ink-subtle uppercase"><T v={studentCopy.admin.columnSource} /></dt>
+                      <dd class="text-ink capitalize">{s.source ?? "-"}</dd>
+                    </div>
+                    <div>
+                      <dt class="text-xs font-bold text-ink-subtle uppercase"><T v={studentCopy.admin.columnSponsor} /></dt>
+                      <dd class="text-ink">{s.registeredBy ? (nameById.get(s.registeredBy) ?? "-") : (s.coupon ?? "-")}</dd>
+                    </div>
+                    <div>
+                      <dt class="text-xs font-bold text-ink-subtle uppercase"><T v={studentCopy.admin.columnRegistered} /></dt>
+                      <dd class="text-ink">{date(s.createdAt)}</dd>
+                    </div>
+                  </dl>
+                  <div class="flex shrink-0 flex-wrap gap-2">
+                    <form method="POST">
+                      <input type="hidden" name="action" value="ambassador" />
+                      <input type="hidden" name="id" value={s.id} />
+                      <button
+                        type="submit"
+                        class="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-cta px-5 text-sm font-bold text-ink-inverse transition-colors hover:bg-cta-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                      >
+                        <Icono nombre="check" class="size-4" grosor={2.6} />
+                        <T v={studentCopy.admin.giveAccess} />
+                      </button>
+                    </form>
+                    {canDeactivate(me) && (
+                      <form method="POST">
+                        <input type="hidden" name="action" value="active" />
+                        <input type="hidden" name="id" value={s.id} />
+                        <input type="hidden" name="active" value="0" />
+                        <button
+                          type="submit"
+                          class="inline-flex min-h-11 items-center rounded-full border border-line-strong px-4 text-sm font-bold text-ink-muted transition-colors hover:border-error-500 hover:text-error-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                        >
+                          <T v={studentCopy.admin.discard} />
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ) : students.length === 0 ? (
         search || view !== "todos" ? (
           /* Con filtros puestos, "no hay resultados" es toda la respuesta: la
              lista no está vacía, es que estos filtros no dejan pasar a nadie. */
@@ -387,7 +535,7 @@ const cell = "px-4 py-3 text-sm";
         /* `overflow-x-auto` en el envoltorio y no en la tabla: cinco columnas no
            caben en 320 px y lo correcto es que se deslice ella sola, no que la
            página entera tenga scroll horizontal. */
-        <div class="overflow-x-auto rounded-2xl border border-line">
+        <div class="overflow-x-auto rounded-2xl border border-line bg-surface">
           <table class="w-full min-w-[46rem] border-collapse text-left">
             <thead class="bg-surface-muted">
               <tr class="text-xs font-bold tracking-wide text-ink-subtle uppercase">
@@ -399,7 +547,12 @@ const cell = "px-4 py-3 text-sm";
                 </th>
                 {isAdmin && (
                   <th scope="col" class={cell}>
-                    <T v={studentCopy.admin.columnRegisteredBy} />
+                    <T v={studentCopy.admin.columnCode} />
+                  </th>
+                )}
+                {isAdmin && (
+                  <th scope="col" class={cell}>
+                    <T v={studentCopy.admin.columnSponsor} />
                   </th>
                 )}
                 <th scope="col" class={cell}>
@@ -470,12 +623,21 @@ const cell = "px-4 py-3 text-sm";
                       es suya por definición, así que la respuesta sería su propio
                       nombre en todas las filas. */}
                   {isAdmin && (
-                    <td class={`${cell} text-ink-subtle`}>
-                      {s.registeredBy ? (
-                        (nameById.get(s.registeredBy) ?? "—")
+                    <td class={cell}>
+                      {isAmbassador(s) ? (
+                        <span class="font-mono text-sm font-bold text-ink">{s.ambassadorCode}</span>
+                      ) : s.role === "student" && s.active ? (
+                        <span class="inline-flex rounded-full bg-warning-50 px-2.5 py-1 text-xs font-bold text-warning-700">
+                          <T v={studentCopy.admin.webSignup} />
+                        </span>
                       ) : (
-                        <T v={studentCopy.admin.registeredByHouse} />
+                        <span class="text-ink-subtle">-</span>
                       )}
+                    </td>
+                  )}
+                  {isAdmin && (
+                    <td class={`${cell} text-ink-subtle`}>
+                      {s.sponsorId ? (nameById.get(s.sponsorId) ?? "-") : "-"}
                     </td>
                   )}
 
@@ -504,8 +666,10 @@ const cell = "px-4 py-3 text-sm";
                       {/* Ascender o devolver a alumno. Un alumno que empieza a
                           vender es el caso que va a pasar, y sin esto habría que
                           darlo de alta otra vez con otro correo. */}
+                      {/* Ya no hay agentes (11-11-2026): solo queda devolver a
+                          alumno a quien todavía lo era. */}
                       {canChangeRole(me, s, isAdminByConfig(s.email)) &&
-                        s.role !== "admin" && (
+                        s.role === "agent" && (
                           <form method="POST">
                             <input type="hidden" name="action" value="role" />
                             <input type="hidden" name="id" value={s.id} />
@@ -533,6 +697,29 @@ const cell = "px-4 py-3 text-sm";
                             </button>
                           </form>
                         )}
+
+                      {isAdmin && isAmbassador(s) && (
+                        <a
+                          href={`/student/ambassadors?ver=${s.id}`}
+                          class="inline-flex min-h-11 items-center rounded-full border border-line-strong px-3.5 text-xs font-bold text-ink-muted transition-colors hover:border-secondary-400 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                        >
+                          <Icono nombre="billete" class="mr-1.5 size-3.5" grosor={2} />
+                          <T v={studentCopy.admin.seeCommissions} />
+                        </a>
+                      )}
+
+                      {isAdmin && !isAmbassador(s) && s.active && s.role === "student" && (
+                        <form method="POST">
+                          <input type="hidden" name="action" value="ambassador" />
+                          <input type="hidden" name="id" value={s.id} />
+                          <button
+                            type="submit"
+                            class="inline-flex min-h-11 items-center rounded-full bg-cta px-3.5 text-xs font-bold text-ink-inverse transition-colors hover:bg-cta-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                          >
+                            <T v={studentCopy.admin.makeAmbassador} />
+                          </button>
+                        </form>
+                      )}
 
                       {canDeactivate(me) && s.id !== me.id && (
                         <form method="POST">

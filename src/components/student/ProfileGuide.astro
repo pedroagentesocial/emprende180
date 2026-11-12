@@ -1,0 +1,122 @@
+---
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import type { Student } from "@lib/data";
+import { profilePercent, profileSteps } from "@lib/profile";
+import type { Txt } from "@i18n/idioma";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * La guía de "ten tu información al día" (12-11-2026)
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Dos formas:
+ *
+ *   · `full` (en Mi perfil): el porcentaje, la barra y los cinco pasos, cada
+ *     uno con por qué importa y un enlace a la parte del perfil que lo arregla.
+ *     Y debajo, cuándo conviene revisarlo.
+ *   · `compact` (en el inicio): una franja con el porcentaje, el siguiente
+ *     paso y "Completar mi perfil". Solo sale si falta algo.
+ */
+interface Props {
+  student: Student;
+  variant?: "full" | "compact";
+}
+
+const { student, variant = "full" } = Astro.props;
+const t = (es: string, en: string): Txt => ({ es, en });
+const steps = profileSteps(student);
+const pct = profilePercent(student);
+const next = steps.find((s) => !s.done) ?? null;
+const anchor: Record<string, string> = { photo: "#foto", name: "#datos", phone: "#datos", whatsapp: "#datos", email: "#correo" };
+
+const c = {
+  title: t("Tu información al día", "Your details up to date"),
+  pct: t("Tu perfil está al {pct}%", "Your profile is {pct}% complete"),
+  done: t("¡Perfil completo! Gracias.", "Profile complete! Thank you."),
+  next: t("Siguiente: {paso}", "Next: {paso}"),
+  cta: t("Completar mi perfil", "Complete my profile"),
+  whenTitle: t("Revísalo cuando…", "Check it when…"),
+  when: [
+    t("cambies de número o de correo,", "you change your number or email,"),
+    t("cambies de nombre o de apellido,", "you change your name,"),
+    t("y una vez al mes, al revisar tus pagos.", "and once a month, when you check your payouts."),
+  ],
+};
+---
+
+{
+  variant === "compact" ? (
+    next && (
+      <a
+        href={`/student/profile${anchor[next.key]}`}
+        class="group mt-6 flex flex-wrap items-center gap-4 rounded-3xl border border-line bg-surface px-5 py-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      >
+        <span class="relative grid size-12 shrink-0 place-items-center">
+          <svg viewBox="0 0 36 36" class="absolute inset-0 -rotate-90" aria-hidden="true">
+            <circle cx="18" cy="18" r="15.5" fill="none" class="stroke-neutral-100" stroke-width="3.5" />
+            <circle cx="18" cy="18" r="15.5" fill="none" class="stroke-secondary-500" stroke-width="3.5" stroke-linecap="round" stroke-dasharray={`${(pct / 100) * 97.4} 97.4`} />
+          </svg>
+          <span class="text-xs font-extrabold tabular-nums text-ink">{pct}%</span>
+        </span>
+        <span class="min-w-0 flex-1">
+          <span class="block font-bold text-ink"><T v={c.pct} vars={{ pct }} /></span>
+          <span class="block text-sm text-pretty text-ink-muted">
+            <T v={c.next} vars={{ paso: next.label }} /> · <T v={next.why} />
+          </span>
+        </span>
+        <span class="inline-flex items-center gap-1.5 text-sm font-bold text-ink-brand">
+          <T v={c.cta} />
+          <Icono nombre="flecha" class="size-4 transition-transform group-hover:translate-x-0.5" grosor={2.5} />
+        </span>
+      </a>
+    )
+  ) : (
+    <section class="rounded-3xl border border-line bg-surface p-5 sm:p-6">
+      <h2 class="text-lg text-ink"><T v={c.title} /></h2>
+      <p class="mt-1 text-sm font-semibold text-ink-muted">
+        {pct === 100 ? <T v={c.done} /> : <T v={c.pct} vars={{ pct }} />}
+      </p>
+      <div class="mt-3 h-2 overflow-hidden rounded-full bg-neutral-100" role="progressbar" aria-valuenow={pct} aria-valuemin="0" aria-valuemax="100">
+        <div class="barra h-full rounded-full bg-secondary-500" style={`width:${pct}%`}></div>
+      </div>
+
+      <ol class="mt-5 space-y-3">
+        {steps.map((s) => (
+          <li>
+            <a href={anchor[s.key]} class="group flex gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+              <span
+                aria-hidden="true"
+                class:list={[
+                  "mt-0.5 grid size-6 shrink-0 place-items-center rounded-full",
+                  s.done ? "bg-secondary-500 text-white" : "border-2 border-line-strong text-transparent",
+                ]}
+              >
+                <Icono nombre="check" class="size-3.5" grosor={3} />
+              </span>
+              <span class="min-w-0">
+                <span class:list={["block text-sm font-semibold", s.done ? "text-ink-muted line-through decoration-ink-subtle/50" : "text-ink group-hover:text-ink-brand"]}>
+                  <T v={s.label} />
+                </span>
+                {!s.done && <span class="block text-xs text-pretty text-ink-muted"><T v={s.why} /></span>}
+              </span>
+            </a>
+          </li>
+        ))}
+      </ol>
+
+      <div class="mt-5 rounded-2xl bg-surface-muted px-4 py-3">
+        <p class="text-xs font-bold text-ink"><T v={c.whenTitle} /></p>
+        <ul class="mt-1 space-y-0.5 text-xs text-pretty text-ink-muted">
+          {c.when.map((w) => <li><T v={w} /></li>)}
+        </ul>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .barra {
+    transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+</style>

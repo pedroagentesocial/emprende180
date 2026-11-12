@@ -1,20 +1,39 @@
 ---
 import AmbassadorLayout from "@layouts/AmbassadorLayout.astro";
 import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import RecurringList from "@components/ambassador/RecurringList.astro";
+import TransactionList from "@components/ambassador/TransactionList.astro";
+import Statement from "@components/ambassador/Statement.astro";
 import { ambassadorCopy } from "@config/ambassadorArea";
-import { loadBook } from "@lib/ambassadorBook";
-import { money, shortDate } from "@lib/ambassadorFormat";
+import { cachedBook } from "@lib/requestBook";
+import { money } from "@lib/ambassadorFormat";
+import type { Transaction } from "@lib/ambassadorStats";
+import type { LineStatus } from "@lib/commissions";
 import { isAmbassador } from "@lib/permissions";
+import type { Txt } from "@i18n/idioma";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- * /student/ambassador/payouts: lo que te pagamos y lo que te descontamos
+ * /student/ambassador/payouts: Movimientos (12-11-2026)
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * Los pagos los anota el admin (en dinero o en crédito de Revivi). Los
- * descuentos son reembolsos que llegaron después de pagarte la comisión: se
- * enseñan aquí, en la misma lista, porque es aquí donde alguien busca por qué
- * su saldo es menor de lo que esperaba.
+ * Todo el dinero de la cuenta, en este orden:
+ *
+ *   1. El saldo: por cobrar, en espera, cobrado.
+ *   2. Las mensualidades: quién paga cada mes y cuánto te deja.
+ *   3. Cada movimiento, por mes, en filas cortas que se abren para ver el
+ *      detalle. Filtros por tipo (pastillas) y "Más filtros": negocio,
+ *      estado, de quién (tus clientes o tu equipo) y periodo.
+ *   4. El estado de cuenta mes a mes desde el alta.
+ *
+ * Los filtros viajan en la dirección (`?f=&b=&s=&w=&p=`): funcionan sin
+ * JavaScript y se pueden guardar. Con JavaScript, cambiar un desplegable ya
+ * aplica el filtro.
+ *
+ * La dirección sigue siendo `/payouts` para que ningún enlace viejo se rompa.
+ *
+ * ⚠️ SIN NOMBRES DE CLIENTES, como el inicio: "Cliente #N".
  */
 export const prerender = false;
 
@@ -22,74 +41,256 @@ const me = Astro.locals.student!;
 if (!isAmbassador(me)) return new Response(null, { status: 404 });
 
 const c = ambassadorCopy;
-const book = await loadBook(me, { viewer: me, withNames: false });
-const { summary } = book;
+const s = c.stats;
+const lang = me.language;
+const book = await cachedBook(Astro.locals, me);
+const { summary, stats } = book;
 
-type Row =
-  | { kind: "payout"; at: Date; cents: number; method: "cash" | "revivi_credit"; pendingCredit: boolean; note: string | null }
-  | { kind: "deduction"; at: Date; cents: number; business: string };
+type Filter = "all" | "sales" | "renewals" | "refunds" | "payouts";
+const FILTERS: { key: Filter; label: Txt; match: (t: Transaction) => boolean }[] = [
+  { key: "all", label: s.filterAll, match: () => true },
+  { key: "sales", label: s.filterSales, match: (t) => t.kind === "purchase" || t.kind === "attended" },
+  { key: "renewals", label: s.filterRenewals, match: (t) => t.kind === "renewal" },
+  { key: "refunds", label: s.filterRefunds, match: (t) => t.kind === "refund" || t.kind === "cancel" },
+  { key: "payouts", label: s.filterPayouts, match: (t) => t.kind === "payout" },
+];
 
-const businessName = new Map(book.businesses.map((b) => [b.id, b.name]));
-const rows: Row[] = [
-  ...book.payouts.map((p) => ({
-    kind: "payout" as const,
-    at: p.paidAt,
-    cents: p.amountCents,
-    method: p.method,
-    pendingCredit: p.method === "revivi_credit" && !p.clinicsRef,
-    note: p.note,
-  })),
-  ...book.lines
-    .filter((l) => l.status === "deduction")
-    .map((l) => ({ kind: "deduction" as const, at: l.occurredAt, cents: l.amountCents, business: businessName.get(l.businessId) ?? "" })),
-].sort((a, b) => b.at.getTime() - a.at.getTime());
+const q = Astro.url.searchParams;
+const filter = FILTERS.find((f) => f.key === q.get("f")) ?? FILTERS[0]!;
+const fb = q.get("b") ?? "";
+const fs = (q.get("s") ?? "") as LineStatus | "";
+const fw = q.get("w") ?? "";
+const fp = q.get("p") ?? "";
+
+const STATUSES: LineStatus[] = ["waiting", "ready", "paid", "annulled", "deduction"];
+const PERIODS: { key: string; label: Txt }[] = [
+  { key: "30", label: s.p30 },
+  { key: "90", label: s.p90 },
+  { key: "180", label: s.p180 },
+  { key: "year", label: s.pYear },
+];
+const now = new Date();
+const fromOf = (k: string): number =>
+  k === "year" ? Date.UTC(now.getUTCFullYear(), 0, 1) : k ? now.getTime() - Number(k) * 86_400_000 : 0;
+
+const extra = (t: Transaction) =>
+  (!fb || t.businessId === fb) &&
+  (!fs || t.status === fs) &&
+  (!fw || (fw === "own" ? t.level === 1 : t.level === 2)) &&
+  (!fp || t.at.getTime() >= fromOf(fp));
+const base = stats.transactions.filter(extra);
+const shown = base.filter(filter.match);
+const countOf = (f: (typeof FILTERS)[number]) => base.filter(f.match).length;
+const activeExtra = [fb, fs, fw, fp].filter(Boolean).length;
+const shownCents = shown
+  .filter((t) => t.kind !== "payout" && t.status !== "annulled")
+  .reduce((sum, t) => sum + t.commissionCents, 0);
+
+const hrefWith = (patch: Record<string, string>) => {
+  const p = new URLSearchParams();
+  const next = { f: filter.key === "all" ? "" : filter.key, b: fb, s: fs, w: fw, p: fp, ...patch };
+  for (const [k, v] of Object.entries(next)) if (v) p.set(k, v);
+  const str = p.toString();
+  return `/student/ambassador/payouts${str ? `?${str}` : ""}#movimientos`;
+};
+const usedBusinesses = book.businesses.filter((b) => stats.transactions.some((t) => t.businessId === b.id));
+
+const chip =
+  "inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+const select =
+  "mt-1 block min-h-11 w-full rounded-xl border border-line-strong bg-surface px-3 text-sm font-normal text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
 ---
 
 <AmbassadorLayout title={c.payouts.title} student={me} tab="payouts">
-  <h1 class="text-2xl font-extrabold text-ink"><T v={c.payouts.title} /></h1>
-  <p class="mt-2 text-sm text-pretty text-ink-muted"><T v={c.payouts.intro} /></p>
+  <h1 class="text-3xl text-balance text-ink sm:text-4xl"><T v={c.payouts.title} /></h1>
+  <p class="mt-2 max-w-2xl text-base text-pretty text-ink-muted"><T v={c.payouts.intro} /></p>
 
-  <section class="mt-5 grid grid-cols-3 gap-2">
-    <div class="min-w-0 rounded-2xl border border-line bg-surface px-3 py-3">
-      <p class="text-xs font-semibold text-ink-muted"><T v={summary.availableCents < 0 ? c.home.owed : c.home.available} /></p>
-      <p class="mt-0.5 text-sm font-bold break-words tabular-nums text-ink sm:text-base"><T v={money(Math.abs(summary.availableCents))} /></p>
+  {/* Teléfono y tablet: saldo, mensualidades y movimientos, uno debajo de otro.
+      Escritorio: los movimientos a la izquierda, que es lo que se recorre, y
+      el saldo con las mensualidades en una columna a la derecha. */}
+  <div class="mt-6 grid gap-x-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start xl:grid-cols-[minmax(0,1fr)_23rem]">
+  <aside class="min-w-0 lg:order-2">
+  <section class="grid grid-cols-3 gap-2 sm:gap-3 lg:grid-cols-1">
+    <div class="min-w-0 rounded-2xl bg-primary-900 px-3 py-3 text-white sm:px-4">
+      <p class="text-xs font-semibold text-primary-100"><T v={summary.availableCents < 0 ? c.home.owed : c.home.available} /></p>
+      <p class="mt-0.5 text-base font-extrabold break-words tabular-nums sm:text-xl"><T v={money(Math.abs(summary.availableCents))} /></p>
     </div>
-    <div class="min-w-0 rounded-2xl border border-line bg-surface px-3 py-3">
+    <div class="min-w-0 rounded-2xl border border-line bg-surface px-3 py-3 sm:px-4">
       <p class="text-xs font-semibold text-ink-muted"><T v={c.home.waiting} /></p>
-      <p class="mt-0.5 text-sm font-bold break-words tabular-nums text-ink sm:text-base"><T v={money(summary.waitingCents)} /></p>
+      <p class="mt-0.5 text-base font-extrabold break-words tabular-nums text-ink sm:text-xl"><T v={money(summary.waitingCents)} /></p>
     </div>
-    <div class="min-w-0 rounded-2xl border border-line bg-surface px-3 py-3">
+    <div class="min-w-0 rounded-2xl border border-line bg-surface px-3 py-3 sm:px-4">
       <p class="text-xs font-semibold text-ink-muted"><T v={c.home.paid} /></p>
-      <p class="mt-0.5 text-sm font-bold break-words tabular-nums text-ink sm:text-base"><T v={money(summary.paidCents)} /></p>
+      <p class="mt-0.5 text-base font-extrabold break-words tabular-nums text-ink sm:text-xl"><T v={money(summary.paidCents)} /></p>
     </div>
   </section>
 
-  <h2 class="mt-6 px-1 text-base font-bold text-ink"><T v={c.payouts.movements} /></h2>
-  {
-    rows.length === 0 ? (
-      <p class="mt-3 rounded-3xl border border-line bg-surface p-6 text-center text-sm text-ink-muted">
-        <T v={c.payouts.empty} />
-      </p>
-    ) : (
-      <ul class="mt-3 divide-y divide-line overflow-hidden rounded-3xl border border-line bg-surface">
-        {rows.map((r) => (
-          <li class="flex items-center justify-between gap-3 px-5 py-3.5">
-            <span class="min-w-0">
-              <span class="block font-semibold text-ink">
-                {r.kind === "payout" ? <T v={c.method[r.method]} /> : <T v={c.status.deduction} />}
-              </span>
-              <span class="block truncate text-xs text-ink-muted">
-                <T v={shortDate(r.at)} />
-                {r.kind === "deduction" && r.business && <> · {r.business}</>}
-                {r.kind === "payout" && r.pendingCredit && <> · <T v={c.payouts.pendingCredit} /></>}
-              </span>
-            </span>
-            <span class:list={["shrink-0 font-bold tabular-nums", r.kind === "deduction" ? "text-error-700" : "text-ink"]}>
-              <T v={money(r.cents)} />
-            </span>
-          </li>
-        ))}
+  <RecurringList
+    id="mensualidades"
+    items={stats.recurring}
+    monthlyCents={stats.lifetime.recurringMonthlyCents}
+    active={stats.lifetime.recurringActive}
+  />
+  </aside>
+
+  <section class="mt-8 min-w-0 lg:order-1 lg:mt-0" id="movimientos">
+    <h2 class="px-1 text-base font-bold text-ink"><T v={s.activityTitle} /></h2>
+    <p class="mt-1 px-1 text-sm text-pretty text-ink-muted"><T v={s.activityIntro} /></p>
+
+    <div class="mt-3 flex items-center gap-2">
+      <nav class="-ml-4 flex min-w-0 flex-1 gap-2 overflow-x-auto pb-1 pl-4" aria-label={s.filterAria[lang]}>
+        {FILTERS.map((f) => {
+          const on = f.key === filter.key;
+          return (
+            <a
+              href={hrefWith({ f: f.key === "all" ? "" : f.key })}
+              aria-current={on ? "page" : undefined}
+              class:list={[chip, on ? "border-primary-900 bg-primary-900 text-white" : "border-line-strong bg-surface text-ink hover:border-ink"]}
+            >
+              <T v={f.label} />
+              <span class:list={["text-xs tabular-nums", on ? "text-primary-100" : "text-ink-muted"]}>{countOf(f)}</span>
+            </a>
+          );
+        })}
+      </nav>
+
+      {/* El botón de filtros: solo un icono, a la derecha de las pastillas.
+          Abre un panel flotante; con filtros puestos lleva su número. */}
+      <details class="filtros relative shrink-0 self-start" data-popover>
+        <summary
+          aria-label={s.moreFilters[lang]}
+          title={s.moreFilters[lang]}
+          class:list={[
+            "relative grid size-10 cursor-pointer list-none place-items-center rounded-full border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus [&::-webkit-details-marker]:hidden",
+            activeExtra > 0 ? "border-primary-900 bg-primary-900 text-white" : "border-line-strong bg-surface text-ink hover:border-ink",
+          ]}
+        >
+          <Icono nombre="filtros" class="size-5" grosor={2} />
+          {activeExtra > 0 && (
+            <span class="absolute -top-1 -right-1 grid size-5 place-items-center rounded-full bg-secondary-500 text-[0.7rem] font-bold text-primary-950 ring-2 ring-surface-muted">{activeExtra}</span>
+          )}
+        </summary>
+        <div class="panel absolute top-12 right-0 z-30 w-[min(20rem,calc(100vw-2rem))] rounded-2xl border border-line-strong bg-surface p-4">
+          <p class="text-sm font-bold text-ink"><T v={s.moreFilters} /></p>
+      <form method="GET" action="/student/ambassador/payouts#movimientos" data-autosubmit class="mt-3 grid gap-3">
+        {filter.key !== "all" && <input type="hidden" name="f" value={filter.key} />}
+        <label class="text-xs font-semibold text-ink-muted">
+          <T v={s.fBusiness} />
+          <select name="b" class={select}>
+            <option value="" selected={!fb}>{s.fAny[lang]}</option>
+            {usedBusinesses.map((b) => <option value={b.id} selected={fb === b.id}>{b.name}</option>)}
+          </select>
+        </label>
+        <label class="text-xs font-semibold text-ink-muted">
+          <T v={s.fStatus} />
+          <select name="s" class={select}>
+            <option value="" selected={!fs}>{s.fAny[lang]}</option>
+            {STATUSES.map((st) => <option value={st} selected={fs === st}>{c.status[st][lang]}</option>)}
+          </select>
+        </label>
+        <label class="text-xs font-semibold text-ink-muted">
+          <T v={s.fLevel} />
+          <select name="w" class={select}>
+            <option value="" selected={!fw}>{s.fAny[lang]}</option>
+            <option value="own" selected={fw === "own"}>{s.fLevelOwn[lang]}</option>
+            <option value="team" selected={fw === "team"}>{s.fLevelTeam[lang]}</option>
+          </select>
+        </label>
+        <label class="text-xs font-semibold text-ink-muted">
+          <T v={s.fPeriod} />
+          <select name="p" class={select}>
+            <option value="" selected={!fp}>{s.fAny[lang]}</option>
+            {PERIODS.map((pp) => <option value={pp.key} selected={fp === pp.key}>{pp.label[lang]}</option>)}
+          </select>
+        </label>
+        <div class="flex flex-wrap items-center gap-3">
+          <button
+            type="submit"
+            data-apply
+            class="inline-flex min-h-10 items-center rounded-full bg-primary-900 px-4 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          >
+            <T v={s.apply} />
+          </button>
+          {activeExtra > 0 && (
+            <a href={hrefWith({ b: "", s: "", w: "", p: "" })} class="text-sm font-semibold text-ink-brand underline-offset-4 hover:underline">
+              <T v={s.clear} />
+            </a>
+          )}
+        </div>
+      </form>
+        </div>
+      </details>
+    </div>
+
+    {/* Los filtros puestos, a la vista y cada uno con su aspa para quitarlo. */}
+    {activeExtra > 0 && (
+      <ul class="mt-2 flex flex-wrap gap-1.5">
+        {[
+          fb && { key: "b", label: usedBusinesses.find((x) => x.id === fb)?.name ?? "" },
+          fs && { key: "s", label: c.status[fs as LineStatus][lang] },
+          fw && { key: "w", label: (fw === "own" ? s.fLevelOwn : s.fLevelTeam)[lang] },
+          fp && { key: "p", label: PERIODS.find((x) => x.key === fp)?.label[lang] ?? "" },
+        ]
+          .filter((x): x is { key: string; label: string } => !!x)
+          .map((x) => (
+            <li>
+              <a
+                href={hrefWith({ [x.key]: "" })}
+                class="inline-flex min-h-8 items-center gap-1 rounded-full bg-secondary-100 pr-2 pl-3 text-xs font-bold text-secondary-800 transition-colors hover:bg-secondary-200"
+              >
+                {x.label}
+                <Icono nombre="cruz" class="size-3.5" grosor={2.6} />
+              </a>
+            </li>
+          ))}
       </ul>
-    )
-  }
+    )}
+
+    <p class="mt-4 px-1 text-xs font-semibold text-ink-muted">
+      <T v={shown.length === 1 ? s.resultsOne : s.results} vars={{ n: shown.length, monto: money(shownCents) }} />
+    </p>
+    <TransactionList items={shown} />
+  </section>
+  </div>
+
+  <Statement months={stats.monthly} />
 </AmbassadorLayout>
+
+<style>
+  .filtros .panel {
+    animation: panel-in 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+    transform-origin: top right;
+  }
+  @keyframes panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px) scale(0.98);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .filtros .panel {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  /* El panel de filtros se cierra al tocar fuera o con Escape. */
+  document.querySelectorAll<HTMLDetailsElement>("details[data-popover]").forEach((d) => {
+    document.addEventListener("click", (e) => {
+      if (d.open && !d.contains(e.target as Node)) d.open = false;
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && d.open) {
+        d.open = false;
+        d.querySelector("summary")?.focus();
+      }
+    });
+  });
+
+  /* Con JavaScript, cambiar un filtro ya lo aplica; sin él, está el botón. */
+  document.querySelectorAll<HTMLFormElement>("form[data-autosubmit]").forEach((form) => {
+    form.querySelector<HTMLElement>("[data-apply]")?.classList.add("hidden");
+    form.querySelectorAll("select").forEach((sel) => sel.addEventListener("change", () => form.requestSubmit()));
+  });
+</script>

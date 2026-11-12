@@ -1,0 +1,190 @@
+---
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import type { Notice, NoticeTone } from "@lib/notices";
+import { construirTxt, LOCALES, type Txt } from "@i18n/idioma";
+import type { Student } from "@lib/data";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * La campana de avisos (12-11-2026)
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Arriba a la derecha: en escritorio en la esquina del contenido, en teléfono
+ * en la barra de arriba. Se abre en un panel sobre la página (un `<details>`,
+ * así se abre también sin JavaScript) con los avisos de `@lib/notices`.
+ *
+ * El número rojo cuenta los avisos posteriores a la última vez que se abrió
+ * la campana EN ESTE NAVEGADOR (localStorage, por alumno). Si el navegador no
+ * deja guardar, no hay número y todo sigue funcionando.
+ *
+ * Se pinta dos veces en la página (escritorio y teléfono, cada una visible en
+ * su anchura), así que nada aquí usa `id`.
+ */
+interface Props {
+  student: Student;
+  notices: Notice[];
+  /** Hacia dónde se abre el panel. */
+  align?: "right" | "left";
+  tone?: "light" | "dark";
+}
+
+const { student, notices, align = "right" } = Astro.props;
+const c = {
+  title: { es: "Avisos", en: "Notices" },
+  open: { es: "Abrir avisos", en: "Open notices" },
+  empty: { es: "No tienes avisos por ahora. Aquí te contaremos cada comisión, pago y novedad.", en: "No notices for now. Every commission, payout and update will show up here." },
+  pending: { es: "Pendiente", en: "To do" },
+  fresh: { es: "Nuevo", en: "New" },
+} satisfies Record<string, Txt>;
+
+const toneClass: Record<NoticeTone, string> = {
+  brand: "bg-primary-50 text-primary-700",
+  success: "bg-secondary-100 text-secondary-700",
+  warning: "bg-warning-50 text-warning-700",
+  danger: "bg-error-50 text-error-700",
+  neutral: "bg-neutral-100 text-ink-muted",
+};
+
+const when = (d: Date): Txt =>
+  construirTxt((l) => {
+    const days = Math.floor((Date.now() - d.getTime()) / 86_400_000);
+    if (days <= 0) return l === "en" ? "Today" : "Hoy";
+    if (days === 1) return l === "en" ? "Yesterday" : "Ayer";
+    if (days < 7) return l === "en" ? `${days} days ago` : `Hace ${days} días`;
+    return new Intl.DateTimeFormat(LOCALES[l], { day: "numeric", month: "short" }).format(d);
+  });
+---
+
+<details class="avisos relative" data-popover data-avisos={student.id}>
+  <summary
+    aria-label={c.open[student.language]}
+    title={c.title[student.language]}
+    class="relative grid size-11 cursor-pointer list-none place-items-center rounded-full border border-line-strong bg-surface text-ink transition-colors hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus [&::-webkit-details-marker]:hidden"
+  >
+    <Icono nombre="campana" class="size-5" grosor={2} />
+    <span
+      data-badge
+      hidden
+      class="absolute -top-1 -right-1 grid h-5 min-w-5 place-items-center rounded-full bg-error-600 px-1 text-[0.7rem] font-bold text-white ring-2 ring-surface"
+    ></span>
+  </summary>
+
+  <div
+    class:list={[
+      /* En el teléfono la campana no está en el borde (a su derecha va el
+         avatar): anclado a ella, el panel se salía por la izquierda. Ahí va
+         fijo, a lo ancho de la pantalla, bajo la barra. */
+      "panel z-50 overflow-hidden rounded-2xl border border-line-strong bg-surface text-left",
+      "max-md:fixed max-md:inset-x-3 max-md:top-[calc(var(--header-h)+0.5rem)]",
+      "md:absolute md:top-13 md:w-[min(24rem,calc(100vw-1.5rem))]",
+      align === "right" ? "md:right-0" : "md:left-0",
+    ]}
+  >
+    <p class="border-b border-line px-4 py-3 text-sm font-bold text-ink"><T v={c.title} /></p>
+    {
+      notices.length === 0 ? (
+        <p class="px-4 py-6 text-center text-sm text-pretty text-ink-muted"><T v={c.empty} /></p>
+      ) : (
+        <ul class="max-h-[min(28rem,70svh)] divide-y divide-line overflow-y-auto">
+          {notices.map((n) => {
+            const inner = (
+              <>
+                <span aria-hidden="true" class:list={["mt-0.5 grid size-9 shrink-0 place-items-center rounded-xl", toneClass[n.tone]]}>
+                  <Icono nombre={n.icon} class="size-4.5" grosor={2.1} />
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="flex items-start justify-between gap-2">
+                    <span class="text-sm font-semibold text-pretty text-ink"><T v={n.title} /></span>
+                    {n.pinned ? (
+                      <span class="shrink-0 rounded-full bg-primary-900 px-2 py-0.5 text-[0.65rem] font-bold text-white"><T v={c.pending} /></span>
+                    ) : (
+                      <span data-fresh hidden class="shrink-0 rounded-full bg-error-50 px-2 py-0.5 text-[0.65rem] font-bold text-error-700"><T v={c.fresh} /></span>
+                    )}
+                  </span>
+                  {n.body && <span class="block text-xs text-pretty text-ink-muted"><T v={n.body} /></span>}
+                  {!n.pinned && <span class="mt-0.5 block text-[0.7rem] text-ink-subtle"><T v={when(n.at)} /></span>}
+                </span>
+              </>
+            );
+            return (
+              <li data-at={n.pinned ? "" : n.at.getTime()}>
+                {n.href ? (
+                  <a href={n.href} class="flex gap-3 px-4 py-3 transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus">
+                    {inner}
+                  </a>
+                ) : (
+                  <div class="flex gap-3 px-4 py-3">{inner}</div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )
+    }
+  </div>
+</details>
+
+<style>
+  .avisos .panel {
+    animation: avisos-in 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+    transform-origin: top right;
+  }
+  @keyframes avisos-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px) scale(0.98);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .avisos .panel {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  /* El número rojo: avisos posteriores a la última vez que se abrió. */
+  const read = (k: string): number => {
+    try {
+      return Number(localStorage.getItem(k) ?? 0);
+    } catch {
+      return Number.NaN;
+    }
+  };
+  document.querySelectorAll<HTMLDetailsElement>("details[data-avisos]").forEach((d) => {
+    const key = `e180-avisos-${d.dataset.avisos}`;
+    const seen = read(key);
+    if (Number.isNaN(seen)) return;
+    const items = [...d.querySelectorAll<HTMLElement>("li[data-at]")].filter((li) => li.dataset.at && Number(li.dataset.at) > seen);
+    const badge = d.querySelector<HTMLElement>("[data-badge]");
+    if (badge && items.length) {
+      badge.textContent = items.length > 9 ? "9+" : String(items.length);
+      badge.hidden = false;
+    }
+    items.forEach((li) => li.querySelector<HTMLElement>("[data-fresh]")?.removeAttribute("hidden"));
+    d.addEventListener("toggle", () => {
+      if (!d.open) return;
+      try {
+        localStorage.setItem(key, String(Date.now()));
+      } catch {
+        /* Sin almacenamiento: no hay número, nada más. */
+      }
+      document.querySelectorAll<HTMLElement>(`details[data-avisos="${d.dataset.avisos}"] [data-badge]`).forEach((b) => (b.hidden = true));
+    });
+  });
+
+  /* Cualquier panel flotante del portal se cierra al tocar fuera o con Escape. */
+  document.addEventListener("click", (e) => {
+    document.querySelectorAll<HTMLDetailsElement>("details[data-popover][open]").forEach((d) => {
+      if (!d.contains(e.target as Node)) d.open = false;
+    });
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    document.querySelectorAll<HTMLDetailsElement>("details[data-popover][open]").forEach((d) => {
+      d.open = false;
+      d.querySelector("summary")?.focus();
+    });
+  });
+</script>

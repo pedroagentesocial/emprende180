@@ -435,7 +435,7 @@ function memoryRepo(): AmbassadorRepo {
     const mk = (slug: string, name: string, linkTemplate: string | null): Business => {
       const b = {
         id: newId(), slug, name, source: "ghl" as const, linkTemplate,
-        hasSecret: false, secretCreatedAt: null, active: true, createdAt: ago(90), secretHash: null,
+        hasSecret: false, secretCreatedAt: null, active: true, createdAt: ago(200), secretHash: null,
       };
       businesses.set(b.id, b);
       return b;
@@ -445,9 +445,9 @@ function memoryRepo(): AmbassadorRepo {
 
     for (const b of [lira, revivi]) {
       rules.push(
-        { id: newId(), businessId: b.id, level: 1, kind: "sale", fromPayment: 1, percent: 20, fixedCents: null, effectiveFrom: ago(90), createdAt: ago(90) },
-        { id: newId(), businessId: b.id, level: 1, kind: "sale", fromPayment: 2, percent: 10, fixedCents: null, effectiveFrom: ago(90), createdAt: ago(90) },
-        { id: newId(), businessId: b.id, level: 2, kind: "sale", fromPayment: 1, percent: 5, fixedCents: null, effectiveFrom: ago(90), createdAt: ago(90) },
+        { id: newId(), businessId: b.id, level: 1, kind: "sale", fromPayment: 1, percent: 20, fixedCents: null, effectiveFrom: ago(200), createdAt: ago(200) },
+        { id: newId(), businessId: b.id, level: 1, kind: "sale", fromPayment: 2, percent: 10, fixedCents: null, effectiveFrom: ago(200), createdAt: ago(200) },
+        { id: newId(), businessId: b.id, level: 2, kind: "sale", fromPayment: 1, percent: 5, fixedCents: null, effectiveFrom: ago(200), createdAt: ago(200) },
       );
     }
 
@@ -468,22 +468,63 @@ function memoryRepo(): AmbassadorRepo {
       return f;
     };
 
-    const a = ref(lira, "c-1", 50);
-    fact(a, "lead", 50, null);
-    fact(a, "purchase", 45, 29_900, 1);
-    fact(a, "renewal", 15, 29_900, 2);
-    const b = ref(lira, "c-2", 10);
+    /* Seis meses de historia (12-11-2026), para que el portal tenga qué
+       contar: una mensualidad de Lira desde el principio, dos membresías de
+       Revivi (una al día y otra atrasada), compras sueltas, un reembolso,
+       contactos que no compraron y cuatro pagos. Las cifras son de EJEMPLO. */
+    const ref2 = (b: Business, ext: string, days: number, owner = laura.id): StoredReferral => {
+      const r = ref(b, ext, days);
+      r.ambassadorId = owner;
+      return r;
+    };
+    const monthly = (r: StoredReferral, first: number, count: number, cents: number) => {
+      fact(r, "lead", first + 2, null);
+      for (let i = 0; i < count; i++) fact(r, i === 0 ? "purchase" : "renewal", first - i * 30, cents, i + 1);
+    };
+
+    /* Una mensualidad de Lira desde el primer mes, al día: el último cobro
+       cae a 16 días y no a 15, que es justo el límite de la espera y, según
+       la hora del arranque, salía "en espera" en vez de "por cobrar". */
+    const a = ref2(lira, "c-1", 172);
+    monthly(a, 166, 6, 29_900);
+    const m1 = ref2(revivi, "c-2", 150);
+    monthly(m1, 148, 4, 9_900);
+    const one = ref2(lira, "c-3", 122);
+    fact(one, "lead", 122, null);
+    fact(one, "purchase", 118, 35_000, 1);
+    const m2 = ref2(revivi, "c-4", 95);
+    monthly(m2, 92, 4, 9_900);
+    const visit = ref2(revivi, "c-5", 80);
+    fact(visit, "lead", 80, null);
+    fact(visit, "attended", 78, null);
+    fact(visit, "purchase", 77, 18_000, 1);
+    ref2(lira, "c-6", 60);
+    const refunded = ref2(revivi, "c-7", 30);
+    const sale = fact(refunded, "purchase", 28, 45_000, 1);
+    fact(refunded, "refund", 25, 45_000, null, sale.id);
+    const b = ref2(lira, "c-8", 10);
     fact(b, "lead", 10, null);
     fact(b, "purchase", 6, 29_900, 1);
-    const c = ref(revivi, "c-3", 30);
-    const sale = fact(c, "purchase", 28, 45_000, 1);
-    fact(c, "refund", 25, 45_000, null, sale.id);
-    ref(revivi, "c-4", 3);
+    ref2(revivi, "c-9", 3);
 
-    payouts.push({
-      id: newId(), ambassadorId: laura.id, method: "cash", amountCents: 5_980,
-      paidAt: ago(20), note: "Demo", clinicsRef: null, recordedBy: null,
-    });
+    /* Su equipo también vende: lo de Carmen le da a Laura su nivel 2. */
+    const carmen = await studentsRepo().studentByEmail("carmen@ejemplo.com");
+    if (carmen) {
+      const t1 = ref2(revivi, "t-1", 70, carmen.id);
+      monthly(t1, 66, 3, 9_900);
+      const t2 = ref2(lira, "t-2", 40, carmen.id);
+      fact(t2, "purchase", 38, 29_900, 1);
+    }
+
+    const pay = (days: number, cents: number, method: "cash" | "revivi_credit") =>
+      payouts.push({
+        id: newId(), ambassadorId: laura.id, method, amountCents: cents,
+        paidAt: ago(days), note: "Demo", clinicsRef: method === "revivi_credit" ? "demo" : null, recordedBy: null,
+      });
+    pay(130, 7_960, "cash");
+    pay(100, 7_000, "revivi_credit");
+    pay(70, 6_970, "cash");
+    pay(40, 7_960, "cash");
   };
   const ready = () => (seeded ??= seed());
 

@@ -1,0 +1,53 @@
+---
+import T from "@components/i18n/T.astro";
+import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
+import type { Lifetime } from "@lib/ambassadorStats";
+import type { Txt } from "@i18n/idioma";
+import { money, monthLong, shortDate } from "@lib/ambassadorFormat";
+import { ambassadorCopy } from "@config/ambassadorArea";
+
+/** Los totales de toda la cuenta, desde el alta: seis cifras y una línea. */
+interface Props {
+  lifetime: Lifetime;
+}
+
+const { lifetime: l } = Astro.props;
+const c = ambassadorCopy.stats;
+
+const tiles: { icon: NombreIcono; label: Txt; value: Txt; sub?: { v: Txt; vars?: Record<string, string | number | Txt> } }[] = [
+  { icon: "billete", label: c.earned, value: money(l.earnedCents), sub: { v: c.payoutsCount, vars: { n: l.payoutsCount } } },
+  { icon: "grafica", label: c.sales, value: money(l.salesCents) },
+  {
+    icon: "personas",
+    label: c.customers,
+    value: { es: String(l.customers), en: String(l.customers) },
+    sub: l.conversionPct != null ? { v: c.customersSub, vars: { n: l.referrals, pct: l.conversionPct } } : undefined,
+  },
+  ...(l.avgPerCustomerCents != null ? [{ icon: "diana" as NombreIcono, label: c.avgPerCustomer, value: money(l.avgPerCustomerCents) }] : []),
+  ...(l.teamEarnedCents > 0 ? [{ icon: "red" as NombreIcono, label: c.teamEarned, value: money(l.teamEarnedCents) }] : []),
+  ...(l.bestMonth && l.bestMonth.earnedCents > 0
+    ? [{ icon: "calendario" as NombreIcono, label: c.bestMonth, value: money(l.bestMonth.earnedCents), sub: { v: monthLong(l.bestMonth.monthStart) } }]
+    : []),
+];
+/* En escritorio ancho, todas en una fila (las clases enteras, para Tailwind). */
+const XL: Record<number, string> = { 3: "xl:grid-cols-3", 4: "xl:grid-cols-4", 5: "xl:grid-cols-5", 6: "xl:grid-cols-6" };
+---
+
+<section class="mt-6">
+  <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 px-1">
+    <h2 class="text-base font-bold text-ink"><T v={c.lifetimeTitle} /></h2>
+    <p class="text-xs text-ink-muted"><T v={c.lifetimeSince} vars={{ fecha: shortDate(l.since), n: l.days }} /></p>
+  </div>
+  <ul class:list={["mt-3 grid grid-cols-2 gap-3 md:grid-cols-3", XL[tiles.length]]}>
+    {tiles.map((tile) => (
+      <li class="rounded-2xl border border-line bg-surface px-4 py-3.5">
+        <span class="flex items-center gap-1.5 text-xs font-semibold text-ink-muted">
+          <Icono nombre={tile.icon} class="size-3.5 text-secondary-600" grosor={2.2} />
+          <T v={tile.label} />
+        </span>
+        <span class="mt-1 block text-xl font-extrabold tabular-nums text-ink"><T v={tile.value} /></span>
+        {tile.sub && <span class="block truncate text-xs text-ink-muted"><T v={tile.sub.v} vars={tile.sub.vars} /></span>}
+      </li>
+    ))}
+  </ul>
+</section>

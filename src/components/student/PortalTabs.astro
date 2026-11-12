@@ -1,0 +1,151 @@
+---
+import T from "@components/i18n/T.astro";
+import Icono, { type NombreIcono } from "@components/ui/Icono.astro";
+import { ambassadorCopy } from "@config/ambassadorArea";
+import { studentCopy } from "@config/studentArea";
+import type { Txt } from "@i18n/idioma";
+import type { Student } from "@lib/data";
+import { canAdminister, canOpenStaffPanel, isAmbassador } from "@lib/permissions";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * Las pestañas de abajo, en el teléfono, para TODOS (12-11-2026)
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Una sola plataforma con un solo marco (`StudentLayout`):
+ *
+ *   · Teléfono (< 768 px): estas pestañas fijas abajo, al alcance del pulgar.
+ *   · Tablet (768 a 1023 px): la columna lateral estrecha, solo iconos.
+ *   · Escritorio (desde 1024 px): la columna lateral completa.
+ *
+ * Caben cinco. Al alumno le bastan (Inicio, Referidos, Movimientos, Equipo,
+ * Compartir); el admin tiene más secciones, así que ve cuatro y "Más", que
+ * abre hacia arriba un panel con el resto y su perfil. Antes el admin tenía en
+ * el teléfono una fila de enlaces que se deslizaba de lado: escondía la mitad.
+ */
+interface Props {
+  student: Student;
+  path: string;
+}
+
+const { student, path } = Astro.props as Props;
+const lang: "es" | "en" = student.language;
+const c = ambassadorCopy;
+const n = studentCopy.nav;
+const t = (es: string, en: string): Txt => ({ es, en });
+
+interface Tab {
+  href: string;
+  label: Txt;
+  icon: NombreIcono;
+}
+
+const all: Tab[] = [
+  { href: "/student", label: n.home, icon: "casa" },
+  ...(isAmbassador(student)
+    ? [
+        { href: "/student/ambassador/referrals", label: c.nav.referrals, icon: "personas" as NombreIcono },
+        { href: "/student/ambassador/payouts", label: c.nav.payouts, icon: "billete" as NombreIcono },
+        { href: "/student/ambassador/team", label: c.nav.team, icon: "red" as NombreIcono },
+        { href: "/student/ambassador/share", label: c.nav.share, icon: "compartir" as NombreIcono },
+      ]
+    : []),
+  ...(canOpenStaffPanel(student) ? [{ href: "/student/people", label: n.people, icon: "personas" as NombreIcono }] : []),
+  ...(canAdminister(student)
+    ? [
+        { href: "/student/ambassadors", label: c.admin.navAmbassadors, icon: "red" as NombreIcono },
+        { href: "/student/businesses", label: c.admin.navBusinesses, icon: "grafica" as NombreIcono },
+        { href: "/student/coupons", label: n.coupons, icon: "certificado" as NombreIcono },
+        { href: "/student/settings", label: n.settings, icon: "escudo" as NombreIcono },
+      ]
+    : []),
+];
+const profile: Tab = { href: "/student/profile", label: t("Mi perfil", "My profile"), icon: "usuario" };
+
+const visible = all.length <= 5 ? all : all.slice(0, 4);
+const more = all.length <= 5 ? [] : [...all.slice(4), profile];
+
+const current = (href: string) =>
+  href === "/student" ? path === "/student" : path === href || path.startsWith(`${href}/`) || path.startsWith(`${href}?`);
+const moreActive = more.some((x) => current(x.href));
+const cols = { 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4", 5: "grid-cols-5" }[visible.length + (more.length ? 1 : 0)] ?? "grid-cols-5";
+
+const item =
+  "flex min-h-14 w-full flex-col items-center justify-center gap-0.5 px-1 text-[0.7rem] leading-tight font-semibold transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus";
+---
+
+<nav
+  aria-label={c.nav.aria[lang]}
+  class="pestanas portal-pestanas fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 backdrop-blur md:hidden"
+>
+  <ul class:list={["mx-auto grid max-w-2xl", cols]}>
+    {
+      visible.map((tab) => {
+        const on = current(tab.href);
+        return (
+          <li class="min-w-0">
+            <a href={tab.href} aria-current={on ? "page" : undefined} class:list={[item, on ? "text-secondary-700" : "text-ink-subtle hover:text-ink"]}>
+              <span aria-hidden="true" class:list={["grid h-7 w-12 place-items-center rounded-full transition-colors", on && "bg-secondary-100"]}>
+                <Icono nombre={tab.icon} class="size-5" grosor={on ? 2.2 : 1.9} />
+              </span>
+              <span class="max-w-full truncate"><T v={tab.label} /></span>
+            </a>
+          </li>
+        );
+      })
+    }
+    {
+      more.length > 0 && (
+        <li class="min-w-0">
+          <details class="mas" data-popover>
+            <summary class:list={[item, "cursor-pointer list-none [&::-webkit-details-marker]:hidden", moreActive ? "text-secondary-700" : "text-ink-subtle hover:text-ink"]}>
+              <span aria-hidden="true" class:list={["grid h-7 w-12 place-items-center rounded-full transition-colors", moreActive && "bg-secondary-100"]}>
+                <Icono nombre="menu" class="size-5" grosor={2} />
+              </span>
+              <span><T v={t("Más", "More")} /></span>
+            </summary>
+            <div class="panel fixed inset-x-3 bottom-[calc(4.25rem+env(safe-area-inset-bottom,0px))] z-50 overflow-hidden rounded-2xl border border-line-strong bg-surface">
+              <ul class="divide-y divide-line">
+                {more.map((tab) => (
+                  <li>
+                    <a
+                      href={tab.href}
+                      aria-current={current(tab.href) ? "page" : undefined}
+                      class:list={[
+                        "flex min-h-13 items-center gap-3 px-4 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus",
+                        current(tab.href) ? "bg-secondary-50 text-secondary-800" : "text-ink hover:bg-surface-muted",
+                      ]}
+                    >
+                      <Icono nombre={tab.icon} class="size-5 text-ink-muted" grosor={1.9} />
+                      <T v={tab.label} />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </details>
+        </li>
+      )
+    }
+  </ul>
+</nav>
+
+<style>
+  .pestanas {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .mas .panel {
+    animation: mas-in 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes mas-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mas .panel {
+      animation: none;
+    }
+  }
+</style>

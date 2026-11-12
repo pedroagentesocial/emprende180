@@ -233,6 +233,8 @@
      sitio. Ver `Enfasis.astro`, que es por donde debería pasar siempre. */
   --font-acento: "Fraunces Variable", ui-serif, Georgia, "Times New Roman",
     serif;
+  /* Los títulos del portal (ver StudentLayout y AmbassadorLayout). */
+  --font-portal: "Plus Jakarta Sans Variable", var(--font-sans);
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 
   /* Escala tipográfica — mobile-first. Los titulares usan clamp() para crecer

@@ -5,6 +5,10 @@
 /* Solo la itálica blanda: es la única variante que se usa. Traer la
    redonda además sería descargar una familia entera para no usarla. */
 @import "@fontsource-variable/fraunces/soft-italic.css";
+/* Plus Jakarta Sans: los títulos del portal (alumno, admin y Embajador),
+   pedida el 11-11-2026. Solo dentro del portal; la web pública sigue en
+   Montserrat. Autoalojada como las otras dos. */
+@import "@fontsource-variable/plus-jakarta-sans";
 @import "./tokens.css";
 
 /* ═══════════════════════════════════════════════════════════════════════════

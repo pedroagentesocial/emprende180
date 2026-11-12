@@ -1,0 +1,147 @@
+---
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import type { Book } from "@lib/ambassadorBook";
+import { money, shortDate } from "@lib/ambassadorFormat";
+import { ambassadorCopy } from "@config/ambassadorArea";
+import { studentCopy } from "@config/studentArea";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * El inicio del alumno abre con su cuenta de Embajador (12-11-2026)
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Todo alumno es Embajador, y lo que más le importa al entrar es si ganó algo.
+ * Antes su inicio eran dos tarjetas grandes de "Próximamente" y nada más.
+ * Ahora: su código, lo que puede cobrar, lo que viene en camino, sus clientes,
+ * una línea con lo ganado mes a mes y los dos botones que se usan a diario.
+ *
+ * ⚠️ SIN NOMBRES DE CLIENTES (el libro se lee con `withNames: false`).
+ */
+interface Props {
+  book: Book;
+  code: string;
+}
+
+const { book, code } = Astro.props;
+const c = studentCopy.dashboard.ambassador;
+const a = ambassadorCopy;
+const { summary, stats } = book;
+const owes = summary.availableCents < 0;
+
+/* La línea de abajo: lo ganado cada mes, sin ejes, solo la forma. */
+const months = stats.monthly.slice(-8);
+const max = Math.max(0, ...months.map((m) => m.earnedCents));
+const W = 240;
+const H = 56;
+const step = months.length > 1 ? W / (months.length - 1) : W;
+const pts = months.map((m, i) => [i * step, H - 4 - (max > 0 ? (m.earnedCents / max) * (H - 10) : 0)] as const);
+const line = pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+const area = pts.length ? `M0,${H} L${line.replaceAll(" ", " L")} L${W},${H} Z` : "";
+---
+
+<section class="relative isolate mt-8 overflow-hidden rounded-[1.75rem] bg-primary-950 p-6 text-white sm:p-8">
+  <div aria-hidden="true" class="halo pointer-events-none absolute -top-24 -right-20 -z-10 size-72 rounded-full"></div>
+
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <p class="inline-flex items-center gap-2 text-sm font-semibold text-primary-100">
+      <Icono nombre="billete" class="size-4 text-secondary-300" grosor={2.2} />
+      <T v={c.title} />
+    </p>
+    <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-bold tracking-wider ring-1 ring-white/15">
+      <span class="text-primary-100"><T v={a.share.yourCode} /></span>
+      <span class="font-mono text-sm text-white">{code}</span>
+    </span>
+  </div>
+
+  <div class="mt-5 grid gap-6 md:grid-cols-[1fr_auto] md:items-end">
+    <div>
+      <p class="text-sm text-primary-100"><T v={owes ? a.home.owed : a.home.available} /></p>
+      <p class="mt-1 text-5xl font-extrabold tracking-tight tabular-nums"><T v={money(Math.abs(summary.availableCents))} /></p>
+      <p class="mt-2 flex items-center gap-2 text-sm text-secondary-200">
+        <Icono nombre="calendario" class="size-4 shrink-0" grosor={2} />
+        {
+          summary.next ? (
+            <T v={a.home.next} vars={{ importe: money(summary.next.amountCents), fecha: shortDate(summary.next.date) }} />
+          ) : (
+            <T v={a.home.noNext} />
+          )
+        }
+      </p>
+    </div>
+    {
+      max > 0 && (
+        <svg viewBox={`0 0 ${W} ${H}`} class="h-14 w-full max-w-60 md:w-60" aria-hidden="true">
+          <defs>
+            <linearGradient id="spark" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stop-color="var(--color-secondary-400)" stop-opacity="0.35" />
+              <stop offset="1" stop-color="var(--color-secondary-400)" stop-opacity="0" />
+            </linearGradient>
+          </defs>
+          <path d={area} fill="url(#spark)" />
+          <polyline points={line} fill="none" stroke="var(--color-secondary-300)" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round" class="spark" />
+        </svg>
+      )
+    }
+  </div>
+
+  <dl class="mt-6 grid grid-cols-3 gap-2 sm:gap-3">
+    <div class="rounded-2xl bg-white/[0.07] px-3.5 py-3 ring-1 ring-white/10">
+      <dt class="text-xs text-primary-100"><T v={a.home.waiting} /></dt>
+      <dd class="mt-0.5 text-lg font-bold tabular-nums"><T v={money(summary.waitingCents)} /></dd>
+    </div>
+    <div class="rounded-2xl bg-white/[0.07] px-3.5 py-3 ring-1 ring-white/10">
+      <dt class="text-xs text-primary-100"><T v={a.stats.earned} /></dt>
+      <dd class="mt-0.5 text-lg font-bold tabular-nums"><T v={money(stats.lifetime.earnedCents)} /></dd>
+    </div>
+    <div class="rounded-2xl bg-white/[0.07] px-3.5 py-3 ring-1 ring-white/10">
+      <dt class="text-xs text-primary-100"><T v={a.stats.customers} /></dt>
+      <dd class="mt-0.5 text-lg font-bold tabular-nums">
+        {stats.lifetime.customers}
+        <span class="text-xs font-semibold text-primary-200"> / {stats.lifetime.referrals}</span>
+      </dd>
+    </div>
+  </dl>
+
+  <div class="mt-6 flex flex-wrap gap-3">
+    {/* Ya no hay "Abrir mi portal": el portal es esta misma plataforma
+        (12-11-2026). Quedan las dos cosas que se hacen desde aquí. */}
+    <a
+      href="/student/ambassador/share"
+      class="inline-flex min-h-12 items-center gap-2 rounded-full bg-secondary-500 px-6 text-sm font-bold text-primary-950 transition-colors hover:bg-secondary-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+    >
+      <Icono nombre="compartir" class="size-4" grosor={2.2} />
+      <T v={a.home.emptyCta} />
+    </a>
+    <a
+      href="/student/ambassador/payouts"
+      class="group inline-flex min-h-12 items-center gap-2 rounded-full px-5 text-sm font-bold text-white ring-1 ring-white/30 transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-inverse"
+    >
+      <T v={c.activity} />
+      <Icono nombre="flecha" class="size-4 transition-transform group-hover:translate-x-0.5" grosor={2.5} />
+    </a>
+  </div>
+</section>
+
+<style>
+  .halo {
+    background: radial-gradient(closest-side, oklch(0.657 0.1122 187.2 / 0.35), transparent);
+  }
+  .spark {
+    stroke-dasharray: 600;
+    animation: traza 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.25s both;
+  }
+  @keyframes traza {
+    from {
+      stroke-dashoffset: 600;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .spark {
+      animation: none;
+    }
+  }
+</style>

@@ -1,0 +1,120 @@
+---
+import T from "@components/i18n/T.astro";
+import Icono from "@components/ui/Icono.astro";
+import AmbassadorCard from "@components/student/AmbassadorCard.astro";
+import MonthlyChart from "@components/ambassador/MonthlyChart.astro";
+import EarningsDonut from "@components/ambassador/EarningsDonut.astro";
+import LifetimeStats from "@components/ambassador/LifetimeStats.astro";
+import RecurringList from "@components/ambassador/RecurringList.astro";
+import TransactionList from "@components/ambassador/TransactionList.astro";
+import { ambassadorCopy } from "@config/ambassadorArea";
+import type { Book } from "@lib/ambassadorBook";
+import { money } from "@lib/ambassadorFormat";
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * EL INICIO DEL EMBAJADOR, que es el inicio de la plataforma (12-11-2026)
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Antes había dos inicios: el del alumno (`/student`) y el del portal del
+ * Embajador (`/student/ambassador`). Como todo alumno es Embajador, ahora es
+ * uno, y es este. `/student/ambassador` lleva aquí.
+ *
+ * Cómo se reparte según la pantalla:
+ *
+ *   · Teléfono: todo en una columna, en orden de importancia.
+ *   · Tablet: las cifras en tres columnas; las gráficas y las listas, una
+ *     debajo de otra.
+ *   · Escritorio: la tarjeta de la cuenta a lo ancho, las seis cifras en una
+ *     fila, la gráfica mes a mes (2/3) junto al reparto por negocio (1/3) y
+ *     mensualidades junto a lo último.
+ *
+ * ⚠️ SIN NOMBRES DE CLIENTES (el libro llega leído con `withNames: false`).
+ */
+interface Props {
+  book: Book;
+  code: string;
+}
+
+const { book, code } = Astro.props;
+const c = ambassadorCopy;
+const { stats } = book;
+const latest = stats.transactions.slice(0, 6);
+
+/* De dónde viene el dinero: lo tuyo por negocio y, aparte, tu equipo. */
+const slices = [
+  ...book.businesses.map((b) => ({
+    label: b.name,
+    cents: book.lines
+      .filter((l) => l.level === 1 && l.businessId === b.id && l.status !== "annulled" && l.status !== "deduction")
+      .reduce((sum, l) => sum + l.amountCents, 0),
+  })),
+  { label: c.stats.teamSlice, cents: stats.lifetime.teamEarnedCents },
+];
+const hasSlices = slices.some((x) => x.cents > 0);
+---
+
+{
+  book.noRules && (
+    <p role="status" class="mt-6 rounded-xl border border-warning-500/40 bg-warning-50 px-4 py-3 text-sm text-pretty text-ink">
+      <T v={c.home.noRules} />
+    </p>
+  )
+}
+
+<AmbassadorCard book={book} code={code} />
+
+{
+  book.referrals.length === 0 ? (
+    <section class="mt-6 rounded-3xl border border-line bg-surface p-8 text-center">
+      <p class="mx-auto max-w-md text-base text-pretty text-ink-muted"><T v={c.home.empty} /></p>
+      <a
+        href="/student/ambassador/share"
+        class="mt-5 inline-flex min-h-12 items-center gap-2 rounded-full bg-cta px-6 font-semibold text-ink-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      >
+        <Icono nombre="compartir" class="size-5" grosor={2} />
+        <T v={c.home.emptyCta} />
+      </a>
+    </section>
+  ) : (
+    <>
+      <LifetimeStats lifetime={stats.lifetime} />
+
+      <div class:list={["mt-6 grid gap-6", hasSlices && "lg:grid-cols-3"]}>
+        <section class="rounded-3xl border border-line bg-surface p-5 lg:col-span-2 lg:p-6">
+          <h2 class="text-base font-bold text-ink"><T v={c.stats.monthlyTitle} /></h2>
+          <div class="mt-3">
+            <MonthlyChart months={stats.monthly} aria={c.stats.monthlyAria} />
+          </div>
+        </section>
+        {hasSlices && (
+          <section class="rounded-3xl border border-line bg-surface p-5 lg:p-6">
+            <h2 class="text-base font-bold text-ink"><T v={c.stats.shareTitle} /></h2>
+            <div class="mt-4">
+              <EarningsDonut slices={slices} total={money(stats.lifetime.earnedCents)} totalLabel={c.stats.earned} aria={c.stats.shareAria} stacked />
+            </div>
+          </section>
+        )}
+      </div>
+
+      <div class="grid items-start gap-x-6 md:grid-cols-2">
+        <RecurringList
+          items={stats.recurring}
+          monthlyCents={stats.lifetime.recurringMonthlyCents}
+          active={stats.lifetime.recurringActive}
+          limit={3}
+          seeAllHref="/student/ambassador/payouts#mensualidades"
+        />
+        <section class="mt-6">
+          <div class="flex items-center justify-between px-1">
+            <h2 class="text-base font-bold text-ink"><T v={c.home.recent} /></h2>
+            <a href="/student/ambassador/payouts" class="inline-flex min-h-11 items-center text-sm font-semibold text-ink-brand">
+              <T v={c.home.seeAll} />
+            </a>
+          </div>
+          <TransactionList items={latest} flat />
+        </section>
+      </div>
+    </>
+  )
+}
