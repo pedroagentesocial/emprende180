@@ -30,11 +30,13 @@
 /* ⚠️ CADA VARIABLE SE NOMBRA ENTERA (`import.meta.env.X`). El compilador solo
    sustituye las que se escriben así; leídas con un índice (`env[k]`) llegaban
    vacías al build de Vercel y el modo no se encendía. El `process.env` de
-   respaldo es el de la función, en tiempo de ejecución. */
+   respaldo es el de la función, en tiempo de ejecución. Con `||` y no
+   `??`: el build deja la variable que no conoce como texto VACÍO, y `??`
+   no salta al respaldo con un texto vacío. */
 const run = (k: string): string | undefined => globalThis.process?.env?.[k];
-const flag = import.meta.env.PREVIEW_DEMO ?? run("PREVIEW_DEMO");
-const target = import.meta.env.VERCEL_ENV ?? run("VERCEL_ENV");
-const branch = import.meta.env.VERCEL_GIT_COMMIT_REF ?? run("VERCEL_GIT_COMMIT_REF");
+const flag = import.meta.env.PREVIEW_DEMO || run("PREVIEW_DEMO");
+const target = import.meta.env.VERCEL_ENV || run("VERCEL_ENV");
+const branch = import.meta.env.VERCEL_GIT_COMMIT_REF || run("VERCEL_GIT_COMMIT_REF");
 
 export const PREVIEW_DEMO: boolean = flag === "1" && target === "preview" && branch !== "main";
 
