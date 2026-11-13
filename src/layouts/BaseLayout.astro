@@ -74,9 +74,26 @@ const ogImagen = new URL(sitio.ogImagen, base).href;
    Se emite SOLO en el idioma activo: un JSON-LD con dos idiomas mezclados no
    es válido, y `inLanguage` tiene que coincidir con lo que se está sirviendo.
    ─────────────────────────────────────────────────────────────────────────── */
+/* Pedro tiene UN solo @id en todos los sitios de sus marcas: su página oficial
+   en senordelascasas.com/about. Así los buscadores y las IA entienden que el
+   fundador de Emprende180 es la misma persona. No cambiarlo sin cambiarlo en
+   todas las marcas. */
+const PEDRO_URL = "https://www.senordelascasas.com/about";
+const PEDRO_ID = `${PEDRO_URL}#pedro-lira`;
+const schemaPedro = {
+  "@type": "Person",
+  "@id": PEDRO_ID,
+  name: "Pedro Lira",
+  alternateName: ["El Señor de las Casas", "Pedro Lira El Señor de las Casas"],
+  url: PEDRO_URL,
+  image: "https://www.senordelascasas.com/images/pedro-lira-el-senor-de-las-casas.jpg",
+};
+
 const schemaOrganizacion = {
   "@context": "https://schema.org",
   "@type": "Organization",
+  "@id": "https://www.emprende180.com/#organization",
+  founder: schemaPedro,
   name: sitio.nombre[lang],
   url: sitio.url,
   logo: new URL(sitio.logo.src, base).href,
@@ -105,6 +122,7 @@ const schemaCourse = {
   image: ogImagen,
   provider: {
     "@type": "Organization",
+    "@id": "https://www.emprende180.com/#organization",
     name: sitio.nombre[lang],
     url: sitio.url,
     email: contacto.email,
@@ -114,6 +132,7 @@ const schemaCourse = {
   ...(!instructor.nombre.includes(MARCA_COMPLETAR) && {
     author: {
       "@type": "Person",
+      ...(instructor.nombre === "Pedro Lira" && { "@id": PEDRO_ID, url: PEDRO_URL }),
       name: instructor.nombre,
       description: instructor.rol[lang],
     },

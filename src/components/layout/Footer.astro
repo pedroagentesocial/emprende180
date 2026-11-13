@@ -254,6 +254,16 @@ const columnaDos = enlacesPagina.slice(3, 6);
     >
       <p><T v={copyright} /></p>
 
+      {/* Línea de entidad del manual SEO/IA (0.4): el mismo texto en todas las
+          marcas de Pedro, enlazado a su página oficial. */}
+      <p>
+        <T v={{ es: "Emprende180 es una empresa de ", en: "Entrepreneur180 is part of the " }} />
+        <a
+          href="https://www.senordelascasas.com/about"
+          class="underline underline-offset-2 transition-colors hover:text-ink-inverse"
+        >Pedro Lira, El Señor de las Casas</a><T v={{ es: ".", en: " group of companies." }} />
+      </p>
+
       {/* El mapa del sitio, que existe de verdad como ruta (`sitemap.xml.ts`).
           Es para buscadores más que para personas, y por eso vive aquí abajo y
           no en ninguna de las cuatro columnas. */}
