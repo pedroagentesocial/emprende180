@@ -60,7 +60,10 @@ const minutos = minutosDeLectura(articulo.body ?? "");
 const tituloPagina = construirTxt(
   (l) => `${tituloBilingue(articulo)[l]} · ${sitio.nombre[l]}`,
 );
-const descripcion = construirTxt(() => articulo.data.resumen);
+/* Lo mismo con la descripción: en inglés, `resumenEn` si el artículo lo trae. */
+const descripcion = construirTxt((l) =>
+  l === "en" ? (articulo.data.resumenEn ?? articulo.data.resumen) : articulo.data.resumen,
+);
 ---
 
 <BaseLayout titulo={tituloPagina} descripcion={descripcion}>

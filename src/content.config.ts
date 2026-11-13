@@ -64,6 +64,17 @@ const blog = defineCollection({
      */
     resumen: z.string().min(40).max(300),
 
+    /**
+     * El resumen en inglés, solo para el `<meta description>` de `?lang=en`.
+     *
+     * Mismo caso que `tituloEn`: la pestaña y el resultado de Google salían con
+     * el titular en inglés y la descripción en español. El artículo sigue en
+     * su idioma; esto es solo la línea que Google enseña debajo del titular.
+     *
+     * Si falta, se usa el original.
+     */
+    resumenEn: z.string().min(40).max(300).optional(),
+
     /** `YYYY-MM-DD`. Se usa para ordenar y se muestra. */
     fecha: z.coerce.date(),
 
