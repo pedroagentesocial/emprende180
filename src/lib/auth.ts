@@ -106,6 +106,40 @@ export async function createMagicLink(student: Student, origin: URL): Promise<st
   return url.href;
 }
 
+/* ─── La sesión del preview en modo demo (13-11-2026) ─────────────────────
+   Vercel reparte las peticiones entre varias copias del servidor y cada una
+   tiene su propia memoria: una sesión guardada en una no existe en la otra, y
+   el visitante salía como "código caducado" o se quedaba fuera al cambiar de
+   página. En modo demo la sesión va FIRMADA dentro de la cookie (id y
+   caducidad, HMAC), así que cualquier copia la reconoce sin guardar nada. La
+   clave sale de una variable que todas las copias tienen y nadie ve. Solo en
+   PREVIEW_DEMO, que nunca se enciende en producción (@lib/previewDemo). */
+const DEMO_PREFIX = "demo.";
+async function demoKey(): Promise<CryptoKey> {
+  const seed = new TextEncoder().encode(`e180-demo-session|${globalThis.process?.env?.DATABASE_URL ?? ""}`);
+  return crypto.subtle.importKey("raw", await crypto.subtle.digest("SHA-256", seed), { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]);
+}
+const b64u = (b: ArrayBuffer | Uint8Array) => Buffer.from(b instanceof Uint8Array ? b : new Uint8Array(b)).toString("base64url");
+async function demoSessionToken(studentId: string, expires: Date): Promise<string> {
+  const body = b64u(new TextEncoder().encode(JSON.stringify({ id: studentId, exp: expires.getTime() })));
+  const sig = await crypto.subtle.sign("HMAC", await demoKey(), new TextEncoder().encode(body));
+  return `${DEMO_PREFIX}${body}.${b64u(sig)}`;
+}
+async function demoSessionStudent(value: string): Promise<Student | null> {
+  const [body, sig] = value.slice(DEMO_PREFIX.length).split(".");
+  if (!body || !sig) return null;
+  const ok = await crypto.subtle.verify("HMAC", await demoKey(), Buffer.from(sig, "base64url"), new TextEncoder().encode(body));
+  if (!ok) return null;
+  try {
+    const { id, exp } = JSON.parse(Buffer.from(body, "base64url").toString("utf8")) as { id: string; exp: number };
+    if (exp < Date.now()) return null;
+    const s = await repo().studentById(id);
+    return s?.active ? s : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Opens a session for an already-identified student and plants the cookie. */
 async function openSession(
   student: Student,
@@ -113,9 +147,9 @@ async function openSession(
   userAgent: string | null,
 ): Promise<void> {
   const r = repo();
-  const session = randomToken();
   const expires = new Date(Date.now() + SESSION_DAYS * 86_400_000);
-  await r.createSession(student.id, await sha256(session), expires, userAgent);
+  const session = PREVIEW_DEMO ? await demoSessionToken(student.id, expires) : randomToken();
+  if (!PREVIEW_DEMO) await r.createSession(student.id, await sha256(session), expires, userAgent);
 
   /**
    * ¿Es la primera vez que esta persona entra?
@@ -249,6 +283,7 @@ export async function changePassword(
 export async function currentStudent(cookies: AstroCookies): Promise<Student | null> {
   const value = cookies.get(SESSION_COOKIE)?.value;
   if (!value) return null;
+  if (PREVIEW_DEMO && value.startsWith(DEMO_PREFIX)) return demoSessionStudent(value);
   return repo().studentBySession(await sha256(value));
 }
 
@@ -550,6 +585,14 @@ export async function entrarConCodigo(
   const r = repo();
   const student = await r.studentByEmail(email.trim().toLowerCase());
   if (!student?.active) return { student: null, motivo: "caducado" };
+
+  /* Modo demo: el código fijo vale sin buscar el guardado, que puede estar en
+     la memoria de otra copia del servidor (ver la sesión demo, arriba). */
+  if (PREVIEW_DEMO) {
+    if (codigo.trim() !== DEMO_CODE) return { student: null, motivo: "malo" };
+    await openSession(student, cookies, userAgent);
+    return { student, motivo: "ok" };
+  }
 
   const fila = await r.findActiveCode(student.id);
   if (!fila) return { student: null, motivo: "caducado" };

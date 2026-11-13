@@ -15,7 +15,7 @@ import {
   internalPath,
 } from "@lib/auth";
 import { LOGIN_EMAIL } from "@lib/loginEmail";
-import { PREVIEW_DEMO, DEMO_CODE, DEMO_ADMIN_EMAIL, DEMO_DIAG, IS_PRODUCTION } from "@lib/previewDemo";
+import { PREVIEW_DEMO, DEMO_CODE, DEMO_ADMIN_EMAIL } from "@lib/previewDemo";
 import { consume, clientIp } from "@lib/rateLimit";
 import { captchaSiteKey, verifyCaptcha, CAPTCHA_FIELD } from "@lib/captcha";
 
@@ -206,8 +206,6 @@ const NOMBRE = { es: "Emprende180", en: "Entrepreneur180" } as const;
 const irA = lang === "en" ? "Go to" : "Ir a";
 const irAlInicio = lang === "en" ? "Go to the home page" : "Ir al inicio";
 
-/* Diagnóstico temporal del modo demo, solo fuera de producción (@lib/previewDemo). */
-if (!IS_PRODUCTION) Astro.response.headers.set("X-Preview-Demo", DEMO_DIAG);
 ---
 <BaseLayout titulo={pageTitle} descripcion={studentCopy.intro} noindex>
   {/* ═══════════════════════════════════════════════════════════════════════
