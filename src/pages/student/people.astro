@@ -8,6 +8,7 @@ import { resolverIdiomaServidor } from "@i18n/idioma";
 import { interpolar } from "@i18n/formato";
 import { repo, normaliseEmail, type Role, type Student } from "@lib/data";
 import { createMagicLink, isAdminByConfig } from "@lib/auth";
+import { EMBEDDABLE_COOKIE } from "@lib/security";
 import { avisarAGhl } from "@lib/ghl";
 import {
   canAdminister,
@@ -285,9 +286,7 @@ if (Astro.request.method === "POST") {
      renders. */
   if (linkToCopy) {
     Astro.cookies.set(LINK_COOKIE, linkToCopy, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: !import.meta.env.DEV,
+      ...EMBEDDABLE_COOKIE,
       path: "/student",
       maxAge: 60,
     });
@@ -319,7 +318,8 @@ if (messageParam && (typeParam === "ok" || typeParam === "error")) {
    reloading doesn't show it again, which is what you expect from something that
    only makes sense in the moment. */
 const recentLink = Astro.cookies.get(LINK_COOKIE)?.value ?? null;
-if (recentLink) Astro.cookies.delete(LINK_COOKIE, { path: "/student" });
+if (recentLink)
+  Astro.cookies.delete(LINK_COOKIE, { ...EMBEDDABLE_COOKIE, path: "/student" });
 
 // ─── The data ────────────────────────────────────────────────────────────────
 

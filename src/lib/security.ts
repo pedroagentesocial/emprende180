@@ -37,9 +37,10 @@
  *     uploaded file that we serve as text ends up executed as a script.
  *   · `Referrer-Policy` — the magic link carries a token IN THE URL. This keeps
  *     that URL from being handed to any third party in a `Referer` header.
- *   · `X-Frame-Options: DENY` on private pages — nobody gets to embed the
- *     student area or the admin panel inside an invisible iframe on their own
- *     site and harvest clicks from it (clickjacking).
+ *   · `Content-Security-Policy: frame-ancestors` on private pages — only our
+ *     own site and GoHighLevel may show the student area or the sign-in inside
+ *     a frame; anybody else's iframe stays blank (clickjacking). See
+ *     `FRAME_ANCESTORS`.
  *   · `Strict-Transport-Security` in production — once a browser has seen this,
  *     it refuses to talk to us over plain HTTP at all, so the session cookie
  *     can't be captured on an open Wi-Fi by downgrading a single request.
@@ -50,6 +51,55 @@
  * piece of work, not a header. Adding a permissive `unsafe-inline` policy would
  * buy nothing and read as protection that isn't there.
  */
+
+/**
+ * Who may show our private pages inside a frame.
+ *
+ * ⚠️ IT USED TO BE NOBODY (`X-Frame-Options: DENY`). On 16-11-2026 GoHighLevel
+ * got a "Portal de Embajadores" link in its sidebar that opens /login in its
+ * own window (an iframe), and DENY left that window blank. Now our own site
+ * and GoHighLevel's domains may frame it; every other site still gets a blank
+ * frame, so the clickjacking defence stands for everybody else.
+ *
+ * A white-label GoHighLevel domain (the agency's own app address) is not on
+ * this list: add it in `GHL_FRAME_ORIGINS` (space or comma separated, e.g.
+ * `https://app.miagencia.com`) or the portal opens blank there again.
+ *
+ * The session cookie had to change for the same reason: see
+ * `EMBEDDABLE_COOKIE`.
+ */
+const FRAME_ANCESTORS = [
+  "'self'",
+  "https://app.gohighlevel.com",
+  "https://*.gohighlevel.com",
+  "https://*.leadconnectorhq.com",
+  "https://*.msgsndr.com",
+  ...(process.env.GHL_FRAME_ORIGINS || import.meta.env.GHL_FRAME_ORIGINS || "")
+    .split(/[\s,]+/)
+    .filter((o: string) => /^https:\/\/[a-z0-9*.-]+(:\d+)?$/i.test(o)),
+].join(" ");
+
+/**
+ * The options of every cookie a page inside GoHighLevel's frame needs.
+ *
+ * ⚠️ `SameSite=None` + `Partitioned`, NOT `Lax`. Inside GHL's iframe our site
+ * is a third party, and a `Lax` cookie is never sent there: the student signs
+ * in, lands on /student and is thrown back to the login, forever.
+ * `Partitioned` (CHIPS) is what Chrome still allows for a third party: the
+ * cookie lives in a jar of its own per top site, so a session opened inside
+ * GHL is not the one of emprende180.com and the other way round. Safari may
+ * still refuse it inside the frame; on our own site it works everywhere.
+ *
+ * What `Lax` used to stop (a POST started from another site carrying the
+ * session) is now stopped by `isSameOrigin` alone, which the middleware runs
+ * on every POST. It was the second lock; now it is the lock.
+ */
+export const EMBEDDABLE_COOKIE = {
+  httpOnly: true,
+  sameSite: "none",
+  secure: true,
+  partitioned: true,
+} as const;
 
 /** Paths that must never be cached: anything behind, or leading to, a session. */
 export function isPrivatePath(pathname: string): boolean {
@@ -64,7 +114,7 @@ export function isPrivatePath(pathname: string): boolean {
 
        Lo que le faltaba, y se vio en la revisión de seguridad:
 
-        · X-Frame-Options. Sin él, cualquiera puede meter esta página en un
+        · frame-ancestors. Sin él, cualquiera puede meter esta página en un
           iframe invisible sobre otra cosa y conseguir que alguien rellene sus
           datos y marque el consentimiento sin saber dónde está. En un
           formulario que además crea una cuenta, eso no es teórico.
@@ -100,7 +150,7 @@ export function harden(response: Response, pathname: string): Response {
      and removes a whole class of "why is my page cached" question. */
   h.set("Pragma", "no-cache");
   h.set("Expires", "0");
-  h.set("X-Frame-Options", "DENY");
+  h.set("Content-Security-Policy", `frame-ancestors ${FRAME_ANCESTORS}`);
 
   /* `Vary: Cookie` is APPENDED, not set: Astro already sends `Vary: Origin` and
      overwriting it would undo that. */
@@ -114,12 +164,11 @@ export function harden(response: Response, pathname: string): Response {
 /**
  * Is this request coming from our own pages?
  *
- * ⚠️ THIS IS THE SECOND LOCK ON CSRF, NOT THE FIRST. The first is the session
- * cookie being `SameSite=Lax`, which already keeps it from being sent on a POST
- * started by another site. This check exists because a single mistake — one
- * cookie set without `sameSite`, one browser that handles it loosely — should
- * not be enough to turn "visit this page" into "change this account's
- * password".
+ * ⚠️ THIS IS THE LOCK ON CSRF. Until 16-11-2026 it was the second one, behind
+ * a `SameSite=Lax` session cookie; the cookie is now `SameSite=None` so the
+ * portal works inside GoHighLevel's frame (see `EMBEDDABLE_COOKIE`), and this
+ * check is what keeps "visit this page" from becoming "change this account's
+ * password". Do not loosen it.
  *
  * It reads three signals, in order of how much they can be trusted:
  *

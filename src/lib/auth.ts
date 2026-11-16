@@ -4,6 +4,7 @@ import { hashPassword, verifyPassword, burnTime } from "@lib/passwords";
 import { avisarAGhl } from "@lib/ghl";
 import { limpiarSiToca } from "@lib/mantenimiento";
 import { CODE_EMAIL } from "@lib/loginEmail";
+import { EMBEDDABLE_COOKIE } from "@lib/security";
 import { correoMarca } from "@lib/correo";
 
 /**
@@ -37,15 +38,27 @@ import { correoMarca } from "@lib/correo";
  *
  * ─── THE COOKIE ────────────────────────────────────────────────────────────
  *
- * `httpOnly` so no script can read it, `sameSite: lax` so it doesn't travel on
- * third-party requests — which is the defence against CSRF — and `secure`
- * outside development. The value is another random token whose hash lives in
+ * `httpOnly` so no script can read it, `secure`, and `SameSite=None` +
+ * `Partitioned` so it also works inside GoHighLevel's frame
+ * (`EMBEDDABLE_COOKIE` in `@lib/security` says why; the CSRF defence is
+ * `isSameOrigin` there). The value is another random token whose hash lives in
  * the `sesiones` table: the cookie on its own doesn't say who you are, you have
  * to ask.
  */
 
 /** Name of the session cookie. */
-export const SESSION_COOKIE = "e180_sesion";
+export const SESSION_COOKIE = "e180_s";
+
+/**
+ * The session cookie before 16-11-2026 (`SameSite=Lax`, not partitioned).
+ * Still READ so nobody is signed out by the change, and deleted on sign-out;
+ * never written. It can go once every old session has expired (30 days).
+ *
+ * ⚠️ A NEW NAME, NOT THE SAME ONE WITH NEW OPTIONS. A partitioned cookie and a
+ * plain one with the same name are TWO cookies in the browser: both would be
+ * sent, and signing out would delete only one of them.
+ */
+const LEGACY_SESSION_COOKIE = "e180_sesion";
 
 /** How long a magic link lives. Short: it's a secret that travels by email. */
 const TOKEN_MINUTES = 20;
@@ -134,9 +147,7 @@ async function openSession(
   if (primeraVez) avisarAGhl("activacion", student).catch(() => {});
 
   cookies.set(SESSION_COOKIE, session, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: !import.meta.env.DEV,
+    ...EMBEDDABLE_COOKIE,
     path: "/",
     expires,
   });
@@ -246,7 +257,9 @@ export async function changePassword(
 
 /** Who is making this request, or `null`. */
 export async function currentStudent(cookies: AstroCookies): Promise<Student | null> {
-  const value = cookies.get(SESSION_COOKIE)?.value;
+  const value =
+    cookies.get(SESSION_COOKIE)?.value ??
+    cookies.get(LEGACY_SESSION_COOKIE)?.value;
   if (!value) return null;
   return repo().studentBySession(await sha256(value));
 }
@@ -259,9 +272,13 @@ export async function currentStudent(cookies: AstroCookies): Promise<Student | n
  * row would leave the browser sending a dead cookie on every request.
  */
 export async function signOut(cookies: AstroCookies): Promise<void> {
-  const value = cookies.get(SESSION_COOKIE)?.value;
-  if (value) await repo().deleteSession(await sha256(value));
-  cookies.delete(SESSION_COOKIE, { path: "/" });
+  for (const name of [SESSION_COOKIE, LEGACY_SESSION_COOKIE]) {
+    const value = cookies.get(name)?.value;
+    if (value) await repo().deleteSession(await sha256(value));
+  }
+  /* The partitioned one is deleted only by a header that says Partitioned. */
+  cookies.delete(SESSION_COOKIE, { ...EMBEDDABLE_COOKIE, path: "/" });
+  cookies.delete(LEGACY_SESSION_COOKIE, { path: "/" });
 }
 
 /**
