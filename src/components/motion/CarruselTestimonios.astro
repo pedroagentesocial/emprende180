@@ -74,14 +74,16 @@ const posicion = (i: number) =>
       lo pone el relleno de cada celda y no un `gap`, para que la fracción de
       ancho sea exacta y el desplazamiento caiga siempre en el borde. */}
   <div class="overflow-hidden">
-    <ul
-      role="list"
+    {/* div y no ul: un <li role="group"> deja de ser listitem y la lista
+        quedaba sin hijos válidos (aria-required-children). Las diapositivas
+        conservan role="group" + aria-roledescription="slide". */}
+    <div
       data-pista
       class="flex transition-transform duration-[650ms] ease-out-expo motion-reduce:transition-none"
     >
       {
         items.map((t, i) => (
-          <li
+          <div
             data-tarjeta={i}
             role="group"
             aria-roledescription="slide"
@@ -91,10 +93,10 @@ const posicion = (i: number) =>
             class="w-full flex-none px-2 sm:w-1/2 sm:px-3 lg:w-1/3"
           >
             <TarjetaTestimonio testimonio={t} />
-          </li>
+          </div>
         ))
       }
-    </ul>
+    </div>
   </div>
 
   {/* Flecha, puntos, pausa, flecha. Centrados bajo las tarjetas y a 44 px cada
