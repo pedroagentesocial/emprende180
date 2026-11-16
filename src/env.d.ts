@@ -48,8 +48,6 @@ interface ImportMetaEnv {
    * Two audiences, two workflows.
    */
   readonly GHL_ALUMNOS_WEBHOOK_URL: string;
-  /** Optional. White-label GoHighLevel origins allowed to frame the portal (see `FRAME_ANCESTORS`). */
-  readonly GHL_FRAME_ORIGINS?: string;
   readonly TURNSTILE_SITE_KEY: string;
   readonly TURNSTILE_SECRET_KEY: string;
 }

@@ -37,10 +37,9 @@
  *     uploaded file that we serve as text ends up executed as a script.
  *   · `Referrer-Policy` — the magic link carries a token IN THE URL. This keeps
  *     that URL from being handed to any third party in a `Referer` header.
- *   · `Content-Security-Policy: frame-ancestors` on private pages — only our
- *     own site and GoHighLevel may show the student area or the sign-in inside
- *     a frame; anybody else's iframe stays blank (clickjacking). See
- *     `FRAME_ANCESTORS`.
+ *   · `Content-Security-Policy: frame-ancestors *` on private pages — ANY
+ *     site may show the sign-in and the student area inside a frame (owner's
+ *     decision 2026-11-16). See `FRAME_ANCESTORS`.
  *   · `Strict-Transport-Security` in production — once a browser has seen this,
  *     it refuses to talk to us over plain HTTP at all, so the session cookie
  *     can't be captured on an open Wi-Fi by downgrading a single request.
@@ -53,34 +52,25 @@
  */
 
 /**
- * Who may show our private pages inside a frame.
+ * Who may show our private pages inside a frame: ANYBODY.
  *
  * ⚠️ IT USED TO BE NOBODY (`X-Frame-Options: DENY`). On 16-11-2026 GoHighLevel
  * got a "Portal de Embajadores" link in its sidebar that opens /login in its
- * own window (an iframe), and DENY left that window blank. Now our own site
- * and GoHighLevel's domains may frame it; every other site still gets a blank
- * frame, so the clickjacking defence stands for everybody else.
- *
- * A white-label GoHighLevel domain (the agency's own app address) is not on
- * this list: add it in `GHL_FRAME_ORIGINS` (space or comma separated, e.g.
- * `https://app.miagencia.com`) or the portal opens blank there again.
+ * own window (an iframe), and DENY left that window blank. A list of GHL's
+ * domains was tried first, but each agent's GHL runs on its agency's own
+ * (white-label) domain, unknown in advance, so the owner chose to let any site
+ * frame the portal (2026-11-16): nothing behind the login opens without
+ * signing in, and every POST still has to come from our own pages
+ * (`isSameOrigin`). What is given up is the clickjacking defence on these
+ * pages; do not narrow it again without a list of every agent's domain.
  *
  * The session cookie had to change for the same reason: see
  * `EMBEDDABLE_COOKIE`.
  */
-const FRAME_ANCESTORS = [
-  "'self'",
-  "https://app.gohighlevel.com",
-  "https://*.gohighlevel.com",
-  "https://*.leadconnectorhq.com",
-  "https://*.msgsndr.com",
-  ...(process.env.GHL_FRAME_ORIGINS || import.meta.env.GHL_FRAME_ORIGINS || "")
-    .split(/[\s,]+/)
-    .filter((o: string) => /^https:\/\/[a-z0-9*.-]+(:\d+)?$/i.test(o)),
-].join(" ");
+const FRAME_ANCESTORS = "*";
 
 /**
- * The options of every cookie a page inside GoHighLevel's frame needs.
+ * The options of every cookie a page inside a frame (GoHighLevel's) needs.
  *
  * ⚠️ `SameSite=None` + `Partitioned`, NOT `Lax`. Inside GHL's iframe our site
  * is a third party, and a `Lax` cookie is never sent there: the student signs
