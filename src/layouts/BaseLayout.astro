@@ -17,6 +17,7 @@ import {
   type Txt,
 } from "@i18n/idioma";
 import { MARCA_COMPLETAR } from "@lib/pendientes";
+import { migasDePan } from "@lib/migas";
 
 interface Props {
   /** Sobrescribe el <title>. Debe venir en los dos idiomas. */
@@ -68,6 +69,22 @@ const alternativas = IDIOMAS.map((l) => {
 const xDefault = alternativas.find((a) => a.lang === "es")!.href;
 
 const ogImagen = new URL(sitio.ogImagen, base).href;
+
+/** Migas de pan (Inicio › Blog › Artículo), con la misma forma `?lang=` del canonical. */
+const urlIdioma = (p: string) => {
+  const u = new URL(p, base);
+  u.searchParams.set("lang", lang);
+  return u.href;
+};
+const migas = migasDePan({
+  ruta: Astro.url.pathname,
+  inicio: { name: lang === "es" ? "Inicio" : "Home", url: urlIdioma("/") },
+  secciones: { "/blog": { name: "Blog", url: urlIdioma("/blog") } },
+  actual: /^\/blog\/?$/.test(Astro.url.pathname)
+    ? "Blog"
+    : titulo[lang].split(/ · | \| | — |: /)[0],
+  urlActual: canonical,
+});
 
 /* ───────────────────────────────────────────────────────────────────────────
    Schema.org · Course
@@ -338,6 +355,9 @@ const descripciones = { es: descripcion.es, en: descripcion.en };
       set:html={JSON.stringify(schemaOrganizacion)}
       is:inline
     />
+    {migas && (
+      <script type="application/ld+json" set:html={JSON.stringify(migas)} is:inline />
+    )}
 
     {/* Antes del primer pintado, y en este orden:
         1. Aplica la preferencia guardada del visitante si difiere de lo que
