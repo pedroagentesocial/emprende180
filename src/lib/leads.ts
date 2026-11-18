@@ -150,9 +150,10 @@ export async function suscribirASecuencia(lead: LeadGuardado): Promise<void> {
  * `tags`…): así el lead entra ya mapeado en vez de aparecer como un objeto
  * suelto que hay que casar a mano en cada automatización.
  */
-export async function enviarAWebhook(lead: LeadGuardado): Promise<void> {
+/** Devuelve true solo si GoHighLevel aceptó el lead. */
+export async function enviarAWebhook(lead: LeadGuardado): Promise<boolean> {
   const url = import.meta.env.GHL_WEBHOOK_URL;
-  if (!url) return;
+  if (!url) return false;
 
   /* El nombre llega en un solo campo, y GHL espera nombre y apellido por
      separado. Se parte por el primer espacio: quien escribe "María" se queda
@@ -226,8 +227,11 @@ export async function enviarAWebhook(lead: LeadGuardado): Promise<void> {
       console.error(
         `[leads] El webhook de GHL respondió ${respuesta.status}: ${texto}`,
       );
+      return false;
     }
+    return true;
   } catch (error) {
     console.error("[leads] No se pudo llamar al webhook de GHL:", error);
+    return false;
   }
 }

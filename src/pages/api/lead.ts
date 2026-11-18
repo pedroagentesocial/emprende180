@@ -169,13 +169,14 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     console.error("[lead] Fallo al suscribir a la secuencia:", error),
   );
 
-  /* El lead entra en GoHighLevel. Va SIN `await` a propósito: la respuesta al
-     visitante no tiene por qué esperar a que conteste un servidor ajeno, y el
-     lead ya está guardado pase lo que pase con el webhook. Si no hay
-     `GHL_WEBHOOK_URL`, no hace nada. Ver `enviarAWebhook`. */
-  enviarAWebhook(guardado).catch((error) =>
-    console.error("[lead] Fallo al llamar al webhook:", error),
-  );
+  /* El lead entra en GoHighLevel. Ahora CON `await`: sin esperar, Vercel puede
+     cortar la función al responder y la llamada no llega. Y "guardado" solo
+     significa un log que se borra, así que el CRM o el correo interno tienen
+     que confirmar la entrega antes de responder éxito. Tiene tope de 8 s. */
+  const enCrm = await enviarAWebhook(guardado).catch((error) => {
+    console.error("[lead] Fallo al llamar al webhook:", error);
+    return false;
+  });
 
   // ── 6 · Notificar ─────────────────────────────────────────────────────────
 
@@ -195,7 +196,16 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
       "[lead] MODO DEMO — sin RESEND_API_KEY / NOTIFY_EMAIL_TO / NOTIFY_EMAIL_FROM. " +
         "Lead guardado, emails NO enviados.",
     );
-    return exito(lead.idioma);
+    // En producción solo es éxito si el lead sí entró en el CRM.
+    if (import.meta.env.DEV || enCrm) return exito(lead.idioma);
+    console.error("[lead] LEAD NO ENTREGADO: sin correo configurado y sin CRM", lead.email);
+    return json(
+      {
+        ok: false,
+        mensaje: mensaje(lead.idioma, "noRegistrado").replace("{email}", contacto.email),
+      },
+      503,
+    );
   }
 
   /* El remitente CON NOMBRE. La variable de entorno puede traer solo la
@@ -288,12 +298,20 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     ]);
 
     if (!aviso.ok) {
-      // El lead ya está guardado, así que esto no es un error para el usuario:
-      // se registra para poder recuperarlo del log.
       console.error(
         "[lead] Resend rechazó el aviso interno:",
         await aviso.text(),
       );
+      // Si tampoco entró en el CRM, el lead no llegó a nadie: se avisa.
+      if (!enCrm) {
+        return json(
+          {
+            ok: false,
+            mensaje: mensaje(lead.idioma, "noRegistrado").replace("{email}", contacto.email),
+          },
+          503,
+        );
+      }
     }
     if (!bienvenida.ok) {
       console.error(
@@ -302,9 +320,17 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
       );
     }
   } catch (error) {
-    // Igual: el lead está a salvo. No se le muestra un error a quien ya se
-    // registró correctamente.
     console.error("[lead] Error al contactar con Resend:", error);
+    // Sin correo y sin CRM, el lead no llegó a nadie.
+    if (!enCrm) {
+      return json(
+        {
+          ok: false,
+          mensaje: mensaje(lead.idioma, "noRegistrado").replace("{email}", contacto.email),
+        },
+        503,
+      );
+    }
   }
 
   return exito(lead.idioma);
