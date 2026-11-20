@@ -56,6 +56,15 @@ const blog = defineCollection({
     tituloEn: z.string().min(10).max(120).optional(),
 
     /**
+     * Título corto SOLO para `<title>` y `og:title`, cuando el titular no cabe
+     * en los 65 caracteres que enseña Google. El H1 y el schema siguen con
+     * `titulo`. La marca se añade solo si cabe. Si falta, se usa `titulo`.
+     */
+    seoTitulo: z.string().min(10).max(65).optional(),
+    /** Lo mismo para `?lang=en`. Si falta, se usa `tituloEn`. */
+    seoTituloEn: z.string().min(10).max(65).optional(),
+
+    /**
      * Dos líneas. Salen en el listado y como `<meta description>`.
      *
      * ⚠️ NO ES EL PRIMER PÁRRAFO REPETIDO. Google enseña esto debajo del

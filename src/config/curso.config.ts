@@ -4534,6 +4534,11 @@ export const copy = {
   programas: {
     aria: { es: "Programas", en: "Programs" },
     kicker: { es: "Programas", en: "Programs" },
+    /* El <title>: "Programas" a secas se quedaba en 23 caracteres. */
+    tituloSeo: {
+      es: "Programas: Academia, CRM y apoyo",
+      en: "Programs: Academy, CRM and support",
+    },
     descripcion: {
       es: "La Academia, el CRM y el apoyo de Emprende180, explicados enteros y en un solo lugar.",
       en: "The Entrepreneur180 Academy, CRM and follow-up, explained in full, all in one place.",
@@ -4784,6 +4789,11 @@ export const copy = {
      * cambia con él.
      */
     paginaTitulo: { es: "Recursos", en: "Resources" },
+    /* El <title>: "Recursos" a secas se quedaba en 22 caracteres. */
+    paginaTituloSeo: {
+      es: "Recursos gratis: artículos y dudas frecuentes",
+      en: "Free resources: articles and FAQs",
+    },
     paginaEntradilla: {
       es: "Todo lo que hay publicado, sin pedir nada a cambio.",
       en: "Everything published so far, with nothing asked in return.",

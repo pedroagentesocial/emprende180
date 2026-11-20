@@ -57,16 +57,21 @@ const minutos = minutosDeLectura(articulo.body ?? "");
 /* En inglés, el título traducido si el artículo lo trae: el cuerpo sigue en
    español, pero la pestaña y el resultado de búsqueda se leen en el idioma
    de quien busca. */
-const tituloPagina = construirTxt(
-  (l) => `${tituloBilingue(articulo)[l]} · ${sitio.nombre[l]}`,
-);
+const tituloPagina = construirTxt((l) => {
+  /* El corto (`seoTitulo`) si lo trae, y la marca solo si cabe en 65. */
+  const corto =
+    (l === "en" ? articulo.data.seoTituloEn : articulo.data.seoTitulo) ??
+    tituloBilingue(articulo)[l];
+  const conMarca = `${corto} · ${sitio.nombre[l]}`;
+  return [...conMarca].length <= 65 ? conMarca : corto;
+});
 /* Lo mismo con la descripción: en inglés, `resumenEn` si el artículo lo trae. */
 const descripcion = construirTxt((l) =>
   l === "en" ? (articulo.data.resumenEn ?? articulo.data.resumen) : articulo.data.resumen,
 );
 ---
 
-<BaseLayout titulo={tituloPagina} descripcion={descripcion}>
+<BaseLayout titulo={tituloPagina} descripcion={descripcion} miga={tituloBilingue(articulo)}>
   <Header />
 
   <main id="contenido" class="section-y">
