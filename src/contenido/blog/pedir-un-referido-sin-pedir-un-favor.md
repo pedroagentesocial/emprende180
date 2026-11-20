@@ -1,6 +1,8 @@
 ---
 titulo: "Cómo pedir un referido sin que parezca que estás pidiendo un favor"
 tituloEn: "How to ask for a referral without sounding like you are asking for a favor"
+seoTitulo: "Cómo pedir un referido sin que parezca un favor"
+seoTituloEn: "How to ask for a referral without asking for a favor"
 resumen: "La razón por la que se te traba la garganta al pedir no es la timidez: es que estás pidiendo mal. Cambia la pregunta y cambia todo lo demás."
 resumenEn: "The reason the words get stuck when you ask is not shyness: you are asking the wrong way. Change the question and everything else changes."
 fecha: 2026-08-25

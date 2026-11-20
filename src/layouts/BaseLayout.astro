@@ -34,12 +34,18 @@ interface Props {
    * de dentro dejen de contar.
    */
   noindex?: boolean;
+  /**
+   * Nombre de la página en las migas de pan (schema). Si falta, se saca del
+   * título. Sirve cuando el <title> es una versión corta o larga del nombre.
+   */
+  miga?: Txt;
 }
 
 const {
   titulo = sitio.titulo,
   descripcion = sitio.descripcion,
   noindex = false,
+  miga,
 } = Astro.props;
 
 /**
@@ -82,7 +88,7 @@ const migas = migasDePan({
   secciones: { "/blog": { name: "Blog", url: urlIdioma("/blog") } },
   actual: /^\/blog\/?$/.test(Astro.url.pathname)
     ? "Blog"
-    : titulo[lang].split(/ · | \| | — |: /)[0],
+    : (miga?.[lang] ?? titulo[lang].split(/ · | \| | — |: /)[0]),
   urlActual: canonical,
 });
 

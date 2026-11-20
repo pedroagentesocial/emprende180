@@ -68,12 +68,16 @@ const lang = resolverIdiomaServidor(
 const restantes = (await articulosPublicados(getCollection)).slice(3);
 
 const tituloPagina = construirTxt(
-  (l) => `${recursos.paginaTitulo[l]} · ${sitio.nombre[l]}`,
+  (l) => `${recursos.paginaTituloSeo[l]} · ${sitio.nombre[l]}`,
 );
 
 ---
 
-<BaseLayout titulo={tituloPagina} descripcion={recursos.paginaDescripcion}>
+<BaseLayout
+  titulo={tituloPagina}
+  descripcion={recursos.paginaDescripcion}
+  miga={recursos.paginaTitulo}
+>
   <Header />
 
   <main id="contenido">

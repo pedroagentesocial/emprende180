@@ -75,6 +75,11 @@ export const minutosDeLectura = (texto: string): number =>
 
 export const blogCopy = {
   titulo: { es: "Blog", en: "Blog" },
+  /* El <title>: "Blog · Emprende180" se quedaba en 18 caracteres. */
+  tituloSeo: {
+    es: "Blog: referidos y cómo construir tu red",
+    en: "Blog: referrals and building your network",
+  },
   descripcion: {
     es: "Ideas prácticas sobre cómo se detecta una oportunidad, cómo se pide un referido y cómo se construye una red que trabaja para ti.",
     en: "Practical ideas on spotting an opportunity, asking for a referral, and building a network that works for you.",

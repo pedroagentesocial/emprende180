@@ -1,6 +1,8 @@
 ---
 titulo: "Tu agenda ya vale más de lo que crees, y no la estás mirando"
 tituloEn: "Your contacts are already worth more than you think, and you are not looking"
+seoTitulo: "Tu agenda ya vale más de lo que crees"
+seoTituloEn: "Your contacts are worth more than you think"
 resumen: "No necesitas conocer a más gente. Necesitas acordarte de la que ya conoces en el momento en que hace falta, y eso no es memoria: es tener un sistema."
 resumenEn: "You do not need to meet more people. You need to remember the ones you already know at the moment it matters, and that is not memory: it is having a system."
 fecha: 2026-09-08
